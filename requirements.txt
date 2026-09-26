@@ -1,4 +1,6 @@
 smartapi-python==1.5.5
 logzero
+websocket-client
+pycryptodome
 pyotp
 gspread
