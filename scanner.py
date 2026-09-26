@@ -8,6 +8,7 @@ ANGEL_CLIENT_CODE = os.environ["ANGEL_CLIENT_CODE"]
 ANGEL_PIN         = os.environ["ANGEL_PIN"]
 ANGEL_TOTP_SEED   = os.environ["ANGEL_TOTP_SEED"]
 SHEET_ID          = "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs"
+MAX_RUNTIME_SECONDS = max(1, int(os.getenv("MAX_RUNTIME_SECONDS", "19800")))
 
 def get_ist():
     return datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) + datetime.timedelta(hours=5, minutes=30)
@@ -30,7 +31,9 @@ ws_hb = sh.worksheet("HEARTBEAT")
 # Authenticate Angel One
 totp = pyotp.TOTP(ANGEL_TOTP_SEED).now()
 api = SmartConnect(api_key=ANGEL_API_KEY)
-api.generateSession(ANGEL_CLIENT_CODE, ANGEL_PIN, totp)
+session = api.generateSession(ANGEL_CLIENT_CODE, ANGEL_PIN, totp)
+if not session or not session.get("status"):
+    raise RuntimeError(f"Angel login failed: {session}")
 print(f"[OK] Angel Session Active for {ANGEL_CLIENT_CODE}")
 
 # Download Scrip Master & Discover all symbols with CE & PE
@@ -84,7 +87,7 @@ fut_tokens = [u["token"] for u in universe.values()]
 # Run sync loop for 5 hours (entire trading session)
 start_time = time.time()
 loop = 0
-while time.time() - start_time < 19800:
+while time.time() - start_time < MAX_RUNTIME_SECONDS:
     now = get_ist()
     if now.hour == 15 and now.minute > 35:
         print("[INFO] Market closed. Finishing run.")
