@@ -24,13 +24,24 @@ raw_sheet_secret = os.environ["SHEETS_KEY_JSON"].strip()
 try:
     sheet_info = json.loads(raw_sheet_secret)
 except json.JSONDecodeError:
+    sheet_info = None
+
+    # GitHub secrets are sometimes pasted as escaped JSON, e.g. {\\"type\\":...}.
+    # Remove only escaped quote markers; keep \\n inside the private key intact.
+    escaped_json = raw_sheet_secret.replace('\\\"', '"')
     try:
-        # Also accept a Python-dict style secret (single quotes), a common copy/paste format.
-        sheet_info = ast.literal_eval(raw_sheet_secret)
-    except (ValueError, SyntaxError) as exc:
-        raise RuntimeError(
-            "SHEETS_KEY_JSON is not valid service-account JSON/dict syntax"
-        ) from exc
+        sheet_info = json.loads(escaped_json)
+    except json.JSONDecodeError:
+        pass
+
+    if sheet_info is None:
+        try:
+            # Also accept a Python-dict style secret (single quotes).
+            sheet_info = ast.literal_eval(raw_sheet_secret)
+        except (ValueError, SyntaxError) as exc:
+            raise RuntimeError(
+                "SHEETS_KEY_JSON is not valid service-account JSON/dict syntax"
+            ) from exc
 
 # Handle a JSON string that itself contains the JSON object.
 if isinstance(sheet_info, str):
