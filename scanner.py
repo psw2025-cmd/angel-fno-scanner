@@ -65,9 +65,14 @@ if not isinstance(sheet_info, dict) or sheet_info.get("type") != "service_accoun
         "backslashes": raw_sheet_secret.count("\\"),
         "newlines": raw_sheet_secret.count("\n"),
     }
+    try:
+        json.loads(raw_sheet_secret)
+        json_error = "parsed_but_not_service_account"
+    except json.JSONDecodeError as exc:
+        json_error = f"{exc.msg} at line={exc.lineno} col={exc.colno} pos={exc.pos}"
     raise RuntimeError(
         "SHEETS_KEY_JSON is not valid Google service-account JSON; "
-        f"safe_format_stats={structural}"
+        f"json_error={json_error}; safe_format_stats={structural}"
     )
 
 gc = gspread.service_account_from_dict(sheet_info)
