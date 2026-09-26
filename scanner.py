@@ -1,4 +1,4 @@
-import os, sys, time, datetime, json, urllib.request
+import os, sys, time, datetime, json, urllib.request, ast
 from collections import defaultdict
 import pyotp, gspread
 from SmartApi import SmartConnect
@@ -19,10 +19,26 @@ def parse_exp(s):
     except:
         return None
 
-# Authenticate Google Sheet using the secret key JSON
-with open("key.json", "w") as f:
-    f.write(os.environ["SHEETS_KEY_JSON"])
-gc = gspread.service_account(filename="key.json")
+# Authenticate Google Sheet from the GitHub secret without writing credentials to disk.
+raw_sheet_secret = os.environ["SHEETS_KEY_JSON"].strip()
+try:
+    sheet_info = json.loads(raw_sheet_secret)
+except json.JSONDecodeError:
+    try:
+        # Also accept a Python-dict style secret (single quotes), a common copy/paste format.
+        sheet_info = ast.literal_eval(raw_sheet_secret)
+    except (ValueError, SyntaxError) as exc:
+        raise RuntimeError(
+            "SHEETS_KEY_JSON is not valid service-account JSON/dict syntax"
+        ) from exc
+
+# Handle a JSON string that itself contains the JSON object.
+if isinstance(sheet_info, str):
+    sheet_info = json.loads(sheet_info)
+if not isinstance(sheet_info, dict) or sheet_info.get("type") != "service_account":
+    raise RuntimeError("SHEETS_KEY_JSON does not contain a Google service-account object")
+
+gc = gspread.service_account_from_dict(sheet_info)
 sh = gc.open_by_key(SHEET_ID)
 
 ws_live = sh.worksheet("FORENSIC_LIVE")
