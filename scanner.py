@@ -55,7 +55,20 @@ if sheet_info is None:
         pass
 
 if not isinstance(sheet_info, dict) or sheet_info.get("type") != "service_account":
-    raise RuntimeError("SHEETS_KEY_JSON is not valid Google service-account JSON")
+    # Safe structural diagnostics only; never print credential content.
+    structural = {
+        "length": len(raw_sheet_secret),
+        "starts_lbrace": raw_sheet_secret.startswith("{"),
+        "ends_rbrace": raw_sheet_secret.endswith("}"),
+        "double_quotes": raw_sheet_secret.count('"'),
+        "single_quotes": raw_sheet_secret.count("'"),
+        "backslashes": raw_sheet_secret.count("\\"),
+        "newlines": raw_sheet_secret.count("\n"),
+    }
+    raise RuntimeError(
+        "SHEETS_KEY_JSON is not valid Google service-account JSON; "
+        f"safe_format_stats={structural}"
+    )
 
 gc = gspread.service_account_from_dict(sheet_info)
 sh = gc.open_by_key(SHEET_ID)
