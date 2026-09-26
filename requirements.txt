@@ -1,0 +1,4 @@
+smartapi-python==1.5.5
+logzero
+pyotp
+gspread
