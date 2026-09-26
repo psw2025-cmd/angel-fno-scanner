@@ -1,0 +1,32 @@
+name: Angel One Daily Forensic Bot
+
+on:
+  schedule:
+    # 03:40 UTC = 09:10 AM IST (Monday to Friday)
+    - cron: '40 3 * * 1-5'
+  workflow_dispatch: # Allows you to press a "Run" button anytime to test!
+
+jobs:
+  run-scanner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Libraries
+        run: |
+          pip install smartapi-python pyotp gspread
+
+      - name: Run Forensic Scanner
+        env:
+          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+          ANGEL_TOTP_SEED: ${{ secrets.ANGEL_TOTP_SEED }}
+          SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
+        run: python scanner.py
