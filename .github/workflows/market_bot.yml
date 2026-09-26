@@ -44,5 +44,5 @@ jobs:
           ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
           ANGEL_TOTP_SEED: ${{ secrets.ANGEL_TOTP_SEED }}
           SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
-          MAX_RUNTIME_SECONDS: ${{ github.event_name == 'push' && '30' || '19800' }}
+          MAX_RUNTIME_SECONDS: ${{ github.event_name == 'schedule' && '19800' || '60' }}
         run: python scanner.py
