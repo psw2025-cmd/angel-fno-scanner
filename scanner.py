@@ -1,4 +1,4 @@
-import os, sys, time, datetime, json, urllib.request, ast
+import os, sys, time, datetime, json, urllib.request, ast, re
 from collections import defaultdict
 import pyotp, gspread
 from SmartApi import SmartConnect
@@ -21,33 +21,41 @@ def parse_exp(s):
 
 # Authenticate Google Sheet from the GitHub secret without writing credentials to disk.
 raw_sheet_secret = os.environ["SHEETS_KEY_JSON"].strip()
-try:
-    sheet_info = json.loads(raw_sheet_secret)
-except json.JSONDecodeError:
-    sheet_info = None
+sheet_info = None
 
-    # GitHub secrets are sometimes pasted as escaped JSON, e.g. {\\"type\\":...}.
-    # Remove only escaped quote markers; keep \\n inside the private key intact.
-    escaped_json = raw_sheet_secret.replace('\\\"', '"')
+# Accept normal JSON plus common GitHub-secret copy/paste forms with one or
+# multiple backslashes before JSON quotes. Do not alter \\n in private_key.
+candidates = [raw_sheet_secret]
+normalized_quotes = re.sub(r'\\+"', '"', raw_sheet_secret)
+if normalized_quotes not in candidates:
+    candidates.append(normalized_quotes)
+
+if len(raw_sheet_secret) >= 2 and raw_sheet_secret[0] == raw_sheet_secret[-1] and raw_sheet_secret[0] in ("'", '"'):
+    inner = raw_sheet_secret[1:-1]
+    candidates.append(inner)
+    candidates.append(re.sub(r'\\+"', '"', inner))
+
+for candidate in candidates:
     try:
-        sheet_info = json.loads(escaped_json)
-    except json.JSONDecodeError:
+        parsed = json.loads(candidate)
+        if isinstance(parsed, str):
+            parsed = json.loads(parsed)
+        if isinstance(parsed, dict):
+            sheet_info = parsed
+            break
+    except (json.JSONDecodeError, TypeError):
         pass
 
-    if sheet_info is None:
-        try:
-            # Also accept a Python-dict style secret (single quotes).
-            sheet_info = ast.literal_eval(raw_sheet_secret)
-        except (ValueError, SyntaxError) as exc:
-            raise RuntimeError(
-                "SHEETS_KEY_JSON is not valid service-account JSON/dict syntax"
-            ) from exc
+if sheet_info is None:
+    try:
+        parsed = ast.literal_eval(raw_sheet_secret)
+        if isinstance(parsed, dict):
+            sheet_info = parsed
+    except (ValueError, SyntaxError):
+        pass
 
-# Handle a JSON string that itself contains the JSON object.
-if isinstance(sheet_info, str):
-    sheet_info = json.loads(sheet_info)
 if not isinstance(sheet_info, dict) or sheet_info.get("type") != "service_account":
-    raise RuntimeError("SHEETS_KEY_JSON does not contain a Google service-account object")
+    raise RuntimeError("SHEETS_KEY_JSON is not valid Google service-account JSON")
 
 gc = gspread.service_account_from_dict(sheet_info)
 sh = gc.open_by_key(SHEET_ID)
