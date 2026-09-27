@@ -21,15 +21,30 @@ import sys
 import json
 import re
 from datetime import datetime
-import pytz
+try:
+    import pytz
+except ImportError:
+    pytz = None
+
 import gspread
 from google.oauth2.service_account import Credentials
 from google.cloud import bigquery
 
-SHEET_ID = "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs"
-KEY_PATH = os.path.expanduser("~/angel_sheets_key.json")
-GCP_PROJECT = "fno-angel-prod-1790444589"
-BQ_DATASET = "fno_predictions"
+# Ensure parent directory is on sys.path
+REPO_DIR = os.path.dirname(os.path.abspath(__file__))
+if REPO_DIR not in sys.path:
+    sys.path.insert(0, REPO_DIR)
+
+from angel_prediction_engine import (
+    get_gspread_client,
+    get_bigquery_client,
+    BQ_PROJECT_ID,
+    BQ_DATASET_ID,
+    SHEET_ID
+)
+
+GCP_PROJECT = BQ_PROJECT_ID
+BQ_DATASET = BQ_DATASET_ID
 
 EXPECTED_TABS = [
     "PRE_BREAKOUT_SCANNER",
@@ -68,14 +83,7 @@ DATE_SERIAL_PATTERN = re.compile(
 DUMMY_PATTERN = re.compile(r"\b(placeholder|dummy_data|mock_price|fallback_quote)\b", re.IGNORECASE)
 
 def get_sheets_client():
-    creds = Credentials.from_service_account_file(
-        KEY_PATH,
-        scopes=[
-            "https://www.googleapis.com/auth/spreadsheets",
-            "https://www.googleapis.com/auth/drive"
-        ]
-    )
-    return gspread.authorize(creds)
+    return get_gspread_client()
 
 def audit_sheets():
     print(f"\n=======================================================")
@@ -192,7 +200,7 @@ def audit_bigquery():
     print(f"=======================================================")
 
     try:
-        client = bigquery.Client.from_service_account_json(KEY_PATH, project=GCP_PROJECT)
+        client = get_bigquery_client()
         dataset_ref = client.dataset(BQ_DATASET)
 
         tables_to_check = [
@@ -238,14 +246,15 @@ def audit_engine_state():
 
     state_path = os.path.expanduser("~/angel_prediction_state.json")
     cal_path = os.path.expanduser("~/angel_calibration_state.json")
+    local_data_path = os.path.join(REPO_DIR, "data", "latest_predictions.json")
 
-    state_ok = os.path.exists(state_path)
+    state_ok = os.path.exists(state_path) or os.path.exists(local_data_path)
     cal_ok = os.path.exists(cal_path)
 
-    print(f" - Prediction State ({state_path}): {'🟢 FOUND' if state_ok else '🔴 MISSING'}")
-    print(f" - Calibration State ({cal_path}): {'🟢 FOUND' if cal_ok else '🔴 MISSING'}")
+    print(f" - Prediction State ({state_path} or {local_data_path}): {'🟢 FOUND' if state_ok else '🔴 MISSING'}")
 
     if cal_ok:
+        print(f" - Calibration State ({cal_path}): 🟢 FOUND")
         with open(cal_path, "r") as f:
             cal_data = json.load(f)
         last_rec = cal_data.get("last_reconciliation", {})
@@ -254,6 +263,24 @@ def audit_engine_state():
         print(f"   Recall @ 10: {last_rec.get('recall_at_10', 0.0)}")
         print(f"   Mean Rank: {last_rec.get('mean_rank', 0.0)}")
         print(f"   Weights: {cal_data.get('weights', {})}")
+    else:
+        try:
+            client = get_bigquery_client()
+            sql = f"""
+            SELECT * FROM `{BQ_PROJECT_ID}.{BQ_DATASET_ID}.prediction_calibration_log`
+            ORDER BY cycle_number DESC LIMIT 1
+            """
+            rows = list(client.query(sql).result())
+            if rows:
+                cal_ok = True
+                r = dict(rows[0])
+                print(f" - Calibration State (BigQuery Sandbox Log): 🟢 FOUND")
+                print(f"   Cycle: {r.get('cycle_number', 0)}")
+                print(f"   Hit Rate: {r.get('hit_rate_pct', 0.0)}%")
+                print(f"   Recall @ 10: {r.get('recall_at_10', 0.0)}")
+                print(f"   Mean Rank: {r.get('mean_rank_of_top10', 0.0)}")
+        except Exception as e:
+            print(f" - Calibration State: 🔴 MISSING ({e})")
 
     return (state_ok and cal_ok)
 
