@@ -424,6 +424,12 @@ def main():
         return
     print(f"[INFO] HEARTBEAT age={age}. Opening Angel for a real quote pass.")
     run_angel_loop(book, angel_login())
+    try:
+        from angel_prediction_engine import run_prediction_pipeline
+        print("[INFO] Invoking Option CE/PE Prediction & Rating Pipeline...")
+        run_prediction_pipeline(bypass_market_check=True)
+    except Exception as exc:
+        print(f"[WARN] Prediction engine run notice: {exc}")
 
 
 if __name__ == "__main__":

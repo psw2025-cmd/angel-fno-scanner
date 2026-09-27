@@ -1,21 +1,24 @@
-name: Angel One Daily Forensic Bot
+name: Angel One Daily Option Prediction & Forensic Bot
 
 on:
   schedule:
-    # 03:40 UTC = 09:10 AM IST (Monday to Friday)
+    # 03:00 UTC = 08:30 AM IST (Pre-market news & sentiment sync)
+    - cron: '0 3 * * 1-5'
+    # 03:40 UTC = 09:10 AM IST (Market hours live streaming daemon)
     - cron: '40 3 * * 1-5'
   workflow_dispatch:
   push:
     branches: [main]
     paths:
       - 'scanner.py'
+      - 'angel_prediction_engine.py'
       - 'requirements.txt'
       - '.github/workflows/market_bot.yml'
 
 jobs:
   run-scanner:
     runs-on: ubuntu-latest
-    timeout-minutes: 350
+    timeout-minutes: 360
 
     steps:
       - name: Checkout Code
@@ -33,19 +36,21 @@ jobs:
           python -m pip install -r requirements.txt pytest
           python - <<'PY'
           import logzero, pyotp, gspread
+          from google.cloud import bigquery
           from SmartApi import SmartConnect
-          print("[OK] Python dependencies import successfully")
+          print("[OK] Production dependencies imported successfully")
           PY
 
-      - name: Test quote math
-        run: python -m pytest -q
+      - name: Test quote & prediction engine math
+        run: python -m pytest -v
 
-      - name: Run Forensic Scanner
+      - name: Run Option Prediction & Forensic Scanner
         env:
           ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
           ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
           ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
           ANGEL_TOTP_SEED: ${{ secrets.ANGEL_TOTP_SEED }}
           SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
+          BQ_PROJECT_ID: fno-angel-prod-1790444589
           MAX_RUNTIME_SECONDS: ${{ github.event_name == 'schedule' && '19800' || '60' }}
         run: python scanner.py
