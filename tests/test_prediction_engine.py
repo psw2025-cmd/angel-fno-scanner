@@ -185,3 +185,71 @@ def test_dollar_gamma_normalization():
     # KAYNES has high option price velocity (+65%) and high dollar gamma, so its rank_metric must be significantly higher
     assert pred_kaynes["rank_metric"] > pred_yesbank["rank_metric"]
     assert pred_kaynes["rank_metric"] > 35.0
+
+def test_routine_compliance_nlp_filter():
+    headlines = [
+        "Trading Window closure pursuant to SEBI (Prohibition of Insider Trading) Regulations, 2015",
+        "Company informs about Allotment of Equity Shares under ESOP",
+        "Change in Auditors pursuant to Regulation 30",
+        "Intimation of Schedule of Analyst / Institutional Investor Meet",
+        "Loss of share certificate and issue of duplicate share certificate",
+        "Outcome of AGM proceedings and voting results",
+        "Newspaper publication regarding financial results"
+    ]
+    for h in headlines:
+        score, cat, impact = analyze_headline(h)
+        assert score == 0.0, f"Failed score for {h}"
+        assert cat == "ROUTINE_COMPLIANCE", f"Failed category for {h}"
+        assert impact == "NEUTRAL", f"Failed impact for {h}"
+
+def test_liquidity_and_spread_gate():
+    # Test 1: NIFTYFPI scenario (pe_iv=0.0, spread=19.90, pe_ltp=0.05)
+    pred_illiquid = compute_prediction_and_rating(
+        sym="NIFTYFPI", fut_ltp=1500.0, fut_pct=-1.5, fut_obi=-0.3,
+        ce_ltp=5.0, ce_pct=-10.0, ce_oi=0, ce_obi=0.0, ce_spread=2.0,
+        ce_iv=15.0, ce_delta=0.4, ce_gamma=0.001, ce_theta=-2.0, ce_vega=1.0,
+        pe_ltp=0.05, pe_pct=50.0, pe_oi=1100, pe_obi=0.2, pe_spread=19.90,
+        pe_iv=0.0, pe_delta=-0.5, pe_gamma=0.001, pe_theta=-2.0, pe_vega=1.0,
+        atm_pcr=0.5, max_pain=1500.0, prev_ce_oi=0, prev_pe_oi=1000,
+        news_sentiment=0.0, news_category="GENERAL_MACRO", news_impact="NEUTRAL",
+        ce_vol=0, pe_vol=0
+    )
+    assert pred_illiquid["is_illiquid"] is True
+    assert pred_illiquid["action_rating"] == "⚠️ ILLIQUID / WIDE SPREAD [AVOID]"
+    assert pred_illiquid["confidence_pct"] <= 40.0
+    assert pred_illiquid["rank_metric"] < -500.0
+
+    # Test 2: Liquid contract (FEDERALBNK: ltp=6.0, spread=0.65, vol=150000, oi=1855000)
+    pred_liquid = compute_prediction_and_rating(
+        sym="FEDERALBNK", fut_ltp=322.8, fut_pct=-0.8, fut_obi=-0.25,
+        ce_ltp=3.5, ce_pct=-35.0, ce_oi=1200000, ce_obi=-0.3, ce_spread=0.20,
+        ce_iv=65.0, ce_delta=0.45, ce_gamma=0.003, ce_theta=-4.0, ce_vega=3.0,
+        pe_ltp=6.0, pe_pct=45.0, pe_oi=1855000, pe_obi=0.35, pe_spread=0.65,
+        pe_iv=71.2, pe_delta=-0.55, pe_gamma=0.003, pe_theta=-4.0, pe_vega=3.0,
+        atm_pcr=1.54, max_pain=325.0, prev_ce_oi=1100000, prev_pe_oi=1400000,
+        news_sentiment=0.0, news_category="GENERAL_MACRO", news_impact="NEUTRAL",
+        ce_vol=50000, pe_vol=150000
+    )
+    assert pred_liquid["is_illiquid"] is False
+    assert pred_liquid["action_rating"] != "⚠️ ILLIQUID / WIDE SPREAD [AVOID]"
+    assert pred_liquid["rank_metric"] > 0.0
+
+def test_enhanced_pre_market_gap_with_implied_move():
+    news_info = {
+        "sentiment_score": 0.0,
+        "category": "GENERAL_MACRO",
+        "impact_rating": "NEUTRAL",
+        "top_headline": "Routine trading session",
+        "sources_count": 0
+    }
+    # Strong put momentum and high IV
+    gap_res = compute_pre_market_gap(
+        sym="FEDERALBNK", fut_ltp=322.8, fut_pct=-0.8, fut_obi=-0.25,
+        fut_oi_vel=25.0, news_info=news_info, atm_strike=325.0,
+        ce_pct=-35.0, pe_pct=45.0, ce_obi=-0.30, pe_obi=0.35,
+        ce_oi_vel=-10.0, pe_oi_vel=30.0, atm_pcr=1.54, ce_iv=65.0, pe_iv=71.2
+    )
+    assert gap_res["expected_gap_pct"] < 0
+    assert "GAP-DOWN" in gap_res["gap_direction"]
+    assert "325 PE" in gap_res["target_strike"]
+    assert gap_res["implied_move_daily_pct"] > 3.0

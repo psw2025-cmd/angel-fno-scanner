@@ -281,10 +281,32 @@ CATEGORY_RULES = (
     ("ORDER_WIN", ("award of order", "order win", "bags order", "bags rs", "contract win", "wins contract", "new order")),
     ("EARNINGS_BEAT", ("profit jumps", "profit rises", "net profit up", "beats estimates", "strong earnings")),
     ("EARNINGS_MISS", ("net loss", "loss widens", "profit falls", "misses estimates", "weak earnings")),
-    ("REGULATORY_PROBE", ("probe", "penalty", "sebi", "cbi", "ed raid", "fraud", "investigation", "show cause")),
+    ("REGULATORY_PROBE", ("probe", "penalty", "sebi penalty", "cbi", "ed raid", "fraud", "investigation", "show cause")),
     ("M&A_EXPANSION", ("acquisition", "merger", "amalgamation", "stake buy", "expansion", "commissioned", "joint venture")),
-    ("CAPITAL_DIVIDEND", ("dividend", "bonus", "buyback", "stock split", "sub-division", "allotment")),
+    ("CAPITAL_DIVIDEND", ("dividend", "bonus", "buyback", "stock split", "sub-division")),
     ("MANAGEMENT_CHANGE", ("resignation", "change in management", "appointed", "ceo exit", "md resigns")),
+)
+
+ROUTINE_COMPLIANCE_PATTERNS = (
+    "trading window",
+    "insider trading",
+    "esop",
+    "allotment of equity shares",
+    "allotment under esop",
+    "allotment of shares",
+    "change in auditor",
+    "change in auditors",
+    "regulation 30(5)",
+    "regulation 30",
+    "schedule of analyst",
+    "intimation of schedule of analyst",
+    "loss of share certificate",
+    "duplicate share certificate",
+    "newspaper publication",
+    "agm proceedings",
+    "egm proceedings",
+    "postal ballot",
+    "closure of trading window"
 )
 
 def fetch_rss_feed(source_name, url):
@@ -311,6 +333,11 @@ def fetch_rss_feed(source_name, url):
 
 def analyze_headline(title):
     lowered = f" {title.lower()} "
+
+    # Explicit Routine Compliance Filter before keyword scoring
+    if any(pat in lowered for pat in ROUTINE_COMPLIANCE_PATTERNS):
+        return 0.0, "ROUTINE_COMPLIANCE", "NEUTRAL"
+
     pos_count = sum(1 for w in POSITIVE_WORDS if w in lowered)
     neg_count = sum(1 for w in NEGATIVE_WORDS if w in lowered)
     
@@ -410,15 +437,30 @@ def aggregate_news_for_symbols(universe_symbols):
             }
             continue
         
-        items.sort(key=lambda x: abs(x["score"]), reverse=True)
-        top = items[0]
         distinct_sources = set(i["source"] for i in items)
-        avg_score = round(sum(i["score"] for i in items) / len(items), 3)
+        actionable_items = [i for i in items if i.get("category") != "ROUTINE_COMPLIANCE"]
+        if actionable_items:
+            actionable_items.sort(
+                key=lambda x: (abs(x["score"]), 1 if x["category"] != "GENERAL_MACRO" else 0),
+                reverse=True
+            )
+            top = actionable_items[0]
+            avg_score = round(sum(i["score"] for i in actionable_items) / len(actionable_items), 3)
+            category = top["category"]
+            impact_rating = top["impact"]
+            top_headline = top["title"]
+        else:
+            top = items[0]
+            avg_score = 0.0
+            category = "ROUTINE_COMPLIANCE"
+            impact_rating = "NEUTRAL"
+            top_headline = top["title"]
+
         aggregated[sym] = {
             "sentiment_score": avg_score,
-            "category": top["category"],
-            "impact_rating": top["impact"],
-            "top_headline": top["title"],
+            "category": category,
+            "impact_rating": impact_rating,
+            "top_headline": top_headline,
             "item_count": len(items),
             "sources_count": len(distinct_sources),
             "items": items[:6]
@@ -430,18 +472,63 @@ def aggregate_news_for_symbols(universe_symbols):
 # =====================================================================
 # PART 2: PRE-MARKET GAP OPENING & 9:15 AM EXPLOSION PREDICTOR
 # =====================================================================
-def compute_pre_market_gap(sym, fut_ltp, fut_pct, fut_obi, fut_oi_vel, news_info, atm_strike):
+def compute_pre_market_gap(
+    sym, fut_ltp, fut_pct, fut_obi, fut_oi_vel, news_info, atm_strike,
+    ce_pct=0.0, pe_pct=0.0, ce_obi=0.0, pe_obi=0.0,
+    ce_oi_vel=0.0, pe_oi_vel=0.0, atm_pcr=1.0, ce_iv=20.0, pe_iv=20.0,
+    is_illiquid=False
+):
     """
-    Computes expected opening gap %, gap direction, conviction, and recommended 9:15 AM target strike.
+    Enhanced Pre-Market 9:15 AM Gap Predictor combining:
+    (a) Underlying fut_pct and fut_obi
+    (b) Option Price Velocity & OBI Skew (ce_pct vs pe_pct and ce_obi vs pe_obi)
+    (c) PCR & OI Velocity Skew
+    (d) Black-76 Daily 1-Sigma Implied Move (IV / sqrt(252))
+    (e) Verified non-routine News Catalyst impact
     """
-    # 1. Catalyst Corroboration Multiplier
+    if is_illiquid:
+        return {
+            "expected_gap_pct": 0.0,
+            "gap_direction": "⚠️ ILLIQUID [AVOID]",
+            "pre_open_conviction": 35.0,
+            "target_strike": "AVOID - ILLIQUID",
+            "catalyst_count": 0,
+            "positioning": "ILLIQUID_AVOID"
+        }
+
+    # 1. Verified Non-Routine News Catalyst Impact
     sources_cnt = news_info.get("sources_count", 0)
     sentiment = news_info.get("sentiment_score", 0.0)
     category = news_info.get("category", "GENERAL_MACRO")
     corroboration_mult = 1.6 if sources_cnt >= 2 else (1.2 if sources_cnt == 1 else 0.8)
 
+    cat_weights = {
+        "ORDER_WIN": 1.5,
+        "EARNINGS_BEAT": 1.4,
+        "EARNINGS_MISS": 1.5,
+        "REGULATORY_PROBE": 1.8,
+        "M&A_EXPANSION": 1.1,
+        "CAPITAL_DIVIDEND": 0.8,
+        "MANAGEMENT_CHANGE": 0.8,
+        "GENERAL_MACRO": 0.5,
+        "ROUTINE_COMPLIANCE": 0.0
+    }
+    cat_weight = cat_weights.get(category, 0.8)
+
+    # Dividend ex-date nuance for gap opening
+    if category == "CAPITAL_DIVIDEND":
+        if fut_obi < -0.05 or ce_obi < pe_obi or fut_pct < -0.8:
+            news_gap_term = -min(0.40, max(0.10, abs(fut_pct) * 0.25))
+        elif fut_obi > 0.05 and ce_obi > pe_obi:
+            news_gap_term = sentiment * 1.0 * corroboration_mult * 0.85
+        else:
+            news_gap_term = sentiment * 0.3 * corroboration_mult * 0.85
+    elif category == "ROUTINE_COMPLIANCE":
+        news_gap_term = 0.0
+    else:
+        news_gap_term = sentiment * cat_weight * corroboration_mult * 0.85
+
     # 2. Institutional Positioning from EOD Futures
-    # Price + OI velocity indicates positioning
     if fut_pct > 0.3 and fut_oi_vel > 0:
         positioning = "LONG_BUILDUP"
         pos_factor = 0.35
@@ -458,45 +545,60 @@ def compute_pre_market_gap(sym, fut_ltp, fut_pct, fut_obi, fut_oi_vel, news_info
         positioning = "NEUTRAL"
         pos_factor = 0.0
 
-    # 3. Expected Gap % calculation
-    cat_weights = {
-        "ORDER_WIN": 1.5,
-        "EARNINGS_BEAT": 1.4,
-        "EARNINGS_MISS": 1.5,
-        "REGULATORY_PROBE": 1.8,
-        "M&A_EXPANSION": 1.1,
-        "CAPITAL_DIVIDEND": 0.8,
-        "MANAGEMENT_CHANGE": 0.8,
-        "GENERAL_MACRO": 0.5
-    }
-    cat_weight = cat_weights.get(category, 0.8)
+    # 3. Option Price Velocity & OBI Skew
+    opt_vel_diff = (ce_pct - pe_pct)
+    opt_vel_skew = max(-1.0, min(1.0, opt_vel_diff / 50.0))
+    opt_obi_skew = max(-1.0, min(1.0, (ce_obi - pe_obi) / 1.5))
 
-    raw_gap = (
-        (fut_pct * 0.30) +
-        (fut_obi * 0.70) +
-        (sentiment * cat_weight * corroboration_mult * 0.90) +
-        (pos_factor * 0.50)
+    # 4. PCR & OI Velocity Skew
+    pcr_val = atm_pcr if (atm_pcr is not None and atm_pcr > 0) else 1.0
+    pcr_skew = max(-1.0, min(1.0, (pcr_val - 1.0) * 1.5))
+    oi_vel_diff = ce_oi_vel - pe_oi_vel
+    oi_vel_skew = max(-1.0, min(1.0, oi_vel_diff / 40.0))
+
+    # 5. Black-76 Daily 1-Sigma Implied Move (IV / sqrt(252))
+    avg_iv = (ce_iv + pe_iv) / 2.0 if (ce_iv + pe_iv) > 0 else 20.0
+    implied_move_daily_pct = max(0.5, avg_iv / 15.8745)
+
+    # 6. Combined Directional Skew
+    directional_skew = (
+        (fut_pct * 0.25) +
+        (fut_obi * 0.50) +
+        (opt_vel_skew * 0.45) +
+        (opt_obi_skew * 0.30) +
+        (pcr_skew * 0.25) +
+        (oi_vel_skew * 0.20) +
+        (pos_factor * 0.35) +
+        news_gap_term
     )
+
+    # Scale gap by daily implied move volatility bandwidth
+    vol_scale = max(0.70, min(1.60, implied_move_daily_pct / 1.50))
+    raw_gap = directional_skew * vol_scale
     expected_gap_pct = round(max(-6.0, min(6.0, raw_gap)), 2)
 
-    # 4. Direction & 9:15 Target Strike
-    if expected_gap_pct >= 0.40:
+    # 7. Direction & Target Strike Selection
+    if expected_gap_pct >= 0.35:
         gap_dir = "GAP-UP (CE EXPLOSION)"
         target_strike = f"{int(atm_strike)} CE"
-    elif expected_gap_pct <= -0.40:
+    elif expected_gap_pct <= -0.35:
         gap_dir = "GAP-DOWN (PE EXPLOSION)"
         target_strike = f"{int(atm_strike)} PE"
     else:
         gap_dir = "FLAT / NEUTRAL OPEN"
         target_strike = f"{int(atm_strike)} ATM STRADDLE"
 
-    # 5. Pre-Open Conviction %
+    # 8. Pre-Open Conviction %
     alignment = 0.0
-    if (expected_gap_pct > 0 and sentiment > 0 and fut_obi > 0) or \
-       (expected_gap_pct < 0 and sentiment < 0 and fut_obi < 0):
-        alignment = 15.0
+    if (expected_gap_pct > 0 and opt_vel_skew > 0 and fut_obi > 0) or \
+       (expected_gap_pct < 0 and opt_vel_skew < 0 and fut_obi < 0):
+        alignment += 14.0
+    if (expected_gap_pct > 0 and pcr_skew > 0) or (expected_gap_pct < 0 and pcr_skew < 0):
+        alignment += 6.0
+    if category not in ("ROUTINE_COMPLIANCE", "NO_RECENT_HEADLINE", "GENERAL_MACRO") and abs(sentiment) > 0.2:
+        alignment += 5.0
 
-    conviction = round(min(97.0, 52.0 + abs(expected_gap_pct) * 8.0 + (sources_cnt * 4.0) + alignment), 1)
+    conviction = round(min(98.0, 50.0 + min(4.0, abs(expected_gap_pct)) * 7.5 + (sources_cnt * 3.0) + alignment), 1)
 
     return {
         "expected_gap_pct": expected_gap_pct,
@@ -504,7 +606,8 @@ def compute_pre_market_gap(sym, fut_ltp, fut_pct, fut_obi, fut_oi_vel, news_info
         "pre_open_conviction": conviction,
         "target_strike": target_strike,
         "catalyst_count": sources_cnt,
-        "positioning": positioning
+        "positioning": positioning,
+        "implied_move_daily_pct": round(implied_move_daily_pct, 2)
     }
 
 # =====================================================================
@@ -760,7 +863,8 @@ def compute_prediction_and_rating(
     ce_ltp, ce_pct, ce_oi, ce_obi, ce_spread, ce_iv, ce_delta, ce_gamma, ce_theta, ce_vega,
     pe_ltp, pe_pct, pe_oi, pe_obi, pe_spread, pe_iv, pe_delta, pe_gamma, pe_theta, pe_vega,
     atm_pcr, max_pain, prev_ce_oi, prev_pe_oi,
-    news_sentiment, news_category, news_impact, weights=None
+    news_sentiment, news_category, news_impact, weights=None,
+    ce_vol=1000, pe_vol=1000
 ):
     w = weights or DEFAULT_WEIGHTS
 
@@ -815,7 +919,7 @@ def compute_prediction_and_rating(
     elif pe_dollar_gamma > 0.50 and pe_obi > 0.15 and fut_pct < -0.2:
         logit -= (0.50 * w.get("gamma", 0.20) / 0.20)
 
-    # E. News Sentiment
+    # E. News Sentiment & Dividend Ex-Date Nuance
     category_weights = {
         "ORDER_WIN": 1.6,
         "EARNINGS_BEAT": 1.5,
@@ -824,10 +928,24 @@ def compute_prediction_and_rating(
         "M&A_EXPANSION": 1.2,
         "CAPITAL_DIVIDEND": 1.1,
         "MANAGEMENT_CHANGE": 0.8,
-        "GENERAL_MACRO": 0.8
+        "GENERAL_MACRO": 0.8,
+        "ROUTINE_COMPLIANCE": 0.0
     }
-    news_mult = category_weights.get(news_category, 1.0)
-    logit += (news_sentiment * news_mult * w.get("news", 0.07) * 5.0)
+    if news_category == "CAPITAL_DIVIDEND":
+        # Check whether Futures OBI and Option flow confirm bullish accumulation or ex-dividend discount
+        flow_bullish = (fut_obi > 0.05 and ce_obi > pe_obi and fut_pct >= -0.5)
+        flow_bearish = (fut_obi < -0.05 or ce_obi < pe_obi or fut_pct < -0.8)
+        if flow_bullish:
+            logit += (news_sentiment * 1.2 * w.get("news", 0.07) * 5.0)
+        elif flow_bearish:
+            logit -= min(0.35, max(0.10, abs(fut_pct) * 0.25))
+        else:
+            logit += (news_sentiment * 0.3 * w.get("news", 0.07) * 5.0)
+    elif news_category == "ROUTINE_COMPLIANCE":
+        pass
+    else:
+        news_mult = category_weights.get(news_category, 1.0)
+        logit += (news_sentiment * news_mult * w.get("news", 0.07) * 5.0)
 
     # Probabilities
     prob_ce = 1.0 / (1.0 + math.exp(-max(-4.0, min(4.0, logit * 1.5))))
@@ -890,22 +1008,51 @@ def compute_prediction_and_rating(
         lead_oi_vel = max(0.0, ce_oi_velocity)
         lead_dollar_gamma = ce_dollar_gamma
         lead_obi = ce_obi
+        dom_ltp = ce_ltp
+        dom_spread = ce_spread
+        dom_iv = ce_iv
+        dom_oi = ce_oi
+        dom_vol = ce_vol
     else:
         lead_opt_chg = max(0.0, pe_pct)
         lead_oi_vel = max(0.0, pe_oi_velocity)
         lead_dollar_gamma = pe_dollar_gamma
         lead_obi = pe_obi
+        dom_ltp = pe_ltp
+        dom_spread = pe_spread
+        dom_iv = pe_iv
+        dom_oi = pe_oi
+        dom_vol = pe_vol
 
-    # Composite Ranking Metric:
-    # Directly weights Option Price Velocity, Dollar Gamma, Volume/OI Surge, and Conviction
-    opt_vel_term = lead_opt_chg * w.get("opt_vel", 0.28) * 1.5
-    gamma_term = min(40.0, lead_dollar_gamma * 0.35) * w.get("gamma", 0.20) * 1.2
-    oi_surge_term = min(30.0, lead_oi_vel * 0.5) * w.get("oi_vel", 0.18) * 1.0
-    conviction_term = (conviction_distance * 1.2 + intensity_score * 0.6) * 0.25
-    obi_term = max(0.0, lead_obi * 20.0) * w.get("opt_obi", 0.10) * 0.5
-    news_term = max(0.0, news_sentiment * 15.0) * w.get("news", 0.07)
+    # Relative spread calculation: spread / max(ltp, 0.05)
+    rel_spread = dom_spread / max(dom_ltp, 0.05)
 
-    rank_metric = round(opt_vel_term + gamma_term + oi_surge_term + conviction_term + obi_term + news_term, 2)
+    # Liquidity & Bid-Ask Spread Gate:
+    # If volume == 0, oi == 0, iv <= 0.01, or rel_spread > 0.25 (and absolute spread > 2.00)
+    is_illiquid = (
+        dom_vol == 0 or
+        dom_oi == 0 or
+        dom_iv <= 0.01 or
+        (rel_spread > 0.25 and dom_spread > 2.00)
+    )
+
+    if is_illiquid:
+        rating = "⚠️ ILLIQUID / WIDE SPREAD [AVOID]"
+        confidence_pct = round(min(confidence_pct * 0.40, 40.0), 1)
+        intensity_score = min(intensity_score, 20)
+        # Heavily penalize rank metric so illiquid symbols get Rank > 180
+        rank_metric = round(-1000.0 - (rel_spread * 10.0) - dom_spread, 2)
+    else:
+        # Composite Ranking Metric:
+        # Directly weights Option Price Velocity, Dollar Gamma, Volume/OI Surge, and Conviction
+        opt_vel_term = lead_opt_chg * w.get("opt_vel", 0.28) * 1.5
+        gamma_term = min(40.0, lead_dollar_gamma * 0.35) * w.get("gamma", 0.20) * 1.2
+        oi_surge_term = min(30.0, lead_oi_vel * 0.5) * w.get("oi_vel", 0.18) * 1.0
+        conviction_term = (conviction_distance * 1.2 + intensity_score * 0.6) * 0.25
+        obi_term = max(0.0, lead_obi * 20.0) * w.get("opt_obi", 0.10) * 0.5
+        news_term = max(0.0, news_sentiment * 15.0) * w.get("news", 0.07)
+
+        rank_metric = round(opt_vel_term + gamma_term + oi_surge_term + conviction_term + obi_term + news_term, 2)
 
     return {
         "directional_bias": bias,
@@ -918,7 +1065,8 @@ def compute_prediction_and_rating(
         "pe_oi_velocity": pe_oi_velocity,
         "ce_dollar_gamma": ce_dollar_gamma,
         "pe_dollar_gamma": pe_dollar_gamma,
-        "rank_metric": rank_metric
+        "rank_metric": rank_metric,
+        "is_illiquid": is_illiquid
     }
 
 # =====================================================================
@@ -1025,6 +1173,7 @@ def run_prediction_pipeline(bypass_market_check=False):
         ce_ltp = float(ceq.get("ltp", 0.0))
         ce_pct = float(ceq.get("percentChange", 0.0))
         ce_oi  = int(ceq.get("opnInterest", 0))
+        ce_vol = int(ceq.get("tradeVolume", 0) or ceq.get("volume", 0) or 0)
         ce_tbq = int(ceq.get("totBuyQuan", 0))
         ce_tsq = int(ceq.get("totSellQuan", 0))
         ce_obi = round((ce_tbq - ce_tsq) / max(1, (ce_tbq + ce_tsq)), 3) if (ce_tbq + ce_tsq) > 0 else 0.0
@@ -1037,6 +1186,7 @@ def run_prediction_pipeline(bypass_market_check=False):
         pe_ltp = float(peq.get("ltp", 0.0))
         pe_pct = float(peq.get("percentChange", 0.0))
         pe_oi  = int(peq.get("opnInterest", 0))
+        pe_vol = int(peq.get("tradeVolume", 0) or peq.get("volume", 0) or 0)
         pe_tbq = int(peq.get("totBuyQuan", 0))
         pe_tsq = int(peq.get("totSellQuan", 0))
         pe_obi = round((pe_tbq - pe_tsq) / max(1, (pe_tbq + pe_tsq)), 3) if (pe_tbq + pe_tsq) > 0 else 0.0
@@ -1101,13 +1251,18 @@ def run_prediction_pipeline(bypass_market_check=False):
             pe_iv=pe_iv, pe_delta=pe_greeks["delta"], pe_gamma=pe_greeks["gamma"], pe_theta=pe_greeks["theta"], pe_vega=pe_greeks["vega"],
             atm_pcr=atm_pcr, max_pain=max_pain_val, prev_ce_oi=prev_ce_oi, prev_pe_oi=prev_pe_oi,
             news_sentiment=news_info["sentiment_score"], news_category=news_info["category"], news_impact=news_info["impact_rating"],
-            weights=current_weights
+            weights=current_weights,
+            ce_vol=ce_vol, pe_vol=pe_vol
         )
 
         # Pre-Market Gap Prediction
         pre_gap = compute_pre_market_gap(
             sym=sym, fut_ltp=fut_ltp, fut_pct=fut_pct, fut_obi=fut_obi,
-            fut_oi_vel=pred["ce_oi_velocity"], news_info=news_info, atm_strike=meta["atm_strike"]
+            fut_oi_vel=pred["ce_oi_velocity"], news_info=news_info, atm_strike=meta["atm_strike"],
+            ce_pct=ce_pct, pe_pct=pe_pct, ce_obi=ce_obi, pe_obi=pe_obi,
+            ce_oi_vel=pred["ce_oi_velocity"], pe_oi_vel=pred["pe_oi_velocity"],
+            atm_pcr=atm_pcr, ce_iv=ce_iv, pe_iv=pe_iv,
+            is_illiquid=pred.get("is_illiquid", False)
         )
 
         record = {
@@ -1157,7 +1312,8 @@ def run_prediction_pipeline(bypass_market_check=False):
             "news_sentiment": news_info["sentiment_score"],
             "news_impact": news_info["impact_rating"],
             "news_category": news_info["category"],
-            "top_headline": news_info["top_headline"]
+            "top_headline": news_info["top_headline"],
+            "is_illiquid": pred.get("is_illiquid", False)
         }
         predictions.append(record)
 
@@ -1200,11 +1356,11 @@ def run_prediction_pipeline(bypass_market_check=False):
     for idx, r in enumerate(predictions):
         r["rank"] = idx + 1
 
-    # Part 3: Run Live Ground-Truth Reconciliation against actual option leaders
-    # Simulate / extract top gainers from option quotes
+    # Part 3: Run Live Ground-Truth Reconciliation against actual liquid option leaders
+    liquid_preds = [p for p in predictions if not p.get("is_illiquid", False)]
     actual_top_movers = sorted(
-        [{"contract": p["ce_symbol"], "symbol": p["symbol"], "gain": p["ce_chg_pct"]} for p in predictions] +
-        [{"contract": p["pe_symbol"], "symbol": p["symbol"], "gain": p["pe_chg_pct"]} for p in predictions],
+        [{"contract": p["ce_symbol"], "symbol": p["symbol"], "gain": p["ce_chg_pct"]} for p in liquid_preds] +
+        [{"contract": p["pe_symbol"], "symbol": p["symbol"], "gain": p["pe_chg_pct"]} for p in liquid_preds],
         key=lambda x: x["gain"], reverse=True
     )[:10]
 
@@ -1372,7 +1528,7 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
             schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION]
         )
 
-        # 1. Predictions Table
+        # 1. Predictions Table (WRITE_TRUNCATE: maintains latest deduplicated live snapshot)
         table_pred = bq_client.get_table(dataset_ref.table("option_predictions_live"))
         rows_to_insert = []
         for p in predictions:
@@ -1420,9 +1576,12 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
                 "target_open_strike": str(p.get("target_strike", ""))
             })
 
-        load_job = bq_client.load_table_from_json(rows_to_insert, table_pred, job_config=job_config)
+        job_config_trunc = bigquery.LoadJobConfig(
+            write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE
+        )
+        load_job = bq_client.load_table_from_json(rows_to_insert, table_pred, job_config=job_config_trunc)
         load_job.result()
-        print(f"[OK] Appended {len(rows_to_insert)} records to BigQuery option_predictions_live!")
+        print(f"[OK] Replaced {len(rows_to_insert)} records in BigQuery option_predictions_live (WRITE_TRUNCATE active)!")
 
         # 2. News Table (deduplicated newly discovered news only)
         if news_rows:
