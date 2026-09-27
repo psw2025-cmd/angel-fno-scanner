@@ -49,13 +49,13 @@ NSE_CACHE_PATH = os.path.expanduser("~/angel_nse_cache.json")
 RISK_FREE_RATE = 0.065  # 6.5% standard Indian repo rate
 
 DEFAULT_WEIGHTS = {
-    "fut_obi": 0.22,
-    "opt_obi": 0.18,
-    "oi_vel": 0.18,
-    "gamma": 0.14,
-    "iv": 0.10,
-    "vol": 0.08,
-    "news": 0.10
+    "opt_vel": 0.28,   # Option Price Velocity (ce_chg_pct / pe_chg_pct)
+    "gamma": 0.20,     # Dollar Gamma (Gamma * S^2 * 0.01)
+    "oi_vel": 0.18,    # Volume & OI Surge Velocity
+    "fut_obi": 0.12,   # Futures Order Book Imbalance
+    "opt_obi": 0.10,   # Options Order Book Imbalance
+    "news": 0.07,      # Scraped News & Filings Sentiment
+    "iv": 0.05         # Implied Volatility
 }
 
 # =====================================================================
@@ -531,7 +531,7 @@ def save_calibration_state(state):
     except Exception as e:
         print(f"[WARN] Failed to save calibration state: {e}")
 
-def run_ground_truth_reconciliation(current_predictions, actual_top_gainers_contracts, current_weights, prior_top10=None):
+def run_ground_truth_reconciliation(current_predictions, actual_top_gainers_contracts, current_weights, prior_top10=None, persist=True):
     """
     Compares prior Top 10 predictions against actual live top option movers.
     Diagnoses misses and updates feature weights using online multiplicative weight updates.
@@ -549,7 +549,14 @@ def run_ground_truth_reconciliation(current_predictions, actual_top_gainers_cont
         prior_top10 = current_top10_contracts
 
     actual_contracts = [str(c.get("contract") if isinstance(c, dict) else c).strip().upper() for c in actual_top_gainers_contracts[:10]]
-    actual_symbols = [c.split("29SEP")[0].split("26")[0] for c in actual_contracts]
+    actual_symbols = []
+    for c in actual_top_gainers_contracts[:10]:
+        c_contract = str(c.get("contract") if isinstance(c, dict) else c).strip().upper()
+        sym = str(c.get("symbol") if isinstance(c, dict) and c.get("symbol") else "").strip().upper()
+        if not sym:
+            matched = next((p["symbol"] for p in current_predictions if p.get("ce_symbol") == c_contract or p.get("pe_symbol") == c_contract), None)
+            sym = matched if matched else c_contract.split("29SEP")[0].split("26")[0]
+        actual_symbols.append(sym)
 
     hits = [c for c in actual_contracts if c in prior_top10]
     misses = [c for c in actual_contracts if c not in prior_top10]
@@ -567,20 +574,26 @@ def run_ground_truth_reconciliation(current_predictions, actual_top_gainers_cont
     eta = 0.05  # Learning rate
 
     for miss in misses:
-        # Check corresponding prediction record if present
-        m_sym = miss.split("29SEP")[0].split("26")[0]
-        rec = next((p for p in current_predictions if p["symbol"] == m_sym), None)
+        rec = next((p for p in current_predictions if p.get("ce_symbol") == miss or p.get("pe_symbol") == miss), None)
+        if not rec:
+            m_sym = miss.split("29SEP")[0].split("26")[0]
+            rec = next((p for p in current_predictions if p["symbol"] == m_sym), None)
         if rec:
-            if abs(rec.get("spot_ltp", 0) - rec.get("atm_strike", 0)) < 5:
-                attribution["gamma"] += 1.0
-            if abs(rec.get("ce_oi_velocity", 0)) > 10 or abs(rec.get("pe_oi_velocity", 0)) > 10:
-                attribution["oi_vel"] += 1.0
-            if abs(rec.get("news_sentiment", 0)) > 0.3:
-                attribution["news"] += 1.0
-            attribution["opt_obi"] += 0.8
+            lead_chg = rec.get("ce_chg_pct", 0) if "CALL" in rec.get("directional_bias", "") else rec.get("pe_chg_pct", 0)
+            if lead_chg > 15:
+                attribution["opt_vel"] += 1.8
+            d_gamma = max(rec.get("ce_dollar_gamma", 0), rec.get("pe_dollar_gamma", 0))
+            if d_gamma > 1.0:
+                attribution["gamma"] += 1.5
+            if abs(rec.get("ce_oi_velocity", 0)) > 5 or abs(rec.get("pe_oi_velocity", 0)) > 5:
+                attribution["oi_vel"] += 1.2
+            if abs(rec.get("news_sentiment", 0)) > 0.2:
+                attribution["news"] += 0.8
+            attribution["opt_obi"] += 0.5
             attribution["fut_obi"] += 0.5
         else:
-            attribution["vol"] += 1.0
+            attribution["opt_vel"] += 1.5
+            attribution["oi_vel"] += 1.0
 
     # Update weights
     updated_weights = dict(current_weights)
@@ -604,12 +617,13 @@ def run_ground_truth_reconciliation(current_predictions, actual_top_gainers_cont
         "weights": updated_weights
     }
 
-    # Save state for next cycle
-    cal_state["cycle_number"] = cycle
-    cal_state["prior_top10"] = current_top10_contracts
-    cal_state["weights"] = updated_weights
-    cal_state["last_reconciliation"] = reconciliation
-    save_calibration_state(cal_state)
+    if persist:
+        # Save state for next cycle
+        cal_state["cycle_number"] = cycle
+        cal_state["prior_top10"] = current_top10_contracts
+        cal_state["weights"] = updated_weights
+        cal_state["last_reconciliation"] = reconciliation
+        save_calibration_state(cal_state)
 
     print(f"[CALIBRATION] Cycle #{cycle} | Hit Rate: {hit_rate}% | Recall@10: {recall_10} | Mean Rank: {mean_rank}")
     return reconciliation
@@ -791,11 +805,15 @@ def compute_prediction_and_rating(
         elif pain_gap_pct > 1.5 and fut_pct > 0:
             logit += 0.25
 
-    # D. Greeks & Gamma Acceleration
-    if ce_gamma > 0.0005 and ce_obi > 0.15 and fut_pct > 0.2:
-        logit += (0.50 * w.get("gamma", 0.14) / 0.14)
-    elif pe_gamma > 0.0005 and pe_obi > 0.15 and fut_pct < -0.2:
-        logit -= (0.50 * w.get("gamma", 0.14) / 0.14)
+    # Normalize Gamma into Dollar Gamma: Gamma * S^2 * 0.01 (unitless rupees of delta exposure per 1% underlying move)
+    ce_dollar_gamma = round(ce_gamma * (fut_ltp ** 2) * 0.01, 4) if fut_ltp > 0 else 0.0
+    pe_dollar_gamma = round(pe_gamma * (fut_ltp ** 2) * 0.01, 4) if fut_ltp > 0 else 0.0
+
+    # D. Greeks & Dollar Gamma Acceleration
+    if ce_dollar_gamma > 0.50 and ce_obi > 0.15 and fut_pct > 0.2:
+        logit += (0.50 * w.get("gamma", 0.20) / 0.20)
+    elif pe_dollar_gamma > 0.50 and pe_obi > 0.15 and fut_pct < -0.2:
+        logit -= (0.50 * w.get("gamma", 0.20) / 0.20)
 
     # E. News Sentiment
     category_weights = {
@@ -809,7 +827,7 @@ def compute_prediction_and_rating(
         "GENERAL_MACRO": 0.8
     }
     news_mult = category_weights.get(news_category, 1.0)
-    logit += (news_sentiment * news_mult * w.get("news", 0.10) * 5.0)
+    logit += (news_sentiment * news_mult * w.get("news", 0.07) * 5.0)
 
     # Probabilities
     prob_ce = 1.0 / (1.0 + math.exp(-max(-4.0, min(4.0, logit * 1.5))))
@@ -823,7 +841,7 @@ def compute_prediction_and_rating(
     intensity += min(20.0, abs(fut_pct) * 6.0)
     intensity += min(15.0, abs(fut_obi) * 15.0)
 
-    if max(ce_gamma, pe_gamma) > 0.0004:
+    if max(ce_dollar_gamma, pe_dollar_gamma) > 0.40:
         intensity += 10.0
     if max(abs(ce_oi_velocity), abs(pe_oi_velocity)) > 15.0:
         intensity += 10.0
@@ -863,8 +881,31 @@ def compute_prediction_and_rating(
         rating = "⏸️ NEUTRAL / RANGEBOUND PINNING"
         bias = "NEUTRAL"
 
-    if ce_gamma > 0.0006 and ce_obi > 0.20 and ce_win_prob >= 60.0:
+    if ce_dollar_gamma > 0.60 and ce_obi > 0.20 and ce_win_prob >= 60.0:
         rating = "🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE)"
+
+    # Dominant option parameters for composite ranking
+    if ce_win_prob >= 50.0:
+        lead_opt_chg = max(0.0, ce_pct)
+        lead_oi_vel = max(0.0, ce_oi_velocity)
+        lead_dollar_gamma = ce_dollar_gamma
+        lead_obi = ce_obi
+    else:
+        lead_opt_chg = max(0.0, pe_pct)
+        lead_oi_vel = max(0.0, pe_oi_velocity)
+        lead_dollar_gamma = pe_dollar_gamma
+        lead_obi = pe_obi
+
+    # Composite Ranking Metric:
+    # Directly weights Option Price Velocity, Dollar Gamma, Volume/OI Surge, and Conviction
+    opt_vel_term = lead_opt_chg * w.get("opt_vel", 0.28) * 1.5
+    gamma_term = min(40.0, lead_dollar_gamma * 0.35) * w.get("gamma", 0.20) * 1.2
+    oi_surge_term = min(30.0, lead_oi_vel * 0.5) * w.get("oi_vel", 0.18) * 1.0
+    conviction_term = (conviction_distance * 1.2 + intensity_score * 0.6) * 0.25
+    obi_term = max(0.0, lead_obi * 20.0) * w.get("opt_obi", 0.10) * 0.5
+    news_term = max(0.0, news_sentiment * 15.0) * w.get("news", 0.07)
+
+    rank_metric = round(opt_vel_term + gamma_term + oi_surge_term + conviction_term + obi_term + news_term, 2)
 
     return {
         "directional_bias": bias,
@@ -875,7 +916,9 @@ def compute_prediction_and_rating(
         "action_rating": rating,
         "ce_oi_velocity": ce_oi_velocity,
         "pe_oi_velocity": pe_oi_velocity,
-        "rank_metric": round(conviction_distance * 1.5 + intensity_score * 0.8, 2)
+        "ce_dollar_gamma": ce_dollar_gamma,
+        "pe_dollar_gamma": pe_dollar_gamma,
+        "rank_metric": rank_metric
     }
 
 # =====================================================================
@@ -953,6 +996,7 @@ def run_prediction_pipeline(bypass_market_check=False):
     state = load_state()
     prev_symbols_state = state.get("symbols", {})
     new_symbols_state = {}
+    seen_news_keys = set(state.get("seen_news_keys", []))
 
     cal_state = load_calibration_state()
     current_weights = cal_state.get("weights", DEFAULT_WEIGHTS)
@@ -1102,6 +1146,8 @@ def run_prediction_pipeline(bypass_market_check=False):
             "pe_theta": pe_greeks["theta"],
             "pe_vega": pe_greeks["vega"],
             "pe_spread": pe_spread,
+            "ce_dollar_gamma": pred.get("ce_dollar_gamma", 0.0),
+            "pe_dollar_gamma": pred.get("pe_dollar_gamma", 0.0),
             "expected_gap_pct": pre_gap["expected_gap_pct"],
             "gap_direction": pre_gap["gap_direction"],
             "pre_open_conviction": pre_gap["pre_open_conviction"],
@@ -1126,21 +1172,29 @@ def run_prediction_pipeline(bypass_market_check=False):
 
         if news_info.get("items"):
             for itm in news_info["items"]:
-                news_rows_for_bq.append({
-                    "timestamp": ist_now.isoformat(),
-                    "symbol": sym,
-                    "news_type": itm.get("category", "GENERAL"),
-                    "sentiment": "BULLISH" if itm["score"] > 0 else ("BEARISH" if itm["score"] < 0 else "NEUTRAL"),
-                    "tone_score": float(itm["score"]),
-                    "impact_rating": str(itm["impact"]),
-                    "source_count": int(news_info["item_count"]),
-                    "source_agreement_pct": 100.0,
-                    "title": str(itm["title"]),
-                    "source": str(itm["source"]),
-                    "filing_type": str(itm.get("filing_type", ""))
-                })
+                n_title = str(itm.get("title", "")).strip()
+                n_key = f"{sym}::{n_title.lower()}"
+                if n_key not in seen_news_keys:
+                    seen_news_keys.add(n_key)
+                    news_rows_for_bq.append({
+                        "timestamp": ist_now.isoformat(),
+                        "symbol": sym,
+                        "news_type": itm.get("category", "GENERAL"),
+                        "sentiment": "BULLISH" if itm["score"] > 0 else ("BEARISH" if itm["score"] < 0 else "NEUTRAL"),
+                        "tone_score": float(itm["score"]),
+                        "impact_rating": str(itm["impact"]),
+                        "source_count": int(news_info["item_count"]),
+                        "source_agreement_pct": 100.0,
+                        "title": n_title,
+                        "source": str(itm.get("source", "")),
+                        "filing_type": str(itm.get("filing_type", ""))
+                    })
 
-    save_state({"symbols": new_symbols_state, "last_updated": ist_str})
+    save_state({
+        "symbols": new_symbols_state,
+        "seen_news_keys": list(seen_news_keys)[-5000:],
+        "last_updated": ist_str
+    })
 
     predictions.sort(key=lambda x: x["rank_metric"], reverse=True)
     for idx, r in enumerate(predictions):
@@ -1149,8 +1203,8 @@ def run_prediction_pipeline(bypass_market_check=False):
     # Part 3: Run Live Ground-Truth Reconciliation against actual option leaders
     # Simulate / extract top gainers from option quotes
     actual_top_movers = sorted(
-        [{"contract": p["ce_symbol"], "gain": p["ce_chg_pct"]} for p in predictions] +
-        [{"contract": p["pe_symbol"], "gain": p["pe_chg_pct"]} for p in predictions],
+        [{"contract": p["ce_symbol"], "symbol": p["symbol"], "gain": p["ce_chg_pct"]} for p in predictions] +
+        [{"contract": p["pe_symbol"], "symbol": p["symbol"], "gain": p["pe_chg_pct"]} for p in predictions],
         key=lambda x: x["gain"], reverse=True
     )[:10]
 
@@ -1314,7 +1368,8 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
         ts_iso = ist_dt.isoformat()
 
         job_config = bigquery.LoadJobConfig(
-            write_disposition=bigquery.WriteDisposition.WRITE_APPEND
+            write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
+            schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION]
         )
 
         # 1. Predictions Table
@@ -1358,19 +1413,25 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
                 "pe_bid_ask_spread": float(p["pe_spread"]),
                 "news_sentiment_score": float(p["news_sentiment"]),
                 "news_impact_rating": str(p["news_impact"]),
-                "top_news_headline": str(p["top_headline"])[:255]
+                "top_news_headline": str(p["top_headline"])[:255],
+                "expected_gap_pct": float(p.get("expected_gap_pct", 0.0)),
+                "gap_direction": str(p.get("gap_direction", "NEUTRAL")),
+                "pre_open_conviction_pct": float(p.get("pre_open_conviction", 50.0)),
+                "target_open_strike": str(p.get("target_strike", ""))
             })
 
         load_job = bq_client.load_table_from_json(rows_to_insert, table_pred, job_config=job_config)
         load_job.result()
         print(f"[OK] Appended {len(rows_to_insert)} records to BigQuery option_predictions_live!")
 
-        # 2. News Table
+        # 2. News Table (deduplicated newly discovered news only)
         if news_rows:
             table_news = bq_client.get_table(dataset_ref.table("market_news_sentiment"))
             load_job_news = bq_client.load_table_from_json(news_rows, table_news, job_config=job_config)
             load_job_news.result()
-            print(f"[OK] Appended {len(news_rows)} records to BigQuery market_news_sentiment!")
+            print(f"[OK] Appended {len(news_rows)} fresh records to BigQuery market_news_sentiment!")
+        else:
+            print("[INFO] No fresh headlines to append to BigQuery market_news_sentiment (dedup active).")
 
         # 3. Calibration Table
         table_cal = bq_client.get_table(dataset_ref.table("prediction_calibration_log"))

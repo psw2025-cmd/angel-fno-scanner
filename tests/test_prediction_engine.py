@@ -144,7 +144,7 @@ def test_ground_truth_reconciliation_and_calibration():
     ]
 
     prior = [c["contract"] for c in actual_top_movers[:7]] + ["SYM8_CE", "SYM9_CE", "SYM10_CE"]
-    reconcile = run_ground_truth_reconciliation(predictions, actual_top_movers, DEFAULT_WEIGHTS, prior_top10=prior)
+    reconcile = run_ground_truth_reconciliation(predictions, actual_top_movers, DEFAULT_WEIGHTS, prior_top10=prior, persist=False)
 
     assert reconcile["cycle"] >= 1
     assert reconcile["hit_rate_pct"] >= 60.0
@@ -153,3 +153,35 @@ def test_ground_truth_reconciliation_and_calibration():
     assert "weights" in reconcile
     # Verify weights are normalized to 1.0
     assert abs(sum(reconcile["weights"].values()) - 1.0) < 0.01
+
+def test_dollar_gamma_normalization():
+    # KAYNES: S=3650, raw gamma = 0.0003
+    pred_kaynes = compute_prediction_and_rating(
+        sym="KAYNES", fut_ltp=3650.0, fut_pct=3.5, fut_obi=0.45,
+        ce_ltp=120.0, ce_pct=65.0, ce_oi=500000, ce_obi=0.35, ce_spread=1.0,
+        ce_iv=28.0, ce_delta=0.55, ce_gamma=0.0003, ce_theta=-12.0, ce_vega=15.0,
+        pe_ltp=25.0, pe_pct=-40.0, pe_oi=300000, pe_obi=-0.20, pe_spread=1.0,
+        pe_iv=29.0, pe_delta=-0.45, pe_gamma=0.0003, pe_theta=-10.0, pe_vega=14.0,
+        atm_pcr=1.20, max_pain=3600.0, prev_ce_oi=450000, prev_pe_oi=300000,
+        news_sentiment=0.50, news_category="ORDER_WIN", news_impact="CRITICAL_BULLISH",
+        weights=DEFAULT_WEIGHTS
+    )
+    # YESBANK: S=22, raw gamma = 0.03
+    pred_yesbank = compute_prediction_and_rating(
+        sym="YESBANK", fut_ltp=22.0, fut_pct=0.5, fut_obi=0.10,
+        ce_ltp=0.85, ce_pct=5.0, ce_oi=20000000, ce_obi=0.10, ce_spread=0.05,
+        ce_iv=35.0, ce_delta=0.50, ce_gamma=0.03, ce_theta=-0.1, ce_vega=0.2,
+        pe_ltp=0.80, pe_pct=-5.0, pe_oi=15000000, pe_obi=-0.10, pe_spread=0.05,
+        pe_iv=36.0, pe_delta=-0.50, pe_gamma=0.03, pe_theta=-0.1, pe_vega=0.2,
+        atm_pcr=1.00, max_pain=22.0, prev_ce_oi=20000000, prev_pe_oi=15000000,
+        news_sentiment=0.0, news_category="GENERAL_MACRO", news_impact="NEUTRAL",
+        weights=DEFAULT_WEIGHTS
+    )
+
+    # Dollar Gamma of KAYNES should be substantial (> 10.0)
+    assert pred_kaynes["ce_dollar_gamma"] > 10.0
+    # Dollar Gamma of YESBANK is bounded
+    assert pred_yesbank["ce_dollar_gamma"] < 5.0
+    # KAYNES has high option price velocity (+65%) and high dollar gamma, so its rank_metric must be significantly higher
+    assert pred_kaynes["rank_metric"] > pred_yesbank["rank_metric"]
+    assert pred_kaynes["rank_metric"] > 35.0
