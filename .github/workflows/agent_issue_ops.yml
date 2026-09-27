@@ -1,0 +1,146 @@
+name: Agent IssueOps Bot
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  issue-ops-handler:
+    if: startsWith(github.event.comment.body, '/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Acknowledge Command with Reaction
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'eyes'
+            });
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pytest
+
+      - name: Parse and Execute IssueOps Command
+        id: execute
+        env:
+          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+          ANGEL_TOTP_SEED: ${{ secrets.ANGEL_TOTP_SEED }}
+          SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          BQ_PROJECT_ID: ${{ secrets.BQ_PROJECT_ID }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          mkdir -p output
+          CMD_LINE=$(echo "$COMMENT_BODY" | head -n 1 | xargs)
+          CMD=$(echo "$CMD_LINE" | awk '{print $1}')
+          ARG1=$(echo "$CMD_LINE" | awk '{print $2}')
+          ARG2=$(echo "$CMD_LINE" | awk '{print $3}')
+
+          echo "Received IssueOps command: $CMD (ARG1: $ARG1, ARG2: $ARG2)"
+          HEADER="> 🤖 **Angel Intelligence Agent Response** (Command: \`$CMD_LINE\`)\n\n"
+
+          case "$CMD" in
+            /predict)
+              SYM=${ARG1:-POLICYBZR}
+              python3 agent_cli.py --predict "$SYM" --format markdown > output/body.md
+              ;;
+            /gapup)
+              LIM=${ARG1:-5}
+              python3 agent_cli.py --top-gapup --limit "$LIM" --format markdown > output/body.md
+              ;;
+            /breakouts)
+              LIM=${ARG1:-5}
+              python3 agent_cli.py --top-breakouts --limit "$LIM" --format markdown > output/body.md
+              ;;
+            /news)
+              SYM=${ARG1:-FORTIS}
+              LIM=${ARG2:-10}
+              python3 agent_cli.py --query-news --symbol "$SYM" --limit "$LIM" --format markdown > output/body.md
+              ;;
+            /verify)
+              python3 agent_cli.py --verify --format markdown > output/body.md
+              ;;
+            /run-cycle)
+              python3 agent_cli.py --run-cycle --format markdown > output/body.md
+              python3 agent_cli.py --export-snapshots
+              ;;
+            /snapshots)
+              python3 agent_cli.py --export-snapshots > output/body.md
+              cat data/summary.md >> output/body.md
+              ;;
+            /help)
+              cat << 'EOF' > output/body.md
+### 📖 Available Agent IssueOps Commands
+| Command | Arguments | Description | Example |
+| :--- | :--- | :--- | :--- |
+| `/predict` | `<SYMBOL>` | Full Black-76 Greeks, probabilities, and news impact for an F&O stock | `/predict POLICYBZR` |
+| `/gapup` | `[LIMIT]` | Top predicted 9:15 AM pre-market gap-up winners ranked by conviction | `/gapup 5` |
+| `/breakouts` | `[LIMIT]` | Top CE breakouts and PE breakdowns ranked by win probability | `/breakouts 5` |
+| `/news` | `<SYMBOL> [LIMIT]` | Query live news headlines, tone, and catalysts for a symbol | `/news FORTIS` |
+| `/verify` | None | Full forensic verification of 17 Sheet tabs, BigQuery, and state | `/verify` |
+| `/run-cycle` | None | Trigger an immediate live prediction & calibration cycle | `/run-cycle` |
+| `/snapshots` | None | Export and view latest pre-rendered market intelligence summary | `/snapshots` |
+| `/help` | None | Display this help menu | `/help` |
+EOF
+              ;;
+            *)
+              cat << 'EOF' > output/body.md
+⚠️ **Unknown command.** Type `/help` to see all available commands.
+EOF
+              ;;
+          esac
+
+          # Prepend header to response
+          echo -e "$HEADER$(cat output/body.md)" > output/comment_response.md
+
+      - name: Post Comment Reply on Issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('output/comment_response.md', 'utf8');
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: body
+            });
+            github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: '+1'
+            });
+
+      - name: Commit & Push Snapshots (If Applicable)
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if ! git diff-index --quiet HEAD --; then
+            git commit -m "chore(data): auto-update snapshots via IssueOps [skip ci]"
+            git push origin main
+          fi

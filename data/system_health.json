@@ -1,0 +1,155 @@
+{
+  "status": "PASS",
+  "timestamp": "2026-09-27T23:51:08.845397+00:00",
+  "sheets_audit": {
+    "passed": true,
+    "summary": {
+      "PRE_BREAKOUT_SCANNER": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 34,
+        "col_count": 13
+      },
+      "Sheet1": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 204,
+        "col_count": 23
+      },
+      "F&O Options Top Gainers Tracker Dashboard": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 57,
+        "col_count": 18
+      },
+      "LEGACY_F&O_DASHBOARD_OBJECT": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 14,
+        "col_count": 11
+      },
+      "Formula Checks": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 12,
+        "col_count": 6
+      },
+      "PRODUCTION_APPROVED": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 11,
+        "col_count": 8
+      },
+      "Cloud_Automation_Setup": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 17,
+        "col_count": 26
+      },
+      "FORENSIC_LIVE": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 217,
+        "col_count": 18
+      },
+      "HEARTBEAT": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 8,
+        "col_count": 6
+      },
+      "CE_PE_RANK": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 218,
+        "col_count": 28
+      },
+      "NSE_EVENTS": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 131,
+        "col_count": 5
+      },
+      "PAPER_ALERT_LOG": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 19,
+        "col_count": 11
+      },
+      "NEWS_LIVE": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 218,
+        "col_count": 12
+      },
+      "NEWS_IMPACT": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 102,
+        "col_count": 16
+      },
+      "NEWS_TYPE_TALLY": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 9,
+        "col_count": 8
+      },
+      "TOP_GAINERS": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 204,
+        "col_count": 23
+      },
+      "OPTION_PREDICTIONS": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 243,
+        "col_count": 41
+      }
+    }
+  },
+  "bigquery_audit": {
+    "passed": true,
+    "summary": {
+      "option_predictions_live": {
+        "exists": true,
+        "rows": 216,
+        "size_mb": 0.11,
+        "columns": 48
+      },
+      "market_news_sentiment": {
+        "exists": true,
+        "rows": 790,
+        "size_mb": 0.67,
+        "columns": 21
+      },
+      "prediction_calibration_log": {
+        "exists": true,
+        "rows": 15,
+        "size_mb": 0.01,
+        "columns": 11
+      }
+    }
+  },
+  "engine_state": {
+    "passed": true,
+    "summary": "Prediction state and calibration state verified"
+  }
+}

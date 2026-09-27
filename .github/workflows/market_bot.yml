@@ -12,8 +12,12 @@ on:
     paths:
       - 'scanner.py'
       - 'angel_prediction_engine.py'
+      - 'agent_cli.py'
       - 'requirements.txt'
       - '.github/workflows/market_bot.yml'
+
+permissions:
+  contents: write
 
 jobs:
   run-scanner:
@@ -51,6 +55,22 @@ jobs:
           ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
           ANGEL_TOTP_SEED: ${{ secrets.ANGEL_TOTP_SEED }}
           SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
-          BQ_PROJECT_ID: fno-angel-prod-1790444589
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          BQ_PROJECT_ID: ${{ secrets.BQ_PROJECT_ID }}
           MAX_RUNTIME_SECONDS: ${{ github.event_name == 'schedule' && '19800' || '60' }}
-        run: python scanner.py
+        run: |
+          python scanner.py
+          python3 angel_prediction_engine.py --run-once
+          python3 agent_cli.py --export-snapshots
+
+      - name: Commit & Push Updated Snapshots
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if ! git diff-index --quiet HEAD --; then
+            git commit -m "chore(data): auto-update daily prediction snapshots [skip ci]"
+            git push origin main
+          else
+            echo "No data changes to commit."
+          fi
