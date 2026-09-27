@@ -156,12 +156,13 @@ def sync_paper(book, signals, latest_changes, now):
 
 
 def angel_login():
+    client_code = os.environ["ANGEL_CLIENT_CODE"]
     totp = pyotp.TOTP(os.environ["ANGEL_TOTP_SEED"]).now()
     api = SmartConnect(api_key=os.environ["ANGEL_API_KEY"])
-    session = api.generateSession(os.environ["ANGEL_CLIENT_CODE"], os.environ["ANGEL_PIN"], totp)
+    session = api.generateSession(client_code, os.environ["ANGEL_PIN"], totp)
     if not session or not session.get("status"):
         raise RuntimeError(f"Angel login failed: {session}")
-    print(f"[OK] Angel Session Active for {ANGEL_CLIENT_CODE}")
+    print(f"[OK] Angel Session Active for {client_code}")
     return api
 
 
