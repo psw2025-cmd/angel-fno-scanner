@@ -1,205 +1,429 @@
-import os, sys, time, datetime, json, urllib.request, ast, re
+import ast
+import datetime
+import json
+import os
+import re
+import time
+import urllib.request
 from collections import defaultdict
-import pyotp, gspread
+from zoneinfo import ZoneInfo
+
+import gspread
+import pyotp
 from SmartApi import SmartConnect
 
-ANGEL_API_KEY     = os.environ["ANGEL_API_KEY"]
-ANGEL_CLIENT_CODE = os.environ["ANGEL_CLIENT_CODE"]
-ANGEL_PIN         = os.environ["ANGEL_PIN"]
-ANGEL_TOTP_SEED   = os.environ["ANGEL_TOTP_SEED"]
-SHEET_ID          = "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs"
+from gainers import (
+    contracts_from_forensic,
+    market_is_open,
+    quote_from_angel,
+    render_gainer_sheet,
+    strike_window_tokens,
+)
+from paper_log import alerts_to_append, fill_later_changes, render_production_sheet
+
+SHEET_ID = "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs"
 MAX_RUNTIME_SECONDS = max(1, int(os.getenv("MAX_RUNTIME_SECONDS", "19800")))
+IST = ZoneInfo("Asia/Kolkata")
+DAEMON_FRESH_SECONDS = 90
+FORENSIC_HEADER = [
+    "Timestamp (IST)", "Symbol", "Nearest Expiry", "Fut LTP", "Fut Chg %", "Fut OBI",
+    "ATM Strike", "ATM CE Contract", "CE LTP", "CE Chg %", "CE OI", "CE OBI",
+    "ATM PE Contract", "PE LTP", "PE Chg %", "PE OI", "ATM PCR", "Forensic Action Signal",
+]
 
-def get_ist():
-    return datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) + datetime.timedelta(hours=5, minutes=30)
 
-def parse_exp(s):
+def now_ist():
+    return datetime.datetime.now(IST).replace(tzinfo=None)
+
+
+def parse_exp(value):
     try:
-        return datetime.datetime.strptime(s.strip().upper(), "%d%b%Y").date()
-    except:
+        return datetime.datetime.strptime(str(value).strip().upper(), "%d%b%Y").date()
+    except (TypeError, ValueError):
         return None
 
-# Authenticate Google Sheet from the GitHub secret without writing credentials to disk.
-raw_sheet_secret = os.environ["SHEETS_KEY_JSON"].strip()
-sheet_info = None
 
-# Accept normal JSON plus common GitHub-secret copy/paste forms with one or
-# multiple backslashes before JSON quotes. Do not alter \\n in private_key.
-candidates = [raw_sheet_secret]
-normalized_quotes = re.sub(r'\\+"', '"', raw_sheet_secret)
-if normalized_quotes not in candidates:
-    candidates.append(normalized_quotes)
+def load_service_account():
+    # Accept normal JSON plus common GitHub-secret copy/paste forms with one or
+    # multiple backslashes before JSON quotes. Do not alter \\n in private_key.
+    raw_sheet_secret = os.environ["SHEETS_KEY_JSON"].strip()
+    candidates = [raw_sheet_secret]
+    normalized_quotes = re.sub(r'\\+"', '"', raw_sheet_secret)
+    if normalized_quotes not in candidates:
+        candidates.append(normalized_quotes)
 
-if len(raw_sheet_secret) >= 2 and raw_sheet_secret[0] == raw_sheet_secret[-1] and raw_sheet_secret[0] in ("'", '"'):
-    inner = raw_sheet_secret[1:-1]
-    candidates.append(inner)
-    candidates.append(re.sub(r'\\+"', '"', inner))
+    if len(raw_sheet_secret) >= 2 and raw_sheet_secret[0] == raw_sheet_secret[-1] and raw_sheet_secret[0] in ("'", '"'):
+        inner = raw_sheet_secret[1:-1]
+        candidates.append(inner)
+        candidates.append(re.sub(r'\\+"', '"', inner))
 
-for candidate in candidates:
-    try:
-        parsed = json.loads(candidate)
-        if isinstance(parsed, str):
-            parsed = json.loads(parsed)
-        if isinstance(parsed, dict):
-            sheet_info = parsed
-            break
-    except (json.JSONDecodeError, TypeError):
-        pass
-
-if sheet_info is None:
-    try:
-        parsed = ast.literal_eval(raw_sheet_secret)
-        if isinstance(parsed, dict):
-            sheet_info = parsed
-    except (ValueError, SyntaxError):
-        pass
-
-if not isinstance(sheet_info, dict) or sheet_info.get("type") != "service_account":
-    # Safe structural diagnostics only; never print credential content.
-    structural = {
-        "length": len(raw_sheet_secret),
-        "starts_lbrace": raw_sheet_secret.startswith("{"),
-        "ends_rbrace": raw_sheet_secret.endswith("}"),
-        "double_quotes": raw_sheet_secret.count('"'),
-        "single_quotes": raw_sheet_secret.count("'"),
-        "backslashes": raw_sheet_secret.count("\\"),
-        "newlines": raw_sheet_secret.count("\n"),
-    }
-    try:
-        json.loads(raw_sheet_secret)
-        json_error = "parsed_but_not_service_account"
-    except json.JSONDecodeError as exc:
-        json_error = f"{exc.msg} at line={exc.lineno} col={exc.colno} pos={exc.pos}"
-    raise RuntimeError(
-        "SHEETS_KEY_JSON is not valid Google service-account JSON; "
-        f"json_error={json_error}; safe_format_stats={structural}"
-    )
-
-gc = gspread.service_account_from_dict(sheet_info)
-sh = gc.open_by_key(SHEET_ID)
-
-ws_live = sh.worksheet("FORENSIC_LIVE")
-ws_hb = sh.worksheet("HEARTBEAT")
-
-# Authenticate Angel One
-totp = pyotp.TOTP(ANGEL_TOTP_SEED).now()
-api = SmartConnect(api_key=ANGEL_API_KEY)
-session = api.generateSession(ANGEL_CLIENT_CODE, ANGEL_PIN, totp)
-if not session or not session.get("status"):
-    raise RuntimeError(f"Angel login failed: {session}")
-print(f"[OK] Angel Session Active for {ANGEL_CLIENT_CODE}")
-
-# Download Scrip Master & Discover all symbols with CE & PE
-print("[INFO] Discovering symbols...")
-req = urllib.request.urlopen("https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json", timeout=25)
-scrip_master = json.loads(req.read().decode("utf-8"))
-
-today = get_ist().date()
-opts = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
-futs = defaultdict(list)
-
-for c in scrip_master:
-    if c.get("exch_seg") != "NFO": continue
-    name, inst, tsym = c.get("name","").strip().upper(), c.get("instrumenttype","").strip().upper(), c.get("symbol","").strip().upper()
-    exp = parse_exp(c.get("expiry",""))
-    if not name or not exp or exp < today: continue
-
-    if inst in ("OPTSTK", "OPTIDX"):
-        stk = float(c.get("strike", 0.0)) / 100.0
-        if stk <= 0: continue
-        if tsym.endswith("CE"): opts[name][exp][stk]["CE"] = c
-        elif tsym.endswith("PE"): opts[name][exp][stk]["PE"] = c
-    elif inst in ("FUTSTK", "FUTIDX"):
-        c["_exp"] = exp
-        futs[name].append(c)
-
-universe = {}
-for sym, exp_map in opts.items():
-    if sym not in futs: continue
-    min_exp = min(exp_map.keys())
-    stks = {k: v for k, v in exp_map[min_exp].items() if "CE" in v and "PE" in v}
-    if not stks: continue
-    nf = sorted(futs[sym], key=lambda x: x["_exp"])[0]
-    universe[sym] = {"token": str(nf["token"]), "exp": min_exp.strftime("%d-%b-%Y"), "strikes": stks}
-
-print(f"[OK] Tracking {len(universe)} symbols!")
-
-def fetch_chunked(tokens, size=45):
-    res = {}
-    for i in range(0, len(tokens), size):
+    sheet_info = None
+    json_error = "unparsed"
+    for candidate in candidates:
         try:
-            r = api.getMarketData("FULL", {"NFO": tokens[i:i+size]})
-            for itm in r.get("data", {}).get("fetched", []):
-                res[str(itm.get("symbolToken"))] = itm
-            time.sleep(0.25)
-        except: pass
-    return res
+            parsed = json.loads(candidate)
+            if isinstance(parsed, str):
+                parsed = json.loads(parsed)
+            if isinstance(parsed, dict):
+                sheet_info = parsed
+                break
+        except (json.JSONDecodeError, TypeError) as exc:
+            json_error = str(exc)
 
-fut_tokens = [u["token"] for u in universe.values()]
+    if sheet_info is None:
+        try:
+            parsed = ast.literal_eval(raw_sheet_secret)
+            if isinstance(parsed, dict):
+                sheet_info = parsed
+        except (ValueError, SyntaxError):
+            pass
 
-# Run sync loop for 5 hours (entire trading session)
-start_time = time.time()
-loop = 0
-while time.time() - start_time < MAX_RUNTIME_SECONDS:
-    now = get_ist()
-    if now.hour == 15 and now.minute > 35:
-        print("[INFO] Market closed. Finishing run.")
-        break
+    if not isinstance(sheet_info, dict) or sheet_info.get("type") != "service_account":
+        structural = {
+            "length": len(raw_sheet_secret),
+            "starts_lbrace": raw_sheet_secret.startswith("{"),
+            "ends_rbrace": raw_sheet_secret.endswith("}"),
+            "double_quotes": raw_sheet_secret.count('"'),
+            "single_quotes": raw_sheet_secret.count("'"),
+            "backslashes": raw_sheet_secret.count("\\"),
+            "newlines": raw_sheet_secret.count("\n"),
+        }
+        raise RuntimeError(
+            "SHEETS_KEY_JSON is not valid Google service-account JSON; "
+            f"json_error={json_error}; safe_format_stats={structural}"
+        )
+    return sheet_info
 
-    f_quotes = fetch_chunked(fut_tokens)
-    opt_tokens, sym_map = [], {}
 
-    for sym, u in universe.items():
-        fq = f_quotes.get(u["token"])
-        if not fq: continue
-        ltp = float(fq.get("ltp", 0.0))
-        if ltp <= 0: continue
-        atm_stk = min(list(u["strikes"].keys()), key=lambda s: abs(s - ltp))
-        ce_tok = str(u["strikes"][atm_stk]["CE"]["token"])
-        pe_tok = str(u["strikes"][atm_stk]["PE"]["token"])
-        opt_tokens.extend([ce_tok, pe_tok])
-        sym_map[sym] = {"stk": atm_stk, "ce_tok": ce_tok, "pe_tok": pe_tok,
-                        "ce_sym": u["strikes"][atm_stk]["CE"]["symbol"],
-                        "pe_sym": u["strikes"][atm_stk]["PE"]["symbol"]}
-
-    o_quotes = fetch_chunked(opt_tokens)
-    rows = []
-    ist_str = now.strftime("%Y-%m-%d %H:%M:%S")
-
-    for sym, m in sym_map.items():
-        fq = f_quotes.get(universe[sym]["token"], {})
-        cq, pq = o_quotes.get(m["ce_tok"], {}), o_quotes.get(m["pe_tok"], {})
-
-        fltp, fpct = float(fq.get("ltp", 0)), float(fq.get("percentChange", 0))
-        ftbq, ftsq = int(fq.get("totBuyQuan", 0)), int(fq.get("totSellQuan", 0))
-        fobi = round((ftbq - ftsq) / max(1, ftbq + ftsq), 3)
-
-        cltp, cpct = float(cq.get("ltp", 0)), float(cq.get("percentChange", 0))
-        coi, ctbq, ctsq = int(cq.get("opnInterest", 0)), int(cq.get("totBuyQuan", 0)), int(cq.get("totSellQuan", 0))
-        cobi = round((ctbq - ctsq) / max(1, ctbq + ctsq), 3)
-
-        pltp, ppct = float(pq.get("ltp", 0)), float(pq.get("percentChange", 0))
-        poi = int(pq.get("opnInterest", 0))
-        pcr = round(poi / max(1, coi), 2)
-
-        if fpct >= 0.4 and fobi >= 0.12: sig = "PRE-BREAKOUT CALL ACCUMULATION"
-        elif fpct <= -0.4 and fobi <= -0.12: sig = "BEARISH BREAKDOWN ACCUMULATION"
-        else: sig = "NEUTRAL / CONSOLIDATION"
-
-        rows.append([ist_str, sym, universe[sym]["exp"], fltp, fpct, fobi, m["stk"],
-                     m["ce_sym"], cltp, cpct, coi, cobi, m["pe_sym"], pltp, ppct, poi, pcr, sig])
-
-    rows.sort(key=lambda x: (1 if "PRE-BREAKOUT" in x[17] else 0, x[5]), reverse=True)
-    header = [["Timestamp (IST)", "Symbol", "Nearest Expiry", "Fut LTP", "Fut Chg %", "Fut OBI", "ATM Strike",
-               "ATM CE Contract", "CE LTP", "CE Chg %", "CE OI", "CE OBI", "ATM PE Contract", "PE LTP", "PE Chg %", "PE OI", "ATM PCR", "Forensic Action Signal"]]
-
+def worksheet(book, title, rows=400, cols=26):
     try:
-        ws_live.clear()
-        ws_live.update(range_name="A1", values=header + rows)
-        ws_hb.update(range_name="A2", values=[[ist_str, "CONNECTED_GITHUB_ACTIONS", len(rows), f"Loop #{loop} OK"]])
-        print(f"[{ist_str}] Synced {len(rows)} symbols to Google Sheet | Loop #{loop}")
-    except Exception as e:
-        print(f"[WARN] Sheet update: {e}")
+        return book.worksheet(title)
+    except gspread.WorksheetNotFound:
+        return book.add_worksheet(title=title, rows=rows, cols=cols)
 
-    loop += 1
-    time.sleep(5)
+
+def write_grid(ws, rows):
+    ws.clear()
+    if rows:
+        ws.update(range_name="A1", values=rows, value_input_option="RAW")
+
+
+def heartbeat_age_seconds(book, now):
+    try:
+        stamped = book.worksheet("HEARTBEAT").acell("A2").value
+    except gspread.WorksheetNotFound:
+        return None
+    if not stamped:
+        return None
+    try:
+        wrote = datetime.datetime.strptime(str(stamped).strip(), "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        return None
+    return max(0, (now - wrote).total_seconds())
+
+
+def publish_gainers(book, quotes, now, source):
+    rows = render_gainer_sheet(quotes, now, source)
+    for title in ("Sheet1", "TOP_GAINERS"):
+        write_grid(worksheet(book, title, rows=max(200, len(rows) + 10), cols=len(rows[3]) if len(rows) > 3 else 26), rows)
+    print(f"[OK] Wrote {max(0, len(rows) - 4)} real gainer rows to Sheet1 and TOP_GAINERS from {source}")
+    return rows
+
+
+def publish_production(book, now):
+    paper = worksheet(book, "PAPER_ALERT_LOG")
+    values = paper.get_all_values()
+    write_grid(worksheet(book, "PRODUCTION_APPROVED"), render_production_sheet(values, now))
+
+
+def sync_paper(book, signals, latest_changes, now):
+    paper = worksheet(book, "PAPER_ALERT_LOG")
+    values = paper.get_all_values()
+    if not values:
+        values = [[
+            "Logged at IST", "Session date", "Symbol", "Side", "Fut LTP", "Session change %",
+            "CE contract", "PE contract", "Note", "Later session change %", "Outcome filled at",
+        ]]
+        write_grid(paper, values)
+    filled = fill_later_changes(values, latest_changes, now)
+    if filled is not None:
+        write_grid(paper, filled)
+        values = filled
+    fresh = alerts_to_append(values, signals, now, market_is_open(now))
+    if fresh:
+        paper.append_rows(fresh, value_input_option="RAW")
+        print(f"[OK] Logged {len(fresh)} live paper alerts")
+
+
+def angel_login():
+    totp = pyotp.TOTP(os.environ["ANGEL_TOTP_SEED"]).now()
+    api = SmartConnect(api_key=os.environ["ANGEL_API_KEY"])
+    session = api.generateSession(os.environ["ANGEL_CLIENT_CODE"], os.environ["ANGEL_PIN"], totp)
+    if not session or not session.get("status"):
+        raise RuntimeError(f"Angel login failed: {session}")
+    print(f"[OK] Angel Session Active for {ANGEL_CLIENT_CODE}")
+    return api
+
+
+def discover_universe(api):
+    print("[INFO] Discovering symbols...")
+    with urllib.request.urlopen(
+        "https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json",
+        timeout=25,
+    ) as response:
+        scrip_master = json.loads(response.read().decode("utf-8"))
+
+    today = now_ist().date()
+    options = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+    futures = defaultdict(list)
+    for contract in scrip_master:
+        if contract.get("exch_seg") != "NFO":
+            continue
+        name = str(contract.get("name", "")).strip().upper()
+        instrument = str(contract.get("instrumenttype", "")).strip().upper()
+        trading_symbol = str(contract.get("symbol", "")).strip().upper()
+        expiry = parse_exp(contract.get("expiry", ""))
+        if not name or expiry is None or expiry < today:
+            continue
+        if instrument in ("OPTSTK", "OPTIDX"):
+            strike = float(contract.get("strike", 0.0) or 0.0) / 100.0
+            if strike <= 0:
+                continue
+            side = "CE" if trading_symbol.endswith("CE") else "PE" if trading_symbol.endswith("PE") else ""
+            if not side:
+                continue
+            options[name][expiry][strike][side] = {
+                "token": str(contract.get("token")),
+                "symbol": trading_symbol,
+                "name": name,
+                "expiry": expiry,
+            }
+        elif instrument in ("FUTSTK", "FUTIDX"):
+            futures[name].append({"token": str(contract.get("token")), "expiry": expiry})
+
+    universe = {}
+    for symbol, expiry_map in options.items():
+        if symbol not in futures:
+            continue
+        nearest = min(expiry_map)
+        both = {strike: sides for strike, sides in expiry_map[nearest].items() if "CE" in sides and "PE" in sides}
+        if not both:
+            continue
+        future = sorted(futures[symbol], key=lambda item: item["expiry"])[0]
+        universe[symbol] = {
+            "token": future["token"],
+            "expiry": nearest,
+            "strikes": both,
+        }
+    print(f"[OK] Tracking {len(universe)} symbols")
+    return universe
+
+
+def fetch_chunked(api, tokens, size=45):
+    quotes = {}
+    failures = 0
+    for start in range(0, len(tokens), size):
+        chunk = tokens[start:start + size]
+        for attempt in range(3):
+            try:
+                response = api.getMarketData("FULL", {"NFO": chunk})
+                if not response or not response.get("status"):
+                    raise RuntimeError(f"market data status failed for {len(chunk)} tokens")
+                for item in response.get("data", {}).get("fetched", []) or []:
+                    quotes[str(item.get("symbolToken"))] = item
+                break
+            except Exception as exc:
+                if attempt == 2:
+                    failures += 1
+                    print(f"[WARN] Quote chunk failed after retries: {exc}")
+                else:
+                    time.sleep(0.6 * (attempt + 1))
+        time.sleep(0.35)
+    return quotes, failures
+
+
+def _number(value, default=0.0):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def build_forensic_rows(universe, future_quotes, option_quotes, stamped):
+    rows = []
+    latest_changes = {}
+    signals = []
+    for symbol, meta in universe.items():
+        future = future_quotes.get(meta["token"])
+        if not future:
+            continue
+        future_ltp = _number(future.get("ltp"))
+        if future_ltp <= 0:
+            continue
+        strike = min(meta["strikes"], key=lambda item: abs(item - future_ltp))
+        call = meta["strikes"][strike]["CE"]
+        put = meta["strikes"][strike]["PE"]
+        if call["token"] not in option_quotes or put["token"] not in option_quotes:
+            continue
+        call_quote = option_quotes[call["token"]]
+        put_quote = option_quotes[put["token"]]
+        future_change = _number(future.get("percentChange"))
+        buy_qty = int(_number(future.get("totBuyQuan")))
+        sell_qty = int(_number(future.get("totSellQuan")))
+        future_obi = round((buy_qty - sell_qty) / max(1, buy_qty + sell_qty), 3)
+        call_ltp = _number(call_quote.get("ltp"))
+        call_change = _number(call_quote.get("percentChange"))
+        call_oi = int(_number(call_quote.get("opnInterest")))
+        call_buy = int(_number(call_quote.get("totBuyQuan")))
+        call_sell = int(_number(call_quote.get("totSellQuan")))
+        call_obi = round((call_buy - call_sell) / max(1, call_buy + call_sell), 3)
+        put_ltp = _number(put_quote.get("ltp"))
+        put_change = _number(put_quote.get("percentChange"))
+        put_oi = int(_number(put_quote.get("opnInterest")))
+        pcr = "" if call_oi <= 0 else round(put_oi / call_oi, 2)
+        if future_change >= 0.4 and future_obi >= 0.12 and call_ltp > 0:
+            signal = "PRE-BREAKOUT CALL ACCUMULATION"
+            side = "CE"
+        elif future_change <= -0.4 and future_obi <= -0.12 and put_ltp > 0:
+            signal = "BEARISH BREAKDOWN ACCUMULATION"
+            side = "PE"
+        else:
+            signal = "NEUTRAL / CONSOLIDATION"
+            side = ""
+        rows.append([
+            stamped, symbol, meta["expiry"].strftime("%d-%b-%Y"), future_ltp, future_change, future_obi, strike,
+            call["symbol"], call_ltp, call_change, call_oi, call_obi,
+            put["symbol"], put_ltp, put_change, put_oi, pcr, signal,
+        ])
+        latest_changes[symbol] = future_change
+        if side:
+            signals.append({
+                "symbol": symbol,
+                "side": side,
+                "fut_ltp": future_ltp,
+                "session_change": future_change,
+                "ce_contract": call["symbol"],
+                "pe_contract": put["symbol"],
+            })
+    rows.sort(key=lambda row: (1 if "PRE-BREAKOUT" in str(row[17]) else 0, row[5]), reverse=True)
+    return rows, signals, latest_changes
+
+
+def build_chain_quotes(universe, future_quotes, option_quotes, each_side):
+    quotes = []
+    for symbol, meta in universe.items():
+        future = future_quotes.get(meta["token"])
+        if not future:
+            continue
+        future_ltp = _number(future.get("ltp"))
+        if future_ltp <= 0:
+            continue
+        for token, quote_meta in strike_window_tokens(meta["strikes"], future_ltp, each_side):
+            raw = option_quotes.get(token)
+            if not raw:
+                continue
+            quote_meta = dict(quote_meta)
+            quote_meta["future_ltp"] = future_ltp
+            quote_meta["expiry"] = meta["expiry"]
+            built = quote_from_angel(raw, quote_meta)
+            if built is not None:
+                quotes.append(built)
+    return quotes
+
+
+def run_angel_loop(book, api):
+    universe = discover_universe(api)
+    each_side = 1 if MAX_RUNTIME_SECONDS <= 120 else int(os.getenv("STRIKE_WINDOW", "6"))
+    started = time.time()
+    loop = 0
+    while time.time() - started < MAX_RUNTIME_SECONDS:
+        now = now_ist()
+        stamped = now.strftime("%Y-%m-%d %H:%M:%S")
+        future_quotes, future_failures = fetch_chunked(api, [meta["token"] for meta in universe.values()])
+        tokens = []
+        for meta in universe.values():
+            future = future_quotes.get(meta["token"])
+            future_ltp = _number(future.get("ltp")) if future else 0
+            if future_ltp <= 0:
+                continue
+            tokens.extend(token for token, _meta in strike_window_tokens(meta["strikes"], future_ltp, each_side))
+        option_quotes, option_failures = fetch_chunked(api, tokens)
+        if tokens and not option_quotes:
+            print("[WARN] Option quote feed returned nothing. Existing sheets were left unchanged.")
+            loop += 1
+            if not market_is_open(now) or MAX_RUNTIME_SECONDS <= 120 or (now.hour == 15 and now.minute > 35):
+                break
+            time.sleep(30)
+            continue
+        forensic_rows, signals, latest_changes = build_forensic_rows(universe, future_quotes, option_quotes, stamped)
+        chain_quotes = build_chain_quotes(universe, future_quotes, option_quotes, each_side)
+        try:
+            if forensic_rows:
+                live = worksheet(book, "FORENSIC_LIVE", rows=max(300, len(forensic_rows) + 5), cols=18)
+                write_grid(live, [FORENSIC_HEADER, *forensic_rows])
+                heartbeat = worksheet(book, "HEARTBEAT")
+                heartbeat.update(
+                    range_name="A2",
+                    values=[[stamped, "CONNECTED_ANGEL_SMARTAPI", len(forensic_rows), f"Loop #{loop} OK | {len(chain_quotes)} option quotes"]],
+                    value_input_option="RAW",
+                )
+            else:
+                print("[WARN] Angel returned no futures quotes. FORENSIC_LIVE was left unchanged.")
+            if chain_quotes:
+                publish_gainers(book, chain_quotes, now, "Angel One SmartAPI FULL")
+            else:
+                print("[WARN] Angel returned no option quotes. Gainers sheet was left unchanged.")
+            sync_paper(book, signals, latest_changes, now)
+            publish_production(book, now)
+            print(
+                f"[{stamped}] Forensic {len(forensic_rows)} | Chain quotes {len(chain_quotes)} | "
+                f"Quote chunk failures {future_failures + option_failures} | Loop #{loop}"
+            )
+        except Exception as exc:
+            print(f"[WARN] Sheet update failed: {exc}")
+        loop += 1
+        if not market_is_open(now) or MAX_RUNTIME_SECONDS <= 120:
+            print("[INFO] Single real quote pass complete.")
+            break
+        remaining = MAX_RUNTIME_SECONDS - (time.time() - started)
+        time.sleep(min(30, max(0, remaining)))
+
+
+def refresh_from_forensic(book, now):
+    forensic = worksheet(book, "FORENSIC_LIVE").get_all_values()
+    quotes = contracts_from_forensic(forensic)
+    if not quotes:
+        raise RuntimeError("FORENSIC_LIVE has no priced contracts to publish")
+    publish_gainers(book, quotes, now, "FORENSIC_LIVE")
+    latest = {}
+    header = forensic[0]
+    try:
+        symbol_at = [str(cell).strip().lower() for cell in header].index("symbol")
+        change_at = [str(cell).strip().lower() for cell in header].index("fut chg %")
+    except ValueError:
+        symbol_at = change_at = None
+    if symbol_at is not None:
+        for row in forensic[1:]:
+            if symbol_at < len(row) and change_at < len(row) and str(row[symbol_at]).strip():
+                try:
+                    latest[str(row[symbol_at]).strip().upper()] = float(row[change_at])
+                except ValueError:
+                    continue
+    sync_paper(book, [], latest, now)
+    publish_production(book, now)
+
+
+def main():
+    book = gspread.service_account_from_dict(load_service_account()).open_by_key(SHEET_ID)
+    now = now_ist()
+    age = heartbeat_age_seconds(book, now)
+    if age is not None and age <= DAEMON_FRESH_SECONDS:
+        print(f"[INFO] HEARTBEAT is {int(age)}s old. Skipping a second Angel login.")
+        refresh_from_forensic(book, now)
+        return
+    print(f"[INFO] HEARTBEAT age={age}. Opening Angel for a real quote pass.")
+    run_angel_loop(book, angel_login())
+
+
+if __name__ == "__main__":
+    main()
