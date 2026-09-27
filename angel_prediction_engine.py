@@ -21,6 +21,7 @@ import urllib.parse
 from email.utils import parsedate_to_datetime
 from xml.etree import ElementTree as ET
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 
 # 3rd party libraries
 import pyotp
@@ -199,26 +200,72 @@ def solve_implied_volatility(market_price, F, K, T, r, is_call=True):
 # =====================================================================
 # MULTI-SOURCE NEWS & CORPORATE ANNOUNCEMENTS SCRAPER
 # =====================================================================
+SOURCE_TIERS = {
+    "SEBI Official": ("TIER_1_REGULATOR", 1.00),
+    "RBI Official": ("TIER_1_REGULATOR", 1.00),
+    "NSE Announcements RSS": ("TIER_1_REGULATOR", 1.00),
+    "NSE Official Announcement": ("TIER_1_REGULATOR", 1.00),
+    "PTI / Reuters": ("TIER_2_WIRE", 0.85),
+    "Livemint": ("TIER_3_FINANCIAL_MEDIA", 0.65),
+    "Economic Times": ("TIER_3_FINANCIAL_MEDIA", 0.65),
+    "Business Standard": ("TIER_3_FINANCIAL_MEDIA", 0.65),
+    "Hindu Business Line": ("TIER_3_FINANCIAL_MEDIA", 0.65),
+    "Google News Targeted": ("TIER_3_FINANCIAL_MEDIA", 0.65),
+    "Google News Thematic": ("TIER_3_FINANCIAL_MEDIA", 0.65),
+    "Social Radar": ("TIER_4_SOCIAL", 0.20),
+}
+
 FEEDS = (
-    ("Economic Times", "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms"),
+    ("SEBI Official", "https://www.sebi.gov.in/sebirss.xml"),
+    ("RBI Official", "https://m.rbi.org.in/pressreleases_rss.xml"),
+    ("NSE Announcements RSS", "https://nsearchives.nseindia.com/content/RSS/Online_announcements.xml"),
     ("Livemint", "https://www.livemint.com/rss/markets"),
+    ("Economic Times", "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms"),
     ("Business Standard", "https://www.business-standard.com/rss/markets-106.rss"),
     ("Hindu Business Line", "https://www.thehindubusinessline.com/markets/feeder/default.rss"),
-    ("Moneycontrol", "https://www.moneycontrol.com/rss/MCtopnews.xml"),
 )
 
+THEMATIC_DISCOVERY_FEEDS = (
+    ("IRDAI Thematic", "https://news.google.com/rss/search?q=(IRDAI+commission+OR+expense+ratio)+when:3d&hl=en-IN&gl=IN&ceid=IN:en", "IRDAI"),
+    ("Pharma USFDA Thematic", "https://news.google.com/rss/search?q=(USFDA+warning+letter+OR+inspection+India+pharma)+when:3d&hl=en-IN&gl=IN&ceid=IN:en", "USFDA"),
+    ("Banking RBI Thematic", "https://news.google.com/rss/search?q=(RBI+penalty+OR+draft+guidelines+OR+repo+rate+bank)+when:3d&hl=en-IN&gl=IN&ceid=IN:en", "RBI"),
+    ("Telecom TRAI Thematic", "https://news.google.com/rss/search?q=(TRAI+telecom+tariff+OR+spectrum+OR+AGR)+when:3d&hl=en-IN&gl=IN&ceid=IN:en", "TRAI"),
+    ("Energy PNGRB Thematic", "https://news.google.com/rss/search?q=(PNGRB+gas+OR+CERC+power+tariff)+when:3d&hl=en-IN&gl=IN&ceid=IN:en", "PNGRB"),
+    ("Legal Litigated Thematic", "https://news.google.com/rss/search?q=(Supreme+Court+OR+NCLT+forensic+audit+order)+when:3d&hl=en-IN&gl=IN&ceid=IN:en", "LEGAL"),
+)
+
+TARGETED_DISCOVERY_QUERIES = (
+    ("POLICYBZR", "https://news.google.com/rss/search?q=(%22PB+Fintech%22+OR+Policybazaar)+when:3d&hl=en-IN&gl=IN&ceid=IN:en"),
+    ("FORTIS", "https://news.google.com/rss/search?q=(%22Fortis+Healthcare%22+OR+Fortis)+when:3d&hl=en-IN&gl=IN&ceid=IN:en"),
+    ("BIOCON", "https://news.google.com/rss/search?q=(Biocon+OR+Syngene)+when:3d&hl=en-IN&gl=IN&ceid=IN:en"),
+    ("TATAMOTORS", "https://news.google.com/rss/search?q=(%22Tata+Motors%22+OR+JLR)+when:3d&hl=en-IN&gl=IN&ceid=IN:en"),
+    ("RELIANCE", "https://news.google.com/rss/search?q=(%22Reliance+Industries%22+OR+RIL)+when:3d&hl=en-IN&gl=IN&ceid=IN:en"),
+)
+
+REGULATOR_SECTOR_MAP = {
+    "IRDAI": ("POLICYBZR", "HDFCLIFE", "SBILIFE", "ICICIPRULI", "LICI"),
+    "USFDA": ("SUNPHARMA", "DRREDDY", "CIPLA", "DIVISLAB", "LUPIN", "AUROPHARMA", "ALKEM", "ZYDUSLIFE", "TORNTPHARM", "BIOCON"),
+    "CDSCO": ("SUNPHARMA", "DRREDDY", "CIPLA", "DIVISLAB", "LUPIN", "AUROPHARMA", "ALKEM", "ZYDUSLIFE", "TORNTPHARM", "BIOCON"),
+    "TRAI": ("BHARTIARTL", "IDEA", "INDUSTOWER"),
+    "PNGRB": ("IGL", "MGL", "GUJGASLTD", "GAIL", "PETRONET"),
+    "CERC": ("TATAPOWER", "NTPC", "POWERGRID", "ADANIPOWER", "JSWENERGY"),
+    "DGCA": ("INDIGO",),
+    "RBI": ("HDFCBANK", "ICICIBANK", "SBIN", "KOTAKBANK", "AXISBANK", "INDUSINDBK", "PNB", "BANKBARODA", "CANBK", "BAJFINANCE", "BAJAJFINSV", "CHOLAFIN", "SHRIRAMFIN"),
+    "LEGAL": ("FORTIS", "VEDL", "ADANIENT", "ADANIPORTS", "DABUR", "PAYTM", "POLICYBZR"),
+}
+
 ALIASES = {
-    "RELIANCE": ("Reliance Industries", "RIL"),
-    "ADANIENT": ("Adani Enterprises",),
-    "ADANIPORTS": ("Adani Ports",),
-    "HDFCBANK": ("HDFC Bank",),
+    "RELIANCE": ("Reliance Industries", "RIL", "Jio", "Reliance Retail"),
+    "ADANIENT": ("Adani Enterprises", "Gautam Adani"),
+    "ADANIPORTS": ("Adani Ports", "APSEZ"),
+    "HDFCBANK": ("HDFC Bank", "HDFC"),
     "ICICIBANK": ("ICICI Bank",),
     "KOTAKBANK": ("Kotak Mahindra", "Kotak Bank"),
     "AXISBANK": ("Axis Bank",),
     "SBIN": ("State Bank of India", "SBI"),
-    "BAJFINANCE": ("Bajaj Finance",),
+    "BAJFINANCE": ("Bajaj Finance", "Bajaj Housing"),
     "BAJAJFINSV": ("Bajaj Finserv",),
-    "TATAMOTORS": ("Tata Motors",),
+    "TATAMOTORS": ("Tata Motors", "JLR", "Jaguar Land Rover", "TMPV"),
     "TATASTEEL": ("Tata Steel",),
     "TATAPOWER": ("Tata Power",),
     "TCS": ("Tata Consultancy", "TCS"),
@@ -229,7 +276,7 @@ ALIASES = {
     "LTIM": ("LTIMindtree",),
     "HINDUNILVR": ("Hindustan Unilever", "HUL"),
     "MARUTI": ("Maruti Suzuki", "Maruti"),
-    "M&M": ("Mahindra & Mahindra", "Mahindra and Mahindra"),
+    "M&M": ("Mahindra & Mahindra", "Mahindra and Mahindra", "Mahindra"),
     "SUNPHARMA": ("Sun Pharma", "Sun Pharmaceutical"),
     "DRREDDY": ("Dr Reddy", "Dr. Reddy"),
     "DIVISLAB": ("Divi's", "Divis Lab"),
@@ -239,8 +286,8 @@ ALIASES = {
     "ULTRACEMCO": ("UltraTech",),
     "JSWSTEEL": ("JSW Steel",),
     "HINDALCO": ("Hindalco",),
-    "VEDL": ("Vedanta",),
-    "POWERGRID": ("Power Grid",),
+    "VEDL": ("Vedanta", "Hindustan Zinc"),
+    "POWERGRID": ("Power Grid", "PGCIL"),
     "NTPC": ("NTPC",),
     "ONGC": ("ONGC", "Oil and Natural Gas"),
     "COALINDIA": ("Coal India",),
@@ -248,9 +295,11 @@ ALIASES = {
     "IOC": ("Indian Oil",),
     "NESTLEIND": ("Nestle",),
     "DMART": ("Avenue Supermarts", "DMart"),
-    "ZOMATO": ("Zomato", "Eternal"),
-    "PAYTM": ("Paytm", "One 97"),
-    "POLICYBZR": ("PB Fintech", "Policybazaar"),
+    "ZOMATO": ("Zomato", "Eternal", "Blinkit"),
+    "ETERNAL": ("Zomato", "Eternal", "Blinkit"),
+    "PAYTM": ("Paytm", "One 97", "One97"),
+    "POLICYBZR": ("PB Fintech", "Policybazaar", "PaisaBazaar"),
+    "FORTIS": ("Fortis Healthcare", "Fortis", "IHH", "Daiichi", "Daiichi Sankyo", "Northern TK"),
     "INDIGO": ("InterGlobe", "IndiGo"),
     "HAL": ("Hindustan Aeronautics", "HAL"),
     "BEL": ("Bharat Electronics", "BEL"),
@@ -259,6 +308,8 @@ ALIASES = {
     "PNB": ("Punjab National", "PNB"),
     "CANBK": ("Canara Bank",),
     "INDUSINDBK": ("IndusInd",),
+    "BIOCON": ("Biocon", "Syngene"),
+    "BHARTIARTL": ("Bharti Airtel", "Airtel"),
     "NIFTY": ("Nifty 50", "Nifty", "NSE Nifty"),
     "BANKNIFTY": ("Bank Nifty", "Nifty Bank"),
 }
@@ -313,28 +364,30 @@ def fetch_rss_feed(source_name, url):
     items = []
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", "Accept": "*/*"})
-        with urllib.request.urlopen(req, timeout=12) as response:
+        with urllib.request.urlopen(req, timeout=10) as response:
             tree = ET.fromstring(response.read())
             for item in tree.iter("item"):
                 title_node = item.find("title")
                 pub_node = item.find("pubDate")
+                link_node = item.find("link")
                 title = (title_node.text or "").strip() if title_node is not None else ""
                 if not title:
                     continue
                 pub_raw = (pub_node.text or "").strip() if pub_node is not None else ""
+                link_url = (link_node.text or "").strip() if link_node is not None else url
                 items.append({
                     "title": title,
                     "source": source_name,
-                    "pubDate": pub_raw
+                    "pubDate": pub_raw,
+                    "link": link_url
                 })
-    except Exception as e:
-        print(f"[WARN] Failed to fetch feed {source_name}: {e}")
+    except Exception:
+        pass
     return items
 
 def analyze_headline(title):
     lowered = f" {title.lower()} "
 
-    # Explicit Routine Compliance Filter before keyword scoring
     if any(pat in lowered for pat in ROUTINE_COMPLIANCE_PATTERNS):
         return 0.0, "ROUTINE_COMPLIANCE", "NEUTRAL"
 
@@ -365,13 +418,94 @@ def analyze_headline(title):
 
     return sentiment_score, cat, impact
 
+def classify_event_severity(title, category="GENERAL_MACRO", source_name=""):
+    lowered = f" {title.lower()} "
+
+    if any(pat in lowered for pat in ROUTINE_COMPLIANCE_PATTERNS) or category == "ROUTINE_COMPLIANCE":
+        return 1, "LEVEL_1_NOISE", "0.0% (Noise)", 0.05, 0.05, 0.90, 0.95
+
+    critical_patterns = (
+        "fraud", "cbi probe", "ed raid", "insolvency", "nclt admission", "default",
+        "licence cancelled", "licence suspended", "ban on trading", "hard commission cap",
+        "mega acquisition", "merger failed", "accounting fraud", "arrested"
+    )
+    if any(cp in lowered for cp in critical_patterns):
+        pos_p = 0.85 if "mega acquisition" in lowered else 0.05
+        neg_p = 0.85 if pos_p < 0.5 else 0.05
+        neut_p = round(1.0 - (pos_p + neg_p), 2)
+        return 5, "LEVEL_5_CRITICAL", "> 8.0%", pos_p, neg_p, neut_p, 0.15
+
+    high_patterns = (
+        "supreme court", "high court", "forensic audit", "consultation paper", "commission cap",
+        "expense framework", "warning letter", "oai status", "downgrade", "rating watch negative",
+        "resignation of ceo", "resignation of md", "plant closure", "target cut", "slumps 30"
+    )
+    if any(hp in lowered for hp in high_patterns):
+        if "consultation" in lowered or "draft" in lowered or "tentative" in lowered:
+            pos_p = 0.20
+            neg_p = 0.65
+            already_priced = 0.70
+        elif "downgrade" in lowered or "warning letter" in lowered or "forensic audit" in lowered:
+            pos_p = 0.10
+            neg_p = 0.80
+            already_priced = 0.35
+        else:
+            pos_p = 0.25
+            neg_p = 0.65
+            already_priced = 0.40
+        neut_p = round(1.0 - (pos_p + neg_p), 2)
+        return 4, "LEVEL_4_HIGH", "4.0% - 8.0%", pos_p, neg_p, neut_p, already_priced
+
+    medium_pos_patterns = ("order win", "contract win", "bags rs", "bags order", "mhra approval", "usfda approval", "profit jumps", "beats estimates", "dividend", "buyback")
+    medium_neg_patterns = ("net loss", "loss widens", "profit falls", "misses estimates", "penalty")
+    if any(mp in lowered for mp in medium_pos_patterns):
+        return 3, "LEVEL_3_MEDIUM", "+2.0% to +4.0%", 0.75, 0.10, 0.15, 0.25
+    if any(mn in lowered for mn in medium_neg_patterns):
+        return 3, "LEVEL_3_MEDIUM", "-2.0% to -4.0%", 0.10, 0.75, 0.15, 0.30
+
+    low_patterns = ("agm", "investor meet", "concall", "clarification", "partnership", "tie-up")
+    if any(lp in lowered for lp in low_patterns):
+        return 2, "LEVEL_2_LOW", "< 2.0%", 0.35, 0.15, 0.50, 0.60
+
+    return 2, "LEVEL_2_LOW", "< 2.0%", 0.30, 0.20, 0.50, 0.50
+
+def compute_market_confirmation(sentiment_score, fut_pct, fut_obi, ce_pct, pe_pct, ce_oi_vel=0.0, pe_oi_vel=0.0, atm_pcr=1.0):
+    if abs(sentiment_score) < 0.15:
+        return "NEUTRAL_FLOW"
+    if sentiment_score > 0.15:
+        if (fut_pct > 0.2 or fut_obi > 0.08) and ce_pct >= pe_pct:
+            return "🟢 BULLISH_CONFIRMED"
+        elif fut_pct < -0.5 or ce_pct < pe_pct:
+            return "⚠️ PRICED_IN_OR_DIVERGENT"
+        else:
+            return "🟡 BULLISH_PENDING_FLOW"
+    if sentiment_score < -0.15:
+        if (fut_pct < -0.2 or fut_obi < -0.08) and pe_pct >= ce_pct:
+            return "🔴 BEARISH_CONFIRMED"
+        elif fut_pct > 0.5 or pe_pct < ce_pct:
+            return "⚠️ PRICED_IN_OR_DIVERGENT"
+        else:
+            return "🟡 BEARISH_PENDING_FLOW"
+    return "NEUTRAL_FLOW"
+
 def aggregate_news_for_symbols(universe_symbols):
-    print("[INFO] Scraping live news from multiple financial feeds & NSE filings...")
+    print("[INFO] Scraping live multi-source news (Regulators, Financial Wires & Thematic Discovery)...")
     all_articles = []
-    for s_name, feed_url in FEEDS:
-        articles = fetch_rss_feed(s_name, feed_url)
-        all_articles.extend(articles)
-        time.sleep(0.12)
+
+    feed_jobs = list(FEEDS)
+    for t_name, t_url, _ in THEMATIC_DISCOVERY_FEEDS:
+        feed_jobs.append((t_name, t_url))
+    for s_sym, s_url in TARGETED_DISCOVERY_QUERIES:
+        feed_jobs.append((f"Google News [{s_sym}]", s_url))
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        future_to_feed = {pool.submit(fetch_rss_feed, name, url): name for name, url in feed_jobs}
+        for fut in future_to_feed:
+            try:
+                res = fut.result()
+                all_articles.extend(res)
+            except Exception:
+                pass
 
     nse_filings = []
     if os.path.exists(NSE_CACHE_PATH):
@@ -383,9 +517,13 @@ def aggregate_news_for_symbols(universe_symbols):
             print(f"[WARN] Error reading NSE cache: {e}")
 
     sym_news = defaultdict(list)
-    
+
     for art in all_articles:
         t = art["title"]
+        src = art["source"]
+        link = art.get("link", "")
+        tier_info = SOURCE_TIERS.get(src, ("TIER_3_FINANCIAL_MEDIA", 0.65))
+
         for sym in universe_symbols:
             matched = False
             if re.search(rf"\b{re.escape(sym)}\b", t, re.IGNORECASE):
@@ -397,14 +535,50 @@ def aggregate_news_for_symbols(universe_symbols):
                         break
             if matched:
                 score, cat, impact = analyze_headline(t)
+                sev_lvl, sev_code, band, pos_p, neg_p, neut_p, priced = classify_event_severity(t, cat, src)
                 sym_news[sym].append({
                     "title": t,
-                    "source": art["source"],
+                    "source": src,
+                    "source_tier": tier_info[0],
+                    "source_url": link,
                     "score": score,
                     "category": cat,
                     "impact": impact,
+                    "severity_level": sev_lvl,
+                    "severity_code": sev_code,
+                    "expected_move_band": band,
+                    "positive_prob": pos_p,
+                    "negative_prob": neg_p,
+                    "already_priced_in_prob": priced,
                     "filing_type": ""
                 })
+
+    for t_name, t_url, reg_key in THEMATIC_DISCOVERY_FEEDS:
+        affected_stocks = REGULATOR_SECTOR_MAP.get(reg_key, ())
+        thematic_arts = [a for a in all_articles if a["source"] == t_name]
+        for art in thematic_arts:
+            t = art["title"]
+            score, cat, impact = analyze_headline(t)
+            sev_lvl, sev_code, band, pos_p, neg_p, neut_p, priced = classify_event_severity(t, cat, t_name)
+            for sym in affected_stocks:
+                if sym in universe_symbols:
+                    if not any(x["title"] == t for x in sym_news[sym]):
+                        sym_news[sym].append({
+                            "title": t,
+                            "source": f"{t_name} (Sector Regulation)",
+                            "source_tier": "TIER_1_REGULATOR" if "Official" in t_name else "TIER_3_FINANCIAL_MEDIA",
+                            "source_url": art.get("link", ""),
+                            "score": score,
+                            "category": cat,
+                            "impact": impact,
+                            "severity_level": sev_lvl,
+                            "severity_code": sev_code,
+                            "expected_move_band": band,
+                            "positive_prob": pos_p,
+                            "negative_prob": neg_p,
+                            "already_priced_in_prob": priced,
+                            "filing_type": f"Sector {reg_key} Regulation"
+                        })
 
     for n in nse_filings:
         sym = str(n.get("symbol", "")).strip().upper()
@@ -413,12 +587,21 @@ def aggregate_news_for_symbols(universe_symbols):
             if text:
                 score, cat, impact = analyze_headline(text)
                 desc = str(n.get("desc", "NSE Filing")).strip()
+                sev_lvl, sev_code, band, pos_p, neg_p, neut_p, priced = classify_event_severity(text, cat, "NSE Official Announcement")
                 sym_news[sym].append({
                     "title": text[:220],
                     "source": "NSE Official Announcement",
+                    "source_tier": "TIER_1_REGULATOR",
+                    "source_url": "https://www.nseindia.com",
                     "score": score,
                     "category": cat,
                     "impact": impact,
+                    "severity_level": sev_lvl,
+                    "severity_code": sev_code,
+                    "expected_move_band": band,
+                    "positive_prob": pos_p,
+                    "negative_prob": neg_p,
+                    "already_priced_in_prob": priced,
                     "filing_type": desc
                 })
 
@@ -431,17 +614,25 @@ def aggregate_news_for_symbols(universe_symbols):
                 "category": "NO_RECENT_HEADLINE",
                 "impact_rating": "NEUTRAL",
                 "top_headline": "No fresh material catalyst",
+                "severity_level": 1,
+                "severity_code": "LEVEL_1_NOISE",
+                "expected_move_band": "0.0%",
+                "positive_prob": 0.33,
+                "negative_prob": 0.33,
+                "already_priced_in_prob": 0.50,
+                "source_tier": "TIER_3_FINANCIAL_MEDIA",
+                "source_url": "",
                 "item_count": 0,
                 "sources_count": 0,
                 "items": []
             }
             continue
-        
+
         distinct_sources = set(i["source"] for i in items)
         actionable_items = [i for i in items if i.get("category") != "ROUTINE_COMPLIANCE"]
         if actionable_items:
             actionable_items.sort(
-                key=lambda x: (abs(x["score"]), 1 if x["category"] != "GENERAL_MACRO" else 0),
+                key=lambda x: (x.get("severity_level", 1), abs(x["score"]), 1 if x["category"] != "GENERAL_MACRO" else 0),
                 reverse=True
             )
             top = actionable_items[0]
@@ -449,24 +640,48 @@ def aggregate_news_for_symbols(universe_symbols):
             category = top["category"]
             impact_rating = top["impact"]
             top_headline = top["title"]
+            sev_lvl = top["severity_level"]
+            sev_code = top["severity_code"]
+            band = top["expected_move_band"]
+            pos_p = top["positive_prob"]
+            neg_p = top["negative_prob"]
+            priced = top["already_priced_in_prob"]
+            src_tier = top["source_tier"]
+            src_url = top.get("source_url", "")
         else:
             top = items[0]
             avg_score = 0.0
             category = "ROUTINE_COMPLIANCE"
             impact_rating = "NEUTRAL"
             top_headline = top["title"]
+            sev_lvl = 1
+            sev_code = "LEVEL_1_NOISE"
+            band = "0.0% (Noise)"
+            pos_p = 0.05
+            neg_p = 0.05
+            priced = 0.95
+            src_tier = "TIER_1_REGULATOR"
+            src_url = top.get("source_url", "")
 
         aggregated[sym] = {
             "sentiment_score": avg_score,
             "category": category,
             "impact_rating": impact_rating,
             "top_headline": top_headline,
+            "severity_level": sev_lvl,
+            "severity_code": sev_code,
+            "expected_move_band": band,
+            "positive_prob": pos_p,
+            "negative_prob": neg_p,
+            "already_priced_in_prob": priced,
+            "source_tier": src_tier,
+            "source_url": src_url,
             "item_count": len(items),
             "sources_count": len(distinct_sources),
-            "items": items[:6]
+            "items": items[:8]
         }
 
-    print(f"[OK] News aggregated: {sum(1 for v in aggregated.values() if v['item_count'] > 0)} symbols have active headlines/filings.")
+    print(f"[OK] Multi-source news aggregated: {sum(1 for v in aggregated.values() if v['item_count'] > 0)} symbols have active headlines/filings.")
     return aggregated
 
 # =====================================================================
@@ -1265,6 +1480,18 @@ def run_prediction_pipeline(bypass_market_check=False):
             is_illiquid=pred.get("is_illiquid", False)
         )
 
+        # Cross-asset market confirmation combining sentiment, futures and option order flow
+        mkt_confirm = compute_market_confirmation(
+            sentiment_score=news_info["sentiment_score"],
+            fut_pct=fut_pct,
+            fut_obi=fut_obi,
+            ce_pct=ce_pct,
+            pe_pct=pe_pct,
+            ce_oi_vel=pred["ce_oi_velocity"],
+            pe_oi_vel=pred["pe_oi_velocity"],
+            atm_pcr=atm_pcr
+        )
+
         record = {
             "symbol": sym,
             "expiry": meta["expiry_str"],
@@ -1313,6 +1540,14 @@ def run_prediction_pipeline(bypass_market_check=False):
             "news_impact": news_info["impact_rating"],
             "news_category": news_info["category"],
             "top_headline": news_info["top_headline"],
+            "news_severity_level": int(news_info.get("severity_level", 1)),
+            "news_source_tier": str(news_info.get("source_tier", "TIER_3_FINANCIAL_MEDIA")),
+            "positive_prob": float(news_info.get("positive_prob", 0.33)),
+            "negative_prob": float(news_info.get("negative_prob", 0.33)),
+            "already_priced_in_prob": float(news_info.get("already_priced_in_prob", 0.50)),
+            "market_confirmation": str(mkt_confirm),
+            "expected_move_band": str(news_info.get("expected_move_band", "0.0%")),
+            "source_url": str(news_info.get("source_url", "")),
             "is_illiquid": pred.get("is_illiquid", False)
         }
         predictions.append(record)
@@ -1339,6 +1574,16 @@ def run_prediction_pipeline(bypass_market_check=False):
                         "sentiment": "BULLISH" if itm["score"] > 0 else ("BEARISH" if itm["score"] < 0 else "NEUTRAL"),
                         "tone_score": float(itm["score"]),
                         "impact_rating": str(itm["impact"]),
+                        "severity_level": int(itm.get("severity_level", 1)),
+                        "source_tier": str(itm.get("source_tier", "TIER_3_FINANCIAL_MEDIA")),
+                        "positive_prob": float(itm.get("positive_prob", 0.33)),
+                        "negative_prob": float(itm.get("negative_prob", 0.33)),
+                        "already_priced_in_prob": float(itm.get("already_priced_in_prob", 0.50)),
+                        "market_confirmation": str(mkt_confirm),
+                        "expected_move_band": str(itm.get("expected_move_band", "0.0%")),
+                        "source_url": str(itm.get("source_url", "")),
+                        "canonical_url": str(itm.get("source_url", "")),
+                        "verified_catalyst": bool(itm.get("severity_level", 1) >= 3),
                         "source_count": int(news_info["item_count"]),
                         "source_agreement_pct": 100.0,
                         "title": n_title,
@@ -1419,11 +1664,11 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
         ws_hb.update(range_name="A1:F8", values=hb_rows, value_input_option="USER_ENTERED")
         print("[OK] HEARTBEAT updated with exact 6-column schema and calibration metrics!")
 
-        # 3. Update OPTION_PREDICTIONS tab
+        # 3. Update OPTION_PREDICTIONS tab (exact 41 columns fixed width)
         try:
             ws_pred = sh.worksheet("OPTION_PREDICTIONS")
         except Exception:
-            ws_pred = sh.add_worksheet(title="OPTION_PREDICTIONS", rows="350", cols="38")
+            ws_pred = sh.add_worksheet(title="OPTION_PREDICTIONS", rows="350", cols="45")
 
         ce_picks = [p for p in predictions if "CALL" in p["directional_bias"]][:3]
         pe_picks = [p for p in predictions if "PUT" in p["directional_bias"]][:3]
@@ -1479,7 +1724,7 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
              "Intensity Score (1-100)", "Confidence %", "Spot / Fut LTP", "ATM Strike", "ATM PCR", "Max Pain",
              "ATM CE Contract", "CE LTP", "CE Chg %", "CE OI", "CE OI Vel %", "CE IV %", "Delta CE", "Gamma", "Theta CE", "Vega", "CE Spread",
              "ATM PE Contract", "PE LTP", "PE Chg %", "PE OI", "PE OI Vel %", "PE IV %", "Delta PE", "PE Spread",
-             "Pre-Open Gap %", "Gap Bias", "Target 9:15 Strike", "News Sentiment", "Top Catalyst Headline", "Snapshot Time (IST)"]
+             "Pre-Open Gap %", "Gap Bias", "Target 9:15 Strike", "News Severity", "Source Tier", "Market Confirmation", "Expected Move Band", "News Sentiment", "Top Catalyst Headline", "Snapshot Time (IST)"]
         ])
 
         for p in predictions:
@@ -1488,12 +1733,45 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
                 p["intensity_score"], p["confidence_pct"], p["spot_ltp"], p["atm_strike"], p["atm_pcr"], p["max_pain"],
                 p["ce_symbol"], p["ce_ltp"], p["ce_chg_pct"], p["ce_oi"], p["ce_oi_velocity"], p["ce_iv"], p["ce_delta"], p["ce_gamma"], p["ce_theta"], p["ce_vega"], p["ce_spread"],
                 p["pe_symbol"], p["pe_ltp"], p["pe_chg_pct"], p["pe_oi"], p["pe_oi_velocity"], p["pe_iv"], p["pe_delta"], p["pe_spread"],
-                p["expected_gap_pct"], p["gap_direction"], p["target_strike"], p["news_sentiment"], p["top_headline"], ist_str
+                p["expected_gap_pct"], p["gap_direction"], p["target_strike"],
+                f"Lvl {p.get('news_severity_level', 1)}", p.get("news_source_tier", "TIER_3"), p.get("market_confirmation", "NEUTRAL_FLOW"), p.get("expected_move_band", "0.0%"),
+                p["news_sentiment"], p["top_headline"], ist_str
             ])
 
         ws_pred.clear()
         ws_pred.update(range_name="A1", values=pred_rows)
         print(f"[OK] OPTION_PREDICTIONS updated with {len(pred_rows)} rows!")
+
+        # 4. Sync to NEWS_LIVE tab (all 216 symbols, strict 12 columns)
+        try:
+            ws_nl = sh.worksheet("NEWS_LIVE")
+            nl_rows = [
+                ["Multi-source news tone for the F&O list. The rating reads headlines. It does not predict the next price.", "", "", "", "", "", "", "", "", "", "", ""],
+                ["Symbol", "Sentiment", "Tone rating 0-100", "Tone arrow", "Sources", "Source agreement %", "Event", "Latest time", "NSE filing", "Headlines", "Trigger words", "Meaning"]
+            ]
+            for p in predictions:
+                tone = p.get("news_sentiment", 0.0)
+                rating = int(round(50.0 + (tone * 50.0)))
+                if tone > 0.2:
+                    sent = "Strong positive" if tone >= 0.5 else "Positive"
+                    arrow = "↑"
+                elif tone < -0.2:
+                    sent = "Strong negative" if tone <= -0.5 else "Moderate bearish"
+                    arrow = "↓"
+                else:
+                    sent = "Neutral"
+                    arrow = "→"
+                nl_rows.append([
+                    p["symbol"], sent, rating, arrow, p.get("catalyst_count", 1), 100,
+                    p.get("top_headline", "")[:90], ist_str, p.get("news_category", "Updates"),
+                    p.get("top_headline", ""), f"{p.get('news_category', '')} [Lvl {p.get('news_severity_level', 1)}]",
+                    f"Confirmation: {p.get('market_confirmation', 'NEUTRAL_FLOW')} | Expected: {p.get('expected_move_band', '0.0%')}"
+                ])
+            ws_nl.clear()
+            ws_nl.update(range_name="A1", values=nl_rows, value_input_option="USER_ENTERED")
+            print(f"[OK] NEWS_LIVE updated with {len(nl_rows)} validated rows!")
+        except Exception as e:
+            print(f"[WARN] NEWS_LIVE sync: {e}")
 
         # 4. Append to PAPER_ALERT_LOG if reconciliation cycle ran
         try:
@@ -1573,7 +1851,14 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
                 "expected_gap_pct": float(p.get("expected_gap_pct", 0.0)),
                 "gap_direction": str(p.get("gap_direction", "NEUTRAL")),
                 "pre_open_conviction_pct": float(p.get("pre_open_conviction", 50.0)),
-                "target_open_strike": str(p.get("target_strike", ""))
+                "target_open_strike": str(p.get("target_strike", "")),
+                "news_severity_level": int(p.get("news_severity_level", 1)),
+                "news_source_tier": str(p.get("news_source_tier", "TIER_3_FINANCIAL_MEDIA")),
+                "positive_prob": float(p.get("positive_prob", 0.33)),
+                "negative_prob": float(p.get("negative_prob", 0.33)),
+                "already_priced_in_prob": float(p.get("already_priced_in_prob", 0.50)),
+                "market_confirmation": str(p.get("market_confirmation", "NEUTRAL_FLOW")),
+                "expected_move_band": str(p.get("expected_move_band", "0.0%"))
             })
 
         job_config_trunc = bigquery.LoadJobConfig(

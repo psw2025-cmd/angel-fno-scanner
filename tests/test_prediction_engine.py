@@ -8,6 +8,8 @@ from angel_prediction_engine import (
     compute_prediction_and_rating,
     compute_pre_market_gap,
     run_ground_truth_reconciliation,
+    classify_event_severity,
+    compute_market_confirmation,
     DEFAULT_WEIGHTS
 )
 
@@ -253,3 +255,65 @@ def test_enhanced_pre_market_gap_with_implied_move():
     assert "GAP-DOWN" in gap_res["gap_direction"]
     assert "325 PE" in gap_res["target_strike"]
     assert gap_res["implied_move_daily_pct"] > 3.0
+
+def test_five_stage_event_severity_classification():
+    # Level 5: Critical (Fraud, Insolvency, Hard Commission Cap)
+    l5_title = "ED Raids Corporate Headquarters in Alleged Accounting Fraud Case"
+    lvl, code, band, pos, neg, neut, priced = classify_event_severity(l5_title)
+    assert lvl == 5
+    assert code == "LEVEL_5_CRITICAL"
+    assert "> 8.0%" in band
+    assert neg > 0.80
+
+    # Level 4: High (Supreme Court, Forensic Audit, Consultation Paper)
+    l4_pb = "IRDAI Issues Consultation Paper on Recalibrating Economics of Insurance Distribution"
+    lvl, code, band, pos, neg, neut, priced = classify_event_severity(l4_pb)
+    assert lvl == 4
+    assert code == "LEVEL_4_HIGH"
+    assert "4.0% - 8.0%" in band
+    assert priced >= 0.70  # Consultative nature has high already-priced-in factor
+
+    l4_fortis = "Supreme Court Refuses to Interfere with High Court Forensic Audit Order"
+    lvl, code, band, pos, neg, neut, priced = classify_event_severity(l4_fortis)
+    assert lvl == 4
+    assert code == "LEVEL_4_HIGH"
+
+    # Level 3: Medium (Order win, MHRA approval)
+    l3_title = "Biocon Receives UK MHRA Approval for Insulin Facility"
+    lvl, code, band, pos, neg, neut, priced = classify_event_severity(l3_title)
+    assert lvl == 3
+    assert code == "LEVEL_3_MEDIUM"
+    assert pos >= 0.70
+
+    # Level 1: Routine Noise
+    l1_title = "Trading Window Closure Pursuant to SEBI Insider Trading Regulations"
+    lvl, code, band, pos, neg, neut, priced = classify_event_severity(l1_title)
+    assert lvl == 1
+    assert code == "LEVEL_1_NOISE"
+    assert priced >= 0.90
+
+def test_cross_asset_market_confirmation():
+    # Bullish Confirmed: Positive tone + Price & Futures OBI positive + Call velocity >= Put velocity
+    conf_bull = compute_market_confirmation(
+        sentiment_score=0.60, fut_pct=1.2, fut_obi=0.25, ce_pct=25.0, pe_pct=-15.0
+    )
+    assert "BULLISH_CONFIRMED" in conf_bull
+
+    # Bearish Confirmed: Negative tone + Price & Futures OBI negative + Put velocity >= Call velocity
+    conf_bear = compute_market_confirmation(
+        sentiment_score=-0.70, fut_pct=-1.5, fut_obi=-0.30, ce_pct=-20.0, pe_pct=35.0
+    )
+    assert "BEARISH_CONFIRMED" in conf_bear
+
+    # Priced In / Divergent: Positive tone but price & calls collapsing
+    conf_div = compute_market_confirmation(
+        sentiment_score=0.65, fut_pct=-1.2, fut_obi=-0.20, ce_pct=-30.0, pe_pct=40.0
+    )
+    assert "PRICED_IN_OR_DIVERGENT" in conf_div
+
+    # Neutral Flow: Minimal tone score
+    conf_neut = compute_market_confirmation(
+        sentiment_score=0.05, fut_pct=0.2, fut_obi=0.05, ce_pct=5.0, pe_pct=-2.0
+    )
+    assert conf_neut == "NEUTRAL_FLOW"
+
