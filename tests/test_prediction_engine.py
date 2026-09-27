@@ -5,7 +5,10 @@ from angel_prediction_engine import (
     calculate_greeks,
     solve_implied_volatility,
     analyze_headline,
-    compute_prediction_and_rating
+    compute_prediction_and_rating,
+    compute_pre_market_gap,
+    run_ground_truth_reconciliation,
+    DEFAULT_WEIGHTS
 )
 
 def test_black76_pricing():
@@ -82,3 +85,71 @@ def test_prediction_and_intensity_rating():
     assert pred_bearish["directional_bias"] == "PUT (PE) BEARISH"
     assert pred_bearish["intensity_score"] >= 65
     assert "PE" in pred_bearish["action_rating"]
+
+def test_pre_market_gap_prediction():
+    # Gap-up catalyst test
+    news_bullish = {
+        "sentiment_score": 0.85,
+        "category": "ORDER_WIN",
+        "impact_rating": "CRITICAL_BULLISH",
+        "top_headline": "Company bags massive defense export order",
+        "item_count": 3
+    }
+    gap_res = compute_pre_market_gap(
+        sym="BEL", fut_ltp=310.0, fut_pct=1.5, fut_obi=0.40,
+        fut_oi_vel=12.5, news_info=news_bullish, atm_strike=310.0
+    )
+    assert gap_res["expected_gap_pct"] > 0
+    assert "GAP-UP" in gap_res["gap_direction"]
+    assert gap_res["pre_open_conviction"] >= 60.0
+    assert "310 CE" in gap_res["target_strike"]
+    assert gap_res["positioning"] == "LONG_BUILDUP"
+
+    # Gap-down regulatory test
+    news_bearish = {
+        "sentiment_score": -0.80,
+        "category": "REGULATORY_PROBE",
+        "impact_rating": "CRITICAL_BEARISH",
+        "top_headline": "USFDA issues warning letter with 8 observations",
+        "item_count": 2
+    }
+    gap_down = compute_pre_market_gap(
+        sym="CIPLA", fut_ltp=1550.0, fut_pct=-1.2, fut_obi=-0.35,
+        fut_oi_vel=8.0, news_info=news_bearish, atm_strike=1550.0
+    )
+    assert gap_down["expected_gap_pct"] < 0
+    assert "GAP-DOWN" in gap_down["gap_direction"]
+    assert gap_down["pre_open_conviction"] >= 60.0
+    assert "1550 PE" in gap_down["target_strike"]
+    assert gap_down["positioning"] == "SHORT_BUILDUP"
+
+def test_ground_truth_reconciliation_and_calibration():
+    # Mock prior predictions
+    predictions = [
+        {"symbol": f"SYM{i}", "directional_bias": "CALL (CE) BULLISH", "ce_symbol": f"SYM{i}29SEP25000CE", "pe_symbol": f"SYM{i}29SEP25000PE", "rank": i, "ce_chg_pct": 50.0 - i, "pe_chg_pct": -20.0}
+        for i in range(1, 21)
+    ]
+    # Simulate actual live top movers having 7 out of 10 matches
+    actual_top_movers = [
+        {"contract": "SYM129SEP25000CE", "gain": 48.0},
+        {"contract": "SYM229SEP25000CE", "gain": 42.0},
+        {"contract": "SYM329SEP25000CE", "gain": 39.0},
+        {"contract": "SYM429SEP25000CE", "gain": 35.0},
+        {"contract": "SYM529SEP25000CE", "gain": 31.0},
+        {"contract": "SYM629SEP25000CE", "gain": 28.0},
+        {"contract": "SYM729SEP25000CE", "gain": 25.0},
+        {"contract": "SYM1529SEP25000CE", "gain": 22.0},
+        {"contract": "SYM1629SEP25000CE", "gain": 20.0},
+        {"contract": "SYM1729SEP25000CE", "gain": 18.0}
+    ]
+
+    prior = [c["contract"] for c in actual_top_movers[:7]] + ["SYM8_CE", "SYM9_CE", "SYM10_CE"]
+    reconcile = run_ground_truth_reconciliation(predictions, actual_top_movers, DEFAULT_WEIGHTS, prior_top10=prior)
+
+    assert reconcile["cycle"] >= 1
+    assert reconcile["hit_rate_pct"] >= 60.0
+    assert reconcile["recall_at_10"] >= 0.60
+    assert reconcile["mean_rank"] <= 15.0
+    assert "weights" in reconcile
+    # Verify weights are normalized to 1.0
+    assert abs(sum(reconcile["weights"].values()) - 1.0) < 0.01
