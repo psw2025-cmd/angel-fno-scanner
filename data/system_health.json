@@ -1,8 +1,8 @@
 {
-  "status": "FAIL",
-  "timestamp": "2026-09-28T03:53:48.393771+00:00",
+  "status": "PASS",
+  "timestamp": "2026-09-28T04:04:26.457759+00:00",
   "sheets_audit": {
-    "passed": false,
+    "passed": true,
     "summary": {
       "PRE_BREAKOUT_SCANNER": {
         "formula_errors": [],
@@ -15,14 +15,14 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 204,
+        "row_count": 200,
         "col_count": 23
       },
       "F&O Options Top Gainers Tracker Dashboard": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 57,
+        "row_count": 65,
         "col_count": 18
       },
       "LEGACY_F&O_DASHBOARD_OBJECT": {
@@ -78,14 +78,14 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 136,
+        "row_count": 137,
         "col_count": 5
       },
       "PAPER_ALERT_LOG": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 57,
+        "row_count": 84,
         "col_count": 11
       },
       "NEWS_LIVE": {
@@ -113,7 +113,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 204,
+        "row_count": 200,
         "col_count": 23
       },
       "OPTION_PREDICTIONS": {
@@ -131,18 +131,18 @@
       "option_predictions_live": {
         "exists": true,
         "rows": 216,
-        "size_mb": 0.11,
+        "size_mb": 0.1,
         "columns": 48
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 1979,
-        "size_mb": 1.88,
+        "rows": 2519,
+        "size_mb": 2.4,
         "columns": 21
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 25,
+        "rows": 30,
         "size_mb": 0.02,
         "columns": 11
       }
