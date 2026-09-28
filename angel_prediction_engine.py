@@ -100,6 +100,22 @@ def is_pre_market_time(dt=None):
     mins = dt.hour * 60 + dt.minute
     return 480 <= mins < 555  # 8:00 AM to 9:15 AM
 
+def is_pre_close_time(dt=None):
+    if dt is None:
+        dt = get_ist_time()
+    if dt.weekday() >= 5:  # Saturday or Sunday
+        return False
+    mins = dt.hour * 60 + dt.minute
+    return 900 <= mins <= 930  # 15:00 to 15:30 IST (3:00 PM to 3:30 PM)
+
+def is_morning_reconcile_time(dt=None):
+    if dt is None:
+        dt = get_ist_time()
+    if dt.weekday() >= 5:
+        return False
+    mins = dt.hour * 60 + dt.minute
+    return 555 <= mins <= 585  # 09:15 to 09:45 IST
+
 # =====================================================================
 # GOOGLE CLOUD & BIGQUERY CLIENT SETUP
 # =====================================================================
@@ -1011,6 +1027,379 @@ def run_ground_truth_reconciliation(current_predictions, actual_top_gainers_cont
     return reconciliation
 
 # =====================================================================
+# PART 3B: EOD PRE-CLOSE NEXT-DAY GAP-UP & EXPLOSION PREDICTION ENGINE (15:00 - 15:30 IST)
+# =====================================================================
+NEXT_DAY_GAP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data/next_day_gap_predictions.json")
+GAP_RECON_HISTORY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data/gap_reconciliation_history.json")
+
+def generate_next_day_gap_picks(predictions, ist_now=None):
+    """
+    Identifies high-conviction overnight Gap-Up Call (CE) and Gap-Down Put (PE) candidates
+    evaluated before market close (15:00 - 15:30 IST) based on institutional positioning,
+    gamma exposure, order flow imbalance, and non-routine catalysts.
+    """
+    if ist_now is None:
+        ist_now = get_ist_time()
+    ist_str = ist_now.strftime("%Y-%m-%d %H:%M:%S")
+
+    ce_candidates = []
+    pe_candidates = []
+
+    for p in predictions:
+        if p.get("is_illiquid", False) or "ILLIQUID" in p.get("action_rating", ""):
+            continue
+        
+        sym = p.get("symbol", "")
+        spot = float(p.get("spot_ltp", 0.0))
+        exp_gap = float(p.get("expected_gap_pct", 0.0))
+        ce_prob = float(p.get("ce_win_prob", 50.0))
+        pe_prob = float(p.get("pe_win_prob", 50.0))
+        ce_ltp = float(p.get("ce_ltp", 0.0))
+        pe_ltp = float(p.get("pe_ltp", 0.0))
+        atm_strike = float(p.get("atm_strike", 0.0))
+        act_rating = p.get("action_rating", "")
+        conviction = float(p.get("pre_open_conviction", 60.0))
+        headline = p.get("top_headline", "")
+        ce_gamma = float(p.get("ce_dollar_gamma", 0.0))
+        pe_gamma = float(p.get("pe_dollar_gamma", 0.0))
+        ce_oi_vel = float(p.get("ce_oi_velocity", 0.0))
+        pe_oi_vel = float(p.get("pe_oi_velocity", 0.0))
+        pcr = float(p.get("atm_pcr", 1.0))
+        ce_sym = p.get("ce_symbol", "")
+        pe_sym = p.get("pe_symbol", "")
+        ce_chg = float(p.get("ce_chg_pct", 0.0))
+        pe_chg = float(p.get("pe_chg_pct", 0.0))
+
+        # 1. CE Candidate Evaluation (Gap-Up / Call Breakout)
+        if ce_prob >= 60.0 and exp_gap >= 0.25 and ce_ltp >= 0.50:
+            score = (exp_gap * 3.0) + (ce_prob * 0.5) + min(25.0, ce_gamma * 15.0) + min(15.0, max(0.0, ce_oi_vel) * 0.5)
+            sl_ltp = round(max(0.05, ce_ltp * 0.85), 2)
+            tgt_ltp = round(ce_ltp * 1.50, 2)
+            why = f"[OVERNIGHT GAP-UP CE] Action: {act_rating} | ExpGap: {exp_gap:+.2f}% | Conviction: {conviction:.1f}% | Gamma: {ce_gamma:.2f} | OI Vel: {ce_oi_vel:+.1f}% | PCR: {pcr:.2f} | Catalyst: {headline[:70]}"
+            ce_candidates.append({
+                "symbol": sym,
+                "side": "CE",
+                "spot_ltp": spot,
+                "target_strike": f"{int(atm_strike)} CE",
+                "contract_symbol": ce_sym,
+                "entry_ltp": ce_ltp,
+                "session_change_pct": ce_chg,
+                "expected_gap_pct": exp_gap,
+                "conviction_pct": conviction,
+                "stop_loss_ltp": sl_ltp,
+                "target_ltp": tgt_ltp,
+                "dollar_gamma": ce_gamma,
+                "action_rating": act_rating,
+                "news_catalyst": headline[:100],
+                "why_rationale": why,
+                "score": round(score, 2),
+                "pcr": pcr,
+                "oi_velocity": ce_oi_vel
+            })
+
+        # 2. PE Candidate Evaluation (Gap-Down / Put Breakdown)
+        if pe_prob >= 60.0 and exp_gap <= -0.25 and pe_ltp >= 0.50:
+            score = (abs(exp_gap) * 3.0) + (pe_prob * 0.5) + min(25.0, pe_gamma * 15.0) + min(15.0, max(0.0, pe_oi_vel) * 0.5)
+            sl_ltp = round(max(0.05, pe_ltp * 0.85), 2)
+            tgt_ltp = round(pe_ltp * 1.60, 2)
+            why = f"[OVERNIGHT GAP-DOWN PE] Action: {act_rating} | ExpGap: {exp_gap:+.2f}% | Conviction: {conviction:.1f}% | Gamma: {pe_gamma:.2f} | OI Vel: {pe_oi_vel:+.1f}% | PCR: {pcr:.2f} | Catalyst: {headline[:70]}"
+            pe_candidates.append({
+                "symbol": sym,
+                "side": "PE",
+                "spot_ltp": spot,
+                "target_strike": f"{int(atm_strike)} PE",
+                "contract_symbol": pe_sym,
+                "entry_ltp": pe_ltp,
+                "session_change_pct": pe_chg,
+                "expected_gap_pct": exp_gap,
+                "conviction_pct": conviction,
+                "stop_loss_ltp": sl_ltp,
+                "target_ltp": tgt_ltp,
+                "dollar_gamma": pe_gamma,
+                "action_rating": act_rating,
+                "news_catalyst": headline[:100],
+                "why_rationale": why,
+                "score": round(score, 2),
+                "pcr": pcr,
+                "oi_velocity": pe_oi_vel
+            })
+
+    ce_candidates.sort(key=lambda x: x["score"], reverse=True)
+    pe_candidates.sort(key=lambda x: x["score"], reverse=True)
+
+    result = {
+        "timestamp_ist": ist_str,
+        "date": ist_str[:10],
+        "top_ce_picks": ce_candidates[:5],
+        "top_pe_picks": pe_candidates[:5]
+    }
+
+    # Persist locally to data/
+    try:
+        os.makedirs(os.path.dirname(NEXT_DAY_GAP_PATH), exist_ok=True)
+        with open(NEXT_DAY_GAP_PATH, "w", encoding="utf-8") as f:
+            json.dump(result, f, indent=2)
+    except Exception as e:
+        print(f"[WARN] Failed to cache next_day_gap_predictions.json: {e}")
+
+    return result
+
+def journal_pre_close_paper_trades(sh, bq_client, gap_picks, ist_str, ist_now):
+    """
+    Appends overnight paper trades to Google Sheets PAPER_ALERT_LOG and BigQuery Sandbox
+    during the 15:00 - 15:30 IST pre-close window with complete micro-details and rationale.
+    Guarantees deduplication (exactly 1 record per symbol/side per session date).
+    """
+    session_date = ist_str[:10]
+    next_day = ist_now.date() + datetime.timedelta(days=1 if ist_now.weekday() < 4 else 3)
+    target_date_iso = next_day.isoformat()
+
+    all_picks = gap_picks.get("top_ce_picks", []) + gap_picks.get("top_pe_picks", [])
+    if not all_picks:
+        return
+
+    # 1. Google Sheets PAPER_ALERT_LOG
+    try:
+        ws_paper = sh.worksheet("PAPER_ALERT_LOG")
+        existing_rows = ws_paper.get_all_values()
+        logged_keys = set()
+        for r in existing_rows[1:]:
+            if len(r) >= 4 and r[1] == session_date and "[OVERNIGHT" in (r[8] if len(r) > 8 else ""):
+                logged_keys.add((r[2].strip().upper(), r[3].strip().upper()))
+
+        new_paper_rows = []
+        for c in all_picks:
+            key = (c["symbol"].strip().upper(), c["side"].strip().upper())
+            if key in logged_keys:
+                continue
+            logged_keys.add(key)
+            full_note = f"{c['why_rationale']} | Entry: ₹{c['entry_ltp']:.2f} | SL: ₹{c['stop_loss_ltp']:.2f} (-15%) | Target: ₹{c['target_ltp']:.2f} | ExpGap: {c['expected_gap_pct']:+.2f}%"
+            new_paper_rows.append([
+                ist_str,
+                session_date,
+                c["symbol"],
+                c["side"],
+                c["spot_ltp"],
+                c["session_change_pct"],
+                c["contract_symbol"] if c["side"] == "CE" else "",
+                c["contract_symbol"] if c["side"] == "PE" else "",
+                full_note,
+                "",  # Later session change % (reconciled at 09:15 next day)
+                ""   # Outcome filled at (reconciled at 09:15 next day)
+            ])
+
+        if new_paper_rows:
+            ws_paper.append_rows(new_paper_rows, value_input_option="USER_ENTERED")
+            print(f"[OK] Appended {len(new_paper_rows)} overnight paper trades to PAPER_ALERT_LOG!")
+    except Exception as e:
+        print(f"[WARN] Error journaling to PAPER_ALERT_LOG: {e}")
+
+    # 2. BigQuery Sandbox Table (next_day_gap_predictions)
+    try:
+        dataset_ref = bq_client.dataset(BQ_DATASET_ID)
+        table_ref = dataset_ref.table("next_day_gap_predictions")
+        table = bq_client.get_table(table_ref)
+
+        bq_rows = []
+        for c in all_picks:
+            bq_rows.append({
+                "prediction_date": session_date,
+                "predicted_at_ist": ist_str,
+                "symbol": str(c["symbol"]),
+                "target_date": target_date_iso,
+                "side": str(c["side"]),
+                "spot_ltp": float(c["spot_ltp"]),
+                "target_strike": str(c["target_strike"]),
+                "contract_symbol": str(c["contract_symbol"]),
+                "entry_ltp": float(c["entry_ltp"]),
+                "expected_gap_pct": float(c["expected_gap_pct"]),
+                "conviction_pct": float(c["conviction_pct"]),
+                "stop_loss_ltp": float(c["stop_loss_ltp"]),
+                "target_ltp": float(c["target_ltp"]),
+                "rationale": str(c["why_rationale"]),
+                "news_catalyst": str(c["news_catalyst"]),
+                "dollar_gamma": float(c["dollar_gamma"]),
+                "actual_open_ltp": None,
+                "actual_return_pct": None,
+                "outcome": "PENDING_OPEN",
+                "reconciled_at_ist": None
+            })
+
+        job_config = bigquery.LoadJobConfig(
+            write_disposition=bigquery.WriteDisposition.WRITE_APPEND
+        )
+        job = bq_client.load_table_from_json(bq_rows, table, job_config=job_config)
+        job.result()
+        print(f"[OK] Loaded {len(bq_rows)} next-day gap records into BigQuery next_day_gap_predictions!")
+    except Exception as e:
+        print(f"[WARN] Error syncing to BigQuery next_day_gap_predictions: {e}")
+
+# =====================================================================
+# PART 3C: NEXT-MORNING 09:15 AM RECONCILIATION & BAYESIAN SELF-LEARNING ENGINE
+# =====================================================================
+def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str, ist_now):
+    """
+    Executes morning reconciliation (09:15 - 09:40 IST) for unresolved overnight paper trades.
+    Computes actual opening returns, determines WIN / LOSS / SCRATCH outcomes, updates
+    PAPER_ALERT_LOG and BigQuery, and feeds outcomes back to the Bayesian weight self-calibration.
+    """
+    session_date = ist_str[:10]
+    try:
+        ws_paper = sh.worksheet("PAPER_ALERT_LOG")
+        rows = ws_paper.get_all_values()
+        if len(rows) <= 1:
+            return
+
+        pred_symbol_map = {p["symbol"].strip().upper(): p for p in predictions}
+        unresolved_indices = []
+
+        for idx, r in enumerate(rows[1:], start=2):
+            if len(r) >= 9 and "[OVERNIGHT" in r[8]:
+                later_change = r[9].strip() if len(r) > 9 else ""
+                if not later_change:
+                    unresolved_indices.append((idx, r))
+
+        if not unresolved_indices:
+            print("[INFO] No pending overnight paper trades to reconcile.")
+            return
+
+        print(f"[INFO] Reconciling {len(unresolved_indices)} overnight paper trades...")
+        reconciled_results = []
+        updates_for_sheet = []
+
+        for row_idx, r in unresolved_indices:
+            trade_date = r[1]
+            sym = r[2].strip().upper()
+            side = r[3].strip().upper()
+            contract = (r[6] if side == "CE" else r[7]).strip().upper()
+            note = r[8]
+
+            m_entry = re.search(r"Entry:\s*₹?\s*([0-9.]+)", note)
+            entry_ltp = float(m_entry.group(1)) if m_entry else 0.0
+
+            open_ltp = 0.0
+            if sym in pred_symbol_map:
+                pred_item = pred_symbol_map[sym]
+                if side == "CE":
+                    open_ltp = float(pred_item.get("ce_ltp", 0.0))
+                else:
+                    open_ltp = float(pred_item.get("pe_ltp", 0.0))
+
+            if open_ltp <= 0.0 and smartApi:
+                try:
+                    q = smartApi.getLtpData("NFO", contract, "")
+                    if q and q.get("data"):
+                        open_ltp = float(q["data"].get("ltp", 0.0))
+                except Exception:
+                    pass
+
+            if entry_ltp > 0 and open_ltp > 0:
+                ret_pct = round(((open_ltp - entry_ltp) / entry_ltp) * 100.0, 2)
+                if ret_pct >= 20.0:
+                    outcome = "WIN"
+                elif ret_pct <= -15.0:
+                    outcome = "LOSS"
+                else:
+                    outcome = "SCRATCH"
+
+                result_text = f"{ret_pct:+.2f}% ({outcome})"
+                updates_for_sheet.append((row_idx, result_text, ist_str))
+                reconciled_results.append({
+                    "symbol": sym,
+                    "side": side,
+                    "trade_date": trade_date,
+                    "contract": contract,
+                    "entry_ltp": entry_ltp,
+                    "actual_open_ltp": open_ltp,
+                    "actual_return_pct": ret_pct,
+                    "outcome": outcome,
+                    "reconciled_at_ist": ist_str
+                })
+
+        for row_idx, res_txt, fill_time in updates_for_sheet:
+            try:
+                ws_paper.update_cell(row_idx, 10, res_txt)
+                ws_paper.update_cell(row_idx, 11, fill_time)
+            except Exception as e:
+                print(f"[WARN] Failed to update PAPER_ALERT_LOG row {row_idx}: {e}")
+
+        if reconciled_results:
+            print(f"[OK] Reconciled {len(reconciled_results)} overnight trades in PAPER_ALERT_LOG!")
+
+            # Append reconciliation records into BigQuery
+            try:
+                dataset_ref = bq_client.dataset(BQ_DATASET_ID)
+                table_ref = dataset_ref.table("next_day_gap_predictions")
+                table = bq_client.get_table(table_ref)
+                bq_reconciled_rows = []
+                for res in reconciled_results:
+                    bq_reconciled_rows.append({
+                        "prediction_date": res["trade_date"],
+                        "predicted_at_ist": ist_str,
+                        "symbol": res["symbol"],
+                        "target_date": session_date,
+                        "side": res["side"],
+                        "spot_ltp": 0.0,
+                        "target_strike": "",
+                        "contract_symbol": res["contract"],
+                        "entry_ltp": res["entry_ltp"],
+                        "expected_gap_pct": 0.0,
+                        "conviction_pct": 0.0,
+                        "stop_loss_ltp": 0.0,
+                        "target_ltp": 0.0,
+                        "rationale": f"RECONCILIATION RESULT: {res['outcome']} ({res['actual_return_pct']:+.2f}%)",
+                        "news_catalyst": "",
+                        "dollar_gamma": 0.0,
+                        "actual_open_ltp": res["actual_open_ltp"],
+                        "actual_return_pct": res["actual_return_pct"],
+                        "outcome": res["outcome"],
+                        "reconciled_at_ist": ist_str
+                    })
+                job_config = bigquery.LoadJobConfig(
+                    write_disposition=bigquery.WriteDisposition.WRITE_APPEND
+                )
+                bq_client.load_table_from_json(bq_reconciled_rows, table, job_config=job_config).result()
+                print(f"[OK] Logged {len(bq_reconciled_rows)} reconciliation results to BigQuery!")
+            except Exception as e:
+                print(f"[WARN] Failed to log reconciliation to BigQuery: {e}")
+
+            # Online Closed-Loop Weight Calibration based on overnight outcomes
+            cal_state = load_calibration_state()
+            current_w = dict(cal_state.get("weights", DEFAULT_WEIGHTS))
+            wins = sum(1 for r in reconciled_results if r["outcome"] == "WIN")
+            losses = sum(1 for r in reconciled_results if r["outcome"] == "LOSS")
+            
+            eta = 0.04
+            if wins > losses:
+                current_w["gamma"] = round(current_w.get("gamma", 0.15) * (1.0 + eta), 4)
+                current_w["opt_vel"] = round(current_w.get("opt_vel", 0.20) * (1.0 + eta), 4)
+            elif losses > wins:
+                current_w["opt_vel"] = round(current_w.get("opt_vel", 0.20) * (1.0 - eta), 4)
+                current_w["opt_obi"] = round(current_w.get("opt_obi", 0.15) * (1.0 + eta), 4)
+
+            tot_w = sum(current_w.values())
+            for k in current_w:
+                current_w[k] = round(current_w[k] / tot_w, 4)
+
+            cal_state["weights"] = current_w
+            save_calibration_state(cal_state)
+            print(f"[CALIBRATION] Overnight gap feedback integrated: {wins} Wins, {losses} Losses. Weights updated.")
+
+            try:
+                hist = []
+                if os.path.exists(GAP_RECON_HISTORY_PATH):
+                    with open(GAP_RECON_HISTORY_PATH, "r", encoding="utf-8") as f:
+                        hist = json.load(f)
+                hist.extend(reconciled_results)
+                with open(GAP_RECON_HISTORY_PATH, "w", encoding="utf-8") as f:
+                    json.dump(hist[-500:], f, indent=2)
+            except Exception as e:
+                print(f"[WARN] Failed to update reconciliation history: {e}")
+
+    except Exception as e:
+        print(f"[WARN] Reconciliation loop error: {e}")
+
+# =====================================================================
 # DYNAMIC F&O UNIVERSE DISCOVERY & ANGEL ONE INTEGRATION
 # =====================================================================
 def get_angel_client():
@@ -1372,7 +1761,7 @@ def compute_prediction_and_rating(
 # =====================================================================
 # FULL EXECUTION PIPELINE
 # =====================================================================
-def run_prediction_pipeline(bypass_market_check=False):
+def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, reconcile_morning=False):
     ist_now = get_ist_time()
     ist_str = ist_now.strftime("%Y-%m-%d %H:%M:%S")
     print(f"\n=======================================================")
@@ -1696,20 +2085,38 @@ def run_prediction_pipeline(bypass_market_check=False):
 
     reconciliation = run_ground_truth_reconciliation(predictions, actual_top_movers, current_weights)
 
+    # Part 3B: EOD Pre-Close Next-Day Gap-Up (CE) and Gap-Down (PE) Engine
+    next_day_picks = generate_next_day_gap_picks(predictions, ist_now)
+
+    gc = get_gspread_client()
+    sh = gc.open_by_key(SHEET_ID)
+    bq_client = get_bigquery_client()
+
+    # Pre-Close Journaling Window (15:00 - 15:30 IST) or forced
+    if is_pre_close_time(ist_now) or force_pre_close:
+        print("[INFO] Pre-Close Window (15:00-15:30 IST): Journaling overnight next-day gap picks...")
+        journal_pre_close_paper_trades(sh, bq_client, next_day_picks, ist_str, ist_now)
+
+    # Morning Reconciliation Window (09:15 - 09:45 IST) or forced
+    if is_morning_reconcile_time(ist_now) or reconcile_morning:
+        print("[INFO] Morning Open Window (09:15-09:45 IST): Reconciling overnight gap paper trades...")
+        reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str, ist_now)
+
     # Sync to Google Sheets & BigQuery Sandbox
-    sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_str)
+    sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_str, next_day_picks=next_day_picks, sh=sh)
     sync_to_bigquery(predictions, news_rows_for_bq, reconciliation, ist_now)
 
-    return predictions, reconciliation
+    return predictions, reconciliation, next_day_picks
 
 # =====================================================================
 # GOOGLE SHEET SYNC MODULE
 # =====================================================================
-def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_str):
+def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_str, next_day_picks=None, sh=None):
     print("[INFO] Syncing outputs across Google Sheet tabs...")
     try:
-        gc = get_gspread_client()
-        sh = gc.open_by_key(SHEET_ID)
+        if sh is None:
+            gc = get_gspread_client()
+            sh = gc.open_by_key(SHEET_ID)
 
         # 1. Update FORENSIC_LIVE with exact schema (18 columns, strict validator)
         ws_fl = sh.worksheet("FORENSIC_LIVE")
@@ -1801,6 +2208,26 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
                 p["spot_ltp"], p["atm_strike"], p["pe_symbol"], p["pe_ltp"], f"{p['pe_iv']}%", p["top_headline"][:60], ""
             ])
 
+        # Dedicated Next-Day Pre-Close (3:00 - 3:30 PM) Section
+        if next_day_picks and (next_day_picks.get("top_ce_picks") or next_day_picks.get("top_pe_picks")):
+            pred_rows.extend([
+                ["", "", "", "", "", "", "", "", "", "", "", ""],
+                ["🌆 NEXT-DAY 3:00 - 3:30 PM PRE-CLOSE GAP-UP & EXPLOSION CANDIDATES (OVERNIGHT SWING)", "", "", "", "", "", "", "", "", "", "", ""],
+                ["Rank", "Symbol", "Side", "Target Strike", "Contract", "Entry LTP", "Stop Loss (-15%)", "Target (+50%/+60%)", "Expected Gap %", "Conviction %", "Multi-Factor Rationale & Catalyst", ""]
+            ])
+            for idx, c in enumerate(next_day_picks.get("top_ce_picks", [])[:5], start=1):
+                pred_rows.append([
+                    idx, c["symbol"], "CE (GAP-UP)", c["target_strike"], c["contract_symbol"],
+                    c["entry_ltp"], c["stop_loss_ltp"], c["target_ltp"], f"{c['expected_gap_pct']:+.2f}%", f"{c['conviction_pct']:.1f}%",
+                    c["why_rationale"][:70], ""
+                ])
+            for idx, c in enumerate(next_day_picks.get("top_pe_picks", [])[:5], start=1):
+                pred_rows.append([
+                    idx, c["symbol"], "PE (GAP-DOWN)", c["target_strike"], c["contract_symbol"],
+                    c["entry_ltp"], c["stop_loss_ltp"], c["target_ltp"], f"{c['expected_gap_pct']:+.2f}%", f"{c['conviction_pct']:.1f}%",
+                    c["why_rationale"][:70], ""
+                ])
+
         pred_rows.extend([
             ["", "", "", "", "", "", "", "", "", "", "", ""],
             ["==================================================================================================================================================================", "", "", "", "", "", "", "", "", "", "", ""],
@@ -1858,20 +2285,7 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
         except Exception as e:
             print(f"[WARN] NEWS_LIVE sync: {e}")
 
-        # 4. Append to PAPER_ALERT_LOG if reconciliation cycle ran
-        try:
-            ws_paper = sh.worksheet("PAPER_ALERT_LOG")
-            paper_entry = [
-                ist_str, ist_str[:10], predictions[0]["symbol"], "CE" if "CALL" in predictions[0]["directional_bias"] else "PE",
-                predictions[0]["spot_ltp"], predictions[0]["ce_chg_pct"] if "CALL" in predictions[0]["directional_bias"] else predictions[0]["pe_chg_pct"],
-                predictions[0]["ce_symbol"], predictions[0]["pe_symbol"],
-                f"Top-10 Hit Rate: {reconciliation['hit_rate_pct']}%, Recall@10: {reconciliation['recall_at_10']}",
-                "", ""
-            ]
-            ws_paper.append_row(paper_entry)
-            print("[OK] Appended ground-truth reconciliation row to PAPER_ALERT_LOG!")
-        except Exception as e:
-            print(f"[WARN] Paper alert log update: {e}")
+        # Paper trades are specifically and deduplicatedly journaled via journal_pre_close_paper_trades during 15:00 - 15:30 IST pre-close window
 
     except Exception as e:
         print(f"[ERROR] Sheet sync error: {e}")
@@ -1989,11 +2403,17 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
 # =====================================================================
 def main():
     bypass_market_check = "--run-once" in sys.argv or "--verify" in sys.argv
+    force_pre_close = "--force-pre-close" in sys.argv
+    reconcile_morning = "--reconcile-gap" in sys.argv
 
-    if bypass_market_check:
-        print("[MODE] Direct Live Run & Verification (bypassing market-hour sleeps)...")
-        run_prediction_pipeline(bypass_market_check=True)
-        print("[SUCCESS] Live Verification Cycle Completed!")
+    if bypass_market_check or force_pre_close or reconcile_morning:
+        print("[MODE] Direct Live Execution (bypassing market-hour sleeps)...")
+        run_prediction_pipeline(
+            bypass_market_check=True,
+            force_pre_close=force_pre_close,
+            reconcile_morning=reconcile_morning
+        )
+        print("[SUCCESS] Live Execution Cycle Completed!")
         return
 
     print("[MODE] Automated Indian Market Production Daemon (09:15 - 15:30 IST)...")

@@ -1,8 +1,8 @@
 {
-  "status": "PASS",
-  "timestamp": "2026-09-28T04:36:18.830762+00:00",
+  "status": "FAIL",
+  "timestamp": "2026-09-28T05:07:53.544220+00:00",
   "sheets_audit": {
-    "passed": true,
+    "passed": false,
     "summary": {
       "PRE_BREAKOUT_SCANNER": {
         "formula_errors": [],
@@ -22,7 +22,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 65,
+        "row_count": 78,
         "col_count": 18
       },
       "LEGACY_F&O_DASHBOARD_OBJECT": {
@@ -71,21 +71,21 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 218,
+        "row_count": 2,
         "col_count": 28
       },
       "NSE_EVENTS": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 137,
+        "row_count": 1,
         "col_count": 5
       },
       "PAPER_ALERT_LOG": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 129,
+        "row_count": 180,
         "col_count": 11
       },
       "NEWS_LIVE": {
@@ -99,7 +99,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 114,
+        "row_count": 115,
         "col_count": 16
       },
       "NEWS_TYPE_TALLY": {
@@ -131,19 +131,19 @@
       "option_predictions_live": {
         "exists": true,
         "rows": 216,
-        "size_mb": 0.1,
+        "size_mb": 0.11,
         "columns": 48
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 2638,
-        "size_mb": 2.48,
+        "rows": 2690,
+        "size_mb": 2.51,
         "columns": 21
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 42,
-        "size_mb": 0.03,
+        "rows": 56,
+        "size_mb": 0.04,
         "columns": 11
       }
     }

@@ -21,7 +21,12 @@ if REPO_DIR not in sys.path:
 from angel_prediction_engine import (
     get_bigquery_client,
     get_gspread_client,
+    get_angel_client,
     run_prediction_pipeline,
+    generate_next_day_gap_picks,
+    reconcile_next_day_gap_trades,
+    NEXT_DAY_GAP_PATH,
+    GAP_RECON_HISTORY_PATH,
     BQ_PROJECT_ID,
     BQ_DATASET_ID,
     SHEET_ID,
@@ -144,6 +149,29 @@ def run_full_verification():
     }
 
 
+def query_next_day_gap(limit=5):
+    """Retrieves Top 5 CE and PE candidates for next-day gap opening with complete micro-details."""
+    if os.path.exists(NEXT_DAY_GAP_PATH):
+        try:
+            with open(NEXT_DAY_GAP_PATH, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return {
+                    "timestamp_ist": data.get("timestamp_ist", ""),
+                    "top_ce_picks": data.get("top_ce_picks", [])[:limit],
+                    "top_pe_picks": data.get("top_pe_picks", [])[:limit]
+                }
+        except Exception:
+            pass
+    # Fallback to generating from latest predictions
+    preds = query_predictions(limit=250)
+    picks = generate_next_day_gap_picks(preds)
+    return {
+        "timestamp_ist": picks.get("timestamp_ist", ""),
+        "top_ce_picks": picks.get("top_ce_picks", [])[:limit],
+        "top_pe_picks": picks.get("top_pe_picks", [])[:limit]
+    }
+
+
 def export_snapshots(output_dir="data"):
     target_dir = os.path.join(REPO_DIR, output_dir)
     os.makedirs(target_dir, exist_ok=True)
@@ -175,11 +203,32 @@ def export_snapshots(output_dir="data"):
     with open(os.path.join(target_dir, "system_health.json"), "w", encoding="utf-8") as f:
         json.dump(health, f, indent=2)
 
-    # 6. Pre-rendered Markdown Summary for GitHub / LLMs
+    # 6. Next-Day Pre-Close Gap Picks snapshot
+    next_day_picks = query_next_day_gap(limit=10)
+    with open(os.path.join(target_dir, "next_day_gap_predictions.json"), "w", encoding="utf-8") as f:
+        json.dump(next_day_picks, f, indent=2)
+
+    # 7. Pre-rendered Markdown Summary for GitHub / LLMs
     now_str = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     md = f"""# Angel One F&O Prediction & Market Intelligence Snapshot
 **Generated**: `{now_str}` | **System Status**: `🟢 {health['status']}`
 
+## 🌆 3:00 - 3:30 PM Pre-Close: Next-Day Gap-Up (CE) Picks
+| Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+50%) | Expected Gap % | Conviction % | Institutional Rationale |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+"""
+    for idx, c in enumerate(next_day_picks.get("top_ce_picks", [])[:5], start=1):
+        md += f"| {idx} | **{c.get('symbol', '')}** | `{c.get('target_strike', '')}` | `{c.get('contract_symbol', '')}` | ₹{float(c.get('entry_ltp', 0)):.2f} | ₹{float(c.get('stop_loss_ltp', 0)):.2f} | ₹{float(c.get('target_ltp', 0)):.2f} | **{float(c.get('expected_gap_pct', 0)):+.2f}%** | {float(c.get('conviction_pct', 0)):.1f}% | {c.get('why_rationale', '')[:80]} |\n"
+
+    md += """
+## 🌆 3:00 - 3:30 PM Pre-Close: Next-Day Gap-Down (PE) Picks
+| Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+60%) | Expected Gap % | Conviction % | Institutional Rationale |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+"""
+    for idx, c in enumerate(next_day_picks.get("top_pe_picks", [])[:5], start=1):
+        md += f"| {idx} | **{c.get('symbol', '')}** | `{c.get('target_strike', '')}` | `{c.get('contract_symbol', '')}` | ₹{float(c.get('entry_ltp', 0)):.2f} | ₹{float(c.get('stop_loss_ltp', 0)):.2f} | ₹{float(c.get('target_ltp', 0)):.2f} | **{float(c.get('expected_gap_pct', 0)):+.2f}%** | {float(c.get('conviction_pct', 0)):.1f}% | {c.get('why_rationale', '')[:80]} |\n"
+
+    md += """
 ## 🌅 Top 5 Pre-Market 9:15 AM Gap-Up Picks
 | Rank | Symbol | Target Strike | Expected Gap % | Conviction % | CE LTP | Live Velocity | Top Catalyst Headline |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
@@ -217,13 +266,32 @@ def export_snapshots(output_dir="data"):
     with open(os.path.join(target_dir, "summary.md"), "w", encoding="utf-8") as f:
         f.write(md)
 
-    print(f"[OK] Snapshots exported successfully: latest_predictions.json, top_gapup.json, breakouts.json, market_news.json, system_health.json, summary.md")
-    return {"status": "SUCCESS", "directory": target_dir, "exported_files": 6}
+    print(f"[OK] Snapshots exported successfully: latest_predictions.json, top_gapup.json, breakouts.json, market_news.json, system_health.json, next_day_gap_predictions.json, summary.md")
+    return {"status": "SUCCESS", "directory": target_dir, "exported_files": 7}
 
 
 def format_output(data, output_format="json", title=None):
     if output_format == "json":
         print(json.dumps(data, indent=2))
+        return
+
+    # Specialized rendering for Next-Day Gap Picks
+    if isinstance(data, dict) and ("top_ce_picks" in data or "top_pe_picks" in data):
+        if title:
+            print(f"## {title}\n")
+        print(f"**Snapshot IST**: `{data.get('timestamp_ist', '')}`\n")
+
+        print("### 🌅 Top Next-Day Gap-Up Call (CE) Picks")
+        print("| Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+50%) | Expected Gap % | Conviction % | Institutional Rationale |")
+        print("| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |")
+        for idx, c in enumerate(data.get("top_ce_picks", []), start=1):
+            print(f"| {idx} | **{c.get('symbol', '')}** | `{c.get('target_strike', '')}` | `{c.get('contract_symbol', '')}` | ₹{float(c.get('entry_ltp', 0)):.2f} | ₹{float(c.get('stop_loss_ltp', 0)):.2f} | ₹{float(c.get('target_ltp', 0)):.2f} | **{float(c.get('expected_gap_pct', 0)):+.2f}%** | {float(c.get('conviction_pct', 0)):.1f}% | {c.get('why_rationale', '')[:80]} |")
+
+        print("\n### 💥 Top Next-Day Gap-Down Put (PE) Picks")
+        print("| Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+60%) | Expected Gap % | Conviction % | Institutional Rationale |")
+        print("| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |")
+        for idx, c in enumerate(data.get("top_pe_picks", []), start=1):
+            print(f"| {idx} | **{c.get('symbol', '')}** | `{c.get('target_strike', '')}` | `{c.get('contract_symbol', '')}` | ₹{float(c.get('entry_ltp', 0)):.2f} | ₹{float(c.get('stop_loss_ltp', 0)):.2f} | ₹{float(c.get('target_ltp', 0)):.2f} | **{float(c.get('expected_gap_pct', 0)):+.2f}%** | {float(c.get('conviction_pct', 0)):.1f}% | {c.get('why_rationale', '')[:80]} |")
         return
 
     # Markdown format rendering
@@ -254,8 +322,11 @@ def main():
     parser.add_argument("--predict", nargs="?", const="ALL", help="Get prediction for a symbol (e.g. --predict MAHABANK) or ALL")
     parser.add_argument("--top-gapup", action="store_true", help="Get Top Gap-Up CE explosion picks with proof")
     parser.add_argument("--top-breakouts", action="store_true", help="Get Top CE breakout and PE breakdown candidates")
+    parser.add_argument("--next-day-gap", action="store_true", help="Get Top 5 Next-Day Pre-Close Gap-Up (CE) and Gap-Down (PE) candidates with micro-details")
     parser.add_argument("--query-news", nargs="?", const="ALL", help="Get multi-source news for a symbol or ALL")
     parser.add_argument("--run-cycle", action="store_true", help="Trigger a live prediction pipeline pass (bypasses sleep)")
+    parser.add_argument("--force-pre-close", action="store_true", help="Force pre-close 3:00-3:30 PM journaling cycle to Google Sheets and BigQuery")
+    parser.add_argument("--reconcile-gap", action="store_true", help="Execute 09:15 AM reconciliation of overnight paper trades against live opening prices")
     parser.add_argument("--verify", action="store_true", help="Run 17-tab forensic audit across Google Sheets, BigQuery and Engine")
     parser.add_argument("--export-snapshots", action="store_true", help="Export pre-rendered data snapshots to data/ directory")
     parser.add_argument("--limit", type=int, default=10, help="Result limit (default: 10)")
@@ -273,6 +344,9 @@ def main():
     elif args.top_breakouts:
         res = query_top_breakouts(limit=args.limit)
         format_output(res, args.format, title="Top Conviction CE Breakouts & PE Breakdowns")
+    elif args.next_day_gap:
+        res = query_next_day_gap(limit=args.limit)
+        format_output(res, args.format, title="Top Next-Day Pre-Close (3:00-3:30 PM) Gap Candidates")
     elif args.query_news:
         sym = None if args.query_news == "ALL" else args.query_news
         res = query_news(symbol=sym, limit=args.limit)
@@ -282,6 +356,22 @@ def main():
         run_prediction_pipeline(bypass_market_check=True)
         export_snapshots()
         print("[SUCCESS] Prediction pipeline pass complete!")
+    elif args.force_pre_close:
+        print("[INFO] Forcing 3:00-3:30 PM Pre-Close Journaling Pass...")
+        run_prediction_pipeline(bypass_market_check=True, force_pre_close=True)
+        export_snapshots()
+        print("[SUCCESS] Pre-close journaling pass complete!")
+    elif args.reconcile_gap:
+        print("[INFO] Executing overnight gap paper trade reconciliation...")
+        gc = get_gspread_client()
+        sh = gc.open_by_key(SHEET_ID)
+        bq_client = get_bigquery_client()
+        smartApi = get_angel_client()
+        preds = query_predictions(limit=250)
+        now_dt = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30)))
+        now_str = now_dt.strftime("%Y-%m-%d %H:%M:%S")
+        reconcile_next_day_gap_trades(smartApi, sh, bq_client, preds, now_str, now_dt)
+        print("[SUCCESS] Overnight gap trade reconciliation complete!")
     elif args.verify:
         res = run_full_verification()
         format_output(res, args.format, title="Forensic System Verification Audit")

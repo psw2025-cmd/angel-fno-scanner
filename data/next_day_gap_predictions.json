@@ -1,0 +1,27 @@
+{
+  "timestamp_ist": "2026-09-28 10:39:32",
+  "date": "2026-09-28",
+  "top_ce_picks": [
+    {
+      "symbol": "CATALYST_CE",
+      "side": "CE",
+      "spot_ltp": 250.0,
+      "target_strike": "250 CE",
+      "contract_symbol": "CATALYST_CE_250CE",
+      "entry_ltp": 5.0,
+      "session_change_pct": 20.0,
+      "expected_gap_pct": 0.85,
+      "conviction_pct": 78.5,
+      "stop_loss_ltp": 4.25,
+      "target_ltp": 7.5,
+      "dollar_gamma": 0.8,
+      "action_rating": "\ud83d\udea8 GAMMA SQUEEZE ALERT (ACCELERATING CE)",
+      "news_catalyst": "Order win of mega transmission line",
+      "why_rationale": "[OVERNIGHT GAP-UP CE] Action: \ud83d\udea8 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap: +0.85% | Conviction: 78.5% | Gamma: 0.80 | OI Vel: +8.0% | PCR: 0.60 | Catalyst: Order win of mega transmission line",
+      "score": 56.05,
+      "pcr": 0.6,
+      "oi_velocity": 8.0
+    }
+  ],
+  "top_pe_picks": []
+}

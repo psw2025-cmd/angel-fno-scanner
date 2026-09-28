@@ -10,6 +10,9 @@ from angel_prediction_engine import (
     run_ground_truth_reconciliation,
     classify_event_severity,
     compute_market_confirmation,
+    is_pre_close_time,
+    is_morning_reconcile_time,
+    generate_next_day_gap_picks,
     DEFAULT_WEIGHTS
 )
 
@@ -426,4 +429,150 @@ def test_extreme_option_change_soft_saturation():
     )
     # Rank metric should be finite and soft-saturated (e.g. <= 400.0)
     assert pred["rank_metric"] <= 400.0
+
+def test_pre_close_timing_window():
+    import datetime
+    # Monday 15:15 IST -> should be True
+    dt_in = datetime.datetime(2026, 9, 28, 15, 15, 0)
+    assert is_pre_close_time(dt_in) is True
+
+    # Monday 14:45 IST -> should be False
+    dt_early = datetime.datetime(2026, 9, 28, 14, 45, 0)
+    assert is_pre_close_time(dt_early) is False
+
+    # Monday 15:35 IST -> should be False
+    dt_late = datetime.datetime(2026, 9, 28, 15, 35, 0)
+    assert is_pre_close_time(dt_late) is False
+
+    # Sunday 15:15 IST -> should be False (weekend)
+    dt_sun = datetime.datetime(2026, 9, 27, 15, 15, 0)
+    assert is_pre_close_time(dt_sun) is False
+
+def test_morning_reconcile_timing_window():
+    import datetime
+    # Monday 09:20 IST -> should be True
+    dt_in = datetime.datetime(2026, 9, 28, 9, 20, 0)
+    assert is_morning_reconcile_time(dt_in) is True
+
+    # Monday 09:10 IST -> should be False
+    dt_early = datetime.datetime(2026, 9, 28, 9, 10, 0)
+    assert is_morning_reconcile_time(dt_early) is False
+
+    # Monday 09:55 IST -> should be False
+    dt_late = datetime.datetime(2026, 9, 28, 9, 55, 0)
+    assert is_morning_reconcile_time(dt_late) is False
+
+def test_next_day_gap_candidate_selection_and_risk_reward():
+    test_preds = [
+        {
+            "symbol": "BULL_STOCK",
+            "spot_ltp": 1200.0,
+            "atm_strike": 1200.0,
+            "expected_gap_pct": 1.25,
+            "ce_win_prob": 85.0,
+            "pe_win_prob": 15.0,
+            "ce_ltp": 20.0,
+            "pe_ltp": 2.0,
+            "action_rating": "🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE)",
+            "pre_open_conviction": 80.0,
+            "top_headline": "USFDA clearance received with zero observations",
+            "ce_dollar_gamma": 1.5,
+            "pe_dollar_gamma": 0.0,
+            "ce_oi_velocity": 12.0,
+            "pe_oi_velocity": -5.0,
+            "atm_pcr": 0.45,
+            "ce_symbol": "BULL_STOCK_1200CE",
+            "pe_symbol": "BULL_STOCK_1200PE",
+            "ce_chg_pct": 45.0,
+            "pe_chg_pct": -30.0,
+            "is_illiquid": False
+        },
+        {
+            "symbol": "BEAR_STOCK",
+            "spot_ltp": 500.0,
+            "atm_strike": 500.0,
+            "expected_gap_pct": -1.80,
+            "ce_win_prob": 12.0,
+            "pe_win_prob": 88.0,
+            "ce_ltp": 1.5,
+            "pe_ltp": 15.0,
+            "action_rating": "💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT]",
+            "pre_open_conviction": 85.0,
+            "top_headline": "Accounting fraud inquiry initiated by regulator",
+            "ce_dollar_gamma": 0.0,
+            "pe_dollar_gamma": 1.8,
+            "ce_oi_velocity": -10.0,
+            "pe_oi_velocity": 18.0,
+            "atm_pcr": 2.5,
+            "ce_symbol": "BEAR_STOCK_500CE",
+            "pe_symbol": "BEAR_STOCK_500PE",
+            "ce_chg_pct": -50.0,
+            "pe_chg_pct": 60.0,
+            "is_illiquid": False
+        }
+    ]
+
+    picks = generate_next_day_gap_picks(test_preds)
+    assert len(picks["top_ce_picks"]) == 1
+    assert len(picks["top_pe_picks"]) == 1
+
+    ce = picks["top_ce_picks"][0]
+    assert ce["symbol"] == "BULL_STOCK"
+    assert ce["side"] == "CE"
+    assert ce["target_strike"] == "1200 CE"
+    assert ce["entry_ltp"] == 20.0
+    # Stop loss must be exactly 15% below entry (20.0 * 0.85 = 17.0)
+    assert ce["stop_loss_ltp"] == 17.0
+    # Target must be 50% above entry (20.0 * 1.50 = 30.0)
+    assert ce["target_ltp"] == 30.0
+    assert ce["expected_gap_pct"] == 1.25
+
+    pe = picks["top_pe_picks"][0]
+    assert pe["symbol"] == "BEAR_STOCK"
+    assert pe["side"] == "PE"
+    assert pe["target_strike"] == "500 PE"
+    assert pe["entry_ltp"] == 15.0
+    # Stop loss must be 15% below entry (15.0 * 0.85 = 12.75)
+    assert pe["stop_loss_ltp"] == 12.75
+    # Target must be 60% above entry (15.0 * 1.60 = 24.0)
+    assert pe["target_ltp"] == 24.0
+    assert pe["expected_gap_pct"] == -1.80
+
+def test_why_rationale_completeness():
+    test_preds = [
+        {
+            "symbol": "CATALYST_CE",
+            "spot_ltp": 250.0,
+            "atm_strike": 250.0,
+            "expected_gap_pct": 0.85,
+            "ce_win_prob": 75.0,
+            "pe_win_prob": 25.0,
+            "ce_ltp": 5.0,
+            "pe_ltp": 1.0,
+            "action_rating": "🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE)",
+            "pre_open_conviction": 78.5,
+            "top_headline": "Order win of mega transmission line",
+            "ce_dollar_gamma": 0.8,
+            "pe_dollar_gamma": 0.0,
+            "ce_oi_velocity": 8.0,
+            "pe_oi_velocity": 0.0,
+            "atm_pcr": 0.60,
+            "ce_symbol": "CATALYST_CE_250CE",
+            "pe_symbol": "CATALYST_CE_250PE",
+            "ce_chg_pct": 20.0,
+            "pe_chg_pct": -10.0,
+            "is_illiquid": False
+        }
+    ]
+    picks = generate_next_day_gap_picks(test_preds)
+    ce = picks["top_ce_picks"][0]
+    rationale = ce["why_rationale"]
+    # Verify micro-details are in the rationale
+    assert "[OVERNIGHT GAP-UP CE]" in rationale
+    assert "ExpGap: +0.85%" in rationale
+    assert "Conviction: 78.5%" in rationale
+    assert "Gamma: 0.80" in rationale
+    assert "PCR: 0.60" in rationale
+    assert "Order win of mega" in rationale
+
 
