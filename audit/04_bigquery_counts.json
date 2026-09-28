@@ -1,0 +1,25 @@
+{
+  "market_news_sentiment": {
+    "table": "fno-angel-prod-1790444589.fno_predictions.market_news_sentiment",
+    "select_count": 1398,
+    "unique_symbols": 127,
+    "oldest_ts": "2026-09-28T02:51:08.459703+00:00",
+    "latest_ts": "2026-09-28T06:38:21.756085+00:00",
+    "distinct_ts": 13
+  },
+  "option_predictions_live": {
+    "table": "fno-angel-prod-1790444589.fno_predictions.option_predictions_live",
+    "select_count": 216,
+    "unique_symbols": 216,
+    "oldest_ts": "2026-09-28T06:38:21.756085+00:00",
+    "latest_ts": "2026-09-28T06:38:21.756085+00:00",
+    "distinct_ts": 1
+  },
+  "prediction_calibration_log": {
+    "table": "fno-angel-prod-1790444589.fno_predictions.prediction_calibration_log",
+    "select_count": 21,
+    "oldest_ts": "2026-09-28T02:50:05.304368+00:00",
+    "latest_ts": "2026-09-28T06:38:21.756085+00:00",
+    "distinct_ts": 21
+  }
+}

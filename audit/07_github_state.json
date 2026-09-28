@@ -1,0 +1,106 @@
+{
+  "timestamp_utc": "2026-09-28T02:11:44.169760+00:00",
+  "repository": "psw2025-cmd/angel-fno-scanner",
+  "default_branch": "main",
+  "head_commit": {
+    "sha": "17c4785027b8e65fc7a5eab32dd5cb7a6600f42f",
+    "commit_msg": "fix(issueops): safe property access on github.event.comment",
+    "author": "psw2025-cmd",
+    "date": "2026-09-28T00:11:47Z"
+  },
+  "recent_commits": [
+    {
+      "sha": "17c4785027b8e65fc7a5eab32dd5cb7a6600f42f",
+      "commit_msg": "fix(issueops): safe property access on github.event.comment",
+      "author": "psw2025-cmd",
+      "date": "2026-09-28T00:11:47Z"
+    },
+    {
+      "sha": "16b14cc6579aecc2f681538d7af1ab38227f9620",
+      "commit_msg": "chore(data): auto-update daily prediction snapshots [skip ci]",
+      "author": "github-actions[bot]",
+      "date": "2026-09-27T23:57:50Z"
+    },
+    {
+      "sha": "c11f8a91b5815b538695c89f757c91135d70f4e3",
+      "commit_msg": "fix(deps): add pytz and requests to requirements.txt and use cloud auth in verify suite",
+      "author": "psw2025-cmd",
+      "date": "2026-09-27T23:54:56Z"
+    },
+    {
+      "sha": "8cd4cbb715ad598c26c6147901955a05064999b8",
+      "commit_msg": "feat(agent-ecosystem): end-to-end github agent api, workflows, issueops, cli, and pre-rendered snapshots",
+      "author": "psw2025-cmd",
+      "date": "2026-09-27T23:53:23Z"
+    },
+    {
+      "sha": "5ab5e80e149dd4170a584d602506aafbb1d5b86e",
+      "commit_msg": "feat(news-engine): integrate multi-tier feeds, 216-stock knowledge graph, 5-stage event severity & cross-asset confirmation",
+      "author": "psw2025-cmd",
+      "date": "2026-09-27T23:03:33Z"
+    },
+    {
+      "sha": "6a2dc4d2c21de1628e6f1b2060335a99dfc03af2",
+      "commit_msg": "fix: compliance nlp filter, liquidity gate, and upgraded gap predictor with black-76 implied move",
+      "author": "psw2025-cmd",
+      "date": "2026-09-27T22:38:24Z"
+    },
+    {
+      "sha": "3ff06f77098050689a22652aa902d5770e72424d",
+      "commit_msg": "fix(backend): sync 4 pre-market gap columns to BigQuery, prevent news duplicates, and normalize Dollar Gamma to achieve 90% top-10 hit rate",
+      "author": "psw2025-cmd",
+      "date": "2026-09-27T22:21:27Z"
+    },
+    {
+      "sha": "eb58dd8689eb3c6f0972b148e6796d601dd4a6f6",
+      "commit_msg": "feat(engine): add pre-market gap predictor, live ground-truth calibration loop, and full 17-tab forensic verification suite",
+      "author": "psw2025-cmd",
+      "date": "2026-09-27T21:23:55Z"
+    },
+    {
+      "sha": "6780f6c2fb676a918093f48334a5d2495e19f84e",
+      "commit_msg": "feat: deploy option CE/PE prediction, Greeks, news sentiment & BigQuery Sandbox integration",
+      "author": "psw2025-cmd",
+      "date": "2026-09-27T20:49:49Z"
+    },
+    {
+      "sha": "ab8f36610eba230468f60159a8e80bfcedd4226d",
+      "commit_msg": "Update scanner.py",
+      "author": "psw2025-cmd",
+      "date": "2026-09-27T18:31:19Z"
+    }
+  ],
+  "open_issues_count": 0,
+  "open_prs_count": 0,
+  "issues": [],
+  "prs": [
+    {
+      "baseRefName": "main",
+      "headRefName": "cursor/real-option-gainers-a3e7",
+      "number": 1,
+      "state": "MERGED",
+      "title": "Replace scratchpad option gainers with Angel quotes",
+      "url": "https://github.com/psw2025-cmd/angel-fno-scanner/pull/1"
+    }
+  ],
+  "workflows": [
+    {
+      "id": 368649543,
+      "name": "Agent Dispatch & Automated Intelligence API",
+      "path": ".github/workflows/agent_dispatch.yml",
+      "state": "active"
+    },
+    {
+      "id": 368649544,
+      "name": ".github/workflows/agent_issue_ops.yml",
+      "path": ".github/workflows/agent_issue_ops.yml",
+      "state": "active"
+    },
+    {
+      "id": 367961100,
+      "name": "Angel One Daily Option Prediction & Forensic Bot",
+      "path": ".github/workflows/market_bot.yml",
+      "state": "active"
+    }
+  ]
+}

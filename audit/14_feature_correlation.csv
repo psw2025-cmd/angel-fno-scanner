@@ -1,0 +1,8 @@
+feature,correlation_with_rank_metric,weight,status
+Option Price Velocity (opt_vel),0.684,0.28,ACTIVE_PRIMARY_DRIVER
+Dollar Gamma (Normalized S^2*Gamma*0.01),0.542,0.2,ACTIVE_VOLATILITY_DRIVER
+OI Surge Velocity (oi_vel),0.495,0.18,ACTIVE_ACCUMULATION_DRIVER
+Futures Order Imbalance (fut_obi),0.381,0.12,ACTIVE_DIRECTIONAL_DRIVER
+Options Order Imbalance (opt_obi),0.327,0.1,ACTIVE_FLOW_DRIVER
+News Sentiment & Catalysts (news),0.298,0.07,ACTIVE_CATALYST_DRIVER
+Implied Volatility (iv),0.215,0.05,ACTIVE_BANDWIDTH_DRIVER

@@ -1,0 +1,447 @@
+[
+  {
+    "dataset_id": "fno_predictions",
+    "table_id": "market_news_sentiment",
+    "full_name": "fno-angel-prod-1790444589.fno_predictions.market_news_sentiment",
+    "num_rows": 1398,
+    "num_bytes": 1367615,
+    "created": "2026-09-27T20:32:38.682000+00:00",
+    "modified": "2026-09-28T01:09:42.648000+00:00",
+    "partitioning_type": "DAY",
+    "clustering_fields": [
+      "symbol",
+      "news_type"
+    ],
+    "schema_fields": [
+      {
+        "name": "filing_type",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "title",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "source_count",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "source_agreement_pct",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "impact_rating",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "symbol",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "tone_score",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "sentiment",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "source",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "news_type",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "timestamp",
+        "type": "TIMESTAMP",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "severity_level",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "source_tier",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "positive_prob",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "negative_prob",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "already_priced_in_prob",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "market_confirmation",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "expected_move_band",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "source_url",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "canonical_url",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "verified_catalyst",
+        "type": "BOOLEAN",
+        "mode": "NULLABLE"
+      }
+    ]
+  },
+  {
+    "dataset_id": "fno_predictions",
+    "table_id": "option_predictions_live",
+    "full_name": "fno-angel-prod-1790444589.fno_predictions.option_predictions_live",
+    "num_rows": 216,
+    "num_bytes": 116127,
+    "created": "2026-09-27T20:32:38.234000+00:00",
+    "modified": "2026-09-28T01:09:38.230000+00:00",
+    "partitioning_type": "DAY",
+    "clustering_fields": [
+      "symbol",
+      "directional_bias"
+    ],
+    "schema_fields": [
+      {
+        "name": "ce_theta",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "positive_prob",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "gap_direction",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "negative_prob",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "expected_gap_pct",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "news_sentiment_score",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "pe_vega",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "pe_theta",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "already_priced_in_prob",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "pe_gamma",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "expected_move_band",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "top_news_headline",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "pe_delta",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "ce_oi",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "pe_oi_change_pct",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "target_open_strike",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "pe_oi",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "news_impact_rating",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "pe_chg_pct",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "ce_delta",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "pe_ltp",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "action_rating",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "ce_bid_ask_spread",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "max_pain",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "ce_vega",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "ce_gamma",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "rank",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "pre_open_conviction_pct",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "intensity_score",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "ce_iv",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "pe_win_prob",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "ce_win_prob",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "snapshot_timestamp",
+        "type": "TIMESTAMP",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "ce_chg_pct",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "ce_ltp",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "atm_pcr",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "symbol",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "confidence_pct",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "pe_bid_ask_spread",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "expiry",
+        "type": "DATE",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "directional_bias",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "news_source_tier",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "pe_iv",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "spot_ltp",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "ce_oi_change_pct",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "atm_strike",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "market_confirmation",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "news_severity_level",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      }
+    ]
+  },
+  {
+    "dataset_id": "fno_predictions",
+    "table_id": "prediction_calibration_log",
+    "full_name": "fno-angel-prod-1790444589.fno_predictions.prediction_calibration_log",
+    "num_rows": 21,
+    "num_bytes": 14969,
+    "created": "2026-09-27T21:16:35.550000+00:00",
+    "modified": "2026-09-28T01:09:44.985000+00:00",
+    "partitioning_type": "DAY",
+    "clustering_fields": null,
+    "schema_fields": [
+      {
+        "name": "hits",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "miss_root_causes",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "predicted_top10",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "actual_top10",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "mean_rank_of_top10",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "timestamp",
+        "type": "TIMESTAMP",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "recall_at_10",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "cycle_number",
+        "type": "INTEGER",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "updated_weights_json",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "misses",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "top10_hit_rate_pct",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+      }
+    ]
+  }
+]

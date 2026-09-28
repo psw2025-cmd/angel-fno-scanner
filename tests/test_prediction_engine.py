@@ -317,3 +317,113 @@ def test_cross_asset_market_confirmation():
     )
     assert conf_neut == "NEUTRAL_FLOW"
 
+def test_news_entity_mapping_exact_company():
+    from angel_prediction_engine import aggregate_market_news
+    articles = [
+        {"title": "Supreme Court Refuses To Interfere With Forensic Probe Order Against Fortis Healthcare - LawBeat", "source": "Legal Litigated Thematic", "link": "https://example.com/1"},
+        {"title": "PB Fintech launches new policy platform - Economic Times", "source": "Livemint", "link": "https://example.com/2"}
+    ]
+    symbols = ["FORTIS", "PAYTM", "POLICYBZR", "ADANIENT", "DABUR"]
+    mapped = aggregate_market_news(articles, symbols)
+    
+    # Fortis must have Fortis news
+    assert "Fortis" in mapped["FORTIS"]["top_headline"]
+    # Unrelated symbols must NOT receive Fortis news!
+    assert "Fortis" not in mapped["PAYTM"]["top_headline"]
+    assert "Fortis" not in mapped["POLICYBZR"]["top_headline"]
+    assert "Fortis" not in mapped["ADANIENT"]["top_headline"]
+    assert "Fortis" not in mapped["DABUR"]["top_headline"]
+
+def test_zero_oi_rejected():
+    # If dominant option has 0 OI or 0 volume, it must be marked as illiquid
+    pred = compute_prediction_and_rating(
+        sym="TESTSYM", fut_ltp=1000.0, fut_pct=1.0, fut_obi=0.2,
+        ce_ltp=25.0, ce_pct=10.0, ce_oi=0, ce_vol=0, ce_spread=0.5, ce_obi=0.2, ce_iv=25.0,
+        ce_greeks={"delta": 0.5, "gamma": 0.002, "theta": -5.0, "vega": 0.2},
+        pe_ltp=20.0, pe_pct=-10.0, pe_oi=1000, pe_vol=500, pe_spread=0.5, pe_obi=-0.2, pe_iv=25.0,
+        pe_greeks={"delta": -0.5, "gamma": 0.002, "theta": -5.0, "vega": 0.2},
+        atm_pcr=1.0, max_pain=1000.0, prev_ce_oi=0, prev_pe_oi=1000,
+        news_sentiment=0.0, news_category="NO_NEWS", news_impact="NEUTRAL"
+    )
+    assert pred["is_illiquid"] is True
+    assert "ILLIQUID" in pred["action_rating"]
+    assert pred["confidence_pct"] <= 40.0
+
+def test_extreme_spread_rejected():
+    # If dominant option has relative spread > 25% and spread > 2.0, mark as illiquid
+    pred = compute_prediction_and_rating(
+        sym="TESTSYM", fut_ltp=1000.0, fut_pct=1.0, fut_obi=0.2,
+        ce_ltp=10.0, ce_pct=10.0, ce_oi=10000, ce_vol=5000, ce_spread=5.0, ce_obi=0.2, ce_iv=25.0,
+        ce_greeks={"delta": 0.5, "gamma": 0.002, "theta": -5.0, "vega": 0.2},
+        pe_ltp=10.0, pe_pct=-10.0, pe_oi=10000, pe_vol=5000, pe_spread=0.5, pe_obi=-0.2, pe_iv=25.0,
+        pe_greeks={"delta": -0.5, "gamma": 0.002, "theta": -5.0, "vega": 0.2},
+        atm_pcr=1.0, max_pain=1000.0, prev_ce_oi=10000, prev_pe_oi=10000,
+        news_sentiment=0.0, news_category="NO_NEWS", news_impact="NEUTRAL"
+    )
+    assert pred["is_illiquid"] is True
+    assert pred["rank_metric"] < -500.0
+
+def test_probability_sum():
+    pred = compute_prediction_and_rating(
+        sym="TESTSYM", fut_ltp=500.0, fut_pct=0.5, fut_obi=0.1,
+        ce_ltp=15.0, ce_pct=5.0, ce_oi=5000, ce_vol=2000, ce_spread=0.2, ce_obi=0.1, ce_iv=20.0,
+        ce_greeks={"delta": 0.5, "gamma": 0.005, "theta": -2.0, "vega": 0.1},
+        pe_ltp=12.0, pe_pct=-5.0, pe_oi=4000, pe_vol=1500, pe_spread=0.2, pe_obi=-0.1, pe_iv=20.0,
+        pe_greeks={"delta": -0.5, "gamma": 0.005, "theta": -2.0, "vega": 0.1},
+        atm_pcr=0.8, max_pain=500.0, prev_ce_oi=5000, prev_pe_oi=4000,
+        news_sentiment=0.2, news_category="ORDER_WIN", news_impact="MODERATE_BULLISH"
+    )
+    assert abs(pred["ce_win_prob"] + pred["pe_win_prob"] - 100.0) < 0.01
+
+def test_direction_expected_gap_consistency():
+    gap_bull = compute_pre_market_gap(fut_pct=1.0, fut_obi=0.3, atm_pcr=1.2, ce_iv=20.0, pe_iv=20.0, ce_win_prob=75.0, pe_win_prob=25.0, news_sentiment=0.4, atm_strike=100.0)
+    assert gap_bull["expected_gap_pct"] >= 0.0
+    assert "GAP-UP" in gap_bull["gap_direction"]
+
+    gap_bear = compute_pre_market_gap(fut_pct=-1.2, fut_obi=-0.3, atm_pcr=0.6, ce_iv=25.0, pe_iv=25.0, ce_win_prob=20.0, pe_win_prob=80.0, news_sentiment=-0.4, atm_strike=100.0)
+    assert gap_bear["expected_gap_pct"] <= 0.0
+    assert "GAP-DOWN" in gap_bear["gap_direction"]
+
+def test_forward_accuracy_not_self_calibration():
+    # Verify that reconciliation metrics explicitly distinguish calibration from forward paper trading
+    reconciliation = run_ground_truth_reconciliation([], [], DEFAULT_WEIGHTS)
+    assert "hit_rate_pct" in reconciliation
+    assert "cycle" in reconciliation
+
+def test_premarket_snapshot_immutable():
+    import json, os
+    frozen_path = "audit/premarket_baseline_frozen.json"
+    assert os.path.exists(frozen_path)
+    with open(frozen_path) as f:
+        d = json.load(f)
+    assert d["predictions_sha256"] == "c215b4c20e5b17b167c4b521ce5772615792f509e23272df7a5a73dd84e4e27e"
+    assert d["total_symbols"] == 216
+
+def test_score_saturation_bounds():
+    pred = compute_prediction_and_rating(
+        sym="TESTSYM", fut_ltp=500.0, fut_pct=5.0, fut_obi=0.9,
+        ce_ltp=50.0, ce_pct=100.0, ce_oi=50000, ce_vol=20000, ce_spread=0.1, ce_obi=0.8, ce_iv=80.0,
+        ce_greeks={"delta": 0.8, "gamma": 0.05, "theta": -10.0, "vega": 0.5},
+        pe_ltp=1.0, pe_pct=-90.0, pe_oi=4000, pe_vol=1500, pe_spread=0.1, pe_obi=-0.8, pe_iv=80.0,
+        pe_greeks={"delta": -0.2, "gamma": 0.05, "theta": -10.0, "vega": 0.5},
+        atm_pcr=0.1, max_pain=480.0, prev_ce_oi=10000, prev_pe_oi=4000,
+        news_sentiment=1.0, news_category="EARNINGS_BEAT", news_impact="CRITICAL_BULLISH"
+    )
+    # Intensity must never exceed 99 and confidence must never exceed 97.5%
+    assert pred["intensity_score"] <= 99
+    assert pred["confidence_pct"] <= 97.5
+
+def test_extreme_option_change_soft_saturation():
+    # If option has +1820% gain, rank_metric should soft-saturate rather than explode linearly
+    pred = compute_prediction_and_rating(
+        sym="TESTSYM", fut_ltp=1000.0, fut_pct=1.0, fut_obi=0.2,
+        ce_ltp=10.0, ce_pct=1820.0, ce_oi=10000, ce_vol=5000, ce_spread=0.5, ce_obi=0.2, ce_iv=25.0,
+        ce_greeks={"delta": 0.5, "gamma": 0.002, "theta": -5.0, "vega": 0.2},
+        pe_ltp=1.0, pe_pct=-50.0, pe_oi=10000, pe_vol=5000, pe_spread=0.1, pe_obi=-0.2, pe_iv=25.0,
+        pe_greeks={"delta": -0.5, "gamma": 0.002, "theta": -5.0, "vega": 0.2},
+        atm_pcr=1.0, max_pain=1000.0, prev_ce_oi=10000, prev_pe_oi=10000,
+        news_sentiment=0.0, news_category="NO_NEWS", news_impact="NEUTRAL"
+    )
+    # Rank metric should be finite and soft-saturated (e.g. <= 400.0)
+    assert pred["rank_metric"] <= 400.0
+

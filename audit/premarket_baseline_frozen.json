@@ -1,0 +1,24 @@
+{
+  "frozen_at_utc": "2026-09-28T02:14:28.391417+00:00",
+  "purpose": "Immutable Pre-Market Baseline Freeze for 2026-09-28 Session",
+  "git_head_sha": "17c4785027b8e65fc7a5eab32dd5cb7a6600f42f",
+  "predictions_file": "data/latest_predictions.json",
+  "predictions_sha256": "c215b4c20e5b17b167c4b521ce5772615792f509e23272df7a5a73dd84e4e27e",
+  "total_symbols": 216,
+  "unique_symbols": 216,
+  "snapshot_timestamp": "2026-09-28T05:25:23.872259+00:00",
+  "top_5_ce": [
+    "SUPREMEIND",
+    "KAYNES",
+    "IREDA",
+    "ASIANPAINT",
+    "MAHABANK"
+  ],
+  "top_5_pe": [
+    "FORTIS",
+    "MAXHEALTH",
+    "PAYTM",
+    "FEDERALBNK",
+    "MCX"
+  ]
+}

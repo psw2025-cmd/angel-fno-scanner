@@ -488,33 +488,43 @@ def compute_market_confirmation(sentiment_score, fut_pct, fut_obi, ce_pct, pe_pc
             return "🟡 BEARISH_PENDING_FLOW"
     return "NEUTRAL_FLOW"
 
-def aggregate_news_for_symbols(universe_symbols):
-    print("[INFO] Scraping live multi-source news (Regulators, Financial Wires & Thematic Discovery)...")
-    all_articles = []
+def aggregate_market_news(articles=None, universe_symbols=None):
+    if universe_symbols is None:
+        if isinstance(articles, list) and len(articles) > 0 and isinstance(articles[0], str):
+            universe_symbols = articles
+            articles = None
+        else:
+            universe_symbols = []
 
-    feed_jobs = list(FEEDS)
-    for t_name, t_url, _ in THEMATIC_DISCOVERY_FEEDS:
-        feed_jobs.append((t_name, t_url))
-    for s_sym, s_url in TARGETED_DISCOVERY_QUERIES:
-        feed_jobs.append((f"Google News [{s_sym}]", s_url))
+    if articles is None:
+        print("[INFO] Scraping live multi-source news (Regulators, Financial Wires & Thematic Discovery)...")
+        all_articles = []
+        feed_jobs = list(FEEDS)
+        for t_name, t_url, _ in THEMATIC_DISCOVERY_FEEDS:
+            feed_jobs.append((t_name, t_url))
+        for s_sym, s_url in TARGETED_DISCOVERY_QUERIES:
+            feed_jobs.append((f"Google News [{s_sym}]", s_url))
 
-    with ThreadPoolExecutor(max_workers=8) as pool:
-        future_to_feed = {pool.submit(fetch_rss_feed, name, url): name for name, url in feed_jobs}
-        for fut in future_to_feed:
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            future_to_feed = {pool.submit(fetch_rss_feed, name, url): name for name, url in feed_jobs}
+            for fut in future_to_feed:
+                try:
+                    res = fut.result()
+                    all_articles.extend(res)
+                except Exception:
+                    pass
+
+        nse_filings = []
+        if os.path.exists(NSE_CACHE_PATH):
             try:
-                res = fut.result()
-                all_articles.extend(res)
-            except Exception:
-                pass
-
-    nse_filings = []
-    if os.path.exists(NSE_CACHE_PATH):
-        try:
-            with open(NSE_CACHE_PATH, "r", encoding="utf-8") as f:
-                cached = json.load(f)
-                nse_filings = cached.get("rows", [])
-        except Exception as e:
-            print(f"[WARN] Error reading NSE cache: {e}")
+                with open(NSE_CACHE_PATH, "r", encoding="utf-8") as f:
+                    cached = json.load(f)
+                    nse_filings = cached.get("rows", [])
+            except Exception as e:
+                print(f"[WARN] Error reading NSE cache: {e}")
+    else:
+        all_articles = list(articles)
+        nse_filings = []
 
     sym_news = defaultdict(list)
 
@@ -562,6 +572,25 @@ def aggregate_news_for_symbols(universe_symbols):
             sev_lvl, sev_code, band, pos_p, neg_p, neut_p, priced = classify_event_severity(t, cat, t_name)
             for sym in affected_stocks:
                 if sym in universe_symbols:
+                    # Enforce strict entity matching:
+                    is_sym_match = bool(re.search(rf"\b{re.escape(sym)}\b", t, re.IGNORECASE) or any(re.search(rf"\b{re.escape(al)}\b", t, re.IGNORECASE) for al in ALIASES.get(sym, ())))
+                    
+                    if reg_key == "LEGAL":
+                        # Litigation orders/cases are company-specific: DO NOT broadcast to unrelated stocks
+                        if not is_sym_match:
+                            continue
+                    else:
+                        # For other sectors (USFDA, IRDAI, RBI), if the headline mentions another specific company in the universe, don't broadcast
+                        has_other_specific = False
+                        if not is_sym_match:
+                            for other_s in universe_symbols:
+                                if other_s != sym:
+                                    if re.search(rf"\b{re.escape(other_s)}\b", t, re.IGNORECASE) or any(re.search(rf"\b{re.escape(al)}\b", t, re.IGNORECASE) for al in ALIASES.get(other_s, ())):
+                                        has_other_specific = True
+                                        break
+                        if has_other_specific:
+                            continue
+
                     if not any(x["title"] == t for x in sym_news[sym]):
                         sym_news[sym].append({
                             "title": t,
@@ -684,14 +713,16 @@ def aggregate_news_for_symbols(universe_symbols):
     print(f"[OK] Multi-source news aggregated: {sum(1 for v in aggregated.values() if v['item_count'] > 0)} symbols have active headlines/filings.")
     return aggregated
 
+aggregate_news_for_symbols = aggregate_market_news
+
 # =====================================================================
 # PART 2: PRE-MARKET GAP OPENING & 9:15 AM EXPLOSION PREDICTOR
 # =====================================================================
 def compute_pre_market_gap(
-    sym, fut_ltp, fut_pct, fut_obi, fut_oi_vel, news_info, atm_strike,
+    sym="NIFTY", fut_ltp=0.0, fut_pct=0.0, fut_obi=0.0, fut_oi_vel=0.0, news_info=None, atm_strike=0.0,
     ce_pct=0.0, pe_pct=0.0, ce_obi=0.0, pe_obi=0.0,
     ce_oi_vel=0.0, pe_oi_vel=0.0, atm_pcr=1.0, ce_iv=20.0, pe_iv=20.0,
-    is_illiquid=False
+    is_illiquid=False, ce_win_prob=None, pe_win_prob=None, news_sentiment=None, **kwargs
 ):
     """
     Enhanced Pre-Market 9:15 AM Gap Predictor combining:
@@ -712,6 +743,15 @@ def compute_pre_market_gap(
         }
 
     # 1. Verified Non-Routine News Catalyst Impact
+    if news_info is None:
+        news_info = {
+            "sources_count": 1 if (news_sentiment is not None and abs(news_sentiment) > 0) else 0,
+            "sentiment_score": news_sentiment if news_sentiment is not None else 0.0,
+            "category": "GENERAL_MACRO"
+        }
+    elif news_sentiment is not None:
+        news_info["sentiment_score"] = news_sentiment
+
     sources_cnt = news_info.get("sources_count", 0)
     sentiment = news_info.get("sentiment_score", 0.0)
     category = news_info.get("category", "GENERAL_MACRO")
@@ -776,6 +816,10 @@ def compute_pre_market_gap(
     implied_move_daily_pct = max(0.5, avg_iv / 15.8745)
 
     # 6. Combined Directional Skew
+    prob_skew = 0.0
+    if ce_win_prob is not None and pe_win_prob is not None:
+        prob_skew = (ce_win_prob - pe_win_prob) / 100.0
+
     directional_skew = (
         (fut_pct * 0.25) +
         (fut_obi * 0.50) +
@@ -784,6 +828,7 @@ def compute_pre_market_gap(
         (pcr_skew * 0.25) +
         (oi_vel_skew * 0.20) +
         (pos_factor * 0.35) +
+        (prob_skew * 0.40) +
         news_gap_term
     )
 
@@ -796,8 +841,14 @@ def compute_pre_market_gap(
     if expected_gap_pct >= 0.35:
         gap_dir = "GAP-UP (CE EXPLOSION)"
         target_strike = f"{int(atm_strike)} CE"
+    elif expected_gap_pct > 0.0:
+        gap_dir = "SLIGHT GAP-UP"
+        target_strike = f"{int(atm_strike)} CE"
     elif expected_gap_pct <= -0.35:
         gap_dir = "GAP-DOWN (PE EXPLOSION)"
+        target_strike = f"{int(atm_strike)} PE"
+    elif expected_gap_pct < 0.0:
+        gap_dir = "SLIGHT GAP-DOWN"
         target_strike = f"{int(atm_strike)} PE"
     else:
         gap_dir = "FLAT / NEUTRAL OPEN"
@@ -1075,12 +1126,26 @@ def save_state(state):
 # =====================================================================
 def compute_prediction_and_rating(
     sym, fut_ltp, fut_pct, fut_obi,
-    ce_ltp, ce_pct, ce_oi, ce_obi, ce_spread, ce_iv, ce_delta, ce_gamma, ce_theta, ce_vega,
-    pe_ltp, pe_pct, pe_oi, pe_obi, pe_spread, pe_iv, pe_delta, pe_gamma, pe_theta, pe_vega,
-    atm_pcr, max_pain, prev_ce_oi, prev_pe_oi,
-    news_sentiment, news_category, news_impact, weights=None,
-    ce_vol=1000, pe_vol=1000
+    ce_ltp, ce_pct, ce_oi, ce_obi, ce_spread, ce_iv,
+    ce_delta=0.0, ce_gamma=0.0, ce_theta=0.0, ce_vega=0.0,
+    pe_ltp=0.0, pe_pct=0.0, pe_oi=0, pe_obi=0.0, pe_spread=0.0,
+    pe_iv=0.0, pe_delta=0.0, pe_gamma=0.0, pe_theta=0.0, pe_vega=0.0,
+    atm_pcr=1.0, max_pain=0.0, prev_ce_oi=None, prev_pe_oi=None,
+    news_sentiment=0.0, news_category="NO_NEWS", news_impact="NEUTRAL",
+    weights=None, ce_vol=1000, pe_vol=1000,
+    ce_greeks=None, pe_greeks=None, **kwargs
 ):
+    if ce_greeks and isinstance(ce_greeks, dict):
+        ce_delta = ce_greeks.get("delta", ce_delta)
+        ce_gamma = ce_greeks.get("gamma", ce_gamma)
+        ce_theta = ce_greeks.get("theta", ce_theta)
+        ce_vega = ce_greeks.get("vega", ce_vega)
+
+    if pe_greeks and isinstance(pe_greeks, dict):
+        pe_delta = pe_greeks.get("delta", pe_delta)
+        pe_gamma = pe_greeks.get("gamma", pe_gamma)
+        pe_theta = pe_greeks.get("theta", pe_theta)
+        pe_vega = pe_greeks.get("vega", pe_vega)
     w = weights or DEFAULT_WEIGHTS
 
     ce_oi_velocity = 0.0
@@ -1260,14 +1325,21 @@ def compute_prediction_and_rating(
     else:
         # Composite Ranking Metric:
         # Directly weights Option Price Velocity, Dollar Gamma, Volume/OI Surge, and Conviction
-        opt_vel_term = lead_opt_chg * w.get("opt_vel", 0.28) * 1.5
+        # Soft-saturate extreme option percentage change so runaway penny options don't explode linearly
+        if lead_opt_chg > 150.0:
+            sat_opt_chg = 150.0 + 50.0 * math.log1p((lead_opt_chg - 150.0) / 50.0)
+        else:
+            sat_opt_chg = lead_opt_chg
+
+        opt_vel_term = sat_opt_chg * w.get("opt_vel", 0.28) * 1.5
         gamma_term = min(40.0, lead_dollar_gamma * 0.35) * w.get("gamma", 0.20) * 1.2
         oi_surge_term = min(30.0, lead_oi_vel * 0.5) * w.get("oi_vel", 0.18) * 1.0
         conviction_term = (conviction_distance * 1.2 + intensity_score * 0.6) * 0.25
         obi_term = max(0.0, lead_obi * 20.0) * w.get("opt_obi", 0.10) * 0.5
         news_term = max(0.0, news_sentiment * 15.0) * w.get("news", 0.07)
 
-        rank_metric = round(opt_vel_term + gamma_term + oi_surge_term + conviction_term + obi_term + news_term, 2)
+        raw_rank_metric = opt_vel_term + gamma_term + oi_surge_term + conviction_term + obi_term + news_term
+        rank_metric = round(min(400.0, max(-999.0, raw_rank_metric)), 2)
 
     return {
         "directional_bias": bias,
@@ -1656,7 +1728,7 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
             ["Metric", "Value", "Benchmark", "Component", "Protocol", "Status"],
             ["Session Auth", "CONNECTED_ANGEL_SMARTAPI", "ACTIVE", "Angel One SmartAPI", "TOTP / JWT WebSocket", "🟢 HEALTHY"],
             ["Writer age", '=IF(ISNUMBER(E2),E2&"s","0s")', "Clock age, not exchange age", "Sheet write timestamp", "Daemon loop", "🟢 HEALTHY (ALL FEEDS ACTIVE)"],
-            ["Top-10 Hit Rate", f"{reconciliation['hit_rate_pct']}%", "Self-Calibration Loop", "Reconciliation Engine", "Ground Truth Compare", "🟢 CALIBRATED"],
+            ["Self-Calibration Hit Rate", f"{reconciliation['hit_rate_pct']}%", "Self-Calibration Loop", "Reconciliation Engine", "Ground Truth Compare", "🟢 CALIBRATED"],
             ["Recall @ 10", f"{reconciliation['recall_at_10']}", "Top 10 Prediction Match", "Self-Calibration Loop", "Online Weights", "🟢 ACTIVE"],
             ["Mean Rank", f"{reconciliation['mean_rank']}", "Actual Movers Rank", "Greeks & News Model", "Dynamic Calibration", "🟢 HIGH ACCURACY"]
         ]

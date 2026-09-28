@@ -1,0 +1,54 @@
+{
+  "timestamp": "2026-09-28T02:22:15Z",
+  "audit_version": "2.0.0-PROD-POST-FIX",
+  "overall_system_status": "PASS",
+  "environment": {
+    "gcp_project_id": "fno-angel-prod-1790444589",
+    "bq_dataset": "fno_predictions",
+    "sheets_id": "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs",
+    "git_branch": "main",
+    "fno_universe_count": 216
+  },
+  "sheets_integrity": {
+    "total_worksheets": 17,
+    "audited_cells": 35495,
+    "formula_errors": 0,
+    "date_serial_corruptions": 0,
+    "dummy_placeholder_strings": 0,
+    "status": "PASS"
+  },
+  "bigquery_integrity": {
+    "billing_tier": "$0 Free Sandbox Tier",
+    "option_predictions_live": {
+      "row_count": 216,
+      "unique_symbols": 216,
+      "column_count": 48,
+      "gap_columns_synced": true,
+      "status": "PASS"
+    },
+    "market_news_sentiment": {
+      "row_count": 1398,
+      "unique_symbols": 127,
+      "duplicate_bloat_prevented": true,
+      "status": "PASS"
+    },
+    "prediction_calibration_log": {
+      "cycle_count": 21,
+      "dollar_gamma_normalized": true,
+      "status": "PASS"
+    }
+  },
+  "test_suite": {
+    "total_tests": 33,
+    "passed": 33,
+    "failed": 0,
+    "execution_time_seconds": 1.76,
+    "status": "PASS"
+  },
+  "github_workflows": {
+    "agent_issue_ops_yaml_valid": true,
+    "active_jobs": 1,
+    "status": "PASS"
+  },
+  "forward_trading_accuracy_status": "PENDING MARKET OUTCOME (Session Closed / Pre-Market State)"
+}

@@ -1,0 +1,141 @@
+{
+  "timestamp_utc": "2026-09-28T02:11:31.609564+00:00",
+  "tabs_integrity": {
+    "PRE_BREAKOUT_SCANNER": {
+      "rows": 34,
+      "cols": 13,
+      "formula_errors": [],
+      "date_serials": [],
+      "dummy_strings": [],
+      "status": "PASS"
+    },
+    "Sheet1": {
+      "rows": 194,
+      "cols": 23,
+      "formula_errors": [],
+      "date_serials": [],
+      "dummy_strings": [],
+      "status": "PASS"
+    },
+    "F&O Options Top Gainers Tracker Dashboard": {
+      "rows": 57,
+      "cols": 18,
+      "formula_errors": [],
+      "date_serials": [],
+      "dummy_strings": [],
+      "status": "PASS"
+    },
+    "LEGACY_F&O_DASHBOARD_OBJECT": {
+      "rows": 14,
+      "cols": 11,
+      "formula_errors": [],
+      "date_serials": [],
+      "dummy_strings": [],
+      "status": "PASS"
+    },
+    "Formula Checks": {
+      "rows": 12,
+      "cols": 6,
+      "formula_errors": [],
+      "date_serials": [],
+      "dummy_strings": [],
+      "status": "PASS"
+    },
+    "PRODUCTION_APPROVED": {
+      "rows": 11,
+      "cols": 8,
+      "formula_errors": [],
+      "date_serials": [],
+      "dummy_strings": [],
+      "status": "PASS"
+    },
+    "Cloud_Automation_Setup": {
+      "rows": 17,
+      "cols": 26,
+      "formula_errors": [],
+      "date_serials": [],
+      "dummy_strings": [],
+      "status": "PASS"
+    },
+    "FORENSIC_LIVE": {
+      "rows": 217,
+      "cols": 18,
+      "formula_errors": [],
+      "date_serials": [],
+      "dummy_strings": [],
+      "status": "PASS"
+    },
+    "HEARTBEAT": {
+      "rows": 8,
+      "cols": 6,
+      "formula_errors": [],
+      "date_serials": [],
+      "dummy_strings": [],
+      "status": "PASS"
+    },
+    "CE_PE_RANK": {
+      "rows": 218,
+      "cols": 28,
+      "formula_errors": [],
+      "date_serials": [],
+      "dummy_strings": [],
+      "status": "PASS"
+    },
+    "NSE_EVENTS": {
+      "rows": 132,
+      "cols": 5,
+      "formula_errors": [],
+      "date_serials": [],
+      "dummy_strings": [],
+      "status": "PASS"
+    },
+    "PAPER_ALERT_LOG": {
+      "rows": 26,
+      "cols": 11,
+      "formula_errors": [],
+      "date_serials": [],
+      "dummy_strings": [],
+      "status": "PASS"
+    },
+    "NEWS_LIVE": {
+      "rows": 218,
+      "cols": 12,
+      "formula_errors": [],
+      "date_serials": [],
+      "dummy_strings": [],
+      "status": "PASS"
+    },
+    "NEWS_IMPACT": {
+      "rows": 104,
+      "cols": 16,
+      "formula_errors": [],
+      "date_serials": [],
+      "dummy_strings": [],
+      "status": "PASS"
+    },
+    "NEWS_TYPE_TALLY": {
+      "rows": 9,
+      "cols": 8,
+      "formula_errors": [],
+      "date_serials": [],
+      "dummy_strings": [],
+      "status": "PASS"
+    },
+    "TOP_GAINERS": {
+      "rows": 194,
+      "cols": 23,
+      "formula_errors": [],
+      "date_serials": [],
+      "dummy_strings": [],
+      "status": "PASS"
+    },
+    "OPTION_PREDICTIONS": {
+      "rows": 243,
+      "cols": 37,
+      "formula_errors": [],
+      "date_serials": [],
+      "dummy_strings": [],
+      "status": "PASS"
+    }
+  }
+}

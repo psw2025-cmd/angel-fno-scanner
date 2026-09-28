@@ -1,0 +1,55 @@
+{
+  "timestamp_utc": "2026-09-28T02:10:11.336162+00:00",
+  "gcp": {
+    "active_account": "warghade2012@gmail.com",
+    "project_id": "fno-angel-prod-1790444589",
+    "project_number": "114681475817",
+    "service_account_identity": "angel-sheets-bot@fno-angel-prod-1790444589.iam.gserviceaccount.com"
+  },
+  "github": {
+    "repository_url": "https://github.com/psw2025-cmd/angel-fno-scanner.git",
+    "branch": "main",
+    "current_sha": "17c4785027b8e65fc7a5eab32dd5cb7a6600f42f"
+  },
+  "google_sheet": {
+    "sheet_id": "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs",
+    "url": "https://docs.google.com/spreadsheets/d/1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs/edit?usp=sharing"
+  },
+  "colab_notebook": {
+    "title": "ANGEL-OPTION-2026.ipynb",
+    "drive_id": "1AUgfSEkpt9CeOf2Nwo_HLNrNCgLSqCUH",
+    "url": "https://colab.research.google.com/drive/1AUgfSEkpt9CeOf2Nwo_HLNrNCgLSqCUH?usp=sharing"
+  },
+  "bigquery": {
+    "project_id": "fno-angel-prod-1790444589",
+    "datasets": [
+      "fno_predictions"
+    ]
+  },
+  "runtime_daemons": {
+    "tmux_sessions": [
+      "1684554426: 1 windows (created Mon Sep 28 01:57:11 2026) [121x33] (attached)",
+      "1706977083: 1 windows (created Mon Sep 28 02:00:57 2026) [121x33] (attached)",
+      "angel_dynamic_bot: 1 windows (created Mon Sep 28 01:57:14 2026) [121x33]",
+      "angel_news_impact: 1 windows (created Mon Sep 28 01:57:14 2026) [121x33]",
+      "angel_news_layer: 1 windows (created Mon Sep 28 01:57:14 2026) [121x33]",
+      "angel_prediction_engine: 1 windows (created Mon Sep 28 01:57:14 2026) [121x33]",
+      "angel_rank_layer: 1 windows (created Mon Sep 28 01:57:14 2026) [121x33]"
+    ],
+    "running_processes": [
+      "1200 bash -c python3 -u ~/angel_autonomous_daemon.py 2>&1 | tee -a ~/bot.log",
+      "1201 python3 -u /home/warghade2012/angel_autonomous_daemon.py",
+      "1206 bash -c python3 -u ~/angel_rank_layer.py >> ~/rank_layer.log 2>&1",
+      "1208 python3 -u /home/warghade2012/angel_rank_layer.py",
+      "1210 bash -c python3 -u ~/angel_news_layer.py >> ~/news_layer.log 2>&1",
+      "1212 python3 -u /home/warghade2012/angel_news_layer.py",
+      "1214 bash -c python3 -u ~/angel_news_impact.py >> ~/news_impact.log 2>&1",
+      "1216 python3 -u /home/warghade2012/angel_news_impact.py",
+      "1218 bash -c python3 -u /home/warghade2012/angel_prediction_engine.py --daemon >> /home/warghade2012/prediction_engine.log 2>&1",
+      "1219 python3 -u /home/warghade2012/angel_prediction_engine.py --daemon",
+      "3395 bash -c python3 - <<'PY' import json, os, subprocess, datetime  def run_cmd(cmd):     try:         p = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30)         return p.stdout.strip(), p.stderr.strip(), p.returncode     except Exception as e:         return \"\", str(e), 1  now_utc = datetime.datetime.now(datetime.timezone.utc).isoformat()  # 1. GCP config gcp_account, _, _ = run_cmd(\"gcloud config get-value account\") gcp_project, _, _ = run_cmd(\"gcloud config get-value project\") proj_num, _, _ = run_cmd(f\"gcloud projects describe {gcp_project} --format='value(projectNumber)'\")  # 2. IAM Service Account sa_email = \"UNKNOWN\" key_path = os.path.expanduser(\"~/angel_sheets_key.json\") if os.path.exists(key_path):     try:         with open(key_path) as f:             sa_data = json.load(f)             sa_email = sa_data.get(\"client_email\", \"UNKNOWN\")     except Exception:         pass  # 3. Git metadata git_repo, _, _ = run_cmd(\"git config --get remote.origin.url\") git_branch, _, _ = run_cmd(\"git rev-parse --abbrev-ref HEAD\") git_sha, _, _ = run_cmd(\"git rev-parse HEAD\")  # 4. BigQuery datasets bq_datasets_raw, _, _ = run_cmd(f\"bq ls --project_id={gcp_project} --format=json\") bq_datasets = [] try:     bq_datasets = [d.get(\"datasetReference\", {}).get(\"datasetId\") for d in json.loads(bq_datasets_raw)] except Exception:     bq_datasets = [bq_datasets_raw]  # 5. Runtime / daemons tmux_sessions, _, _ = run_cmd(\"tmux ls\") daemons, _, _ = run_cmd(\"pgrep -af 'angel_'\")  # 6. Cloud services schedulers, _, _ = run_cmd(\"gcloud scheduler jobs list --location=asia-south1 --format=json\") run_services, _, _ = run_cmd(\"gcloud run services list --format=json\")  auth_env = {     \"timestamp_utc\": now_utc,     \"gcp\": {         \"active_account\": gcp_account,         \"project_id\": gcp_project,         \"project_number\": proj_num,         \"service_account_identity\": sa_email     },     \"github\": {         \"repository_url\": git_repo,         \"branch\": git_branch,         \"current_sha\": git_sha     },     \"google_sheet\": {         \"sheet_id\": \"1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs\",         \"url\": \"https://docs.google.com/spreadsheets/d/1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs/edit?usp=sharing\"     },     \"colab_notebook\": {         \"title\": \"ANGEL-OPTION-2026.ipynb\",         \"drive_id\": \"1AUgfSEkpt9CeOf2Nwo_HLNrNCgLSqCUH\",         \"url\": \"https://colab.research.google.com/drive/1AUgfSEkpt9CeOf2Nwo_HLNrNCgLSqCUH?usp=sharing\"     },     \"bigquery\": {         \"project_id\": gcp_project,         \"datasets\": bq_datasets     },     \"runtime_daemons\": {         \"tmux_sessions\": tmux_sessions.split(\"\\n\") if tmux_sessions else [],         \"running_processes\": daemons.split(\"\\n\") if daemons else []     },     \"cloud_schedulers_count\": len(json.loads(schedulers)) if schedulers and schedulers.startswith(\"[\") else 0,     \"cloud_run_services_count\": len(json.loads(run_services)) if run_services and run_services.startswith(\"[\") else 0 }  out_path = \"/home/warghade2012/angel-fno-scanner/audit/00_authority_and_environment.json\" with open(out_path, \"w\") as f:     json.dump(auth_env, f, indent=2)  print(\"[OK] audit/00_authority_and_environment.json created successfully:\") print(json.dumps(auth_env, indent=2)) PY"
+    ]
+  },
+  "cloud_schedulers_count": 0,
+  "cloud_run_services_count": 0
+}

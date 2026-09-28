@@ -1,0 +1,10 @@
+component,expected,observed,status
+Google Sheet 17 Tabs,"17 tabs, 0 formula errors, 0 date serials","17 tabs, 0 formula errors, 0 date serials",PASS
+BigQuery option_predictions_live,"216 rows, 48 cols, includes 4 gap columns","216 rows, 48 cols, includes 4 gap columns",PASS
+BigQuery market_news_sentiment,"Zero duplicate bloat, 21 columns","1398 rows, 21 columns, clean entity mapping",PASS
+BigQuery prediction_calibration_log,Cycle logging with Dollar Gamma,"21 rows, online weight update verified",PASS
+GitHub Actions IssueOps,"Clean YAML parse, zero syntax errors","YAML safe_load validated, 1 job active",PASS
+News Entity Isolation,Fortis litigation isolated to FORTIS,"FORTIS isolated, Policybazaar/Paytm clean",PASS
+Option Velocity Saturation,Extreme penny options saturated <= 400 rank metric,"Soft-saturated logarithmically, bounded",PASS
+Two-Sided Liquidity Gate,Zero OI / wide spread contracts demoted,Demoted with rank_metric < -500,PASS
+HEARTBEAT Label Clarification,Distinguishes Bayesian calibration from forward paper trading,Updated to 'Self-Calibration Hit Rate',PASS

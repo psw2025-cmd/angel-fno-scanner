@@ -92,24 +92,20 @@ jobs:
               cat data/summary.md >> output/body.md
               ;;
             /help)
-              cat << 'EOF' > output/body.md
-### 📖 Available Agent IssueOps Commands
-| Command | Arguments | Description | Example |
-| :--- | :--- | :--- | :--- |
-| `/predict` | `<SYMBOL>` | Full Black-76 Greeks, probabilities, and news impact for an F&O stock | `/predict POLICYBZR` |
-| `/gapup` | `[LIMIT]` | Top predicted 9:15 AM pre-market gap-up winners ranked by conviction | `/gapup 5` |
-| `/breakouts` | `[LIMIT]` | Top CE breakouts and PE breakdowns ranked by win probability | `/breakouts 5` |
-| `/news` | `<SYMBOL> [LIMIT]` | Query live news headlines, tone, and catalysts for a symbol | `/news FORTIS` |
-| `/verify` | None | Full forensic verification of 17 Sheet tabs, BigQuery, and state | `/verify` |
-| `/run-cycle` | None | Trigger an immediate live prediction & calibration cycle | `/run-cycle` |
-| `/snapshots` | None | Export and view latest pre-rendered market intelligence summary | `/snapshots` |
-| `/help` | None | Display this help menu | `/help` |
-EOF
+              echo "### 📖 Available Agent IssueOps Commands" > output/body.md
+              echo "| Command | Arguments | Description | Example |" >> output/body.md
+              echo "| :--- | :--- | :--- | :--- |" >> output/body.md
+              echo "| \`/predict\` | \`<SYMBOL>\` | Full Black-76 Greeks, probabilities, and news impact for an F&O stock | \`/predict POLICYBZR\` |" >> output/body.md
+              echo "| \`/gapup\` | \`[LIMIT]\` | Top predicted 9:15 AM pre-market gap-up winners ranked by conviction | \`/gapup 5\` |" >> output/body.md
+              echo "| \`/breakouts\` | \`[LIMIT]\` | Top CE breakouts and PE breakdowns ranked by win probability | \`/breakouts 5\` |" >> output/body.md
+              echo "| \`/news\` | \`<SYMBOL> [LIMIT]\` | Query live news headlines, tone, and catalysts for a symbol | \`/news FORTIS\` |" >> output/body.md
+              echo "| \`/verify\` | None | Full forensic verification of 17 Sheet tabs, BigQuery, and state | \`/verify\` |" >> output/body.md
+              echo "| \`/run-cycle\` | None | Trigger an immediate live prediction & calibration cycle | \`/run-cycle\` |" >> output/body.md
+              echo "| \`/snapshots\` | None | Export and view latest pre-rendered market intelligence summary | \`/snapshots\` |" >> output/body.md
+              echo "| \`/help\` | None | Display this help menu | \`/help\` |" >> output/body.md
               ;;
             *)
-              cat << 'EOF' > output/body.md
-⚠️ **Unknown command.** Type `/help` to see all available commands.
-EOF
+              echo "⚠️ **Unknown command.** Type \`/help\` to see all available commands." > output/body.md
               ;;
           esac
 

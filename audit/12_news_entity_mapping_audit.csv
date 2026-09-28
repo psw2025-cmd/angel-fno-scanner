@@ -1,0 +1,15 @@
+symbol,mapped_headline,category,severity_code,entity_matched,is_valid_entity_mapping,contamination_risk
+FORTIS,No fresh headline,NO_NEWS,LEVEL_1,NONE,TRUE,ZERO_AFTER_FIX
+POLICYBZR,Bloodbath for PB Fintech shares! Stock down 5% after 36% fall yesterday; IRDAI’s overhaul move spooks in - The Times of India,GENERAL_MACRO,LEVEL_2,POLICYBZR,TRUE,ZERO_AFTER_FIX
+PAYTM,No fresh headline,NO_NEWS,LEVEL_1,NONE,TRUE,ZERO_AFTER_FIX
+VEDL,No fresh headline,NO_NEWS,LEVEL_1,NONE,TRUE,ZERO_AFTER_FIX
+ADANIENT,Supreme Court Rejects Plea Against Forensic Audit Into Transactions Of Fortis In Daiichi Sankyo Case - verdictum.in,GENERAL_MACRO,LEVEL_4,ADANIENT,FALSE_CONTAMINATION,ACTIVE_CONTAMINATION
+ADANIPORTS,Supreme Court Rejects Plea Against Forensic Audit Into Transactions Of Fortis In Daiichi Sankyo Case - verdictum.in,GENERAL_MACRO,LEVEL_4,ADANIPORTS,FALSE_CONTAMINATION,ACTIVE_CONTAMINATION
+DABUR,Supreme Court Rejects Plea Against Forensic Audit Into Transactions Of Fortis In Daiichi Sankyo Case - verdictum.in,GENERAL_MACRO,LEVEL_4,DABUR,FALSE_CONTAMINATION,ACTIVE_CONTAMINATION
+SUNPHARMA,No fresh headline,NO_NEWS,LEVEL_1,NONE,TRUE,ZERO_AFTER_FIX
+DRREDDY,No fresh headline,NO_NEWS,LEVEL_1,NONE,TRUE,ZERO_AFTER_FIX
+CIPLA,No fresh headline,NO_NEWS,LEVEL_1,NONE,TRUE,ZERO_AFTER_FIX
+SAIL,"Top stocks in focus today. Why Adani Power, SAIL, BCCL, Power Grid, Cupid, KPI must be on radar - List for Mon 28 Sep",GENERAL_MACRO,LEVEL_2,SAIL,TRUE,ZERO_AFTER_FIX
+HDFCBANK,"SBI Life, Max Fin, HDFC Life, LIC share price targets: IRDAI may need to revisit proposed cap, says Systematix - Business Today",GENERAL_MACRO,LEVEL_2,HDFCBANK,TRUE,ZERO_AFTER_FIX
+SBIN,"SBI Life, Max Fin, HDFC Life, LIC share price targets: IRDAI may need to revisit proposed cap, says Systematix - Business Today",GENERAL_MACRO,LEVEL_2,SBIN,TRUE,ZERO_AFTER_FIX
+RELIANCE,No fresh headline,NO_NEWS,LEVEL_1,NONE,TRUE,ZERO_AFTER_FIX

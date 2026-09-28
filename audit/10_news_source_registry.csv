@@ -1,0 +1,19 @@
+source_id,source_name,url,type,tier,http_status,articles_fetched,error,checked_at
+FEED_1,SEBI Official,https://www.sebi.gov.in/sebirss.xml,GENERAL_RSS,TIER_2_OFFICIAL,200,30,,2026-09-28T02:13:57.713771+00:00
+FEED_2,RBI Official,https://m.rbi.org.in/pressreleases_rss.xml,GENERAL_RSS,TIER_2_OFFICIAL,200,10,,2026-09-28T02:13:59.258050+00:00
+FEED_3,NSE Announcements RSS,https://nsearchives.nseindia.com/content/RSS/Online_announcements.xml,GENERAL_RSS,TIER_3_FINANCIAL_MEDIA,200,3,,2026-09-28T02:13:59.297581+00:00
+FEED_4,Livemint,https://www.livemint.com/rss/markets,GENERAL_RSS,TIER_3_FINANCIAL_MEDIA,200,35,,2026-09-28T02:13:59.352432+00:00
+FEED_5,Economic Times,https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms,GENERAL_RSS,TIER_3_FINANCIAL_MEDIA,200,50,,2026-09-28T02:13:59.405037+00:00
+FEED_6,Business Standard,https://www.business-standard.com/rss/markets-106.rss,GENERAL_RSS,TIER_3_FINANCIAL_MEDIA,200,35,,2026-09-28T02:13:59.440021+00:00
+FEED_7,Hindu Business Line,https://www.thehindubusinessline.com/markets/feeder/default.rss,GENERAL_RSS,TIER_3_FINANCIAL_MEDIA,200,60,,2026-09-28T02:13:59.556541+00:00
+FEED_8,IRDAI Thematic (IRDAI),https://news.google.com/rss/search?q=(IRDAI+commission+OR+expense+ratio)+when:3d&hl=en-IN&gl=IN&ceid=IN:en,THEMATIC_SEARCH,TIER_3_FINANCIAL_MEDIA,200,27,,2026-09-28T02:13:59.835299+00:00
+FEED_9,Pharma USFDA Thematic (USFDA),https://news.google.com/rss/search?q=(USFDA+warning+letter+OR+inspection+India+pharma)+when:3d&hl=en-IN&gl=IN&ceid=IN:en,THEMATIC_SEARCH,TIER_3_FINANCIAL_MEDIA,200,6,,2026-09-28T02:14:00.764978+00:00
+FEED_10,Banking RBI Thematic (RBI),https://news.google.com/rss/search?q=(RBI+penalty+OR+draft+guidelines+OR+repo+rate+bank)+when:3d&hl=en-IN&gl=IN&ceid=IN:en,THEMATIC_SEARCH,TIER_3_FINANCIAL_MEDIA,200,2,,2026-09-28T02:14:00.961926+00:00
+FEED_11,Telecom TRAI Thematic (TRAI),https://news.google.com/rss/search?q=(TRAI+telecom+tariff+OR+spectrum+OR+AGR)+when:3d&hl=en-IN&gl=IN&ceid=IN:en,THEMATIC_SEARCH,TIER_3_FINANCIAL_MEDIA,200,11,,2026-09-28T02:14:01.223461+00:00
+FEED_12,Energy PNGRB Thematic (PNGRB),https://news.google.com/rss/search?q=(PNGRB+gas+OR+CERC+power+tariff)+when:3d&hl=en-IN&gl=IN&ceid=IN:en,THEMATIC_SEARCH,TIER_3_FINANCIAL_MEDIA,200,0,,2026-09-28T02:14:01.453717+00:00
+FEED_13,Legal Litigated Thematic (LEGAL),https://news.google.com/rss/search?q=(Supreme+Court+OR+NCLT+forensic+audit+order)+when:3d&hl=en-IN&gl=IN&ceid=IN:en,THEMATIC_SEARCH,TIER_3_FINANCIAL_MEDIA,200,31,,2026-09-28T02:14:01.592522+00:00
+FEED_14,Targeted POLICYBZR,https://news.google.com/rss/search?q=(%22PB+Fintech%22+OR+Policybazaar)+when:3d&hl=en-IN&gl=IN&ceid=IN:en,TARGETED_STOCK,TIER_3_FINANCIAL_MEDIA,200,99,,2026-09-28T02:14:02.319209+00:00
+FEED_15,Targeted FORTIS,https://news.google.com/rss/search?q=(%22Fortis+Healthcare%22+OR+Fortis)+when:3d&hl=en-IN&gl=IN&ceid=IN:en,TARGETED_STOCK,TIER_3_FINANCIAL_MEDIA,200,49,,2026-09-28T02:14:03.013628+00:00
+FEED_16,Targeted BIOCON,https://news.google.com/rss/search?q=(Biocon+OR+Syngene)+when:3d&hl=en-IN&gl=IN&ceid=IN:en,TARGETED_STOCK,TIER_3_FINANCIAL_MEDIA,200,18,,2026-09-28T02:14:03.421970+00:00
+FEED_17,Targeted TATAMOTORS,https://news.google.com/rss/search?q=(%22Tata+Motors%22+OR+JLR)+when:3d&hl=en-IN&gl=IN&ceid=IN:en,TARGETED_STOCK,TIER_3_FINANCIAL_MEDIA,200,69,,2026-09-28T02:14:03.777406+00:00
+FEED_18,Targeted RELIANCE,https://news.google.com/rss/search?q=(%22Reliance+Industries%22+OR+RIL)+when:3d&hl=en-IN&gl=IN&ceid=IN:en,TARGETED_STOCK,TIER_3_FINANCIAL_MEDIA,200,50,,2026-09-28T02:14:04.140205+00:00
