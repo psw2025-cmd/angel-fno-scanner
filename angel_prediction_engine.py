@@ -71,6 +71,19 @@ def parse_expiry_date(exp_str):
     except Exception:
         return None
 
+def to_iso_date(val):
+    if not val:
+        return datetime.date.today().isoformat()
+    if isinstance(val, (datetime.date, datetime.datetime)):
+        return val.strftime("%Y-%m-%d")
+    s = str(val).strip()
+    for fmt in ("%Y-%m-%d", "%d-%b-%Y", "%d%b%Y", "%d-%m-%Y"):
+        try:
+            return datetime.datetime.strptime(s, fmt).date().isoformat()
+        except Exception:
+            pass
+    return datetime.date.today().isoformat()
+
 def is_market_open(dt=None):
     if dt is None:
         dt = get_ist_time()
@@ -1482,8 +1495,8 @@ def run_prediction_pipeline(bypass_market_check=False):
         pe_sell_p = float(pe_depth.get("sell", [{}])[0].get("price", 0.0)) if pe_depth.get("sell") else 0.0
         pe_spread = round(max(0.0, pe_sell_p - pe_buy_p), 2) if (pe_buy_p > 0 and pe_sell_p > 0) else 0.0
 
-        # Strict non-empty PCR: if CE OI > 0: round(PE OI / CE OI, 2), else 0.0
-        atm_pcr = round(pe_oi / ce_oi, 2) if ce_oi > 0 else 0.0
+        # Strict non-empty PCR: if CE OI > 0: round(min(10.0, PE OI / CE OI), 2), else 0.0
+        atm_pcr = round(min(10.0, pe_oi / ce_oi), 2) if ce_oi > 0 else 0.0
 
         days_to_exp = max(0.5, (meta["expiry_date"] - today).days)
         T = days_to_exp / 365.0
@@ -1886,7 +1899,7 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
                 "snapshot_timestamp": ts_iso,
                 "rank": int(p["rank"]),
                 "symbol": str(p["symbol"]),
-                "expiry": str(p["expiry"]),
+                "expiry": to_iso_date(p.get("opt_expiry_date") or p.get("expiry")),
                 "spot_ltp": float(p["spot_ltp"]),
                 "atm_strike": float(p["atm_strike"]),
                 "directional_bias": str(p["directional_bias"]),

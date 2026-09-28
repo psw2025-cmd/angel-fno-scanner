@@ -1,6 +1,6 @@
 {
   "status": "FAIL",
-  "timestamp": "2026-09-28T03:58:07.241853+00:00",
+  "timestamp": "2026-09-28T03:53:48.393771+00:00",
   "sheets_audit": {
     "passed": false,
     "summary": {
@@ -15,7 +15,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 200,
+        "row_count": 204,
         "col_count": 23
       },
       "F&O Options Top Gainers Tracker Dashboard": {
@@ -85,7 +85,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 65,
+        "row_count": 57,
         "col_count": 11
       },
       "NEWS_LIVE": {
@@ -113,7 +113,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 200,
+        "row_count": 204,
         "col_count": 23
       },
       "OPTION_PREDICTIONS": {
@@ -131,18 +131,18 @@
       "option_predictions_live": {
         "exists": true,
         "rows": 216,
-        "size_mb": 0.1,
+        "size_mb": 0.11,
         "columns": 48
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 2253,
-        "size_mb": 2.15,
+        "rows": 1979,
+        "size_mb": 1.88,
         "columns": 21
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 27,
+        "rows": 25,
         "size_mb": 0.02,
         "columns": 11
       }
