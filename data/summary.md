@@ -1,29 +1,29 @@
 # Angel One F&O Prediction & Market Intelligence Snapshot
-**Generated**: `2026-09-28 03:29:07 UTC` | **System Status**: `🟢 PASS`
+**Generated**: `2026-09-28 03:58:07 UTC` | **System Status**: `🟢 FAIL`
 
 ## 🌅 Top 5 Pre-Market 9:15 AM Gap-Up Picks
 | Rank | Symbol | Target Strike | Expected Gap % | Conviction % | CE LTP | Live Velocity | Top Catalyst Headline |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| 11 | **MAHABANK** | `85 CE` | **+2.43%** | 88.2% | ₹0.69 | +200.0% | No fresh material catalyst |
-| 43 | **BAJAJHLDNG** | `11000 CE` | **+1.78%** | 77.3% | ₹85.80 | +19.4% | No fresh material catalyst |
-| 9 | **AXISBANK** | `1220 CE` | **+1.69%** | 71.7% | ₹9.15 | +181.5% | YES Bank, Axis Bank: Supreme Court to Hear Forensic Audit Ca |
-| 14 | **BANDHANBNK** | `190 CE` | **+1.50%** | 75.2% | ₹1.66 | +127.4% | No fresh material catalyst |
-| 27 | **NAUKRI** | `1260 CE` | **+1.45%** | 74.9% | ₹8.15 | +45.5% | No fresh material catalyst |
+| 178 | **POLICYBZR** | `1180 CE` | **+1.16%** | 82.7% | ₹37.90 | +25.1% | Turtlemint Crashes Another 20%, PB Fintech Falls 8% On IRDAI |
+| 97 | **BLUESTARCO** | `1580 CE` | **+0.93%** | 71.0% | ₹14.30 | +84.5% | No fresh material catalyst |
+| 189 | **HDFCLIFE** | `530 CE` | **+0.89%** | 79.7% | ₹6.45 | +9.3% | IRDAI commission caps put insurance distributors' renewal in |
+| 104 | **VOLTAS** | `1120 CE` | **+0.86%** | 59.5% | ₹15.60 | +71.4% | Cochin Shipyard, Voltas, BEL, Tata Steel, Axis Bank, Vedanta |
+| 186 | **SBILIFE** | `1740 CE` | **+0.81%** | 79.1% | ₹18.00 | +16.9% | IRDAI commission caps put insurance distributors' renewal in |
 
 ## 🏆 Top Conviction Call (CE) Breakouts
 | Rank | Symbol | Action Rating | Win Prob % | Spot LTP | CE LTP | Target Strike |
 | :---: | :--- | :--- | :---: | :---: | :---: | :---: |
-| 4 | **SUPREMEIND** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 85.6% | ₹3540.90 | ₹22.20 | `3550 CE` |
-| 6 | **KAYNES** | 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | 78.6% | ₹3646.80 | ₹43.90 | `3650 CE` |
-| 7 | **IREDA** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 90.2% | ₹113.49 | ₹1.65 | `112 CE` |
-| 8 | **ASIANPAINT** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 80.7% | ₹2450.80 | ₹10.95 | `2460 CE` |
-| 9 | **AXISBANK** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 90.0% | ₹1219.80 | ₹9.15 | `1220 CE` |
+| 45 | **DRREDDY** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 68.6% | ₹1212.90 | ₹13.25 | `1210 CE` |
+| 75 | **GAIL** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 70.0% | ₹174.73 | ₹1.19 | `175 CE` |
+| 97 | **BLUESTARCO** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 74.3% | ₹1582.00 | ₹14.30 | `1580 CE` |
+| 104 | **VOLTAS** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 78.6% | ₹1128.10 | ₹15.60 | `1120 CE` |
+| 169 | **PETRONET** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 72.2% | ₹287.70 | ₹1.10 | `290 CE` |
 
 ## 💥 Top Conviction Put (PE) Breakdowns
 | Rank | Symbol | Action Rating | Win Prob % | Spot LTP | PE LTP | Target Strike |
 | :---: | :--- | :--- | :---: | :---: | :---: | :---: |
-| 1 | **FORTIS** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 97.1% | ₹837.80 | ₹9.60 | `840 PE` |
-| 2 | **MAXHEALTH** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 91.7% | ₹1013.80 | ₹7.20 | `1010 PE` |
-| 3 | **PAYTM** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 95.4% | ₹1673.50 | ₹23.65 | `1680 PE` |
-| 5 | **FEDERALBNK** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 85.8% | ₹322.80 | ₹6.00 | `325 PE` |
-| 13 | **MCX** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 88.0% | ₹3322.30 | ₹30.10 | `3300 PE` |
+| 1 | **NATIONALUM** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 94.8% | ₹346.10 | ₹7.10 | `350 PE` |
+| 2 | **NAM-INDIA** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 92.0% | ₹1120.40 | ₹10.35 | `1120 PE` |
+| 3 | **YESBANK** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 95.0% | ₹21.69 | ₹0.34 | `22 PE` |
+| 4 | **HINDALCO** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 86.0% | ₹955.30 | ₹9.85 | `960 PE` |
+| 5 | **VEDL** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 92.6% | ₹259.00 | ₹2.90 | `260 PE` |
