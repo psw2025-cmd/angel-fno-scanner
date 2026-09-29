@@ -22,7 +22,7 @@ permissions:
 jobs:
   run-scanner:
     runs-on: ubuntu-latest
-    timeout-minutes: 420
+    timeout-minutes: 435
 
     steps:
       - name: Checkout Code
@@ -57,7 +57,7 @@ jobs:
           SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
           SHEET_ID: ${{ secrets.SHEET_ID }}
           BQ_PROJECT_ID: ${{ secrets.BQ_PROJECT_ID }}
-          MAX_RUNTIME_SECONDS: ${{ github.event_name == 'schedule' && '23400' || '60' }}
+          MAX_RUNTIME_SECONDS: ${{ github.event_name == 'schedule' && '24300' || '60' }}
         run: |
           python scanner.py
           python3 angel_prediction_engine.py --run-once
