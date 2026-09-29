@@ -1,3 +1,13 @@
+# MANDATORY START RULE
+
+Before using this file or performing any project action, read the repository-root **`AGENTS.md`** completely.
+
+`AGENTS.md` is the canonical permanent project operating contract and single start source for all agents, platforms, CLIs, IDE assistants, automations, notebooks, and future tools. GitHub Issue #3 is the canonical living coordination/evidence bus.
+
+If this file conflicts with `AGENTS.md`, stop and record the conflict on Issue #3 before proceeding.
+
+---
+
 # External AI Agent Standard Operating Procedure (SOP) & Interface Guide
 
 This repository hosts a production-grade **Angel One F&O Stock & Index Option (CE/PE) Prediction and Market Intelligence System** covering 216 Indian National Stock Exchange (NSE) F&O contracts.
