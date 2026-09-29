@@ -1,39 +1,28 @@
 {
-  "status": "FAIL",
-  "timestamp": "2026-09-28T05:13:09.786836+00:00",
+  "status": "PASS",
+  "timestamp": "2026-09-29T03:28:22.912782+00:00",
   "sheets_audit": {
-    "passed": false,
+    "passed": true,
     "summary": {
       "PRE_BREAKOUT_SCANNER": {
-        "formula_errors": [
-          [
-            5,
-            1,
-            "#N/A"
-          ],
-          [
-            24,
-            1,
-            "#N/A"
-          ]
-        ],
+        "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 24,
-        "col_count": 8
+        "row_count": 34,
+        "col_count": 13
       },
       "Sheet1": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 198,
+        "row_count": 204,
         "col_count": 23
       },
       "F&O Options Top Gainers Tracker Dashboard": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 87,
+        "row_count": 59,
         "col_count": 18
       },
       "LEGACY_F&O_DASHBOARD_OBJECT": {
@@ -54,14 +43,14 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 11,
+        "row_count": 290,
         "col_count": 8
       },
       "Cloud_Automation_Setup": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 17,
+        "row_count": 21,
         "col_count": 26
       },
       "FORENSIC_LIVE": {
@@ -89,14 +78,14 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 137,
+        "row_count": 139,
         "col_count": 5
       },
       "PAPER_ALERT_LOG": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 187,
+        "row_count": 280,
         "col_count": 11
       },
       "NEWS_LIVE": {
@@ -110,7 +99,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 115,
+        "row_count": 188,
         "col_count": 16
       },
       "NEWS_TYPE_TALLY": {
@@ -124,7 +113,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 198,
+        "row_count": 204,
         "col_count": 23
       },
       "OPTION_PREDICTIONS": {
@@ -142,19 +131,19 @@
       "option_predictions_live": {
         "exists": true,
         "rows": 216,
-        "size_mb": 0.1,
+        "size_mb": 0.11,
         "columns": 48
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 2979,
-        "size_mb": 2.78,
+        "rows": 3862,
+        "size_mb": 3.46,
         "columns": 21
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 58,
-        "size_mb": 0.04,
+        "rows": 128,
+        "size_mb": 0.09,
         "columns": 11
       }
     }
