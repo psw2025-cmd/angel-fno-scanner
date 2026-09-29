@@ -1,8 +1,8 @@
 {
-  "status": "PASS",
-  "timestamp": "2026-09-29T03:28:22.912782+00:00",
+  "status": "FAIL",
+  "timestamp": "2026-09-29T03:55:57.875951+00:00",
   "sheets_audit": {
-    "passed": true,
+    "passed": false,
     "summary": {
       "PRE_BREAKOUT_SCANNER": {
         "formula_errors": [],
@@ -15,14 +15,14 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 204,
+        "row_count": 198,
         "col_count": 23
       },
       "F&O Options Top Gainers Tracker Dashboard": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 59,
+        "row_count": 57,
         "col_count": 18
       },
       "LEGACY_F&O_DASHBOARD_OBJECT": {
@@ -71,14 +71,14 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 218,
+        "row_count": 173,
         "col_count": 28
       },
       "NSE_EVENTS": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 139,
+        "row_count": 106,
         "col_count": 5
       },
       "PAPER_ALERT_LOG": {
@@ -92,7 +92,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 218,
+        "row_count": 173,
         "col_count": 12
       },
       "NEWS_IMPACT": {
@@ -113,14 +113,14 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 204,
+        "row_count": 198,
         "col_count": 23
       },
       "OPTION_PREDICTIONS": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 256,
+        "row_count": 211,
         "col_count": 41
       }
     }
@@ -130,19 +130,19 @@
     "summary": {
       "option_predictions_live": {
         "exists": true,
-        "rows": 216,
-        "size_mb": 0.11,
+        "rows": 171,
+        "size_mb": 0.08,
         "columns": 48
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 3862,
-        "size_mb": 3.46,
+        "rows": 4114,
+        "size_mb": 3.66,
         "columns": 21
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 128,
+        "rows": 139,
         "size_mb": 0.09,
         "columns": 11
       }

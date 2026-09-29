@@ -1,47 +1,47 @@
 # Angel One F&O Prediction & Market Intelligence Snapshot
-**Generated**: `2026-09-29 03:28:22 UTC` | **System Status**: `🟢 PASS`
+**Generated**: `2026-09-29 03:55:57 UTC` | **System Status**: `🟢 FAIL`
 
 ## 🌆 3:00 - 3:30 PM Pre-Close: Next-Day Gap-Up (CE) Picks
 | Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+50%) | Expected Gap % | Conviction % | Institutional Rationale |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| 1 | **OFSS** | `10800 CE` | `OFSS29SEP2610800CE` | ₹119.80 | ₹101.83 | ₹179.70 | **+1.42%** | 80.7% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
-| 2 | **DRREDDY** | `1220 CE` | `DRREDDY29SEP261220CE` | ₹10.40 | ₹8.84 | ₹15.60 | **+0.76%** | 67.7% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
-| 3 | **PETRONET** | `290 CE` | `PETRONET29SEP26290CE` | ₹0.90 | ₹0.77 | ₹1.35 | **+1.07%** | 78.0% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
-| 4 | **DIXON** | `13750 CE` | `DIXON29SEP2613750CE` | ₹93.45 | ₹79.43 | ₹140.18 | **+0.57%** | 54.3% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
-| 5 | **INFY** | `1000 CE` | `INFY29SEP261000CE` | ₹8.50 | ₹7.22 | ₹12.75 | **+0.27%** | 67.0% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
+| 1 | **KALYANKJIL** | `575 CE` | `KALYANKJIL29SEP26575CE` | ₹5.15 | ₹4.38 | ₹7.73 | **+1.53%** | 75.5% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
+| 2 | **MANKIND** | `2460 CE` | `MANKIND29SEP262460CE` | ₹15.00 | ₹12.75 | ₹22.50 | **+1.15%** | 78.6% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
+| 3 | **SOLARINDS** | `19000 CE` | `SOLARINDS29SEP2619000CE` | ₹210.00 | ₹178.50 | ₹315.00 | **+1.13%** | 64.5% | [OVERNIGHT GAP-UP CE] Action: 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | ExpG |
+| 4 | **SUNPHARMA** | `1860 CE` | `SUNPHARMA29SEP261860CE` | ₹6.80 | ₹5.78 | ₹10.20 | **+1.10%** | 81.2% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
+| 5 | **LUPIN** | `2080 CE` | `LUPIN29SEP262080CE` | ₹15.50 | ₹13.17 | ₹23.25 | **+0.67%** | 61.0% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
 
 ## 🌆 3:00 - 3:30 PM Pre-Close: Next-Day Gap-Down (PE) Picks
 | Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+60%) | Expected Gap % | Conviction % | Institutional Rationale |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| 1 | **ADANIGREEN** | `1240 PE` | `ADANIGREEN29SEP261240PE` | ₹14.65 | ₹12.45 | ₹23.44 | **-3.49%** | 96.2% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
-| 2 | **BANKBARODA** | `230 PE` | `BANKBARODA29SEP26230PE` | ₹2.68 | ₹2.28 | ₹4.29 | **-3.49%** | 98.0% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
-| 3 | **SUZLON** | `40 PE` | `SUZLON29SEP2640PE` | ₹0.68 | ₹0.58 | ₹1.09 | **-3.09%** | 93.2% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
-| 4 | **CANBK** | `120 PE` | `CANBK29SEP26120PE` | ₹0.95 | ₹0.81 | ₹1.52 | **-3.17%** | 95.8% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
-| 5 | **BANKINDIA** | `130 PE` | `BANKINDIA29SEP26130PE` | ₹1.07 | ₹0.91 | ₹1.71 | **-2.96%** | 86.2% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 1 | **RADICO** | `4450 PE` | `RADICO29SEP264450PE` | ₹36.35 | ₹30.90 | ₹58.16 | **-1.55%** | 87.6% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 2 | **TRENT** | `2600 PE` | `TRENT29SEP262600PE` | ₹13.00 | ₹11.05 | ₹20.80 | **-1.32%** | 79.9% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 3 | **KAYNES** | `3650 PE` | `KAYNES29SEP263650PE` | ₹23.00 | ₹19.55 | ₹36.80 | **-1.34%** | 66.0% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 4 | **AXISBANK** | `1200 PE` | `AXISBANK29SEP261200PE` | ₹5.60 | ₹4.76 | ₹8.96 | **-1.08%** | 80.1% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 5 | **BAJFINANCE** | `970 PE` | `BAJFINANCE29SEP26970PE` | ₹5.00 | ₹4.25 | ₹8.00 | **-1.61%** | 82.1% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
 
 ## 🌅 Top 5 Pre-Market 9:15 AM Gap-Up Picks
 | Rank | Symbol | Target Strike | Expected Gap % | Conviction % | CE LTP | Live Velocity | Top Catalyst Headline |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| 142 | **OFSS** | `10800 CE` | **+1.42%** | 83.7% | ₹119.80 | +-12.7% | Oracle Financial Services Software Limited has informed the  |
-| 133 | **PETRONET** | `290 CE` | **+1.07%** | 81.0% | ₹0.90 | +20.0% | Petronet LNG Limited has informed the Exchange regarding Pro |
-| 156 | **FEDERALBNK** | `325 CE` | **+0.91%** | 73.8% | ₹2.45 | +-32.9% | The Federal Bank  Limited has informed the Exchange about In |
-| 65 | **DRREDDY** | `1220 CE` | **+0.76%** | 64.7% | ₹10.40 | +271.4% | Pharma stocks: Sun Pharma, Dr Reddy’s, Cipla, Biocon and oth |
-| 124 | **KAYNES** | `3700 CE` | **+0.69%** | 69.2% | ₹34.50 | +44.4% | No fresh material catalyst |
+| 1 | **KALYANKJIL** | `575 CE` | **+1.53%** | 75.5% | ₹5.15 | +390.5% | No fresh material catalyst |
+| 16 | **MANKIND** | `2460 CE` | **+1.15%** | 78.6% | ₹15.00 | +117.4% | No fresh material catalyst |
+| 66 | **SOLARINDS** | `19000 CE` | **+1.13%** | 64.5% | ₹210.00 | +23.2% | No fresh material catalyst |
+| 11 | **SUNPHARMA** | `1860 CE` | **+1.10%** | 81.2% | ₹6.80 | +166.7% | Sun Pharma, Aurobindo Pharma, other stocks in focus as Trump |
+| 54 | **CIPLA** | `1400 CE` | **+0.78%** | 75.8% | ₹5.85 | +37.6% | Pharma stocks: Sun Pharma, Dr Reddy’s, Cipla, Biocon and oth |
 
 ## 🏆 Top Conviction Call (CE) Breakouts
 | Rank | Symbol | Action Rating | Win Prob % | Spot LTP | CE LTP | Target Strike |
 | :---: | :--- | :--- | :---: | :---: | :---: | :---: |
-| 65 | **DRREDDY** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 81.1% | ₹1224.10 | ₹10.40 | `1220 CE` |
-| 103 | **DIXON** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 79.7% | ₹13691.00 | ₹93.45 | `13750 CE` |
-| 116 | **IREDA** | ⚡ BULLISH CE ACCUMULATION [HIGH CONVICTION] | 69.6% | ₹115.14 | ₹1.03 | `115 CE` |
-| 119 | **SAIL** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 64.4% | ₹185.26 | ₹0.90 | `185 CE` |
-| 124 | **KAYNES** | 📈 MODERATE CE BIAS | 60.1% | ₹3677.20 | ₹34.50 | `3700 CE` |
+| 1 | **KALYANKJIL** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 87.5% | ₹575.75 | ₹5.15 | `575 CE` |
+| 9 | **LUPIN** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 79.7% | ₹2089.20 | ₹15.50 | `2080 CE` |
+| 11 | **SUNPHARMA** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 78.7% | ₹1850.30 | ₹6.80 | `1860 CE` |
+| 16 | **MANKIND** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 82.9% | ₹2470.00 | ₹15.00 | `2460 CE` |
+| 25 | **COFORGE** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 74.4% | ₹1781.90 | ₹12.15 | `1780 PE` |
 
 ## 💥 Top Conviction Put (PE) Breakdowns
 | Rank | Symbol | Action Rating | Win Prob % | Spot LTP | PE LTP | Target Strike |
 | :---: | :--- | :--- | :---: | :---: | :---: | :---: |
-| 1 | **KEI** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 88.9% | ₹4524.50 | ₹13.95 | `4500 PE` |
-| 2 | **TIINDIA** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 87.5% | ₹2443.50 | ₹21.05 | `2450 PE` |
-| 3 | **MAHABANK** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 97.8% | ₹80.62 | ₹1.00 | `81 PE` |
-| 4 | **UNIONBANK** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 94.5% | ₹171.98 | ₹1.74 | `172 PE` |
-| 5 | **ADANIGREEN** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 98.2% | ₹1231.60 | ₹14.65 | `1240 PE` |
+| 2 | **RADICO** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 88.3% | ₹4452.60 | ₹36.35 | `4450 PE` |
+| 3 | **ATHERENERG** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 72.7% | ₹1430.90 | ₹15.65 | `1440 PE` |
+| 4 | **HDFCLIFE** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 75.1% | ₹521.55 | ₹1.55 | `520 PE` |
+| 5 | **MARICO** | ⚡ BEARISH PE SURGE [HIGH CONVICTION] | 71.5% | ₹800.00 | ₹3.40 | `800 PE` |
+| 6 | **CHOLAFIN** | ⚡ BEARISH PE SURGE [HIGH CONVICTION] | 64.1% | ₹1608.00 | ₹3.45 | `1600 PE` |
