@@ -4,8 +4,29 @@ This repository hosts a production-grade **Angel One F&O Stock & Index Option (C
 
 External AI agents, automated connectors, MCP servers, and LLM orchestrators can read predictions, query live Greeks and news sentiment, trigger on-demand prediction cycles, and execute end-to-end verifications using multiple GitHub-native interfaces.
 
----
 
+## 0. Mandatory Cross-Agent Coordination Control
+
+For local Windows AGY CLI / Power BI / runtime work, GitHub Issue #3 is the canonical coordination bus and `docs/CROSS_AGENT_COORDINATION_V1.md` is the governing protocol.
+
+Every material local-runtime claim must be emitted as a `CROSS_AGENT_PACKET`, preferably with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\\tools\\agy_cross_agent_packet.ps1" -Claim "<claim>" -Observation "<measured observation>" -Status WAITING_FOR_PEER -PostToGitHub
+```
+
+A critical finding must **not** be marked resolved by the same agent that implemented or observed it. Required sequence:
+
+1. local/claiming agent measures and posts evidence;
+2. independent peer checks a different evidence source;
+3. disagreements become `DISPUTED` and investigation continues;
+4. only active after-state with compatible timestamps/SHA and independent agreement becomes `RESOLVED_TWO_PARTY`.
+
+Do not use dashboard text, a stored `0s` writer age, self-calibration hit rate, or a green CI badge as sole proof of production health. Compute freshness independently, distinguish market-closed last prints from live data, and keep Target A opening-gap prediction separate from Target B exact CE/PE extreme-gainer prediction.
+
+This coordination rule never authorizes live orders. PAPER/analyzer safety remains mandatory.
+
+---
 ## ⚡ Quick-Start: Interface Selection Matrix
 
 | Integration Method | Latency | Auth Required | Best For |
