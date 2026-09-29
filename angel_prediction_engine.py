@@ -33,10 +33,10 @@ from google.oauth2 import service_account
 # =====================================================================
 # CONFIGURATION & CREDENTIALS
 # =====================================================================
-ANGEL_API_KEY     = os.getenv("ANGEL_API_KEY", "H38aqqWn")
-ANGEL_CLIENT_CODE = os.getenv("ANGEL_CLIENT_CODE", "P57752101")
-ANGEL_PIN         = os.getenv("ANGEL_PIN", "1978")
-ANGEL_TOTP_SEED   = os.getenv("ANGEL_TOTP_SEED", "2DPIR273IJKIWZWJ23QAKF4BDI")
+ANGEL_API_KEY     = os.getenv("ANGEL_API_KEY", "").strip()
+ANGEL_CLIENT_CODE = os.getenv("ANGEL_CLIENT_CODE", "").strip()
+ANGEL_PIN         = os.getenv("ANGEL_PIN", "").strip()
+ANGEL_TOTP_SEED   = os.getenv("ANGEL_TOTP_SEED", "").strip()
 SHEET_ID          = os.getenv("SHEET_ID", "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs")
 BQ_PROJECT_ID     = os.getenv("BQ_PROJECT_ID", "fno-angel-prod-1790444589")
 BQ_DATASET_ID     = "fno_predictions"
