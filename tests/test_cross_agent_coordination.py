@@ -4,6 +4,7 @@ import importlib.util
 ROOT = Path(__file__).resolve().parents[1]
 
 def test_cross_agent_coordination_assets_exist():
+    assert (ROOT / "AGENTS.md").exists()
     assert (ROOT / "docs" / "CROSS_AGENT_COORDINATION_V1.md").exists()
     assert (ROOT / "schemas" / "cross_agent_packet.schema.json").exists()
     assert (ROOT / "scripts" / "validate_cross_agent_packet.py").exists()
@@ -43,3 +44,18 @@ def test_protocol_requires_two_party_resolution():
     assert "DISPUTED" in text
     assert "single-writer" in text
     assert "100% market prediction accuracy" in text
+
+
+def test_agents_md_is_canonical_start_source():
+    text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    assert "PROJECT START HERE" in text
+    assert "GitHub Issue #3" in text
+    assert "RESOLVED_TWO_PARTY" in text
+    assert "single-writer" in text
+    assert "Target A" in text
+    assert "Target B" in text
+    assert "Target C" in text
+    assert "100% accuracy" in text
+
+    agent_instructions = (ROOT / ".github" / "AGENT_INSTRUCTIONS.md").read_text(encoding="utf-8")
+    assert "read the repository-root **\`AGENTS.md\`** completely" in agent_instructions
