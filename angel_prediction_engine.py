@@ -90,7 +90,7 @@ def is_market_open(dt=None):
     if dt.weekday() >= 5:  # Saturday or Sunday
         return False
     mins = dt.hour * 60 + dt.minute
-    return 555 <= mins <= 930  # 9:15 AM (555 mins) to 3:30 PM (930 mins)
+    return 555 <= mins <= 940  # 9:15 AM to 3:40 PM — NSE equity-derivatives normal session
 
 def is_pre_market_time(dt=None):
     if dt is None:
@@ -106,7 +106,7 @@ def is_pre_close_time(dt=None):
     if dt.weekday() >= 5:  # Saturday or Sunday
         return False
     mins = dt.hour * 60 + dt.minute
-    return 900 <= mins <= 930  # 15:00 to 15:30 IST (3:00 PM to 3:30 PM)
+    return 900 <= mins <= 940  # 15:00 to 15:40 IST — include full derivatives close window
 
 def is_morning_reconcile_time(dt=None):
     if dt is None:
