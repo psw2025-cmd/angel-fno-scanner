@@ -43,6 +43,7 @@ ANGEL_TOTP_SEED   = _env("ANGEL_TOTP_SEED")
 SHEET_ID          = _env("SHEET_ID")
 BQ_PROJECT_ID     = _env("BQ_PROJECT_ID")
 BQ_DATASET_ID     = "fno_predictions"
+EXPECTED_FNO_UNIVERSE_COUNT = int(os.getenv("EXPECTED_FNO_UNIVERSE_COUNT", "216"))
 
 KEY_PATH = os.path.expanduser("~/angel_sheets_key.json")
 STATE_PATH = os.path.expanduser("~/angel_prediction_state.json")
@@ -87,6 +88,37 @@ def to_iso_date(val):
             pass
     return datetime.date.today().isoformat()
 
+def parse_news_timestamp_ist(value, fallback=None):
+    """Parse RSS/ISO publication time and normalize it to a naive IST ISO timestamp."""
+    if value:
+        try:
+            parsed = parsedate_to_datetime(str(value).strip())
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=datetime.timezone.utc)
+            ist = parsed.astimezone(datetime.timezone(datetime.timedelta(hours=5, minutes=30)))
+            return ist.replace(tzinfo=None).isoformat(timespec="seconds")
+        except Exception:
+            try:
+                parsed = datetime.datetime.fromisoformat(str(value).strip().replace("Z", "+00:00"))
+                if parsed.tzinfo is None:
+                    parsed = parsed.replace(tzinfo=datetime.timezone.utc)
+                ist = parsed.astimezone(datetime.timezone(datetime.timedelta(hours=5, minutes=30)))
+                return ist.replace(tzinfo=None).isoformat(timespec="seconds")
+            except Exception:
+                pass
+    if fallback is not None:
+        if isinstance(fallback, datetime.datetime):
+            return fallback.replace(microsecond=0).isoformat(timespec="seconds")
+        return str(fallback)
+    return ""
+
+def news_dedup_key(item):
+    """Stable duplicate key: preserve cross-source corroboration, suppress same-source replays."""
+    title = re.sub(r"\\s+", " ", str(item.get("title", "")).strip().lower())
+    source = str(item.get("source", "")).strip().lower()
+    link = str(item.get("source_url") or item.get("link") or "").strip().lower()
+    return "::".join((source, link, title))
+
 def is_market_open(dt=None):
     if dt is None:
         dt = get_ist_time()
@@ -122,6 +154,35 @@ def is_morning_reconcile_time(dt=None):
 # =====================================================================
 # GOOGLE CLOUD & BIGQUERY CLIENT SETUP
 # =====================================================================
+def normalize_sheet_rows(rows, width=None):
+    """Return a rectangular sheet matrix with a deterministic column count."""
+    rows = [list(row) for row in rows]
+    if not rows:
+        return []
+    target = width if width is not None else max(len(row) for row in rows)
+    if target <= 0:
+        return [[] for _ in rows]
+    return [(row + [""] * target)[:target] for row in rows]
+
+
+def deduplicate_news_rows(rows):
+    """Suppress exact replay rows while preserving the same headline across sources."""
+    unique = []
+    seen = set()
+    for row in rows:
+        key = (
+            str(row.get("symbol", "")).strip().upper(),
+            str(row.get("source", "")).strip().lower(),
+            str(row.get("canonical_url") or row.get("source_url") or "").strip().lower(),
+            re.sub(r"\\s+", " ", str(row.get("title", "")).strip().lower()),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(row)
+    return unique
+
+
 def get_gspread_client():
     raw_secret = os.getenv("SHEETS_KEY_JSON", "").strip()
     if raw_secret:
@@ -140,6 +201,8 @@ def get_gspread_client():
     raise RuntimeError("No valid Google service account credentials found for Sheets.")
 
 def get_bigquery_client():
+    if not BQ_PROJECT_ID:
+        raise RuntimeError("BQ_PROJECT_ID must be explicitly configured before BigQuery access; implicit project discovery is disabled as a billing guardrail.")
     raw_secret = os.getenv("SHEETS_KEY_JSON", "").strip()
     if raw_secret:
         try:
@@ -411,6 +474,7 @@ def fetch_rss_feed(source_name, url):
                     "title": title,
                     "source": source_name,
                     "pubDate": pub_raw,
+                    "published_at_ist": parse_news_timestamp_ist(pub_raw),
                     "link": link_url
                 })
     except Exception:
@@ -583,6 +647,7 @@ def aggregate_market_news(articles=None, universe_symbols=None):
                     "source": src,
                     "source_tier": tier_info[0],
                     "source_url": link,
+                    "published_at_ist": parse_news_timestamp_ist(art.get("pubDate") or art.get("published_at_ist")),
                     "score": score,
                     "category": cat,
                     "impact": impact,
@@ -629,12 +694,18 @@ def aggregate_market_news(articles=None, universe_symbols=None):
                         if has_other_specific:
                             continue
 
-                    if not any(x["title"] == t for x in sym_news[sym]):
+                    candidate_key = news_dedup_key({
+                        "title": t,
+                        "source": f"{t_name} (Sector Regulation)",
+                        "source_url": art.get("link", "")
+                    })
+                    if not any(news_dedup_key(x) == candidate_key for x in sym_news[sym]):
                         sym_news[sym].append({
                             "title": t,
                             "source": f"{t_name} (Sector Regulation)",
                             "source_tier": "TIER_1_REGULATOR" if "Official" in t_name else "TIER_3_FINANCIAL_MEDIA",
                             "source_url": art.get("link", ""),
+                            "published_at_ist": parse_news_timestamp_ist(art.get("pubDate") or art.get("published_at_ist")),
                             "score": score,
                             "category": cat,
                             "impact": impact,
@@ -660,6 +731,7 @@ def aggregate_market_news(articles=None, universe_symbols=None):
                     "source": "NSE Official Announcement",
                     "source_tier": "TIER_1_REGULATOR",
                     "source_url": "https://www.nseindia.com",
+                    "published_at_ist": parse_news_timestamp_ist(n.get("timestamp") or n.get("published_at_ist")),
                     "score": score,
                     "category": cat,
                     "impact": impact,
@@ -1036,7 +1108,7 @@ def run_ground_truth_reconciliation(current_predictions, actual_top_gainers_cont
     return reconciliation
 
 # =====================================================================
-# PART 3B: EOD PRE-CLOSE NEXT-DAY GAP-UP & EXPLOSION PREDICTION ENGINE (15:00 - 15:30 IST)
+# PART 3B: EOD PRE-CLOSE NEXT-DAY GAP-UP & EXPLOSION PREDICTION ENGINE (15:00 - 15:40 IST)
 # =====================================================================
 NEXT_DAY_GAP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data/next_day_gap_predictions.json")
 GAP_RECON_HISTORY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data/gap_reconciliation_history.json")
@@ -1044,7 +1116,7 @@ GAP_RECON_HISTORY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__))
 def generate_next_day_gap_picks(predictions, ist_now=None):
     """
     Identifies high-conviction overnight Gap-Up Call (CE) and Gap-Down Put (PE) candidates
-    evaluated before market close (15:00 - 15:30 IST) based on institutional positioning,
+    evaluated before market close (15:00 - 15:40 IST) based on institutional positioning,
     gamma exposure, order flow imbalance, and non-routine catalysts.
     """
     if ist_now is None:
@@ -1156,7 +1228,7 @@ def generate_next_day_gap_picks(predictions, ist_now=None):
 def journal_pre_close_paper_trades(sh, bq_client, gap_picks, ist_str, ist_now):
     """
     Appends overnight paper trades to Google Sheets PAPER_ALERT_LOG and BigQuery Sandbox
-    during the 15:00 - 15:30 IST pre-close window with complete micro-details and rationale.
+    during the 15:00 - 15:40 IST pre-close window with complete micro-details and rationale.
     Guarantees deduplication (exactly 1 record per symbol/side per session date).
     """
     session_date = ist_str[:10]
@@ -1507,7 +1579,11 @@ def discover_fno_universe(scrip_master):
             "strikes": valid_strikes
         }
 
-    print(f"[OK] Auto-Discovered {len(universe)} NSE F&O Symbols with active CE & PE Option Chains!")
+    discovered_count = len(universe)
+    if discovered_count < EXPECTED_FNO_UNIVERSE_COUNT:
+        print(f"[WARN] F&O universe incomplete: discovered {discovered_count}/{EXPECTED_FNO_UNIVERSE_COUNT}. Refusing to claim full-universe coverage.")
+    else:
+        print(f"[OK] Auto-Discovered {discovered_count} NSE F&O Symbols with active CE & PE Option Chains!")
     return universe
 
 def fetch_quotes_in_batches(smartApi, token_list, chunk_size=45):
@@ -1519,18 +1595,21 @@ def fetch_quotes_in_batches(smartApi, token_list, chunk_size=45):
         while retries <= max_retries:
             try:
                 res = smartApi.getMarketData("FULL", {"NFO": chunk})
-                if res and res.get("status") and res.get("data"):
-                    for item in res["data"].get("fetched", []):
+                status = bool(res and res.get("status"))
+                if status and res.get("data"):
+                    for item in res["data"].get("fetched", []) or []:
                         results[str(item.get("symbolToken"))] = item
-                time.sleep(0.20)
-                break
+                    time.sleep(0.20)
+                    break
+                error_text = str((res or {}).get("message") or (res or {}).get("errorcode") or "empty/failed market-data response")
+                raise RuntimeError(error_text)
             except Exception as e:
                 retries += 1
                 if retries > max_retries:
                     print(f"[ERROR] Quote batch failed permanently after {max_retries} retries: {e}")
                     break
-                backoff = (2 ** retries) + 0.5
-                print(f"[WARN] Quote batch error: {e}. Retrying {retries}/{max_retries} in {backoff}s...")
+                backoff = min(30.0, (2 ** retries) + 0.5)
+                print(f"[WARN] Quote batch error: {e}. Retrying {retries}/{max_retries} in {backoff:.1f}s...")
                 time.sleep(backoff)
     return results
 
@@ -1802,6 +1881,11 @@ def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, re
 
     scrip_data = load_or_download_scrip_master()
     universe = discover_fno_universe(scrip_data)
+    if len(universe) < EXPECTED_FNO_UNIVERSE_COUNT:
+        raise RuntimeError(
+            f"F&O universe incomplete: discovered {len(universe)}/{EXPECTED_FNO_UNIVERSE_COUNT}; "
+            "refusing to run a partial-universe prediction cycle."
+        )
     symbols = list(universe.keys())
 
     # Multi-source news
@@ -2068,11 +2152,11 @@ def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, re
         if news_info.get("items"):
             for itm in news_info["items"]:
                 n_title = str(itm.get("title", "")).strip()
-                n_key = f"{sym}::{n_title.lower()}"
+                n_key = f"{sym}::{news_dedup_key(itm)}"
                 if n_key not in seen_news_keys:
                     seen_news_keys.add(n_key)
                     news_rows_for_bq.append({
-                        "timestamp": ist_now.isoformat(),
+                        "timestamp": parse_news_timestamp_ist(itm.get("published_at_ist") or itm.get("pubDate"), fallback=ist_now),
                         "symbol": sym,
                         "news_type": itm.get("category", "GENERAL"),
                         "sentiment": "BULLISH" if itm["score"] > 0 else ("BEARISH" if itm["score"] < 0 else "NEUTRAL"),
@@ -2124,7 +2208,7 @@ def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, re
 
     # Pre-Close Journaling Window (15:00 - 15:30 IST) or forced
     if is_pre_close_time(ist_now) or force_pre_close:
-        print("[INFO] Pre-Close Window (15:00-15:30 IST): Journaling overnight next-day gap picks...")
+        print("[INFO] Pre-Close Window (15:00-15:40 IST): Journaling overnight next-day gap picks...")
         journal_pre_close_paper_trades(sh, bq_client, next_day_picks, ist_str, ist_now)
 
     # Morning Reconciliation Window (09:15 - 09:45 IST) or forced
@@ -2163,11 +2247,10 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
             if len(r) == 18:
                 valid_fl_rows.append(r)
             else:
-                padded = (r + [0.0] * 18)[:18]
-                valid_fl_rows.append(padded)
+                print(f"[WARN] Dropping malformed FORENSIC_LIVE row with {len(r)} columns; expected 18.")
 
         ws_fl.clear()
-        ws_fl.update(range_name="A1", values=[fl_headers, *valid_fl_rows])
+        ws_fl.update(range_name="A1", values=normalize_sheet_rows([fl_headers, *valid_fl_rows], 18))
         print(f"[OK] FORENSIC_LIVE updated with {len(valid_fl_rows)} validated rows!")
 
         # 2. Update HEARTBEAT with engine metrics, without destroying telemetry
@@ -2180,7 +2263,7 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
             ["Mean Rank", f"{reconciliation['mean_rank']}", "Actual Movers Rank", "Greeks & News Model", "Dynamic Calibration", "🟢 HIGH ACCURACY"]
         ]
         # Update metrics starting at row 5
-        ws_hb.update(range_name="A5", values=hb_rows, value_input_option="USER_ENTERED")
+        ws_hb.update(range_name="A5", values=normalize_sheet_rows(hb_rows, 6), value_input_option="USER_ENTERED")
         
         # Also dynamically update Last BigQuery Sync
         headers = ws_hb.row_values(1)
@@ -2243,11 +2326,11 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
                 p["spot_ltp"], p["atm_strike"], p["pe_symbol"], p["pe_ltp"], f"{p['pe_iv']}%", p["top_headline"][:60], ""
             ])
 
-        # Dedicated Next-Day Pre-Close (3:00 - 3:30 PM) Section
+        # Dedicated Next-Day Pre-Close (3:00 - 3:40 PM) Section
         if next_day_picks and (next_day_picks.get("top_ce_picks") or next_day_picks.get("top_pe_picks")):
             pred_rows.extend([
                 ["", "", "", "", "", "", "", "", "", "", "", ""],
-                ["🌆 NEXT-DAY 3:00 - 3:30 PM PRE-CLOSE GAP-UP & EXPLOSION CANDIDATES (OVERNIGHT SWING)", "", "", "", "", "", "", "", "", "", "", ""],
+                ["🌆 NEXT-DAY 3:00 - 3:40 PM PRE-CLOSE GAP-UP & EXPLOSION CANDIDATES (OVERNIGHT SWING)", "", "", "", "", "", "", "", "", "", "", ""],
                 ["Rank", "Symbol", "Side", "Target Strike", "Contract", "Entry LTP", "Stop Loss (-15%)", "Target (+50%/+60%)", "Expected Gap %", "Conviction %", "Multi-Factor Rationale & Catalyst", ""]
             ])
             for idx, c in enumerate(next_day_picks.get("top_ce_picks", [])[:5], start=1):
@@ -2286,7 +2369,7 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
             ])
 
         ws_pred.clear()
-        ws_pred.update(range_name="A1", values=pred_rows)
+        ws_pred.update(range_name="A1", values=normalize_sheet_rows(pred_rows, 41))
         print(f"[OK] OPTION_PREDICTIONS updated with {len(pred_rows)} rows!")
 
         # 4. Sync to NEWS_LIVE tab (all 216 symbols, strict 12 columns)
@@ -2315,15 +2398,15 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
                     f"Confirmation: {p.get('market_confirmation', 'NEUTRAL_FLOW')} | Expected: {p.get('expected_move_band', '0.0%')}"
                 ])
             ws_nl.clear()
-            ws_nl.update(range_name="A1", values=nl_rows, value_input_option="USER_ENTERED")
+            ws_nl.update(range_name="A1", values=normalize_sheet_rows(nl_rows, 12), value_input_option="USER_ENTERED")
             print(f"[OK] NEWS_LIVE updated with {len(nl_rows)} validated rows!")
         except Exception as e:
-            print(f"[WARN] NEWS_LIVE sync: {e}")
+            raise RuntimeError(f"NEWS_LIVE sync failed: {e}") from e
 
-        # Paper trades are specifically and deduplicatedly journaled via journal_pre_close_paper_trades during 15:00 - 15:30 IST pre-close window
+        # Paper trades are specifically and deduplicatedly journaled via journal_pre_close_paper_trades during 15:00 - 15:40 IST pre-close window
 
     except Exception as e:
-        print(f"[ERROR] Sheet sync error: {e}")
+        raise RuntimeError(f"Google Sheets sync failed: {e}") from e
 
 # =====================================================================
 # BIGQUERY SANDBOX SYNC MODULE ($0 COST)
@@ -2403,12 +2486,13 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
         load_job.result()
         print(f"[OK] Replaced {len(rows_to_insert)} records in BigQuery option_predictions_live (WRITE_TRUNCATE active)!")
 
-        # 2. News Table (deduplicated newly discovered news only)
-        if news_rows:
+        # 2. News Table: deterministic replay dedup before append.
+        unique_news_rows = deduplicate_news_rows(news_rows)
+        if unique_news_rows:
             table_news = bq_client.get_table(dataset_ref.table("market_news_sentiment"))
-            load_job_news = bq_client.load_table_from_json(news_rows, table_news, job_config=job_config)
+            load_job_news = bq_client.load_table_from_json(unique_news_rows, table_news, job_config=job_config)
             load_job_news.result()
-            print(f"[OK] Appended {len(news_rows)} fresh records to BigQuery market_news_sentiment!")
+            print(f"[OK] Appended {len(unique_news_rows)} fresh records to BigQuery market_news_sentiment!")
         else:
             print("[INFO] No fresh headlines to append to BigQuery market_news_sentiment (dedup active).")
 
@@ -2432,7 +2516,7 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
         print(f"[OK] Appended reconciliation audit to BigQuery prediction_calibration_log!")
 
     except Exception as e:
-        print(f"[ERROR] BigQuery sync error: {e}")
+        raise RuntimeError(f"BigQuery sync failed: {e}") from e
 
 # =====================================================================
 # MAIN ENTRYPOINT

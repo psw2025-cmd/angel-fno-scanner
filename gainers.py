@@ -413,10 +413,51 @@ def _round(value: float | None, digits: int):
     return round(value, digits)
 
 
+def _passes_ranking_liquidity(quote: OptionQuote) -> bool:
+    if quote.ltp < MIN_PREMIUM or quote.gain_percent is None:
+        return False
+    if quote.volume is None or quote.oi is None:
+        return False
+    if quote.volume < MIN_VOLUME or quote.oi < MIN_OPEN_INTEREST:
+        return False
+    if quote.bid is not None and quote.ask is not None and quote.ask >= quote.bid and quote.ltp > 0:
+        if (quote.ask - quote.bid) / quote.ltp > MAX_SPREAD_RATIO:
+            return False
+    return True
+
+
 def select_ranked(quotes: Iterable[OptionQuote], limit: int = GAINER_ROW_LIMIT) -> list[OptionQuote]:
-    ranked = [quote for quote in quotes if quote.ltp > 0 and quote.gain_percent is not None and " " not in quote.contract]
+    ranked = [
+        quote for quote in quotes
+        if quote.ltp > 0 and quote.gain_percent is not None and " " not in quote.contract
+    ]
     ranked.sort(key=lambda quote: quote.gain_percent if quote.gain_percent is not None else -10**9, reverse=True)
     return ranked[:limit]
+
+
+def select_ranked_by_side(quotes: Iterable[OptionQuote], option_type: str, limit: int = 5) -> list[OptionQuote]:
+    """Rank CE and PE independently using the same production liquidity gates."""
+    side = option_type.upper()
+    if side not in {"CE", "PE"}:
+        raise ValueError("option_type must be CE or PE")
+    ranked = [
+        quote for quote in quotes
+        if quote.option_type.upper() == side
+        and " " not in quote.contract
+        and _passes_ranking_liquidity(quote)
+    ]
+    ranked.sort(key=lambda quote: quote.gain_percent if quote.gain_percent is not None else -10**9, reverse=True)
+    return ranked[:limit]
+
+
+def top_ce_pe_ranks(quotes: Iterable[OptionQuote]) -> dict[str, dict[str, list[OptionQuote]]]:
+    """Return independent CE/PE Top-1, Top-3 and Top-5 lists."""
+    ce = select_ranked_by_side(quotes, "CE", 5)
+    pe = select_ranked_by_side(quotes, "PE", 5)
+    return {
+        "CE": {"top1": ce[:1], "top3": ce[:3], "top5": ce[:5]},
+        "PE": {"top1": pe[:1], "top3": pe[:3], "top5": pe[:5]},
+    }
 
 
 def render_gainer_sheet(quotes: Iterable[OptionQuote], now: datetime, source: str) -> list[list]:

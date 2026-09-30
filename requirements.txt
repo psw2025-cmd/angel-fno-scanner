@@ -6,4 +6,5 @@ pyotp
 gspread
 google-cloud-bigquery
 pytz
+tzdata
 requests
