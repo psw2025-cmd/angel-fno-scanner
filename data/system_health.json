@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "timestamp": "2026-09-30T03:28:56.882185+00:00",
+  "timestamp": "2026-09-30T09:30:14.887214+00:00",
   "sheets_audit": {
     "passed": true,
     "summary": {
@@ -22,7 +22,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 57,
+        "row_count": 74,
         "col_count": 18
       },
       "LEGACY_F&O_DASHBOARD_OBJECT": {
@@ -78,14 +78,14 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 203,
+        "row_count": 227,
         "col_count": 5
       },
       "PAPER_ALERT_LOG": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 465,
+        "row_count": 625,
         "col_count": 11
       },
       "NEWS_LIVE": {
@@ -99,7 +99,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 281,
+        "row_count": 293,
         "col_count": 16
       },
       "NEWS_TYPE_TALLY": {
@@ -136,14 +136,14 @@
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 4967,
-        "size_mb": 4.35,
+        "rows": 5450,
+        "size_mb": 4.74,
         "columns": 21
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 207,
-        "size_mb": 0.14,
+        "rows": 226,
+        "size_mb": 0.15,
         "columns": 11
       }
     }
