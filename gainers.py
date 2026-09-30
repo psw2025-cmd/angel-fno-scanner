@@ -179,7 +179,7 @@ def market_is_open(now: datetime) -> bool:
     if local.weekday() >= 5:
         return False
     minutes = local.hour * 60 + local.minute
-    return (9 * 60 + 15) <= minutes <= (15 * 60 + 30)
+    return (9 * 60 + 15) <= minutes <= (15 * 60 + 40)
 
 
 def resolve_prev_close(ltp: float | None, close: float | None, net_change: float | None, gain_percent: float | None) -> tuple[float | None, str]:

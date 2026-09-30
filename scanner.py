@@ -21,7 +21,7 @@ from gainers import (
 )
 from paper_log import alerts_to_append, fill_later_changes, render_production_sheet
 
-SHEET_ID = os.getenv("SHEET_ID", "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs")
+SHEET_ID = os.environ["SHEET_ID"]
 MAX_RUNTIME_SECONDS = max(1, int(os.getenv("MAX_RUNTIME_SECONDS", "22500")))
 IST = ZoneInfo("Asia/Kolkata")
 DAEMON_FRESH_SECONDS = 90
@@ -103,9 +103,18 @@ def worksheet(book, title, rows=400, cols=26):
 
 
 def write_grid(ws, rows):
-    ws.clear()
-    if rows:
+    if not rows:
+        ws.clear()
+        return
+    try:
+        # Update first to avoid destructive partial writes
         ws.update(range_name="A1", values=rows, value_input_option="RAW")
+        # Clear any remaining rows from previous larger datasets
+        num_rows = len(rows)
+        ws.batch_clear([f"A{num_rows + 1}:ZZ"])
+    except Exception as e:
+        print(f"[WARN] write_grid failed: {e}")
+        raise
 
 
 def heartbeat_age_seconds(book, now):
@@ -124,9 +133,9 @@ def heartbeat_age_seconds(book, now):
 
 def publish_gainers(book, quotes, now, source):
     rows = render_gainer_sheet(quotes, now, source)
-    for title in ("Sheet1", "TOP_GAINERS"):
+    for title in ("CE_PE_RANK", "TOP_GAINERS"):
         write_grid(worksheet(book, title, rows=max(200, len(rows) + 10), cols=len(rows[3]) if len(rows) > 3 else 26), rows)
-    print(f"[OK] Wrote {max(0, len(rows) - 4)} real gainer rows to Sheet1 and TOP_GAINERS from {source}")
+    print(f"[OK] Wrote {max(0, len(rows) - 4)} real gainer rows to CE_PE_RANK and TOP_GAINERS from {source}")
     return rows
 
 
@@ -225,7 +234,7 @@ def fetch_chunked(api, tokens, size=45):
     failures = 0
     for start in range(0, len(tokens), size):
         chunk = tokens[start:start + size]
-        for attempt in range(3):
+        for attempt in range(4):
             try:
                 response = api.getMarketData("FULL", {"NFO": chunk})
                 if not response or not response.get("status"):
@@ -234,11 +243,13 @@ def fetch_chunked(api, tokens, size=45):
                     quotes[str(item.get("symbolToken"))] = item
                 break
             except Exception as exc:
-                if attempt == 2:
+                if attempt == 3:
                     failures += 1
-                    print(f"[WARN] Quote chunk failed after retries: {exc}")
+                    print(f"[ERROR] Quote chunk failed permanently after retries: {exc}")
                 else:
-                    time.sleep(0.6 * (attempt + 1))
+                    backoff = (2 ** attempt) + 0.5
+                    print(f"[WARN] Quote chunk error: {exc}. Retrying in {backoff}s...")
+                    time.sleep(backoff)
         time.sleep(0.35)
     return quotes, failures
 
@@ -368,7 +379,7 @@ def run_angel_loop(book, api):
                 continue
             
             loop += 1
-            if not market_is_open(now) or MAX_RUNTIME_SECONDS <= 120 or (now.hour == 15 and now.minute > 35):
+            if not market_is_open(now) or MAX_RUNTIME_SECONDS <= 120 or (now.hour == 15 and now.minute > 40):
                 break
             time.sleep(30)
             continue

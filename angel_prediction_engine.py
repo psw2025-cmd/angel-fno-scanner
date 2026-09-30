@@ -37,8 +37,8 @@ ANGEL_API_KEY     = os.environ["ANGEL_API_KEY"]
 ANGEL_CLIENT_CODE = os.environ["ANGEL_CLIENT_CODE"]
 ANGEL_PIN         = os.environ["ANGEL_PIN"]
 ANGEL_TOTP_SEED   = os.environ["ANGEL_TOTP_SEED"]
-SHEET_ID          = os.getenv("SHEET_ID", "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs")
-BQ_PROJECT_ID     = os.getenv("BQ_PROJECT_ID", "fno-angel-prod-1790444589")
+SHEET_ID          = os.environ["SHEET_ID"]
+BQ_PROJECT_ID     = os.environ["BQ_PROJECT_ID"]
 BQ_DATASET_ID     = "fno_predictions"
 
 KEY_PATH = os.path.expanduser("~/angel_sheets_key.json")
@@ -90,7 +90,7 @@ def is_market_open(dt=None):
     if dt.weekday() >= 5:  # Saturday or Sunday
         return False
     mins = dt.hour * 60 + dt.minute
-    return 555 <= mins <= 930  # 9:15 AM (555 mins) to 3:30 PM (930 mins)
+    return 555 <= mins <= 940  # 9:15 AM (555 mins) to 3:40 PM (940 mins)
 
 def is_pre_market_time(dt=None):
     if dt is None:
@@ -1499,15 +1499,24 @@ def fetch_quotes_in_batches(smartApi, token_list, chunk_size=45):
     results = {}
     chunks = [token_list[i:i + chunk_size] for i in range(0, len(token_list), chunk_size)]
     for chunk in chunks:
-        try:
-            res = smartApi.getMarketData("FULL", {"NFO": chunk})
-            if res and res.get("status") and res.get("data"):
-                for item in res["data"].get("fetched", []):
-                    results[str(item.get("symbolToken"))] = item
-            time.sleep(0.20)
-        except Exception as e:
-            print(f"[WARN] Quote batch error: {e}")
-            time.sleep(0.3)
+        retries = 0
+        max_retries = 4
+        while retries <= max_retries:
+            try:
+                res = smartApi.getMarketData("FULL", {"NFO": chunk})
+                if res and res.get("status") and res.get("data"):
+                    for item in res["data"].get("fetched", []):
+                        results[str(item.get("symbolToken"))] = item
+                time.sleep(0.20)
+                break
+            except Exception as e:
+                retries += 1
+                if retries > max_retries:
+                    print(f"[ERROR] Quote batch failed permanently after {max_retries} retries: {e}")
+                    break
+                backoff = (2 ** retries) + 0.5
+                print(f"[WARN] Quote batch error: {e}. Retrying {retries}/{max_retries} in {backoff}s...")
+                time.sleep(backoff)
     return results
 
 # =====================================================================
@@ -2156,7 +2165,7 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
             ["Mean Rank", f"{reconciliation['mean_rank']}", "Actual Movers Rank", "Greeks & News Model", "Dynamic Calibration", "🟢 HIGH ACCURACY"]
         ]
         # Update metrics starting at row 5
-        ws_hb.update(range_name="A5:F9", values=hb_rows, value_input_option="USER_ENTERED")
+        ws_hb.update(range_name="A5", values=hb_rows, value_input_option="USER_ENTERED")
         
         # Also dynamically update Last BigQuery Sync
         headers = ws_hb.row_values(1)
@@ -2368,7 +2377,8 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
                 "negative_prob": float(p.get("negative_prob", 0.33)),
                 "already_priced_in_prob": float(p.get("already_priced_in_prob", 0.50)),
                 "market_confirmation": str(p.get("market_confirmation", "NEUTRAL_FLOW")),
-                "expected_move_band": str(p.get("expected_move_band", "0.0%"))
+                "expected_move_band": str(p.get("expected_move_band", "0.0%")),
+                "data_freshness_status": "MARKET_CLOSED" if not is_market_open(ist_dt) else ("LIVE_FRESH" if float(p.get("spot_ltp", 0)) > 0 else "STALE_DEGRADED")
             })
 
         job_config_trunc = bigquery.LoadJobConfig(

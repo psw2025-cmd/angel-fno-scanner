@@ -41,6 +41,7 @@ jobs:
 
       - name: Install Libraries
         run: |
+          set -eo pipefail
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt pytest
           python - <<'PY'
@@ -65,12 +66,14 @@ jobs:
           MAX_RUNTIME_SECONDS: ${{ github.event_name == 'schedule' && '19800' || '3600' }}
         continue-on-error: false
         run: |
+          set -eo pipefail
           python scanner.py
           python3 angel_prediction_engine.py --run-once
           python3 agent_cli.py --export-snapshots
 
       - name: Commit & Push Updated Snapshots
         run: |
+          set -eo pipefail
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add data/

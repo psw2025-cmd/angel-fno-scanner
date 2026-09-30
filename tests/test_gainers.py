@@ -25,8 +25,8 @@ def test_market_clock_matches_nse_session():
     assert market_is_open(NOW_CLOSED) is False
     assert market_is_open(NOW_OPEN) is True
     assert market_is_open(datetime(2026, 9, 25, 9, 14)) is False
-    assert market_is_open(datetime(2026, 9, 25, 15, 30)) is True
-    assert market_is_open(datetime(2026, 9, 25, 15, 31)) is False
+    assert market_is_open(datetime(2026, 9, 25, 15, 40)) is True
+    assert market_is_open(datetime(2026, 9, 25, 15, 41)) is False
     assert market_is_open(datetime(2026, 9, 26, 11, 0)) is False  # Saturday
 
 

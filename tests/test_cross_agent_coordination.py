@@ -58,4 +58,4 @@ def test_agents_md_is_canonical_start_source():
     assert "100% accuracy" in text
 
     agent_instructions = (ROOT / ".github" / "AGENT_INSTRUCTIONS.md").read_text(encoding="utf-8")
-    assert "read the repository-root **\`AGENTS.md\`** completely" in agent_instructions
+    assert "read the repository-root **`AGENTS.md`** completely" in agent_instructions
