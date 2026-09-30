@@ -89,8 +89,8 @@ def _norm_pdf(x: float) -> float:
 
 
 def year_fraction(now: datetime, expiry: date) -> float:
-    """Time left until 15:30 IST on the expiry date, as a year fraction."""
-    expiry_at = datetime.combine(expiry, time(15, 30))
+    """Time left until 15:40 IST on the expiry date, as a year fraction."""
+    expiry_at = datetime.combine(expiry, time(15, 40))
     seconds = (expiry_at - now.replace(tzinfo=None)).total_seconds()
     if seconds <= 0:
         return 0.0
@@ -179,7 +179,7 @@ def market_is_open(now: datetime) -> bool:
     if local.weekday() >= 5:
         return False
     minutes = local.hour * 60 + local.minute
-    return (9 * 60 + 15) <= minutes <= (15 * 60 + 30)
+    return (9 * 60 + 15) <= minutes <= (15 * 60 + 40)
 
 
 def resolve_prev_close(ltp: float | None, close: float | None, net_change: float | None, gain_percent: float | None) -> tuple[float | None, str]:
