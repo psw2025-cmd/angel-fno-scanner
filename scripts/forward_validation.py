@@ -27,26 +27,55 @@ def write_json(path, payload):
 def sha256(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
+def parse_timestamp(value):
+    if not value: return None
+    try: parsed = dt.datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError: return None
+    return (parsed.replace(tzinfo=IST) if parsed.tzinfo is None else parsed).astimezone(IST)
+
+def next_nse_session(date_value):
+    d = date_value if isinstance(date_value, dt.date) else dt.date.fromisoformat(str(date_value)[:10])
+    holidays = {"2026-01-26","2026-03-03","2026-03-26","2026-03-31","2026-04-03","2026-04-14","2026-05-01","2026-05-28","2026-06-26","2026-09-14","2026-10-02","2026-10-20","2026-11-10","2026-11-24","2026-12-25"}
+    for _ in range(370):
+        d += dt.timedelta(days=1)
+        if d.weekday() < 5 and d.isoformat() not in holidays: return d
+    raise RuntimeError("Could not determine next NSE session")
+
+def resolve_target_session(prediction):
+    generated = parse_timestamp(prediction.get("prediction_generated_at") or prediction.get("timestamp_ist") or prediction.get("generated_at"))
+    declared = str(prediction.get("target_market_session_date") or "").strip()[:10]
+    if declared: return dt.date.fromisoformat(declared), generated, "DECLARED_TARGET_SESSION"
+    if generated: return next_nse_session(generated.date()), generated, "DERIVED_NEXT_NSE_SESSION"
+    return None, None, "MISSING_GENERATION_TIMESTAMP"
+
+def validate_target_a_metadata(prediction, now=None):
+    now = now or now_ist()
+    target, generated, basis = resolve_target_session(prediction)
+    if target is None or generated is None: return False, {"reason":"MISSING_GENERATION_TIMESTAMP","basis":basis}
+    if target < now.date(): return False, {"reason":"TARGET_SESSION_ALREADY_PASSED","target_market_session_date":target.isoformat(),"basis":basis}
+    if generated > now: return False, {"reason":"GENERATION_TIME_IN_FUTURE","basis":basis}
+    if now - generated > dt.timedelta(days=5): return False, {"reason":"GENERATION_TOO_OLD","basis":basis}
+    return True, {"target_market_session_date":target.isoformat(),"prediction_generated_at":generated.isoformat(),"basis":basis}
+
 def freeze_target_a():
     src = DATA / "next_day_gap_predictions.json"
     if not src.exists():
         raise SystemExit("Target A source missing: data/next_day_gap_predictions.json")
     stamp = now_ist()
     source_data = load_json(src)
-    source_date = str(source_data.get("date", ""))
-    if source_date != stamp.strftime("%Y-%m-%d"):
-        out = REPORTS / f"TargetA_FREEZE_{stamp:%Y%m%d}.json"
-        write_json(out, {"freeze_timestamp_ist": stamp.isoformat(), "status": "BLOCKED_STALE_SOURCE",
-                         "source_date": source_date, "expected_date": stamp.strftime("%Y-%m-%d"),
-                         "source_sha256": sha256(src)})
-        raise SystemExit(f"Target A source is stale: {source_date}; expected {stamp:%Y-%m-%d}")
+    ok, meta = validate_target_a_metadata(source_data, stamp)
     out = REPORTS / f"TargetA_FREEZE_{stamp:%Y%m%d}.json"
+    if not ok or meta.get("target_market_session_date") != stamp.strftime("%Y-%m-%d"):
+        write_json(out, {"freeze_timestamp_ist": stamp.isoformat(), "status": "BLOCKED_STALE_OR_MISMATCH",
+                         "source_sha256": sha256(src), **meta})
+        raise SystemExit(f"Target A not valid for today's session: {meta}")
     payload = {
         "freeze_timestamp_ist": stamp.isoformat(),
         "source": str(src),
         "source_sha256": sha256(src),
-        "prediction": load_json(src),
+        "prediction": source_data,
         "status": "FROZEN_BEFORE_OPEN",
+        **meta,
     }
     write_json(out, payload)
     print(f"[PASS] Target A frozen: {out}")
@@ -75,7 +104,7 @@ def snapshot_target_b():
                 "gain_pct": gain,
                 "oi": oi,
                 "volume": row.get(f"{side.lower()}_volume"),
-                "bid_ask_spread": spread,
+                "bid_ask_spread": spread if spread is not None else row.get(f"{side.lower()}_spread"),
                 "expiry": row.get("expiry"),
                 "snapshot_timestamp": row.get("snapshot_timestamp"),
             }
