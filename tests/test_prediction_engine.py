@@ -587,3 +587,4 @@ def test_rbi_penalty_not_broadcast_to_unrelated_banks():
     for sym in symbols:
         assert mapped[sym]["top_headline"] == "No fresh material catalyst"
         assert mapped[sym]["item_count"] == 0
+
