@@ -33,10 +33,10 @@ from google.oauth2 import service_account
 # =====================================================================
 # CONFIGURATION & CREDENTIALS
 # =====================================================================
-ANGEL_API_KEY     = os.getenv("ANGEL_API_KEY", "H38aqqWn")
-ANGEL_CLIENT_CODE = os.getenv("ANGEL_CLIENT_CODE", "P57752101")
-ANGEL_PIN         = os.getenv("ANGEL_PIN", "1978")
-ANGEL_TOTP_SEED   = os.getenv("ANGEL_TOTP_SEED", "2DPIR273IJKIWZWJ23QAKF4BDI")
+ANGEL_API_KEY     = os.environ["ANGEL_API_KEY"]
+ANGEL_CLIENT_CODE = os.environ["ANGEL_CLIENT_CODE"]
+ANGEL_PIN         = os.environ["ANGEL_PIN"]
+ANGEL_TOTP_SEED   = os.environ["ANGEL_TOTP_SEED"]
 SHEET_ID          = os.getenv("SHEET_ID", "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs")
 BQ_PROJECT_ID     = os.getenv("BQ_PROJECT_ID", "fno-angel-prod-1790444589")
 BQ_DATASET_ID     = "fno_predictions"
@@ -2140,20 +2140,25 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
         ws_fl.update(range_name="A1", values=[fl_headers, *valid_fl_rows])
         print(f"[OK] FORENSIC_LIVE updated with {len(valid_fl_rows)} validated rows!")
 
-        # 2. Update HEARTBEAT with exact 6-column schema
+        # 2. Update HEARTBEAT with engine metrics, without destroying telemetry
         ws_hb = sh.worksheet("HEARTBEAT")
         hb_rows = [
-            ["Last Ping (IST)", "Angel Session Status", "Auto-Discovered Symbols", "Engine Status", "Seconds Since Last Write", "Automated Feed Alert"],
-            [ist_str, "CONNECTED_ANGEL_SMARTAPI", len(predictions), f"ACTIVE_PREDICTION_ENGINE | Cycle #{reconciliation['cycle']}", 0, "🟢 HEALTHY (ALL FEEDS ACTIVE)"],
             ["Metric", "Value", "Benchmark", "Component", "Protocol", "Status"],
             ["Session Auth", "CONNECTED_ANGEL_SMARTAPI", "ACTIVE", "Angel One SmartAPI", "TOTP / JWT WebSocket", "🟢 HEALTHY"],
-            ["Writer age", '=IF(ISNUMBER(E2),E2&"s","0s")', "Clock age, not exchange age", "Sheet write timestamp", "Daemon loop", "🟢 HEALTHY (ALL FEEDS ACTIVE)"],
             ["Self-Calibration Hit Rate", f"{reconciliation['hit_rate_pct']}%", "Self-Calibration Loop", "Reconciliation Engine", "Ground Truth Compare", "🟢 CALIBRATED"],
             ["Recall @ 10", f"{reconciliation['recall_at_10']}", "Top 10 Prediction Match", "Self-Calibration Loop", "Online Weights", "🟢 ACTIVE"],
             ["Mean Rank", f"{reconciliation['mean_rank']}", "Actual Movers Rank", "Greeks & News Model", "Dynamic Calibration", "🟢 HIGH ACCURACY"]
         ]
-        ws_hb.clear()
-        ws_hb.update(range_name="A1:F8", values=hb_rows, value_input_option="USER_ENTERED")
+        # Update metrics starting at row 5
+        ws_hb.update(range_name="A5:F9", values=hb_rows, value_input_option="USER_ENTERED")
+        
+        # Also dynamically update Last BigQuery Sync
+        headers = ws_hb.row_values(1)
+        if "Last BigQuery Sync (IST)" in headers:
+            col_idx = headers.index("Last BigQuery Sync (IST)")
+            col_letter = chr(65 + col_idx)
+            ws_hb.update(range_name=f"{col_letter}2", values=[[ist_str]])
+
         print("[OK] HEARTBEAT updated with exact 6-column schema and calibration metrics!")
 
         # 3. Update OPTION_PREDICTIONS tab (exact 41 columns fixed width)

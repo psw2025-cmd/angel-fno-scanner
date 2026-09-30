@@ -37,8 +37,10 @@ on:
 
 permissions:
   contents: write
-  actions: write
-  issues: write
+
+concurrency:
+  group: agent-dispatch
+  cancel-in-progress: false
 
 jobs:
   agent-executor:
@@ -156,7 +158,9 @@ jobs:
           git add data/
           if ! git diff-index --quiet HEAD --; then
             git commit -m "chore(data): auto-update prediction & market snapshots [skip ci]"
-            git push origin main
+            for i in 1 2 3 4 5; do
+              git pull --rebase origin main && git push origin main && break || sleep 15
+            done
           else
             echo "No snapshot changes to commit."
           fi

@@ -7,7 +7,10 @@ on:
 permissions:
   contents: write
   issues: write
-  pull-requests: write
+
+concurrency:
+  group: agent-issue-ops
+  cancel-in-progress: false
 
 jobs:
   issue-ops-handler:
@@ -54,7 +57,7 @@ jobs:
           COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
           mkdir -p output
-          CMD_LINE=$(echo "$COMMENT_BODY" | head -n 1 | xargs)
+          CMD_LINE=$(printf "%s\n" "$COMMENT_BODY" | head -n 1 | xargs)
           CMD=$(echo "$CMD_LINE" | awk '{print $1}')
           ARG1=$(echo "$CMD_LINE" | awk '{print $2}')
           ARG2=$(echo "$CMD_LINE" | awk '{print $3}')
@@ -138,5 +141,7 @@ jobs:
           git add data/
           if ! git diff-index --quiet HEAD --; then
             git commit -m "chore(data): auto-update snapshots via IssueOps [skip ci]"
-            git push origin main
+            for i in 1 2 3 4 5; do
+              git pull --rebase origin main && git push origin main && break || sleep 15
+            done
           fi
