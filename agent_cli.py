@@ -213,7 +213,7 @@ def export_snapshots(output_dir="data"):
     md = f"""# Angel One F&O Prediction & Market Intelligence Snapshot
 **Generated**: `{now_str}` | **System Status**: `🟢 {health['status']}`
 
-## 🌆 3:00 - 3:30 PM Pre-Close: Next-Day Gap-Up (CE) Picks
+## 🌆 3:00 - 3:40 PM Pre-Close: Next-Day Gap-Up (CE) Picks
 | Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+50%) | Expected Gap % | Conviction % | Institutional Rationale |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
 """
@@ -221,7 +221,7 @@ def export_snapshots(output_dir="data"):
         md += f"| {idx} | **{c.get('symbol', '')}** | `{c.get('target_strike', '')}` | `{c.get('contract_symbol', '')}` | ₹{float(c.get('entry_ltp', 0)):.2f} | ₹{float(c.get('stop_loss_ltp', 0)):.2f} | ₹{float(c.get('target_ltp', 0)):.2f} | **{float(c.get('expected_gap_pct', 0)):+.2f}%** | {float(c.get('conviction_pct', 0)):.1f}% | {c.get('why_rationale', '')[:80]} |\n"
 
     md += """
-## 🌆 3:00 - 3:30 PM Pre-Close: Next-Day Gap-Down (PE) Picks
+## 🌆 3:00 - 3:40 PM Pre-Close: Next-Day Gap-Down (PE) Picks
 | Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+60%) | Expected Gap % | Conviction % | Institutional Rationale |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
 """
@@ -346,7 +346,7 @@ def main():
         format_output(res, args.format, title="Top Conviction CE Breakouts & PE Breakdowns")
     elif args.next_day_gap:
         res = query_next_day_gap(limit=args.limit)
-        format_output(res, args.format, title="Top Next-Day Pre-Close (3:00-3:30 PM) Gap Candidates")
+        format_output(res, args.format, title="Top Next-Day Pre-Close (3:00-3:40 PM) Gap Candidates")
     elif args.query_news:
         sym = None if args.query_news == "ALL" else args.query_news
         res = query_news(symbol=sym, limit=args.limit)
@@ -357,7 +357,7 @@ def main():
         export_snapshots()
         print("[SUCCESS] Prediction pipeline pass complete!")
     elif args.force_pre_close:
-        print("[INFO] Forcing 3:00-3:30 PM Pre-Close Journaling Pass...")
+        print("[INFO] Forcing 3:00-3:40 PM Pre-Close Journaling Pass...")
         run_prediction_pipeline(bypass_market_check=True, force_pre_close=True)
         export_snapshots()
         print("[SUCCESS] Pre-close journaling pass complete!")
