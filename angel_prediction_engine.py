@@ -33,12 +33,15 @@ from google.oauth2 import service_account
 # =====================================================================
 # CONFIGURATION & CREDENTIALS
 # =====================================================================
-ANGEL_API_KEY     = os.environ["ANGEL_API_KEY"]
-ANGEL_CLIENT_CODE = os.environ["ANGEL_CLIENT_CODE"]
-ANGEL_PIN         = os.environ["ANGEL_PIN"]
-ANGEL_TOTP_SEED   = os.environ["ANGEL_TOTP_SEED"]
-SHEET_ID          = os.environ["SHEET_ID"]
-BQ_PROJECT_ID     = os.environ["BQ_PROJECT_ID"]
+def _env(name, default=""):
+    return os.getenv(name, default).strip()
+
+ANGEL_API_KEY     = _env("ANGEL_API_KEY")
+ANGEL_CLIENT_CODE = _env("ANGEL_CLIENT_CODE")
+ANGEL_PIN         = _env("ANGEL_PIN")
+ANGEL_TOTP_SEED   = _env("ANGEL_TOTP_SEED")
+SHEET_ID          = _env("SHEET_ID")
+BQ_PROJECT_ID     = _env("BQ_PROJECT_ID")
 BQ_DATASET_ID     = "fno_predictions"
 
 KEY_PATH = os.path.expanduser("~/angel_sheets_key.json")
@@ -1409,6 +1412,18 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
 # DYNAMIC F&O UNIVERSE DISCOVERY & ANGEL ONE INTEGRATION
 # =====================================================================
 def get_angel_client():
+    required = {
+        "ANGEL_API_KEY": ANGEL_API_KEY,
+        "ANGEL_CLIENT_CODE": ANGEL_CLIENT_CODE,
+        "ANGEL_PIN": ANGEL_PIN,
+        "ANGEL_TOTP_SEED": ANGEL_TOTP_SEED,
+    }
+    missing = [name for name, value in required.items() if not value]
+    if missing:
+        raise RuntimeError(
+            "Angel One credentials are required only for live broker access; "
+            f"missing environment variables: {', '.join(missing)}"
+        )
     totp = pyotp.TOTP(ANGEL_TOTP_SEED).now()
     smartApi = SmartConnect(api_key=ANGEL_API_KEY)
     login = smartApi.generateSession(ANGEL_CLIENT_CODE, ANGEL_PIN, totp)
