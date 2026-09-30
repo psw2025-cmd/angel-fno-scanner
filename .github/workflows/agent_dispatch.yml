@@ -37,8 +37,10 @@ on:
 
 permissions:
   contents: write
-  actions: write
-  issues: write
+
+concurrency:
+  group: agent-dispatch
+  cancel-in-progress: false
 
 jobs:
   agent-executor:
@@ -59,6 +61,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          set -eo pipefail
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt pytest
           python - <<'PY'
@@ -70,6 +73,7 @@ jobs:
       - name: Resolve Action Parameters
         id: params
         run: |
+          set -eo pipefail
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "ACTION=${{ github.event.inputs.action }}" >> $GITHUB_ENV
             echo "SYMBOL=${{ github.event.inputs.symbol }}" >> $GITHUB_ENV
@@ -101,6 +105,7 @@ jobs:
           SHEET_ID: ${{ secrets.SHEET_ID }}
           BQ_PROJECT_ID: ${{ secrets.BQ_PROJECT_ID }}
         run: |
+          set -eo pipefail
           mkdir -p output
           echo "Executing Agent Action: $ACTION (Symbol: $SYMBOL, Format: $FORMAT, Limit: $LIMIT)"
           
@@ -136,6 +141,7 @@ jobs:
 
       - name: Render GitHub Actions Step Summary
         run: |
+          set -eo pipefail
           echo "## 🤖 Agent API Execution Report" >> $GITHUB_STEP_SUMMARY
           echo "**Trigger**: \`${{ github.event_name }}\` | **Action**: \`$ACTION\` | **Symbol**: \`$SYMBOL\` | **Timestamp**: \`$(date -u)\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -151,12 +157,15 @@ jobs:
       - name: Commit & Push Updated Snapshots (If Applicable)
         if: env.ACTION == 'export_snapshots' || env.ACTION == 'run_cycle'
         run: |
+          set -eo pipefail
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add data/
           if ! git diff-index --quiet HEAD --; then
             git commit -m "chore(data): auto-update prediction & market snapshots [skip ci]"
-            git push origin main
+            for i in 1 2 3 4 5; do
+              git pull --rebase origin main && git push origin main && break || sleep 15
+            done
           else
             echo "No snapshot changes to commit."
           fi

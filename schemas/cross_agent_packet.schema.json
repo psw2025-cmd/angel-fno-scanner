@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Angel F&O Cross Agent Packet",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "claim_id","claiming_agent","claim_time_ist","host_or_runtime","repo",
+    "claim","observation","primary_evidence","before_state","action_taken",
+    "after_state","safety_state","secrets_redacted","peer_check_request","status"
+  ],
+  "properties": {
+    "claim_id": {"type":"string","minLength":6},
+    "claiming_agent": {"type":"string","enum":["AGY_CLI","CHATGPT","OTHER_VERIFIER"]},
+    "claim_time_ist": {"type":"string","minLength":10},
+    "host_or_runtime": {"type":"string","minLength":1},
+    "repo": {"type":"string","const":"psw2025-cmd/angel-fno-scanner"},
+    "base_sha": {"type":["string","null"]},
+    "head_sha": {"type":["string","null"]},
+    "artifact_sha256": {"type":["string","null"]},
+    "claim": {"type":"string","minLength":1},
+    "observation": {"type":"string","minLength":1},
+    "exact_commands": {"type":"array","items":{"type":"string"}},
+    "primary_evidence": {"type":"string"},
+    "source_timestamps": {"type":"object"},
+    "pid_process_ports": {"type":"array"},
+    "before_state": {"type":"string"},
+    "action_taken": {"type":"string"},
+    "after_state": {"type":"string"},
+    "safety_state": {"type":"string"},
+    "secrets_redacted": {"const":true},
+    "peer_check_request": {"type":"string"},
+    "known_limitations": {"type":"string"},
+    "status": {
+      "type":"string",
+      "enum":[
+        "OBSERVED","OPEN_AUTO_FIXABLE","IMPLEMENTED_NOT_DEPLOYED","VERIFIED_LOCAL",
+        "VERIFIED_REMOTE","DISPUTED","WAITING_FOR_PEER","WAITING_FOR_USER",
+        "RESOLVED_TWO_PARTY"
+      ]
+    }
+  }
+}

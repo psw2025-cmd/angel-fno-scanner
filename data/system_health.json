@@ -1,8 +1,8 @@
 {
-  "status": "FAIL",
-  "timestamp": "2026-09-29T03:55:57.875951+00:00",
+  "status": "PASS",
+  "timestamp": "2026-09-30T11:12:28.857790+00:00",
   "sheets_audit": {
-    "passed": false,
+    "passed": true,
     "summary": {
       "PRE_BREAKOUT_SCANNER": {
         "formula_errors": [],
@@ -15,14 +15,14 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 198,
+        "row_count": 204,
         "col_count": 23
       },
       "F&O Options Top Gainers Tracker Dashboard": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 57,
+        "row_count": 73,
         "col_count": 18
       },
       "LEGACY_F&O_DASHBOARD_OBJECT": {
@@ -43,7 +43,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 290,
+        "row_count": 475,
         "col_count": 8
       },
       "Cloud_Automation_Setup": {
@@ -57,7 +57,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 217,
+        "row_count": 220,
         "col_count": 18
       },
       "HEARTBEAT": {
@@ -71,35 +71,35 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 173,
+        "row_count": 218,
         "col_count": 28
       },
       "NSE_EVENTS": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 106,
+        "row_count": 242,
         "col_count": 5
       },
       "PAPER_ALERT_LOG": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 280,
+        "row_count": 648,
         "col_count": 11
       },
       "NEWS_LIVE": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 173,
+        "row_count": 221,
         "col_count": 12
       },
       "NEWS_IMPACT": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 188,
+        "row_count": 293,
         "col_count": 16
       },
       "NEWS_TYPE_TALLY": {
@@ -113,14 +113,14 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 198,
+        "row_count": 204,
         "col_count": 23
       },
       "OPTION_PREDICTIONS": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 211,
+        "row_count": 259,
         "col_count": 41
       }
     }
@@ -130,20 +130,20 @@
     "summary": {
       "option_predictions_live": {
         "exists": true,
-        "rows": 171,
-        "size_mb": 0.08,
+        "rows": 219,
+        "size_mb": 0.11,
         "columns": 48
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 4114,
-        "size_mb": 3.66,
+        "rows": 5815,
+        "size_mb": 5.05,
         "columns": 21
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 139,
-        "size_mb": 0.09,
+        "rows": 235,
+        "size_mb": 0.16,
         "columns": 11
       }
     }

@@ -20,9 +20,10 @@ from gainers import (
     strike_window_tokens,
 )
 from paper_log import alerts_to_append, fill_later_changes, render_production_sheet
+from runtime_window import session_deadline, wait_seconds_to_open, window_is_active
 
-SHEET_ID = "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs"
-MAX_RUNTIME_SECONDS = max(1, int(os.getenv("MAX_RUNTIME_SECONDS", "19800")))
+SHEET_ID = os.getenv("SHEET_ID", "").strip()
+MAX_RUNTIME_SECONDS = max(1, int(os.getenv("MAX_RUNTIME_SECONDS", "22500")))
 IST = ZoneInfo("Asia/Kolkata")
 DAEMON_FRESH_SECONDS = 90
 FORENSIC_HEADER = [
@@ -103,9 +104,18 @@ def worksheet(book, title, rows=400, cols=26):
 
 
 def write_grid(ws, rows):
-    ws.clear()
-    if rows:
+    if not rows:
+        ws.clear()
+        return
+    try:
+        # Update first to avoid destructive partial writes
         ws.update(range_name="A1", values=rows, value_input_option="RAW")
+        # Clear any remaining rows from previous larger datasets
+        num_rows = len(rows)
+        ws.batch_clear([f"A{num_rows + 1}:ZZ"])
+    except Exception as e:
+        print(f"[WARN] write_grid failed: {e}")
+        raise
 
 
 def heartbeat_age_seconds(book, now):
@@ -124,9 +134,9 @@ def heartbeat_age_seconds(book, now):
 
 def publish_gainers(book, quotes, now, source):
     rows = render_gainer_sheet(quotes, now, source)
-    for title in ("Sheet1", "TOP_GAINERS"):
+    for title in ("CE_PE_RANK", "TOP_GAINERS"):
         write_grid(worksheet(book, title, rows=max(200, len(rows) + 10), cols=len(rows[3]) if len(rows) > 3 else 26), rows)
-    print(f"[OK] Wrote {max(0, len(rows) - 4)} real gainer rows to Sheet1 and TOP_GAINERS from {source}")
+    print(f"[OK] Wrote {max(0, len(rows) - 4)} real gainer rows to CE_PE_RANK and TOP_GAINERS from {source}")
     return rows
 
 
@@ -156,13 +166,17 @@ def sync_paper(book, signals, latest_changes, now):
 
 
 def angel_login():
-    client_code = os.environ["ANGEL_CLIENT_CODE"]
-    totp = pyotp.TOTP(os.environ["ANGEL_TOTP_SEED"]).now()
-    api = SmartConnect(api_key=os.environ["ANGEL_API_KEY"])
-    session = api.generateSession(client_code, os.environ["ANGEL_PIN"], totp)
+    names = ("ANGEL_API_KEY", "ANGEL_CLIENT_CODE", "ANGEL_PIN", "ANGEL_TOTP_SEED")
+    credentials = {name: os.getenv(name, "").strip() for name in names}
+    missing = [name for name in names if not credentials[name]]
+    if missing:
+        raise RuntimeError("Missing required configuration: " + ", ".join(missing))
+    totp = pyotp.TOTP(credentials["ANGEL_TOTP_SEED"]).now()
+    api = SmartConnect(api_key=credentials["ANGEL_API_KEY"])
+    session = api.generateSession(credentials["ANGEL_CLIENT_CODE"], credentials["ANGEL_PIN"], totp)
     if not session or not session.get("status"):
-        raise RuntimeError(f"Angel login failed: {session}")
-    print(f"[OK] Angel Session Active for {client_code}")
+        raise RuntimeError("Angel One session rejected; check broker authentication configuration")
+    print("[OK] Angel One SmartAPI Session Connected")
     return api
 
 
@@ -225,7 +239,7 @@ def fetch_chunked(api, tokens, size=45):
     failures = 0
     for start in range(0, len(tokens), size):
         chunk = tokens[start:start + size]
-        for attempt in range(3):
+        for attempt in range(4):
             try:
                 response = api.getMarketData("FULL", {"NFO": chunk})
                 if not response or not response.get("status"):
@@ -234,11 +248,13 @@ def fetch_chunked(api, tokens, size=45):
                     quotes[str(item.get("symbolToken"))] = item
                 break
             except Exception as exc:
-                if attempt == 2:
+                if attempt == 3:
                     failures += 1
-                    print(f"[WARN] Quote chunk failed after retries: {exc}")
+                    print(f"[ERROR] Quote chunk failed permanently after retries: {exc}")
                 else:
-                    time.sleep(0.6 * (attempt + 1))
+                    backoff = (2 ** attempt) + 0.5
+                    print(f"[WARN] Quote chunk error: {exc}. Retrying in {backoff}s...")
+                    time.sleep(backoff)
         time.sleep(0.35)
     return quotes, failures
 
@@ -333,12 +349,22 @@ def build_chain_quotes(universe, future_quotes, option_quotes, each_side):
 
 
 def run_angel_loop(book, api):
+    window = os.getenv("SCANNER_WINDOW", "once")
+    deadline = session_deadline(now_ist(), window)
     universe = discover_universe(api)
     each_side = 1 if MAX_RUNTIME_SECONDS <= 120 else int(os.getenv("STRIKE_WINDOW", "6"))
-    started = time.time()
+    started = time.monotonic()
     loop = 0
-    while time.time() - started < MAX_RUNTIME_SECONDS:
+    prediction_issued = False
+    while time.monotonic() - started < MAX_RUNTIME_SECONDS:
         now = now_ist()
+        if deadline is not None and now >= deadline:
+            print("[INFO] Scheduled session window complete.")
+            break
+        wait = wait_seconds_to_open(now, window)
+        if wait:
+            time.sleep(min(30, wait, max(0, MAX_RUNTIME_SECONDS - (time.monotonic() - started))))
+            continue
         stamped = now.strftime("%Y-%m-%d %H:%M:%S")
         future_quotes, future_failures = fetch_chunked(api, [meta["token"] for meta in universe.values()])
         tokens = []
@@ -349,13 +375,30 @@ def run_angel_loop(book, api):
                 continue
             tokens.extend(token for token, _meta in strike_window_tokens(meta["strikes"], future_ltp, each_side))
         option_quotes, option_failures = fetch_chunked(api, tokens)
-        if tokens and not option_quotes:
+        is_api_failure = (tokens and not option_quotes) or (not future_quotes and len(universe) > 0)
+        if is_api_failure:
             print("[WARN] Option quote feed returned nothing. Existing sheets were left unchanged.")
+            consecutive_failures = getattr(api, '_consecutive_failures', 0) + 1
+            api._consecutive_failures = consecutive_failures
+            if consecutive_failures >= 3:
+                print(f"[WARN] {consecutive_failures} consecutive failures. Attempting re-login.")
+                import random
+                sleep_time = min((2 ** (consecutive_failures - 3)) + random.uniform(0, 1), 60)
+                time.sleep(sleep_time)
+                try:
+                    api = angel_login()
+                    universe = discover_universe(api)
+                    api._consecutive_failures = 0
+                except Exception as e:
+                    print(f"[ERROR] Re-login failed: {e}")
+                continue
+            
             loop += 1
-            if not market_is_open(now) or MAX_RUNTIME_SECONDS <= 120 or (now.hour == 15 and now.minute > 35):
+            if not market_is_open(now) or MAX_RUNTIME_SECONDS <= 120 or (now.hour == 15 and now.minute > 40):
                 break
             time.sleep(30)
             continue
+        api._consecutive_failures = 0
         forensic_rows, signals, latest_changes = build_forensic_rows(universe, future_quotes, option_quotes, stamped)
         chain_quotes = build_chain_quotes(universe, future_quotes, option_quotes, each_side)
         try:
@@ -363,11 +406,72 @@ def run_angel_loop(book, api):
                 live = worksheet(book, "FORENSIC_LIVE", rows=max(300, len(forensic_rows) + 5), cols=18)
                 write_grid(live, [FORENSIC_HEADER, *forensic_rows])
                 heartbeat = worksheet(book, "HEARTBEAT")
-                heartbeat.update(
-                    range_name="A2",
-                    values=[[stamped, "CONNECTED_ANGEL_SMARTAPI", len(forensic_rows), f"Loop #{loop} OK | {len(chain_quotes)} option quotes"]],
-                    value_input_option="RAW",
-                )
+                telemetry_header = [
+                    "Last Data Fetch (IST)", 
+                    "Angel Broker Connection Status", 
+                    "Last BigQuery Sync (IST)", 
+                    "Stream Health", 
+                    "Outage Start (IST)", 
+                    "Outage End (IST)", 
+                    "Outage Duration (s)", 
+                    "Data Missed Estimate (Rows)"
+                ]
+                
+                try:
+                    existing_header = heartbeat.row_values(1)
+                except Exception:
+                    existing_header = []
+                    
+                if existing_header != telemetry_header:
+                    heartbeat.update(range_name="A1", values=[telemetry_header], value_input_option="RAW")
+                    existing_header = telemetry_header
+                
+                try:
+                    last_fetch_str = heartbeat.acell("A2").value
+                except Exception:
+                    last_fetch_str = None
+                
+                outage_start = ""
+                outage_end = ""
+                outage_duration = ""
+                data_missed = ""
+                
+                if last_fetch_str:
+                    try:
+                        last_time = datetime.datetime.strptime(str(last_fetch_str).strip(), "%Y-%m-%d %H:%M:%S")
+                        gap = (now - last_time).total_seconds()
+                        if gap > 300 and market_is_open(last_time) and market_is_open(now):
+                            outage_start = str(last_time.strftime("%Y-%m-%d %H:%M:%S"))
+                            outage_end = stamped
+                            outage_duration = str(int(gap))
+                            data_missed = str(int(gap / 30) * max(1, len(forensic_rows)))
+                    except Exception:
+                        pass
+                
+                row_data = {
+                    "Last Data Fetch (IST)": stamped,
+                    "Angel Broker Connection Status": "CONNECTED_ANGEL_SMARTAPI",
+                    "Stream Health": "🟢 HEALTHY" if not outage_duration else "🔴 OUTAGE RECOVERED",
+                }
+                
+                if outage_duration:
+                    row_data["Outage Start (IST)"] = outage_start
+                    row_data["Outage End (IST)"] = outage_end
+                    row_data["Outage Duration (s)"] = outage_duration
+                    row_data["Data Missed Estimate (Rows)"] = data_missed
+                
+                try:
+                    current_row = heartbeat.row_values(2)
+                except Exception:
+                    current_row = []
+                    
+                current_row = (current_row + [""] * len(telemetry_header))[:len(telemetry_header)]
+                
+                for i, col in enumerate(telemetry_header):
+                    if col in row_data:
+                        current_row[i] = row_data[col]
+                        
+                heartbeat.update(range_name="A2", values=[current_row], value_input_option="RAW")
             else:
                 print("[WARN] Angel returned no futures quotes. FORENSIC_LIVE was left unchanged.")
             if chain_quotes:
@@ -383,11 +487,29 @@ def run_angel_loop(book, api):
         except Exception as exc:
             print(f"[WARN] Sheet update failed: {exc}")
         loop += 1
+        if not prediction_issued:
+            prediction_issued = run_scheduled_prediction(api, now_ist(), window)
         if not market_is_open(now) or MAX_RUNTIME_SECONDS <= 120:
             print("[INFO] Single real quote pass complete.")
             break
-        remaining = MAX_RUNTIME_SECONDS - (time.time() - started)
+        remaining = MAX_RUNTIME_SECONDS - (time.monotonic() - started)
         time.sleep(min(30, max(0, remaining)))
+
+
+def run_scheduled_prediction(api, now, window):
+    """Run once per owned phase while its prediction window is still open."""
+    from angel_prediction_engine import (
+        is_morning_reconcile_time, is_pre_close_time, run_prediction_pipeline,
+    )
+    eligible = (
+        window == "morning" and is_morning_reconcile_time(now)
+    ) or (
+        window == "afternoon" and is_pre_close_time(now)
+    )
+    if not eligible:
+        return False
+    run_prediction_pipeline(smart_api=api)
+    return True
 
 
 def refresh_from_forensic(book, now):
@@ -415,21 +537,35 @@ def refresh_from_forensic(book, now):
 
 
 def main():
+    window = os.getenv("SCANNER_WINDOW", "once")
+    if not window_is_active(now_ist(), window):
+        print("[INFO] Scheduled session window already ended.")
+        return
+    if not SHEET_ID:
+        raise RuntimeError("Missing required configuration: SHEET_ID")
     book = gspread.service_account_from_dict(load_service_account()).open_by_key(SHEET_ID)
     now = now_ist()
     age = heartbeat_age_seconds(book, now)
+    # A fresh external writer remains authoritative. Scheduled phases monitor
+    # it until the window ends or its heartbeat becomes stale; they must not
+    # exit immediately during the handoff from the morning job.
+    while window != "once" and age is not None and age <= DAEMON_FRESH_SECONDS:
+        if not window_is_active(now, window):
+            return
+        time.sleep(30)
+        now = now_ist()
+        age = heartbeat_age_seconds(book, now)
+    if not window_is_active(now, window):
+        return
     if age is not None and age <= DAEMON_FRESH_SECONDS:
         print(f"[INFO] HEARTBEAT is {int(age)}s old. Skipping a second Angel login.")
         refresh_from_forensic(book, now)
         return
     print(f"[INFO] HEARTBEAT age={age}. Opening Angel for a real quote pass.")
     run_angel_loop(book, angel_login())
-    try:
-        from angel_prediction_engine import run_prediction_pipeline
-        print("[INFO] Invoking Option CE/PE Prediction & Rating Pipeline...")
-        run_prediction_pipeline(bypass_market_check=True)
-    except Exception as exc:
-        print(f"[WARN] Prediction engine run notice: {exc}")
+    from angel_prediction_engine import run_prediction_pipeline
+    print("[INFO] Invoking Option CE/PE Prediction & Rating Pipeline...")
+    run_prediction_pipeline(bypass_market_check=True)
 
 
 if __name__ == "__main__":

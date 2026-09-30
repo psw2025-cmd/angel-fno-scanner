@@ -11,66 +11,32 @@ on:
     branches: [main]
     paths:
       - 'scanner.py'
+      - 'runtime_window.py'
       - 'angel_prediction_engine.py'
       - 'agent_cli.py'
       - 'requirements.txt'
       - '.github/workflows/market_bot.yml'
+      - '.github/workflows/market_session.yml'
 
 permissions:
   contents: write
+  issues: write
+
+concurrency:
+  group: market-bot
+  cancel-in-progress: false
 
 jobs:
   run-scanner:
-    runs-on: ubuntu-latest
-    timeout-minutes: 435
+    uses: ./.github/workflows/market_session.yml
+    with:
+      window: ${{ github.event_name == 'schedule' && github.event.schedule == '40 3 * * 1-5' && 'morning' || 'once' }}
+    secrets: inherit
 
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          cache: 'pip'
-
-      - name: Install Libraries
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt pytest
-          python - <<'PY'
-          import logzero, pyotp, gspread
-          from google.cloud import bigquery
-          from SmartApi import SmartConnect
-          print("[OK] Production dependencies imported successfully")
-          PY
-
-      - name: Test quote & prediction engine math
-        run: python -m pytest -v
-
-      - name: Run Option Prediction & Forensic Scanner
-        env:
-          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
-          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
-          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
-          ANGEL_TOTP_SEED: ${{ secrets.ANGEL_TOTP_SEED }}
-          SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
-          SHEET_ID: ${{ secrets.SHEET_ID }}
-          BQ_PROJECT_ID: ${{ secrets.BQ_PROJECT_ID }}
-          MAX_RUNTIME_SECONDS: ${{ github.event_name == 'schedule' && '24300' || '60' }}
-        run: |
-          python scanner.py
-          python3 angel_prediction_engine.py --run-once
-          python3 agent_cli.py --export-snapshots
-
-      - name: Commit & Push Updated Snapshots
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/
-          if ! git diff-index --quiet HEAD --; then
-            git commit -m "chore(data): auto-update daily prediction snapshots [skip ci]"
-            git push origin main
-          else
-            echo "No data changes to commit."
-          fi
+  close-session:
+    needs: run-scanner
+    if: github.event_name == 'schedule' && github.event.schedule == '40 3 * * 1-5'
+    uses: ./.github/workflows/market_session.yml
+    with:
+      window: afternoon
+    secrets: inherit

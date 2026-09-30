@@ -440,9 +440,10 @@ def test_pre_close_timing_window():
     dt_early = datetime.datetime(2026, 9, 28, 14, 45, 0)
     assert is_pre_close_time(dt_early) is False
 
-    # Monday 15:35 IST -> should be False
+    # Monday 15:35 IST remains in the current NSE derivatives session.
     dt_late = datetime.datetime(2026, 9, 28, 15, 35, 0)
-    assert is_pre_close_time(dt_late) is False
+    assert is_pre_close_time(dt_late) is True
+    assert is_pre_close_time(datetime.datetime(2026, 9, 28, 15, 41)) is False
 
     # Sunday 15:15 IST -> should be False (weekend)
     dt_sun = datetime.datetime(2026, 9, 27, 15, 15, 0)
@@ -576,3 +577,14 @@ def test_why_rationale_completeness():
     assert "Order win of mega" in rationale
 
 
+
+
+def test_rbi_penalty_not_broadcast_to_unrelated_banks():
+    from angel_prediction_engine import aggregate_market_news
+    headline = "RBI Imposes Rs 41.80 Lakh Penalty on Bandhan Bank for Regulatory Violations - scanx.trade"
+    articles = [{"title": headline, "source": "Banking RBI Thematic", "link": "https://example.com/bandhan"}]
+    symbols = ["AXISBANK", "ICICIBANK", "KOTAKBANK", "HDFCBANK"]
+    mapped = aggregate_market_news(articles, symbols)
+    for sym in symbols:
+        assert mapped[sym]["top_headline"] == "No fresh material catalyst"
+        assert mapped[sym]["item_count"] == 0

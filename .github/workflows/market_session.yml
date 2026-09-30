@@ -1,0 +1,145 @@
+name: Bounded Market Session
+
+on:
+  workflow_call:
+    inputs:
+      window:
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+
+# Each hosted job stays below six hours. The caller serializes the phases and
+# holds the existing workflow concurrency lock across both jobs.
+jobs:
+  run-scanner:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+
+    env:
+      SCANNER_WINDOW: ${{ inputs.window }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Restore morning session state
+        if: inputs.window == 'afternoon'
+        uses: actions/download-artifact@v4
+        with:
+          name: market-session-handoff
+          path: session-handoff
+
+      - name: Restore only prediction state and data
+        if: inputs.window == 'afternoon'
+        run: |
+          python - <<'PYCODE'
+          from pathlib import Path
+          import shutil
+          for src in Path('session-handoff/state').glob('*.json'):
+              shutil.copy2(src, Path.home() / src.name)
+          for src in Path('session-handoff/data').glob('*'):
+              if src.is_file():
+                  shutil.copy2(src, Path('data') / src.name)
+          PYCODE
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install Libraries
+        run: |
+          set -eo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pytest
+          python - <<'PY'
+          import logzero, pyotp, gspread
+          from google.cloud import bigquery
+          from SmartApi import SmartConnect
+          print("[OK] Production dependencies imported successfully")
+          PY
+
+      - name: Test quote & prediction engine math
+        run: python -m pytest -v
+
+      - name: Check session deadline before external work
+        id: window
+        run: python -m runtime_window "$SCANNER_WINDOW" >> "$GITHUB_OUTPUT"
+
+      - name: Run Option Prediction & Forensic Scanner
+        if: steps.window.outputs.active == 'true'
+        env:
+          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+          ANGEL_TOTP_SEED: ${{ secrets.ANGEL_TOTP_SEED }}
+          SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          BQ_PROJECT_ID: ${{ secrets.BQ_PROJECT_ID }}
+          MAX_RUNTIME_SECONDS: ${{ inputs.window == 'once' && '3600' || '14400' }}
+        continue-on-error: false
+        run: |
+          set -eo pipefail
+          python scanner.py
+          python3 agent_cli.py --export-snapshots
+
+      - name: Commit & Push Updated Snapshots
+        if: steps.window.outputs.active == 'true'
+        run: |
+          set -eo pipefail
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if ! git diff-index --quiet HEAD --; then
+            git commit -m "chore(data): auto-update daily prediction snapshots [skip ci]"
+            for i in 1 2 3 4 5; do
+              if git pull --rebase origin main && git push origin main; then
+                exit 0
+              fi
+              sleep 15
+            done
+            echo "Snapshot publication failed after five attempts."
+            exit 1
+          else
+            echo "No data changes to commit."
+          fi
+
+      - name: Preserve state for the closing session
+        if: inputs.window == 'morning'
+        run: |
+          python - <<'PYCODE'
+          from pathlib import Path
+          import shutil
+          dest = Path('session-handoff')
+          (dest / 'state').mkdir(parents=True, exist_ok=True)
+          for name in ('angel_prediction_state.json', 'angel_calibration_state.json', 'angel_nse_cache.json'):
+              src = Path.home() / name
+              if src.is_file():
+                  shutil.copy2(src, dest / 'state' / name)
+          shutil.copytree('data', dest / 'data', dirs_exist_ok=True)
+          PYCODE
+
+      - name: Upload session handoff
+        if: inputs.window == 'morning'
+        uses: actions/upload-artifact@v4
+        with:
+          name: market-session-handoff
+          path: session-handoff/
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Create Issue on Failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Workflow Failure: ${context.workflow}`,
+              body: `The workflow **${context.workflow}** failed in run ${context.runId}. Please check the logs.`
+            });
