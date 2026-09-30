@@ -89,8 +89,8 @@ def _norm_pdf(x: float) -> float:
 
 
 def year_fraction(now: datetime, expiry: date) -> float:
-    """Time left until 15:30 IST on the expiry date, as a year fraction."""
-    expiry_at = datetime.combine(expiry, time(15, 30))
+    """Time left until 15:40 IST on the expiry date, as a year fraction."""
+    expiry_at = datetime.combine(expiry, time(15, 40))
     seconds = (expiry_at - now.replace(tzinfo=None)).total_seconds()
     if seconds <= 0:
         return 0.0

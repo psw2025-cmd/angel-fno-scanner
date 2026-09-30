@@ -440,9 +440,13 @@ def test_pre_close_timing_window():
     dt_early = datetime.datetime(2026, 9, 28, 14, 45, 0)
     assert is_pre_close_time(dt_early) is False
 
-    # Monday 15:35 IST -> should be False
+    # Monday 15:35 IST -> still inside the 15:40 F&O close window
     dt_late = datetime.datetime(2026, 9, 28, 15, 35, 0)
-    assert is_pre_close_time(dt_late) is False
+    assert is_pre_close_time(dt_late) is True
+
+    # Monday 15:41 IST -> after the 15:40 F&O close
+    dt_after = datetime.datetime(2026, 9, 28, 15, 41, 0)
+    assert is_pre_close_time(dt_after) is False
 
     # Sunday 15:15 IST -> should be False (weekend)
     dt_sun = datetime.datetime(2026, 9, 27, 15, 15, 0)

@@ -197,9 +197,9 @@ def test_strike_window_follows_the_future():
 
 
 def test_year_fraction_ends_at_expiry_close():
-    now = datetime(2026, 9, 29, 15, 30)
+    now = datetime(2026, 9, 29, 15, 40)
     assert year_fraction(now, now.date()) == 0
-    earlier = datetime(2026, 9, 27, 15, 30)
+    earlier = datetime(2026, 9, 27, 15, 40)
     assert year_fraction(earlier, now.date()) == 2 / 365.25
 
 

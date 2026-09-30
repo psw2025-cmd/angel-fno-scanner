@@ -109,7 +109,7 @@ def is_pre_close_time(dt=None):
     if dt.weekday() >= 5:  # Saturday or Sunday
         return False
     mins = dt.hour * 60 + dt.minute
-    return 900 <= mins <= 930  # 15:00 to 15:30 IST (3:00 PM to 3:30 PM)
+    return 900 <= mins <= 940  # 15:00 to 15:40 IST (3:00 PM to 3:40 PM)
 
 def is_morning_reconcile_time(dt=None):
     if dt is None:
