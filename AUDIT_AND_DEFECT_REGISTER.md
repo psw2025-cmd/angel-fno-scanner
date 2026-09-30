@@ -41,3 +41,21 @@ Closed-loop laptop-first repair for psw2025-cmd/angel-fno-scanner on branch fix/
 - Windows 127.0.0.1:5678: TCP PASS
 - Windows HTTP 127.0.0.1:5678: HTTP 200
 - Windows Firewall: explicit inbound BLOCK for TCP 5678
+
+## Batch 4 additions — 2026-10-01
+
+| ID | Defect / gap | Repair / evidence | Status |
+|---|---|---|---|
+| B4-01 | Historical audit JSON retained a client-code identifier | Replaced every occurrence with `REDACTED_CLIENT_CODE`; 53-test suite remains green | PASS |
+| B4-02 | Scheduled scanner needed explicit non-overlap guarantee | `market_bot.yml` has `concurrency: market-bot`, `cancel-in-progress: false`, and 435-minute timeout | PASS |
+| B4-03 | Local forward validation had no deterministic stale-source gate | Added `scripts/forward_validation.py`; Target A refuses to freeze prior-session data | PASS |
+| B4-04 | Target B evidence needed chronological PAPER snapshots | Added independent CE/PE Top-1/3/5 snapshot output with OI/spread and explicit volume-field status | PASS |
+| B4-05 | n8n monitoring orchestration absent | Imported/published `angel-fno-read-only-monitor`; active after n8n restart | PASS |
+| B4-06 | GitHub CLI credential path unavailable | `gh auth status` still reports no login; device flow started and is awaiting user completion | PENDING USER |
+
+### Batch 4 safety
+- No secret values were read into the report.
+- Local `.env` is absent.
+- n8n monitor is read-only and PAPER-only.
+- n8n writes only evidence reports; it does not write prediction/sink data or invoke order APIs.
+- Target A stale source is fail-closed rather than silently frozen.

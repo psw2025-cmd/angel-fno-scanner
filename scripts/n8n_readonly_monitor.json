@@ -1,0 +1,145 @@
+{
+  "id": "angel-fno-read-only-monitor",
+  "name": "Angel FNO Read-Only Session Monitor",
+  "active": true,
+  "settings": {
+    "timezone": "Asia/Kolkata",
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "25 3 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "b3e1a1a1-1111-4111-8111-111111111111",
+      "name": "Pre-Market 08:55 IST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "command": "python3 /mnt/c/AngelFNO_Workstation/repos/angel-fno-scanner/scripts/forward_validation.py --freeze-target-a && python3 /mnt/c/AngelFNO_Workstation/repos/angel-fno-scanner/scripts/forward_validation.py --snapshot-target-b"
+      },
+      "id": "b3e1a1a1-2222-4222-8222-222222222222",
+      "name": "Pre-Market Read-Only Check",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1.2,
+      "position": [
+        -260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/5 3-10 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "b3e1a1a1-3333-4333-8333-333333333333",
+      "name": "Market Freshness Every 5m",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -520,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "command": "python3 /mnt/c/AngelFNO_Workstation/repos/angel-fno-scanner/scripts/forward_validation.py --monitor market && python3 /mnt/c/AngelFNO_Workstation/repos/angel-fno-scanner/scripts/forward_validation.py --snapshot-target-b"
+      },
+      "id": "b3e1a1a1-4444-4444-8444-444444444444",
+      "name": "Market Read-Only Check",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1.2,
+      "position": [
+        -260,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "40,45,50,55 10 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "b3e1a1a1-5555-4555-8555-555555555555",
+      "name": "Post-Market 15:40-16:00 IST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -520,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "command": "python3 /mnt/c/AngelFNO_Workstation/repos/angel-fno-scanner/scripts/forward_validation.py --monitor postmarket"
+      },
+      "id": "b3e1a1a1-6666-4666-8666-666666666666",
+      "name": "Post-Market Read-Only Check",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1.2,
+      "position": [
+        -260,
+        520
+      ]
+    }
+  ],
+  "connections": {
+    "Pre-Market 08:55 IST": {
+      "main": [
+        [
+          {
+            "node": "Pre-Market Read-Only Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Market Freshness Every 5m": {
+      "main": [
+        [
+          {
+            "node": "Market Read-Only Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post-Market 15:40-16:00 IST": {
+      "main": [
+        [
+          {
+            "node": "Post-Market Read-Only Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
