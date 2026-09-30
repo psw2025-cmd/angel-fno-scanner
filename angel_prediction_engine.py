@@ -604,19 +604,25 @@ def aggregate_market_news(articles=None, universe_symbols=None):
                     # Enforce strict entity matching:
                     is_sym_match = bool(re.search(rf"\b{re.escape(sym)}\b", t, re.IGNORECASE) or any(re.search(rf"\b{re.escape(al)}\b", t, re.IGNORECASE) for al in ALIASES.get(sym, ())))
                     
-                    if reg_key == "LEGAL":
-                        # Litigation orders/cases are company-specific: DO NOT broadcast to unrelated stocks
-                        if not is_sym_match:
-                            continue
-                    else:
-                        # For other sectors (USFDA, IRDAI, RBI), if the headline mentions another specific company in the universe, don't broadcast
+                    company_specific = reg_key == "LEGAL" or cat in {
+                        "REGULATORY_PROBE", "ORDER_WIN", "EARNINGS_BEAT",
+                        "EARNINGS_MISS", "M&A_EXPANSION", "MANAGEMENT_CHANGE"
+                    }
+                    if company_specific and not is_sym_match:
+                        # Company-specific events must never be broadcast sector-wide.
+                        # This also blocks penalties/probes naming companies outside
+                        # the configured F&O universe (for example Bandhan Bank).
+                        continue
+
+                    if not is_sym_match:
+                        # Sector-wide thematic items are allowed only when they do
+                        # not explicitly identify another known universe company.
                         has_other_specific = False
-                        if not is_sym_match:
-                            for other_s in universe_symbols:
-                                if other_s != sym:
-                                    if re.search(rf"\b{re.escape(other_s)}\b", t, re.IGNORECASE) or any(re.search(rf"\b{re.escape(al)}\b", t, re.IGNORECASE) for al in ALIASES.get(other_s, ())):
-                                        has_other_specific = True
-                                        break
+                        for other_s in universe_symbols:
+                            if other_s != sym:
+                                if re.search(rf"\b{re.escape(other_s)}\b", t, re.IGNORECASE) or any(re.search(rf"\b{re.escape(al)}\b", t, re.IGNORECASE) for al in ALIASES.get(other_s, ())):
+                                    has_other_specific = True
+                                    break
                         if has_other_specific:
                             continue
 
