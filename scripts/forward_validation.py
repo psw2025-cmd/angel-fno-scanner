@@ -115,7 +115,7 @@ def snapshot_target_b():
     result["PE"] = {"top1": pe[:1], "top3": pe[:3], "top5": pe[:5]}
     if any(x["volume"] is not None for x in ce + pe):
         result["volume_field_status"] = "AVAILABLE"
-    out = REPORTS / f"TargetB_SNAPSHOT_{stamp:%Y%m%d_%H%M%S}.json"
+    out = REPORTS / f"TargetB_SNAPSHOT_{stamp:%Y%m%d_%H%M%S_%f}.json"
     write_json(out, result)
     print(f"[PASS] Target B PAPER snapshot: {out}")
 

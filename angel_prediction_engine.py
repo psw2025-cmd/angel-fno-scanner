@@ -41,11 +41,47 @@ ANGEL_CLIENT_CODE = _env("ANGEL_CLIENT_CODE")
 ANGEL_PIN         = _env("ANGEL_PIN")
 ANGEL_TOTP_SEED   = _env("ANGEL_TOTP_SEED")
 SHEET_ID          = _env("SHEET_ID")
-BQ_PROJECT_ID     = _env("BQ_PROJECT_ID")
+
+KEY_PATH = os.path.expanduser("~/angel_sheets_key.json")
+
+def _load_service_account_info():
+    """Load service-account metadata without exposing credential values."""
+    raw_secret = os.getenv("SHEETS_KEY_JSON", "").strip()
+    candidates = [raw_secret] if raw_secret else []
+    if raw_secret:
+        candidates.append(re.sub(r'\\+"', '"', raw_secret))
+    for candidate in candidates:
+        try:
+            info = json.loads(candidate)
+            if isinstance(info, str):
+                info = json.loads(info)
+            if isinstance(info, dict) and info.get("type") == "service_account":
+                return info
+        except Exception:
+            continue
+    if os.path.exists(KEY_PATH):
+        try:
+            with open(KEY_PATH, "r", encoding="utf-8") as fh:
+                info = json.load(fh)
+            if isinstance(info, dict) and info.get("type") == "service_account":
+                return info
+        except Exception:
+            pass
+    return None
+
+def resolve_bq_project_id():
+    """Resolve billing project: explicit env first, service-account metadata second, else empty."""
+    explicit = _env("BQ_PROJECT_ID")
+    if explicit:
+        return explicit
+    info = _load_service_account_info()
+    project_id = str(info.get("project_id", "")).strip() if info else ""
+    return project_id
+
+BQ_PROJECT_ID     = resolve_bq_project_id()
 BQ_DATASET_ID     = "fno_predictions"
 EXPECTED_FNO_UNIVERSE_COUNT = int(os.getenv("EXPECTED_FNO_UNIVERSE_COUNT", "216"))
 
-KEY_PATH = os.path.expanduser("~/angel_sheets_key.json")
 STATE_PATH = os.path.expanduser("~/angel_prediction_state.json")
 CALIBRATION_STATE_PATH = os.path.expanduser("~/angel_calibration_state.json")
 SCRIP_CACHE_PATH = os.path.expanduser("~/angel_scrip_cache.json")
@@ -201,23 +237,17 @@ def get_gspread_client():
     raise RuntimeError("No valid Google service account credentials found for Sheets.")
 
 def get_bigquery_client():
-    if not BQ_PROJECT_ID:
-        raise RuntimeError("BQ_PROJECT_ID must be explicitly configured before BigQuery access; implicit project discovery is disabled as a billing guardrail.")
-    raw_secret = os.getenv("SHEETS_KEY_JSON", "").strip()
-    if raw_secret:
+    project_id = resolve_bq_project_id()
+    if not project_id:
+        raise RuntimeError("BQ_PROJECT_ID is unset and no service-account project_id is available; BigQuery access is blocked by the billing guardrail.")
+    info = _load_service_account_info()
+    if info:
         try:
-            info = json.loads(raw_secret)
-            if isinstance(info, str):
-                info = json.loads(info)
-            if isinstance(info, dict) and info.get("type") == "service_account":
-                creds = service_account.Credentials.from_service_account_info(info)
-                return bigquery.Client(project=BQ_PROJECT_ID, credentials=creds)
+            creds = service_account.Credentials.from_service_account_info(info)
+            return bigquery.Client(project=project_id, credentials=creds)
         except Exception:
             pass
-    if os.path.exists(KEY_PATH):
-        creds = service_account.Credentials.from_service_account_file(KEY_PATH)
-        return bigquery.Client(project=BQ_PROJECT_ID, credentials=creds)
-    return bigquery.Client(project=BQ_PROJECT_ID)
+    return bigquery.Client(project=project_id)
 
 # =====================================================================
 # BLACK-76 OPTION GREEKS & IMPLIED VOLATILITY ENGINE
