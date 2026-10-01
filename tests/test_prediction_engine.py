@@ -470,7 +470,11 @@ def test_morning_reconcile_timing_window():
     dt_late = datetime.datetime(2026, 9, 28, 9, 55, 0)
     assert is_morning_reconcile_time(dt_late) is False
 
-def test_next_day_gap_candidate_selection_and_risk_reward():
+def test_next_day_gap_candidate_selection_and_risk_reward(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        "angel_prediction_engine.NEXT_DAY_GAP_PATH",
+        str(tmp_path / "test_next_day_gap.json"),
+    )
     test_preds = [
         {
             "symbol": "BULL_STOCK",
@@ -546,7 +550,11 @@ def test_next_day_gap_candidate_selection_and_risk_reward():
     assert pe["target_ltp"] == 24.0
     assert pe["expected_gap_pct"] == -1.80
 
-def test_why_rationale_completeness():
+def test_why_rationale_completeness(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        "angel_prediction_engine.NEXT_DAY_GAP_PATH",
+        str(tmp_path / "test_next_day_gap2.json"),
+    )
     test_preds = [
         {
             "symbol": "CATALYST_CE",

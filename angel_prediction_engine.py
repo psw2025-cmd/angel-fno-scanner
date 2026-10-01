@@ -30,6 +30,15 @@ from SmartApi import SmartConnect
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
+from credentials import (
+    get_angel_credentials,
+    load_env,
+    resolve_service_account_info,
+    validate_angel_credentials,
+)
+
+load_env()
+
 # =====================================================================
 # CONFIGURATION & CREDENTIALS
 # =====================================================================
@@ -46,28 +55,7 @@ KEY_PATH = os.path.expanduser("~/angel_sheets_key.json")
 
 def _load_service_account_info():
     """Load service-account metadata without exposing credential values."""
-    raw_secret = os.getenv("SHEETS_KEY_JSON", "").strip()
-    candidates = [raw_secret] if raw_secret else []
-    if raw_secret:
-        candidates.append(re.sub(r'\\+"', '"', raw_secret))
-    for candidate in candidates:
-        try:
-            info = json.loads(candidate)
-            if isinstance(info, str):
-                info = json.loads(info)
-            if isinstance(info, dict) and info.get("type") == "service_account":
-                return info
-        except Exception:
-            continue
-    if os.path.exists(KEY_PATH):
-        try:
-            with open(KEY_PATH, "r", encoding="utf-8") as fh:
-                info = json.load(fh)
-            if isinstance(info, dict) and info.get("type") == "service_account":
-                return info
-        except Exception:
-            pass
-    return None
+    return resolve_service_account_info(custom_key_path=KEY_PATH)
 
 def resolve_bq_project_id():
     """Resolve billing project: explicit env first, service-account metadata second, else empty."""
@@ -220,18 +208,9 @@ def deduplicate_news_rows(rows):
 
 
 def get_gspread_client():
-    raw_secret = os.getenv("SHEETS_KEY_JSON", "").strip()
-    if raw_secret:
-        candidates = [raw_secret, re.sub(r'\\+"', '"', raw_secret)]
-        for cand in candidates:
-            try:
-                info = json.loads(cand)
-                if isinstance(info, str):
-                    info = json.loads(info)
-                if isinstance(info, dict) and info.get("type") == "service_account":
-                    return gspread.service_account_from_dict(info)
-            except Exception:
-                pass
+    info = _load_service_account_info()
+    if info:
+        return gspread.service_account_from_dict(info)
     if os.path.exists(KEY_PATH):
         return gspread.service_account(filename=KEY_PATH)
     raise RuntimeError("No valid Google service account credentials found for Sheets.")
@@ -1514,24 +1493,20 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
 # DYNAMIC F&O UNIVERSE DISCOVERY & ANGEL ONE INTEGRATION
 # =====================================================================
 def get_angel_client():
-    required = {
-        "ANGEL_API_KEY": ANGEL_API_KEY,
-        "ANGEL_CLIENT_CODE": ANGEL_CLIENT_CODE,
-        "ANGEL_PIN": ANGEL_PIN,
-        "ANGEL_TOTP_SEED": ANGEL_TOTP_SEED,
-    }
-    missing = [name for name, value in required.items() if not value]
+    load_env()
+    creds = get_angel_credentials()
+    missing = [name for name, value in creds.items() if not value]
     if missing:
         raise RuntimeError(
             "Angel One credentials are required only for live broker access; "
             f"missing environment variables: {', '.join(missing)}"
         )
-    totp = pyotp.TOTP(ANGEL_TOTP_SEED).now()
-    smartApi = SmartConnect(api_key=ANGEL_API_KEY)
-    login = smartApi.generateSession(ANGEL_CLIENT_CODE, ANGEL_PIN, totp)
+    totp = pyotp.TOTP(creds["ANGEL_TOTP_SEED"]).now()
+    smartApi = SmartConnect(api_key=creds["ANGEL_API_KEY"])
+    login = smartApi.generateSession(creds["ANGEL_CLIENT_CODE"], creds["ANGEL_PIN"], totp)
     if not login or not login.get("status"):
         raise RuntimeError(f"Angel One session rejected: {login}")
-    print(f"[OK] Angel One SmartAPI Session Connected for {ANGEL_CLIENT_CODE}")
+    print("[OK] Angel One SmartAPI Session Connected")
     return smartApi
 
 def load_or_download_scrip_master():

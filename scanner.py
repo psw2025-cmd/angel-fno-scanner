@@ -12,6 +12,12 @@ import gspread
 import pyotp
 from SmartApi import SmartConnect
 
+from credentials import (
+    get_angel_credentials,
+    load_env,
+    load_service_account as load_sa_credentials,
+    validate_angel_credentials,
+)
 from gainers import (
     contracts_from_forensic,
     market_is_open,
@@ -21,6 +27,7 @@ from gainers import (
 )
 from paper_log import alerts_to_append, fill_later_changes, render_production_sheet
 
+load_env()
 SHEET_ID = os.getenv("SHEET_ID", "").strip()
 MAX_RUNTIME_SECONDS = max(1, int(os.getenv("MAX_RUNTIME_SECONDS", "22500")))
 IST = ZoneInfo("Asia/Kolkata")
@@ -45,57 +52,7 @@ def parse_exp(value):
 
 
 def load_service_account():
-    # Accept normal JSON plus common GitHub-secret copy/paste forms with one or
-    # multiple backslashes before JSON quotes. Do not alter \\n in private_key.
-    raw_sheet_secret = os.getenv("SHEETS_KEY_JSON", "").strip()
-    if not raw_sheet_secret:
-        raise RuntimeError("SHEETS_KEY_JSON is required only when Google Sheets access is invoked.")
-    candidates = [raw_sheet_secret]
-    normalized_quotes = re.sub(r'\\+"', '"', raw_sheet_secret)
-    if normalized_quotes not in candidates:
-        candidates.append(normalized_quotes)
-
-    if len(raw_sheet_secret) >= 2 and raw_sheet_secret[0] == raw_sheet_secret[-1] and raw_sheet_secret[0] in ("'", '"'):
-        inner = raw_sheet_secret[1:-1]
-        candidates.append(inner)
-        candidates.append(re.sub(r'\\+"', '"', inner))
-
-    sheet_info = None
-    json_error = "unparsed"
-    for candidate in candidates:
-        try:
-            parsed = json.loads(candidate)
-            if isinstance(parsed, str):
-                parsed = json.loads(parsed)
-            if isinstance(parsed, dict):
-                sheet_info = parsed
-                break
-        except (json.JSONDecodeError, TypeError) as exc:
-            json_error = str(exc)
-
-    if sheet_info is None:
-        try:
-            parsed = ast.literal_eval(raw_sheet_secret)
-            if isinstance(parsed, dict):
-                sheet_info = parsed
-        except (ValueError, SyntaxError):
-            pass
-
-    if not isinstance(sheet_info, dict) or sheet_info.get("type") != "service_account":
-        structural = {
-            "length": len(raw_sheet_secret),
-            "starts_lbrace": raw_sheet_secret.startswith("{"),
-            "ends_rbrace": raw_sheet_secret.endswith("}"),
-            "double_quotes": raw_sheet_secret.count('"'),
-            "single_quotes": raw_sheet_secret.count("'"),
-            "backslashes": raw_sheet_secret.count("\\"),
-            "newlines": raw_sheet_secret.count("\n"),
-        }
-        raise RuntimeError(
-            "SHEETS_KEY_JSON is not valid Google service-account JSON; "
-            f"json_error={json_error}; safe_format_stats={structural}"
-        )
-    return sheet_info
+    return load_sa_credentials()
 
 
 def worksheet(book, title, rows=400, cols=26):
@@ -173,13 +130,20 @@ def sync_paper(book, signals, latest_changes, now):
 
 
 def angel_login():
-    client_code = os.environ["ANGEL_CLIENT_CODE"]
-    totp = pyotp.TOTP(os.environ["ANGEL_TOTP_SEED"]).now()
-    api = SmartConnect(api_key=os.environ["ANGEL_API_KEY"])
-    session = api.generateSession(client_code, os.environ["ANGEL_PIN"], totp)
+    load_env()
+    missing = validate_angel_credentials()
+    if missing:
+        raise RuntimeError(
+            "Angel One credentials are required only when broker access is invoked; "
+            f"missing environment variables: {', '.join(missing)}"
+        )
+    creds = get_angel_credentials()
+    totp = pyotp.TOTP(creds["ANGEL_TOTP_SEED"]).now()
+    api = SmartConnect(api_key=creds["ANGEL_API_KEY"])
+    session = api.generateSession(creds["ANGEL_CLIENT_CODE"], creds["ANGEL_PIN"], totp)
     if not session or not session.get("status"):
         raise RuntimeError(f"Angel login failed: {session}")
-    print(f"[OK] Angel Session Active for {client_code}")
+    print("[OK] Angel Session Active")
     return api
 
 
@@ -517,7 +481,11 @@ def refresh_from_forensic(book, now):
 
 
 def main():
-    book = gspread.service_account_from_dict(load_service_account()).open_by_key(SHEET_ID)
+    load_env()
+    sheet_id = os.getenv("SHEET_ID", "").strip() or SHEET_ID
+    if not sheet_id:
+        raise RuntimeError("SHEET_ID is required for scanner execution.")
+    book = gspread.service_account_from_dict(load_service_account()).open_by_key(sheet_id)
     now = now_ist()
     age = heartbeat_age_seconds(book, now)
     if age is not None and age <= DAEMON_FRESH_SECONDS:
