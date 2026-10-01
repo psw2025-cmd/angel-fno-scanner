@@ -111,6 +111,8 @@ def snapshot_target_b():
             item = {
                 "symbol": row.get("symbol"),
                 "side": side,
+                "contract_symbol": row.get(f"{side.lower()}_symbol"),
+                "strike": row.get(f"{side.lower()}_strike") or row.get("target_open_strike") or row.get("atm_strike"),
                 "ltp": ltp,
                 "gain_pct": gain,
                 "oi": oi,

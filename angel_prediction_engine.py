@@ -1173,6 +1173,12 @@ def generate_next_day_gap_picks(predictions, ist_now=None):
                 "spot_ltp": spot,
                 "target_strike": f"{int(atm_strike)} CE",
                 "contract_symbol": ce_sym,
+                "forecast_contract": ce_sym,
+                "strike": atm_strike,
+                "expiry": p.get("expiry", ""),
+                "forecast_timestamp": ist_str,
+                "underlying_ref_price": spot,
+                "option_ref_price": ce_ltp,
                 "entry_ltp": ce_ltp,
                 "session_change_pct": ce_chg,
                 "expected_gap_pct": exp_gap,
@@ -1200,6 +1206,12 @@ def generate_next_day_gap_picks(predictions, ist_now=None):
                 "spot_ltp": spot,
                 "target_strike": f"{int(atm_strike)} PE",
                 "contract_symbol": pe_sym,
+                "forecast_contract": pe_sym,
+                "strike": atm_strike,
+                "expiry": p.get("expiry", ""),
+                "forecast_timestamp": ist_str,
+                "underlying_ref_price": spot,
+                "option_ref_price": pe_ltp,
                 "entry_ltp": pe_ltp,
                 "session_change_pct": pe_chg,
                 "expected_gap_pct": exp_gap,
@@ -1380,13 +1392,18 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
             entry_ltp = float(m_entry.group(1)) if m_entry else 0.0
 
             open_ltp = 0.0
+            current_atm_contract = ""
             if sym in pred_symbol_map:
                 pred_item = pred_symbol_map[sym]
-                if side == "CE":
+                current_atm_contract = (pred_item.get("ce_symbol") if side == "CE" else pred_item.get("pe_symbol")) or ""
+                # G19 Fix: Only use pred_item LTP if the current ATM contract matches the exact frozen contract.
+                # If ATM drifted intraday/overnight, do NOT substitute the drifted ATM contract's LTP!
+                if side == "CE" and current_atm_contract == contract:
                     open_ltp = float(pred_item.get("ce_ltp", 0.0))
-                else:
+                elif side == "PE" and current_atm_contract == contract:
                     open_ltp = float(pred_item.get("pe_ltp", 0.0))
 
+            # When ATM drifted or open_ltp not yet resolved, query the EXACT frozen contract
             if open_ltp <= 0.0 and smartApi:
                 try:
                     q = smartApi.getLtpData("NFO", contract, "")
@@ -1410,6 +1427,8 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
                     "symbol": sym,
                     "side": side,
                     "trade_date": trade_date,
+                    "forecast_contract": contract,
+                    "current_atm_contract": current_atm_contract,
                     "contract": contract,
                     "entry_ltp": entry_ltp,
                     "actual_open_ltp": open_ltp,
