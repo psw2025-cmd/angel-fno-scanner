@@ -4,7 +4,10 @@
   "active": true,
   "settings": {
     "timezone": "Asia/Kolkata",
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true
   },
   "nodes": [
     {
@@ -33,12 +36,16 @@
     },
     {
       "parameters": {
-        "command": "python3 /mnt/c/AngelFNO_Workstation/repos/angel-fno-scanner/scripts/forward_validation.py --freeze-target-a && python3 /mnt/c/AngelFNO_Workstation/repos/angel-fno-scanner/scripts/forward_validation.py --snapshot-target-b"
+        "method": "GET",
+        "url": "http://127.0.0.1:5680/pre-market",
+        "options": {
+          "timeout": 180000
+        }
       },
       "id": "b3e1a1a1-2222-4222-8222-222222222222",
       "name": "Pre-Market Read-Only Check",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1.2,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
         -260,
         0
@@ -74,12 +81,16 @@
     },
     {
       "parameters": {
-        "command": "python3 /mnt/c/AngelFNO_Workstation/repos/angel-fno-scanner/scripts/forward_validation.py --monitor market && python3 /mnt/c/AngelFNO_Workstation/repos/angel-fno-scanner/scripts/forward_validation.py --snapshot-target-b"
+        "method": "GET",
+        "url": "http://127.0.0.1:5680/market",
+        "options": {
+          "timeout": 180000
+        }
       },
       "id": "b3e1a1a1-4444-4444-8444-444444444444",
       "name": "Market Read-Only Check",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1.2,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
         -260,
         260
@@ -111,15 +122,30 @@
     },
     {
       "parameters": {
-        "command": "python3 /mnt/c/AngelFNO_Workstation/repos/angel-fno-scanner/scripts/forward_validation.py --monitor postmarket"
+        "method": "GET",
+        "url": "http://127.0.0.1:5680/post-market",
+        "options": {
+          "timeout": 180000
+        }
       },
       "id": "b3e1a1a1-6666-4666-8666-666666666666",
       "name": "Post-Market Read-Only Check",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1.2,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
         -260,
         520
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "b3e1a1a1-7777-4777-8777-777777777777",
+      "name": "CLI Validation Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -520,
+        -180
       ]
     }
   ],
@@ -151,6 +177,17 @@
         [
           {
             "node": "Post-Market Read-Only Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CLI Validation Trigger": {
+      "main": [
+        [
+          {
+            "node": "Pre-Market Read-Only Check",
             "type": "main",
             "index": 0
           }

@@ -1,0 +1,13 @@
+[Unit]
+Description=Angel FNO Read-Only Validation Listener
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /mnt/c/AngelFNO_Workstation/repos/angel-fno-scanner/scripts/n8n_readonly_listener.py
+Restart=always
+RestartSec=3
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=default.target

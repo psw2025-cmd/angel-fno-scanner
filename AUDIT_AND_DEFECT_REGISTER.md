@@ -83,3 +83,15 @@ Closed-loop laptop-first repair for psw2025-cmd/angel-fno-scanner on branch fix/
 - Linger: yes
 - Exact IST schedule: PASS
 - Live order enablement: none; PAPER/Analyzer-only boundary retained
+
+## Final native-node closure — 2026-10-01
+- PR #9 merged into main. Current main SHA at verification: 9cc4fa1f2d31625b972877e2981e55527ae28870.
+- Direct .venv\\Scripts\\pytest.exe -q on main: 61 passed in 4.58s after adding pytest.ini with pythonpath = . so the requested direct invocation resolves repository modules consistently.
+- n8n 2.41.4 active after restart; n8n.service ACTIVE; localhost 5678 HTTP 200.
+- Root cause of the ? action nodes: the live n8n runtime's exported node catalog contains n8n-nodes-base.httpRequest but not n8n-nodes-base.executeCommand. The unauthenticated /types/nodes.json HTTP request returned Unauthorized, so the definitive runtime catalog proof was captured with n8n export:nodes: 920 node types, httpRequest present, executeCommand absent.
+- Permanent fix: all three action nodes now use native n8n-nodes-base.httpRequest v4.2 to a localhost-only validation listener at 127.0.0.1:5680; the listener is a persistent user systemd service and is read-only.
+- n8n workflow export confirms all three action node types are n8n-nodes-base.httpRequest; settings include saveDataSuccessExecution=all, saveDataErrorExecution=all, saveManualExecutions=true; workflow is active/published.
+- Live CLI execution succeeded: execution database row id=1, status=success, workflow angel-fno-read-only-monitor, mode=cli. Evidence: C:\\AngelFNO_Workstation\\reports\\n8n_pre_market_20261001_012213_082532.json, returncode 0, Target A freeze PASS.
+- Listener service: ACTIVE on 127.0.0.1:5680; n8n service uses 5678/5679; no Execute Command dependency remains.
+- n8n UI should now render the three action nodes as recognized native HTTP Request nodes after refresh; the orange execution warning caused by the missing Execute Command node is eliminated from the workflow definition.
+- GitHub market_bot.yml: enabled on main. Latest observed run after the PR merge was successful (Run 36799950385); scheduled production workflow remains configured for weekdays at 03:00 UTC and 03:40 UTC (08:30 and 09:10 IST).
