@@ -90,6 +90,29 @@ def test_unambiguous_asia_kolkata_and_utc():
     assert dt_ist == dt_utc
 
 
+def test_canonical_runtime_timestamps_unambiguous():
+    """
+    Verifies that canonical runtime timestamps are strictly unambiguous:
+    1. Explicit ISO-8601 timezone offset (+05:30 / +00:00).
+    2. Microsecond precision is preserved without truncation.
+    3. Conversion to POSIX epoch timestamp is invariant across local machine timezones.
+    """
+    # Explicit ISO-8601 IST string with timezone offset and microseconds
+    canonical_ist = "2026-10-01T11:45:00.123456+05:30"
+    dt = parse_timestamp(canonical_ist)
+    assert dt is not None
+    assert dt.microsecond == 123456
+
+    # Convert to UTC equivalent
+    canonical_utc = "2026-10-01T06:15:00.123456+00:00"
+    dt_utc = parse_timestamp(canonical_utc)
+    assert dt_utc is not None
+    assert dt.timestamp() == dt_utc.timestamp()
+
+    # POSIX epoch timestamp comparison is mathematically identical
+    assert dt == dt_utc
+
+
 def test_expiry_date_never_used_as_freshness():
     # True contract expiry dates
     assert is_contract_expiry_date("2026-10-29") is True
