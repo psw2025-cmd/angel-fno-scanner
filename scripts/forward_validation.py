@@ -247,6 +247,7 @@ def main():
     parser.add_argument("--reconcile-target-a")
     parser.add_argument("--reconcile-target-b")
     parser.add_argument("--monitor", choices=["premarket", "market", "postmarket"])
+    args = parser.parse_args()
     handled = False
     if args.freeze_target_a:
         freeze_target_a()
