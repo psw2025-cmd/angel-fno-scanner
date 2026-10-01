@@ -59,3 +59,27 @@ Closed-loop laptop-first repair for psw2025-cmd/angel-fno-scanner on branch fix/
 - n8n monitor is read-only and PAPER-only.
 - n8n writes only evidence reports; it does not write prediction/sink data or invoke order APIs.
 - Target A stale source is fail-closed rather than silently frozen.
+
+## Batch 6 additions — 2026-10-01
+| ID | Defect / gap | Repair / evidence | Status |
+|---|---|---|---|
+| B6-01 | BQ project resolution depended only on explicit BQ_PROJECT_ID | Added explicit-env -> service-account project_id fallback -> fail-closed resolver | PASS |
+| B6-02 | Forward-validation regression coverage was incomplete | Added Target A mapping/stale tests and Target B chronological CE/PE snapshot tests | PASS |
+| B6-03 | Target B snapshots could collide within the same second | Snapshot filenames now include microseconds; regression suite confirms chronological non-overwrite | PASS |
+| B6-04 | n8n v2 disabled Execute Command by default | Local service configuration excludes only LocalFileTrigger, enabling required read-only command nodes | PASS |
+| B6-05 | n8n monitor schedule was broader than exact market windows | Replaced with exact Asia/Kolkata pre/live/post cron windows | PASS |
+| B6-06 | Batch 6 remote verification not yet recorded | PR #9 pytest Run 36795794023 succeeded on final SHA | PASS |
+
+### Batch 6 verification
+- Final SHA: ead30ec6e9481a77227b03e80d98d18adbca0dd9
+- Local full suite: 61 passed
+- git diff --check: PASS
+- GitHub secret metadata audit: PASS; seven names verified, no values exposed
+- PR #9 remote pytest: PASS, Run ID 36795794023
+- n8n service: ACTIVE
+- n8n workflow: published/active
+- Windows localhost 5678: HTTP 200
+- Windows firewall external inbound block: PASS
+- Linger: yes
+- Exact IST schedule: PASS
+- Live order enablement: none; PAPER/Analyzer-only boundary retained
