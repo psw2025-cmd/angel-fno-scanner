@@ -27,7 +27,7 @@ concurrency:
 jobs:
   run-scanner:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 435
 
     steps:
       - name: Checkout Code
@@ -63,7 +63,7 @@ jobs:
           SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
           SHEET_ID: ${{ secrets.SHEET_ID }}
           BQ_PROJECT_ID: ${{ secrets.BQ_PROJECT_ID }}
-          MAX_RUNTIME_SECONDS: ${{ github.event_name == 'schedule' && '19800' || '3600' }}
+          MAX_RUNTIME_SECONDS: ${{ github.event_name == 'schedule' && '24300' || '3600' }}
         continue-on-error: false
         run: |
           set -eo pipefail

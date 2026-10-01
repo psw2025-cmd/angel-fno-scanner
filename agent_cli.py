@@ -213,7 +213,7 @@ def export_snapshots(output_dir="data"):
     md = f"""# Angel One F&O Prediction & Market Intelligence Snapshot
 **Generated**: `{now_str}` | **System Status**: `🟢 {health['status']}`
 
-## 🌆 3:00 - 3:30 PM Pre-Close: Next-Day Gap-Up (CE) Picks
+## 🌆 3:00 - 3:40 PM Pre-Close: Next-Day Gap-Up (CE) Picks
 | Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+50%) | Expected Gap % | Conviction % | Institutional Rationale |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
 """
@@ -221,7 +221,7 @@ def export_snapshots(output_dir="data"):
         md += f"| {idx} | **{c.get('symbol', '')}** | `{c.get('target_strike', '')}` | `{c.get('contract_symbol', '')}` | ₹{float(c.get('entry_ltp', 0)):.2f} | ₹{float(c.get('stop_loss_ltp', 0)):.2f} | ₹{float(c.get('target_ltp', 0)):.2f} | **{float(c.get('expected_gap_pct', 0)):+.2f}%** | {float(c.get('conviction_pct', 0)):.1f}% | {c.get('why_rationale', '')[:80]} |\n"
 
     md += """
-## 🌆 3:00 - 3:30 PM Pre-Close: Next-Day Gap-Down (PE) Picks
+## 🌆 3:00 - 3:40 PM Pre-Close: Next-Day Gap-Down (PE) Picks
 | Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+60%) | Expected Gap % | Conviction % | Institutional Rationale |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
 """
@@ -322,10 +322,10 @@ def main():
     parser.add_argument("--predict", nargs="?", const="ALL", help="Get prediction for a symbol (e.g. --predict MAHABANK) or ALL")
     parser.add_argument("--top-gapup", action="store_true", help="Get Top Gap-Up CE explosion picks with proof")
     parser.add_argument("--top-breakouts", action="store_true", help="Get Top CE breakout and PE breakdown candidates")
-    parser.add_argument("--next-day-gap", action="store_true", help="Get Top 5 Next-Day Pre-Close Gap-Up (CE) and Gap-Down (PE) candidates with micro-details")
+    parser.add_argument("--next-day-gap", action="store_true", help="Get Top 5 Next-Day Pre-Close (15:00-15:40 IST) Gap-Up (CE) and Gap-Down (PE) candidates with micro-details")
     parser.add_argument("--query-news", nargs="?", const="ALL", help="Get multi-source news for a symbol or ALL")
     parser.add_argument("--run-cycle", action="store_true", help="Trigger a live prediction pipeline pass (bypasses sleep)")
-    parser.add_argument("--force-pre-close", action="store_true", help="Force pre-close 3:00-3:30 PM journaling cycle to Google Sheets and BigQuery")
+    parser.add_argument("--force-pre-close", action="store_true", help="Force pre-close 3:00-3:40 PM journaling cycle to Google Sheets and BigQuery")
     parser.add_argument("--reconcile-gap", action="store_true", help="Execute 09:15 AM reconciliation of overnight paper trades against live opening prices")
     parser.add_argument("--verify", action="store_true", help="Run 17-tab forensic audit across Google Sheets, BigQuery and Engine")
     parser.add_argument("--export-snapshots", action="store_true", help="Export pre-rendered data snapshots to data/ directory")
@@ -346,7 +346,7 @@ def main():
         format_output(res, args.format, title="Top Conviction CE Breakouts & PE Breakdowns")
     elif args.next_day_gap:
         res = query_next_day_gap(limit=args.limit)
-        format_output(res, args.format, title="Top Next-Day Pre-Close (3:00-3:30 PM) Gap Candidates")
+        format_output(res, args.format, title="Top Next-Day Pre-Close (3:00-3:40 PM) Gap Candidates")
     elif args.query_news:
         sym = None if args.query_news == "ALL" else args.query_news
         res = query_news(symbol=sym, limit=args.limit)
@@ -357,7 +357,7 @@ def main():
         export_snapshots()
         print("[SUCCESS] Prediction pipeline pass complete!")
     elif args.force_pre_close:
-        print("[INFO] Forcing 3:00-3:30 PM Pre-Close Journaling Pass...")
+        print("[INFO] Forcing 3:00-3:40 PM Pre-Close Journaling Pass...")
         run_prediction_pipeline(bypass_market_check=True, force_pre_close=True)
         export_snapshots()
         print("[SUCCESS] Pre-close journaling pass complete!")

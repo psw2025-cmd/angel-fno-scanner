@@ -11,6 +11,8 @@ from gainers import (
     quote_from_angel,
     render_gainer_sheet,
     select_ranked,
+    select_ranked_by_side,
+    top_ce_pe_ranks,
     window_strikes,
     year_fraction,
 )
@@ -197,9 +199,9 @@ def test_strike_window_follows_the_future():
 
 
 def test_year_fraction_ends_at_expiry_close():
-    now = datetime(2026, 9, 29, 15, 30)
+    now = datetime(2026, 9, 29, 15, 40)
     assert year_fraction(now, now.date()) == 0
-    earlier = datetime(2026, 9, 27, 15, 30)
+    earlier = datetime(2026, 9, 27, 15, 40)
     assert year_fraction(earlier, now.date()) == 2 / 365.25
 
 
@@ -246,3 +248,36 @@ def test_paper_log_appends_only_live_signals_and_fills_a_later_session():
     sheet = render_production_sheet(filled, datetime(2026, 9, 28, 10, 0))
     win_row = next(row for row in sheet if row and row[0] == "Win rate")
     assert win_row[1] == 1.0
+
+
+def test_ce_pe_rankings_are_independent_and_liquidity_gated():
+    def q(contract, side, gain, bid, ask, volume=250000, oi=50000):
+        return OptionQuote(
+            contract=contract, underlying="TEST", option_type=side, strike=100,
+            expiry=NOW_OPEN.date(), ltp=10.0, prev_close=10.0 / (1.0 + gain / 100.0),
+            prev_close_basis="Angel close", net_change=gain / 10.0, gain_percent=gain,
+            volume=volume, oi=oi, bid=bid, ask=ask, future_ltp=100.0,
+            exchange_time="2026-09-25 10:15:00",
+        )
+
+    quotes = [
+        q("TESTCE1", "CE", 120.0, 9.9, 10.1),
+        q("TESTCE2", "CE", 90.0, 9.9, 10.1),
+        q("TESTCE3", "CE", 80.0, 9.9, 10.1),
+        q("TESTCE4", "CE", 70.0, 9.9, 10.1),
+        q("TESTPE1", "PE", 150.0, 9.9, 10.1),
+        q("TESTPE2", "PE", 110.0, 9.9, 10.1),
+        q("TESTPE3", "PE", 100.0, 9.9, 10.1),
+        q("TESTPE4", "PE", 90.0, 9.9, 10.1),
+        q("TESTBAD", "CE", 999.0, 8.0, 10.0),  # 20% spread -> excluded
+    ]
+    ce = select_ranked_by_side(quotes, "CE", 5)
+    pe = select_ranked_by_side(quotes, "PE", 5)
+    assert [x.contract for x in ce[:3]] == ["TESTCE1", "TESTCE2", "TESTCE3"]
+    assert [x.contract for x in pe[:3]] == ["TESTPE1", "TESTPE2", "TESTPE3"]
+    assert "TESTBAD" not in [x.contract for x in ce]
+    ranks = top_ce_pe_ranks(quotes)
+    assert len(ranks["CE"]["top1"]) == 1
+    assert len(ranks["CE"]["top3"]) == 3
+    assert len(ranks["CE"]["top5"]) == 4
+    assert len(ranks["PE"]["top5"]) == 4

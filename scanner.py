@@ -21,9 +21,10 @@ from gainers import (
 )
 from paper_log import alerts_to_append, fill_later_changes, render_production_sheet
 
-SHEET_ID = os.environ["SHEET_ID"]
+SHEET_ID = os.getenv("SHEET_ID", "").strip()
 MAX_RUNTIME_SECONDS = max(1, int(os.getenv("MAX_RUNTIME_SECONDS", "22500")))
 IST = ZoneInfo("Asia/Kolkata")
+EXPECTED_FNO_UNIVERSE_COUNT = int(os.getenv("EXPECTED_FNO_UNIVERSE_COUNT", "216"))
 DAEMON_FRESH_SECONDS = 90
 FORENSIC_HEADER = [
     "Timestamp (IST)", "Symbol", "Nearest Expiry", "Fut LTP", "Fut Chg %", "Fut OBI",
@@ -46,7 +47,9 @@ def parse_exp(value):
 def load_service_account():
     # Accept normal JSON plus common GitHub-secret copy/paste forms with one or
     # multiple backslashes before JSON quotes. Do not alter \\n in private_key.
-    raw_sheet_secret = os.environ["SHEETS_KEY_JSON"].strip()
+    raw_sheet_secret = os.getenv("SHEETS_KEY_JSON", "").strip()
+    if not raw_sheet_secret:
+        raise RuntimeError("SHEETS_KEY_JSON is required only when Google Sheets access is invoked.")
     candidates = [raw_sheet_secret]
     normalized_quotes = re.sub(r'\\+"', '"', raw_sheet_secret)
     if normalized_quotes not in candidates:
@@ -107,8 +110,13 @@ def write_grid(ws, rows):
         ws.clear()
         return
     try:
+        # Google Sheets requires a rectangular value matrix. Pad section headers
+        # and variable-width rows before writing so mixed-schema output cannot
+        # produce partial/misaligned updates.
+        width = max(len(row) for row in rows)
+        normalized = [list(row) + [""] * (width - len(row)) for row in rows]
         # Update first to avoid destructive partial writes
-        ws.update(range_name="A1", values=rows, value_input_option="RAW")
+        ws.update(range_name="A1", values=normalized, value_input_option="RAW")
         # Clear any remaining rows from previous larger datasets
         num_rows = len(rows)
         ws.batch_clear([f"A{num_rows + 1}:ZZ"])
@@ -225,6 +233,11 @@ def discover_universe(api):
             "expiry": nearest,
             "strikes": both,
         }
+    if len(universe) < EXPECTED_FNO_UNIVERSE_COUNT:
+        raise RuntimeError(
+            f"F&O universe incomplete: discovered {len(universe)}/{EXPECTED_FNO_UNIVERSE_COUNT}; "
+            "refusing to run a partial-universe scan."
+        )
     print(f"[OK] Tracking {len(universe)} symbols")
     return universe
 

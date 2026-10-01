@@ -1,5 +1,7 @@
 import pytest
+import json
 import math
+from pathlib import Path
 from angel_prediction_engine import (
     black76_price,
     calculate_greeks,
@@ -10,6 +12,8 @@ from angel_prediction_engine import (
     run_ground_truth_reconciliation,
     classify_event_severity,
     compute_market_confirmation,
+    parse_news_timestamp_ist,
+    news_dedup_key,
     is_pre_close_time,
     is_morning_reconcile_time,
     generate_next_day_gap_picks,
@@ -440,9 +444,13 @@ def test_pre_close_timing_window():
     dt_early = datetime.datetime(2026, 9, 28, 14, 45, 0)
     assert is_pre_close_time(dt_early) is False
 
-    # Monday 15:35 IST -> should be False
+    # Monday 15:35 IST -> still inside the 15:40 F&O close window
     dt_late = datetime.datetime(2026, 9, 28, 15, 35, 0)
-    assert is_pre_close_time(dt_late) is False
+    assert is_pre_close_time(dt_late) is True
+
+    # Monday 15:41 IST -> after the 15:40 F&O close
+    dt_after = datetime.datetime(2026, 9, 28, 15, 41, 0)
+    assert is_pre_close_time(dt_after) is False
 
     # Sunday 15:15 IST -> should be False (weekend)
     dt_sun = datetime.datetime(2026, 9, 27, 15, 15, 0)
@@ -588,3 +596,38 @@ def test_rbi_penalty_not_broadcast_to_unrelated_banks():
         assert mapped[sym]["top_headline"] == "No fresh material catalyst"
         assert mapped[sym]["item_count"] == 0
 
+
+
+def test_news_timestamp_normalizes_rfc2822_to_ist():
+    assert parse_news_timestamp_ist("Wed, 30 Sep 2026 12:00:00 GMT") == "2026-09-30T17:30:00"
+    assert parse_news_timestamp_ist("2026-09-30T12:00:00+00:00") == "2026-09-30T17:30:00"
+
+
+def test_news_dedup_preserves_cross_source_corroboration():
+    a = {"title": "Company wins order", "source": "Feed A", "source_url": "https://a.example/x"}
+    b = {"title": "Company wins order", "source": "Feed B", "source_url": "https://b.example/x"}
+    a_replay = dict(a)
+    assert news_dedup_key(a) == news_dedup_key(a_replay)
+    assert news_dedup_key(a) != news_dedup_key(b)
+
+
+def test_manifest_declares_216_unique_fno_symbols():
+    manifest = json.loads((Path(__file__).resolve().parents[1] / "agent_manifest.json").read_text(encoding="utf-8"))
+    symbols = manifest["universe"]["symbols"]
+    assert manifest["universe"]["total_symbols"] == 216
+    assert len(symbols) == 216
+    assert len(set(symbols)) == 216
+
+
+def test_pre_market_gap_is_deterministic_from_current_inputs():
+    kwargs = dict(
+        sym="TEST", fut_ltp=100.0, fut_pct=0.8, fut_obi=0.2, fut_oi_vel=5.0,
+        news_info={"sources_count": 2, "sentiment_score": 0.4, "category": "ORDER_WIN"},
+        atm_strike=100, ce_pct=30.0, pe_pct=5.0, ce_obi=0.25, pe_obi=-0.05,
+        ce_oi_vel=4.0, pe_oi_vel=-1.0, atm_pcr=1.1, ce_iv=20.0, pe_iv=21.0,
+        is_illiquid=False,
+    )
+    first = compute_pre_market_gap(**kwargs)
+    second = compute_pre_market_gap(**kwargs)
+    assert first == second
+    assert -6.0 <= first["expected_gap_pct"] <= 6.0
