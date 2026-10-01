@@ -95,3 +95,34 @@ Closed-loop laptop-first repair for psw2025-cmd/angel-fno-scanner on branch fix/
 - Listener service: ACTIVE on 127.0.0.1:5680; n8n service uses 5678/5679; no Execute Command dependency remains.
 - n8n UI should now render the three action nodes as recognized native HTTP Request nodes after refresh; the orange execution warning caused by the missing Execute Command node is eliminated from the workflow definition.
 - GitHub market_bot.yml: enabled on main. Latest observed run after the PR merge was successful (Run 36799950385); scheduled production workflow remains configured for weekdays at 03:00 UTC and 03:40 UTC (08:30 and 09:10 IST).
+
+## Batch 7 — Single-writer architecture hardening — 2026-10-01
+
+Baseline: remote `main` `2662f6d06aee4fdb6f9d968b0a582a2ab4fd72ac`.
+Work executed in isolated worktree `hardening/single-writer-20261001`.
+The existing local `fix/g19-exact-contract-identity` branch at `791b71904cbf0af42dc184c93f699b05086b2e5e` was preserved untouched with its five unpushed commits.
+
+| ID | Defect / gap | Repair / evidence | Status |
+|---|---|---|---|
+| B7-01 | `market_bot` executed `scanner.py` and then a second `angel_prediction_engine.py --run-once` write cycle | Removed the second engine invocation; `scanner.py` owns the single prediction/write cycle | PASS |
+| B7-02 | Agent Dispatch and IssueOps could invoke production writers | Removed run-cycle/snapshot writer commands, broker env names, snapshot git pushes; set `contents: read` | PASS |
+| B7-03 | Production sink authority relied on workflow convention only | Added fail-closed `writer_guard.py`; production writes require `ALLOW_PRODUCTION_WRITES=1` and `WRITER_ID=market_bot` | PASS |
+| B7-04 | Production records lacked direct writer lineage | Added `run_id`, `git_sha`, `writer_id`, `source_timestamp` to BigQuery writes and `WRITE_PROVENANCE` Sheet ledger | PASS |
+| B7-05 | Universe contract drifted between hardcoded 216 and verified 219 | Updated runtime defaults and manifest to 219; added ANANDRATHI, ENRIN, UJJIVANSFB from live 219-row snapshot | PASS |
+
+| B7-06 | Malformed FORENSIC_LIVE rows could be indexed before width validation | Exact 18-column validation now precedes sorting/indexing | PASS |
+| B7-07 | News dedup regex matched literal backslash-s instead of whitespace | Corrected both dedup paths to `r"\s+"`; whitespace-collapse regression added | PASS |
+| B7-08 | Forward-validation Linux/WSL path and combined flags were inconsistent | Non-Windows path fixed to `/mnt/c/AngelFNO_Workstation/reports`; CLI flags execute independently | PASS |
+| B7-09 | Direct reconciliation/sink calls could bypass the pipeline writer gate | Writer guard enforced inside Sheet/BQ sync, pre-close journal and morning reconciliation sinks | PASS |
+| B7-10 | Dispatch `query_news` used unsupported `--symbol` CLI syntax | Corrected to positional `--query-news "$SYMBOL"` while remaining read-only | PASS |
+
+### Batch 7 local verification
+- Exact laptop test command: `C:\AngelFNO_Workstation\repos\angel-fno-scanner\.venv\Scripts\pytest.exe -q`.
+- Full local regression suite: **77 passed in 2.56s**.
+- Python compilation: PASS.
+- `git diff --check`: PASS.
+- 219-symbol manifest: PASS; 219 total / 219 unique.
+- Agent workflow writer-string scan: PASS; no run-cycle, snapshot push, broker API credential, or `contents: write` path remains.
+- Tracked Python live-order API scan: PASS; no `placeOrder`, `modifyOrder`, or `cancelOrder` matches.
+- PAPER/Analyzer-only safety retained; no order placement or LIVE enablement performed.
+- Remote CI and final pushed SHA are recorded on GitHub Issue #3 after deployment verification.

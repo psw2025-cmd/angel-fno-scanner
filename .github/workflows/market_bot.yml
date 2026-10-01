@@ -64,11 +64,16 @@ jobs:
           SHEET_ID: ${{ secrets.SHEET_ID }}
           BQ_PROJECT_ID: ${{ secrets.BQ_PROJECT_ID }}
           MAX_RUNTIME_SECONDS: ${{ github.event_name == 'schedule' && '24300' || '3600' }}
+          ALLOW_PRODUCTION_WRITES: '1'
+          WRITER_ID: market_bot
+          RUN_ID: ${{ github.run_id }}
+          GIT_SHA: ${{ github.sha }}
         continue-on-error: false
         run: |
           set -eo pipefail
+          # scanner.py owns the single prediction/write cycle at the end of its session.
           python scanner.py
-          python3 angel_prediction_engine.py --run-once
+          # Snapshot export is read-only against production sinks.
           python3 agent_cli.py --export-snapshots
 
       - name: Commit & Push Updated Snapshots

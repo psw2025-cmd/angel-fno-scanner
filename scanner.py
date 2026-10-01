@@ -26,12 +26,13 @@ from gainers import (
     strike_window_tokens,
 )
 from paper_log import alerts_to_append, fill_later_changes, render_production_sheet
+from writer_guard import append_sheet_provenance, require_authorized_writer
 
 load_env()
 SHEET_ID = os.getenv("SHEET_ID", "").strip()
 MAX_RUNTIME_SECONDS = max(1, int(os.getenv("MAX_RUNTIME_SECONDS", "22500")))
 IST = ZoneInfo("Asia/Kolkata")
-EXPECTED_FNO_UNIVERSE_COUNT = int(os.getenv("EXPECTED_FNO_UNIVERSE_COUNT", "216"))
+EXPECTED_FNO_UNIVERSE_COUNT = int(os.getenv("EXPECTED_FNO_UNIVERSE_COUNT", "219"))
 DAEMON_FRESH_SECONDS = 90
 FORENSIC_HEADER = [
     "Timestamp (IST)", "Symbol", "Nearest Expiry", "Fut LTP", "Fut Chg %", "Fut OBI",
@@ -442,6 +443,12 @@ def run_angel_loop(book, api):
                 print("[WARN] Angel returned no option quotes. Gainers sheet was left unchanged.")
             sync_paper(book, signals, latest_changes, now)
             publish_production(book, now)
+            append_sheet_provenance(
+                book,
+                sink="scanner_quote_loop",
+                record_count=len(forensic_rows),
+                source_timestamp=stamped,
+            )
             print(
                 f"[{stamped}] Forensic {len(forensic_rows)} | Chain quotes {len(chain_quotes)} | "
                 f"Quote chunk failures {future_failures + option_failures} | Loop #{loop}"
@@ -478,10 +485,17 @@ def refresh_from_forensic(book, now):
                     continue
     sync_paper(book, [], latest, now)
     publish_production(book, now)
+    append_sheet_provenance(
+        book,
+        sink="scanner_refresh_from_forensic",
+        record_count=len(quotes),
+        source_timestamp=now.strftime("%Y-%m-%d %H:%M:%S"),
+    )
 
 
 def main():
     load_env()
+    require_authorized_writer()
     sheet_id = os.getenv("SHEET_ID", "").strip() or SHEET_ID
     if not sheet_id:
         raise RuntimeError("SHEET_ID is required for scanner execution.")

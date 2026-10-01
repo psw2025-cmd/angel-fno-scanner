@@ -36,6 +36,7 @@ from credentials import (
     resolve_service_account_info,
     validate_angel_credentials,
 )
+from writer_guard import append_sheet_provenance, build_provenance, require_authorized_writer
 
 load_env()
 
@@ -68,7 +69,7 @@ def resolve_bq_project_id():
 
 BQ_PROJECT_ID     = resolve_bq_project_id()
 BQ_DATASET_ID     = "fno_predictions"
-EXPECTED_FNO_UNIVERSE_COUNT = int(os.getenv("EXPECTED_FNO_UNIVERSE_COUNT", "216"))
+EXPECTED_FNO_UNIVERSE_COUNT = int(os.getenv("EXPECTED_FNO_UNIVERSE_COUNT", "219"))
 
 STATE_PATH = os.path.expanduser("~/angel_prediction_state.json")
 CALIBRATION_STATE_PATH = os.path.expanduser("~/angel_calibration_state.json")
@@ -138,7 +139,7 @@ def parse_news_timestamp_ist(value, fallback=None):
 
 def news_dedup_key(item):
     """Stable duplicate key: preserve cross-source corroboration, suppress same-source replays."""
-    title = re.sub(r"\\s+", " ", str(item.get("title", "")).strip().lower())
+    title = re.sub(r"\s+", " ", str(item.get("title", "")).strip().lower())
     source = str(item.get("source", "")).strip().lower()
     link = str(item.get("source_url") or item.get("link") or "").strip().lower()
     return "::".join((source, link, title))
@@ -198,7 +199,7 @@ def deduplicate_news_rows(rows):
             str(row.get("symbol", "")).strip().upper(),
             str(row.get("source", "")).strip().lower(),
             str(row.get("canonical_url") or row.get("source_url") or "").strip().lower(),
-            re.sub(r"\\s+", " ", str(row.get("title", "")).strip().lower()),
+            re.sub(r"\s+", " ", str(row.get("title", "")).strip().lower()),
         )
         if key in seen:
             continue
@@ -1052,7 +1053,7 @@ def run_ground_truth_reconciliation(current_predictions, actual_top_gainers_cont
     hit_rate = round((len(hits) / max(1, len(actual_contracts))) * 100.0, 1)
     recall_10 = round(len(hits) / 10.0, 2)
 
-    # Calculate Mean Rank of actual movers in our 216 rankings
+    # Calculate Mean Rank of actual movers in our 219 rankings
     sym_rank_map = {p["symbol"]: p["rank"] for p in current_predictions}
     ranks = [sym_rank_map.get(s, 100) for s in actual_symbols]
     mean_rank = round(sum(ranks) / max(1, len(ranks)), 1)
@@ -1240,6 +1241,7 @@ def journal_pre_close_paper_trades(sh, bq_client, gap_picks, ist_str, ist_now):
     during the 15:00 - 15:40 IST pre-close window with complete micro-details and rationale.
     Guarantees deduplication (exactly 1 record per symbol/side per session date).
     """
+    require_authorized_writer()
     session_date = ist_str[:10]
     next_day = ist_now.date() + datetime.timedelta(days=1 if ist_now.weekday() < 4 else 3)
     target_date_iso = next_day.isoformat()
@@ -1280,6 +1282,12 @@ def journal_pre_close_paper_trades(sh, bq_client, gap_picks, ist_str, ist_now):
 
         if new_paper_rows:
             ws_paper.append_rows(new_paper_rows, value_input_option="USER_ENTERED")
+            append_sheet_provenance(
+                sh,
+                sink="PAPER_ALERT_LOG",
+                record_count=len(new_paper_rows),
+                source_timestamp=ist_str,
+            )
             print(f"[OK] Appended {len(new_paper_rows)} overnight paper trades to PAPER_ALERT_LOG!")
     except Exception as e:
         print(f"[WARN] Error journaling to PAPER_ALERT_LOG: {e}")
@@ -1293,6 +1301,7 @@ def journal_pre_close_paper_trades(sh, bq_client, gap_picks, ist_str, ist_now):
         bq_rows = []
         for c in all_picks:
             bq_rows.append({
+                **build_provenance(ist_str),
                 "prediction_date": session_date,
                 "predicted_at_ist": ist_str,
                 "symbol": str(c["symbol"]),
@@ -1316,7 +1325,9 @@ def journal_pre_close_paper_trades(sh, bq_client, gap_picks, ist_str, ist_now):
             })
 
         job_config = bigquery.LoadJobConfig(
-            write_disposition=bigquery.WriteDisposition.WRITE_APPEND
+            write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
+            schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION],
+            autodetect=True,
         )
         job = bq_client.load_table_from_json(bq_rows, table, job_config=job_config)
         job.result()
@@ -1333,6 +1344,7 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
     Computes actual opening returns, determines WIN / LOSS / SCRATCH outcomes, updates
     PAPER_ALERT_LOG and BigQuery, and feeds outcomes back to the Bayesian weight self-calibration.
     """
+    require_authorized_writer()
     session_date = ist_str[:10]
     try:
         ws_paper = sh.worksheet("PAPER_ALERT_LOG")
@@ -1413,6 +1425,14 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
             except Exception as e:
                 print(f"[WARN] Failed to update PAPER_ALERT_LOG row {row_idx}: {e}")
 
+        if updates_for_sheet:
+            append_sheet_provenance(
+                sh,
+                sink="PAPER_ALERT_LOG_RECONCILE",
+                record_count=len(updates_for_sheet),
+                source_timestamp=ist_str,
+            )
+
         if reconciled_results:
             print(f"[OK] Reconciled {len(reconciled_results)} overnight trades in PAPER_ALERT_LOG!")
 
@@ -1424,6 +1444,7 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
                 bq_reconciled_rows = []
                 for res in reconciled_results:
                     bq_reconciled_rows.append({
+                        **build_provenance(ist_str),
                         "prediction_date": res["trade_date"],
                         "predicted_at_ist": ist_str,
                         "symbol": res["symbol"],
@@ -1446,7 +1467,9 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
                         "reconciled_at_ist": ist_str
                     })
                 job_config = bigquery.LoadJobConfig(
-                    write_disposition=bigquery.WriteDisposition.WRITE_APPEND
+                    write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
+                    schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION],
+                    autodetect=True,
                 )
                 bq_client.load_table_from_json(bq_reconciled_rows, table, job_config=job_config).result()
                 print(f"[OK] Logged {len(bq_reconciled_rows)} reconciliation results to BigQuery!")
@@ -1876,6 +1899,7 @@ def compute_prediction_and_rating(
 # FULL EXECUTION PIPELINE
 # =====================================================================
 def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, reconcile_morning=False):
+    require_authorized_writer()
     ist_now = get_ist_time()
     ist_str = ist_now.strftime("%Y-%m-%d %H:%M:%S")
     print(f"\n=======================================================")
@@ -2231,6 +2255,7 @@ def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, re
 # GOOGLE SHEET SYNC MODULE
 # =====================================================================
 def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_str, next_day_picks=None, sh=None):
+    require_authorized_writer()
     print("[INFO] Syncing outputs across Google Sheet tabs...")
     try:
         if sh is None:
@@ -2244,15 +2269,22 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
             "ATM Strike", "ATM CE Contract", "CE LTP", "CE Chg %", "CE OI", "CE OBI",
             "ATM PE Contract", "PE LTP", "PE Chg %", "PE OI", "ATM PCR", "Forensic Action Signal"
         ]
-        # Sort forensic rows by Fut OBI & Fut Chg %
-        forensic_live_rows.sort(key=lambda r: (1 if "BREAKOUT" in str(r[17]) or "GAMMA" in str(r[17]) else 0, r[5], r[4]), reverse=True)
-        # Validate exact 18 columns per row
+        # Validate exact 18 columns per row BEFORE indexing/sorting.
         valid_fl_rows = []
         for r in forensic_live_rows:
             if len(r) == 18:
                 valid_fl_rows.append(r)
             else:
                 print(f"[WARN] Dropping malformed FORENSIC_LIVE row with {len(r)} columns; expected 18.")
+        # Sort only validated rows, so malformed rows can never trigger IndexError.
+        valid_fl_rows.sort(
+            key=lambda r: (
+                1 if "BREAKOUT" in str(r[17]) or "GAMMA" in str(r[17]) else 0,
+                r[5],
+                r[4],
+            ),
+            reverse=True,
+        )
 
         ws_fl.clear()
         ws_fl.update(range_name="A1", values=normalize_sheet_rows([fl_headers, *valid_fl_rows], 18))
@@ -2377,7 +2409,7 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
         ws_pred.update(range_name="A1", values=normalize_sheet_rows(pred_rows, 41))
         print(f"[OK] OPTION_PREDICTIONS updated with {len(pred_rows)} rows!")
 
-        # 4. Sync to NEWS_LIVE tab (all 216 symbols, strict 12 columns)
+        # 4. Sync to NEWS_LIVE tab (all 219 symbols, strict 12 columns)
         try:
             ws_nl = sh.worksheet("NEWS_LIVE")
             nl_rows = [
@@ -2408,6 +2440,13 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
         except Exception as e:
             raise RuntimeError(f"NEWS_LIVE sync failed: {e}") from e
 
+        append_sheet_provenance(
+            sh,
+            sink="prediction_cycle",
+            record_count=len(predictions),
+            source_timestamp=ist_str,
+        )
+
         # Paper trades are specifically and deduplicatedly journaled via journal_pre_close_paper_trades during 15:00 - 15:40 IST pre-close window
 
     except Exception as e:
@@ -2417,15 +2456,18 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
 # BIGQUERY SANDBOX SYNC MODULE ($0 COST)
 # =====================================================================
 def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
+    require_authorized_writer()
     print("[INFO] Appending records into BigQuery Sandbox (asia-south1)...")
     try:
         bq_client = get_bigquery_client()
         dataset_ref = bq_client.dataset(BQ_DATASET_ID)
         ts_iso = ist_dt.isoformat()
+        provenance = build_provenance(ist_dt.strftime("%Y-%m-%d %H:%M:%S"))
 
         job_config = bigquery.LoadJobConfig(
             write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
-            schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION]
+            schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION],
+            autodetect=True,
         )
 
         # 1. Predictions Table (WRITE_TRUNCATE: maintains latest deduplicated live snapshot)
@@ -2433,6 +2475,7 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
         rows_to_insert = []
         for p in predictions:
             rows_to_insert.append({
+                **provenance,
                 "snapshot_timestamp": ts_iso,
                 "rank": int(p["rank"]),
                 "symbol": str(p["symbol"]),
@@ -2485,14 +2528,18 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
             })
 
         job_config_trunc = bigquery.LoadJobConfig(
-            write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE
+            write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
+            schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION],
+            autodetect=True,
         )
         load_job = bq_client.load_table_from_json(rows_to_insert, table_pred, job_config=job_config_trunc)
         load_job.result()
         print(f"[OK] Replaced {len(rows_to_insert)} records in BigQuery option_predictions_live (WRITE_TRUNCATE active)!")
 
         # 2. News Table: deterministic replay dedup before append.
-        unique_news_rows = deduplicate_news_rows(news_rows)
+        unique_news_rows = [
+            {**row, **provenance} for row in deduplicate_news_rows(news_rows)
+        ]
         if unique_news_rows:
             table_news = bq_client.get_table(dataset_ref.table("market_news_sentiment"))
             load_job_news = bq_client.load_table_from_json(unique_news_rows, table_news, job_config=job_config)
@@ -2504,6 +2551,7 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
         # 3. Calibration Table
         table_cal = bq_client.get_table(dataset_ref.table("prediction_calibration_log"))
         cal_row = [{
+            **provenance,
             "timestamp": ts_iso,
             "cycle_number": int(reconciliation["cycle"]),
             "top10_hit_rate_pct": float(reconciliation["hit_rate_pct"]),

@@ -619,12 +619,13 @@ def test_news_dedup_preserves_cross_source_corroboration():
     assert news_dedup_key(a) != news_dedup_key(b)
 
 
-def test_manifest_declares_216_unique_fno_symbols():
+def test_manifest_declares_219_unique_fno_symbols():
     manifest = json.loads((Path(__file__).resolve().parents[1] / "agent_manifest.json").read_text(encoding="utf-8"))
     symbols = manifest["universe"]["symbols"]
-    assert manifest["universe"]["total_symbols"] == 216
-    assert len(symbols) == 216
-    assert len(set(symbols)) == 216
+    assert manifest["universe"]["total_symbols"] == 219
+    assert len(symbols) == 219
+    assert len(set(symbols)) == 219
+    assert {"ANANDRATHI", "ENRIN", "UJJIVANSFB"} <= set(symbols)
 
 
 def test_pre_market_gap_is_deterministic_from_current_inputs():

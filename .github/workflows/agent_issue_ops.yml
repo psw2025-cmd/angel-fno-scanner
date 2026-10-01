@@ -5,7 +5,7 @@ on:
     types: [created]
 
 permissions:
-  contents: write
+  contents: read
   issues: write
 
 concurrency:
@@ -48,10 +48,7 @@ jobs:
       - name: Parse and Execute IssueOps Command
         id: execute
         env:
-          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
-          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
-          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
-          ANGEL_TOTP_SEED: ${{ secrets.ANGEL_TOTP_SEED }}
+          # Read-only query credentials only; no broker credentials and no writer authorization.
           SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
           SHEET_ID: ${{ secrets.SHEET_ID }}
           BQ_PROJECT_ID: ${{ secrets.BQ_PROJECT_ID }}
@@ -65,7 +62,7 @@ jobs:
           ARG2=$(echo "$CMD_LINE" | awk '{print $3}')
 
           echo "Received IssueOps command: $CMD (ARG1: $ARG1, ARG2: $ARG2)"
-          HEADER="> 🤖 **Angel Intelligence Agent Response** (Command: \`$CMD_LINE\`)\n\n"
+          HEADER="> ðŸ¤– **Angel Intelligence Agent Response** (Command: \`$CMD_LINE\`)\n\n"
 
           case "$CMD" in
             /predict)
@@ -88,16 +85,8 @@ jobs:
             /verify)
               python3 agent_cli.py --verify --format markdown > output/body.md
               ;;
-            /run-cycle)
-              python3 agent_cli.py --run-cycle --format markdown > output/body.md
-              python3 agent_cli.py --export-snapshots
-              ;;
-            /snapshots)
-              python3 agent_cli.py --export-snapshots > output/body.md
-              cat data/summary.md >> output/body.md
-              ;;
             /help)
-              echo "### 📖 Available Agent IssueOps Commands" > output/body.md
+              echo "### ðŸ“– Available Agent IssueOps Commands" > output/body.md
               echo "| Command | Arguments | Description | Example |" >> output/body.md
               echo "| :--- | :--- | :--- | :--- |" >> output/body.md
               echo "| \`/predict\` | \`<SYMBOL>\` | Full Black-76 Greeks, probabilities, and news impact for an F&O stock | \`/predict POLICYBZR\` |" >> output/body.md
@@ -105,12 +94,10 @@ jobs:
               echo "| \`/breakouts\` | \`[LIMIT]\` | Top CE breakouts and PE breakdowns ranked by win probability | \`/breakouts 5\` |" >> output/body.md
               echo "| \`/news\` | \`<SYMBOL> [LIMIT]\` | Query live news headlines, tone, and catalysts for a symbol | \`/news FORTIS\` |" >> output/body.md
               echo "| \`/verify\` | None | Full forensic verification of 17 Sheet tabs, BigQuery, and state | \`/verify\` |" >> output/body.md
-              echo "| \`/run-cycle\` | None | Trigger an immediate live prediction & calibration cycle | \`/run-cycle\` |" >> output/body.md
-              echo "| \`/snapshots\` | None | Export and view latest pre-rendered market intelligence summary | \`/snapshots\` |" >> output/body.md
               echo "| \`/help\` | None | Display this help menu | \`/help\` |" >> output/body.md
               ;;
             *)
-              echo "⚠️ **Unknown command.** Type \`/help\` to see all available commands." > output/body.md
+              echo "âš ï¸ **Unknown command.** Type \`/help\` to see all available commands." > output/body.md
               ;;
           esac
 
@@ -135,16 +122,3 @@ jobs:
               comment_id: context.payload.comment.id,
               content: '+1'
             });
-
-      - name: Commit & Push Snapshots (If Applicable)
-        run: |
-          set -eo pipefail
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/
-          if ! git diff-index --quiet HEAD --; then
-            git commit -m "chore(data): auto-update snapshots via IssueOps [skip ci]"
-            for i in 1 2 3 4 5; do
-              git pull --rebase origin main && git push origin main && break || sleep 15
-            done
-          fi

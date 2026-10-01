@@ -3,8 +3,8 @@
 Unified Agent CLI & Python SDK for Angel One F&O Prediction & Intelligence Engine.
 
 Provides external AI agents, automated connectors, CI/CD runners, and humans with
-full programmatic read, write, execution, verification, and inspection capabilities
-directly through GitHub and terminal environments.
+read-only query and verification capabilities for automation and humans.
+Production writes are fail-closed behind the market_bot writer guard.
 """
 
 import argparse
@@ -324,9 +324,9 @@ def main():
     parser.add_argument("--top-breakouts", action="store_true", help="Get Top CE breakout and PE breakdown candidates")
     parser.add_argument("--next-day-gap", action="store_true", help="Get Top 5 Next-Day Pre-Close (15:00-15:40 IST) Gap-Up (CE) and Gap-Down (PE) candidates with micro-details")
     parser.add_argument("--query-news", nargs="?", const="ALL", help="Get multi-source news for a symbol or ALL")
-    parser.add_argument("--run-cycle", action="store_true", help="Trigger a live prediction pipeline pass (bypasses sleep)")
-    parser.add_argument("--force-pre-close", action="store_true", help="Force pre-close 3:00-3:40 PM journaling cycle to Google Sheets and BigQuery")
-    parser.add_argument("--reconcile-gap", action="store_true", help="Execute 09:15 AM reconciliation of overnight paper trades against live opening prices")
+    parser.add_argument("--run-cycle", action="store_true", help="Writer-gated production pipeline pass (market_bot only)")
+    parser.add_argument("--force-pre-close", action="store_true", help="Writer-gated pre-close journaling (market_bot only)")
+    parser.add_argument("--reconcile-gap", action="store_true", help="Writer-gated overnight reconciliation (market_bot only)")
     parser.add_argument("--verify", action="store_true", help="Run 17-tab forensic audit across Google Sheets, BigQuery and Engine")
     parser.add_argument("--export-snapshots", action="store_true", help="Export pre-rendered data snapshots to data/ directory")
     parser.add_argument("--limit", type=int, default=10, help="Result limit (default: 10)")

@@ -16,9 +16,9 @@ def resolve_reports_dir():
     if env_dir:
         return Path(env_dir)
     if os.name != "nt":
-        wsl_path = Path("/mnt/c/AngelFNO_Workstation/reports")
-        if wsl_path.parent.exists():
-            return wsl_path
+        # Linux/WSL workstation contract: evidence always resolves to the
+        # Windows reports volume mounted at /mnt/c.
+        return Path("/mnt/c/AngelFNO_Workstation/reports")
     return Path(r"C:\AngelFNO_Workstation\reports")
 
 REPORTS = resolve_reports_dir()
@@ -175,11 +175,21 @@ def main():
     parser.add_argument("--reconcile-target-a")
     parser.add_argument("--monitor", choices=["premarket", "market", "postmarket"])
     args = parser.parse_args()
-    if args.freeze_target_a: freeze_target_a()
-    elif args.snapshot_target_b: snapshot_target_b()
-    elif args.reconcile_target_a: reconcile_target_a(args.reconcile_target_a)
-    elif args.monitor: monitor(args.monitor)
-    else: parser.print_help()
+    handled = False
+    if args.freeze_target_a:
+        freeze_target_a()
+        handled = True
+    if args.snapshot_target_b:
+        snapshot_target_b()
+        handled = True
+    if args.reconcile_target_a:
+        reconcile_target_a(args.reconcile_target_a)
+        handled = True
+    if args.monitor:
+        monitor(args.monitor)
+        handled = True
+    if not handled:
+        parser.print_help()
 
 if __name__ == "__main__":
     main()

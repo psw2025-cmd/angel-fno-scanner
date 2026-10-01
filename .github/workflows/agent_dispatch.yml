@@ -13,9 +13,7 @@ on:
           - top_breakouts
           - predict
           - query_news
-          - run_cycle
           - verify
-          - export_snapshots
       symbol:
         description: 'Stock/Index Symbol (for predict / query_news, e.g., POLICYBZR, FORTIS, KAYNES)'
         required: false
@@ -33,10 +31,10 @@ on:
           - markdown
           - json
   repository_dispatch:
-    types: [agent_action, agent_predict, agent_gapup, agent_verify, agent_run_cycle]
+    types: [agent_action, agent_predict, agent_gapup, agent_verify]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: agent-dispatch
@@ -97,10 +95,7 @@ jobs:
 
       - name: Execute Agent CLI Command
         env:
-          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
-          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
-          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
-          ANGEL_TOTP_SEED: ${{ secrets.ANGEL_TOTP_SEED }}
+          # Read-only query credentials only; no broker credentials and no writer authorization.
           SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
           SHEET_ID: ${{ secrets.SHEET_ID }}
           BQ_PROJECT_ID: ${{ secrets.BQ_PROJECT_ID }}
@@ -120,17 +115,10 @@ jobs:
               python3 agent_cli.py --predict "$SYMBOL" --format "$FORMAT" | tee output/result.txt
               ;;
             query_news)
-              python3 agent_cli.py --query-news --symbol "$SYMBOL" --limit "$LIMIT" --format "$FORMAT" | tee output/result.txt
+              python3 agent_cli.py --query-news "$SYMBOL" --limit "$LIMIT" --format "$FORMAT" | tee output/result.txt
               ;;
             verify)
               python3 agent_cli.py --verify --format "$FORMAT" | tee output/result.txt
-              ;;
-            run_cycle)
-              python3 agent_cli.py --run-cycle --format "$FORMAT" | tee output/result.txt
-              python3 agent_cli.py --export-snapshots
-              ;;
-            export_snapshots)
-              python3 agent_cli.py --export-snapshots | tee output/result.txt
               ;;
             *)
               echo "Unknown action: $ACTION"
@@ -142,7 +130,7 @@ jobs:
       - name: Render GitHub Actions Step Summary
         run: |
           set -eo pipefail
-          echo "## 🤖 Agent API Execution Report" >> $GITHUB_STEP_SUMMARY
+          echo "## ðŸ¤– Agent API Execution Report" >> $GITHUB_STEP_SUMMARY
           echo "**Trigger**: \`${{ github.event_name }}\` | **Action**: \`$ACTION\` | **Symbol**: \`$SYMBOL\` | **Timestamp**: \`$(date -u)\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           cat output/result.txt >> $GITHUB_STEP_SUMMARY
@@ -153,19 +141,3 @@ jobs:
           name: agent-output-${{ env.ACTION }}
           path: output/result.txt
           retention-days: 7
-
-      - name: Commit & Push Updated Snapshots (If Applicable)
-        if: env.ACTION == 'export_snapshots' || env.ACTION == 'run_cycle'
-        run: |
-          set -eo pipefail
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/
-          if ! git diff-index --quiet HEAD --; then
-            git commit -m "chore(data): auto-update prediction & market snapshots [skip ci]"
-            for i in 1 2 3 4 5; do
-              git pull --rebase origin main && git push origin main && break || sleep 15
-            done
-          else
-            echo "No snapshot changes to commit."
-          fi

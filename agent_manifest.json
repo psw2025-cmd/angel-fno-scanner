@@ -3,7 +3,7 @@
   "manifest_version": "1.0.0",
   "name": "angel-fno-scanner",
   "title": "Angel One F&O Option Prediction & Intelligence Engine",
-  "description": "Production-grade autonomous NSE F&O options intelligence system covering 216 underlying contracts with real-time Black-76 Greeks, multi-source news impact graph, and Bayesian calibration.",
+  "description": "Production-grade autonomous NSE F&O options intelligence system covering 219 underlying contracts with real-time Black-76 Greeks, multi-source news impact graph, and Bayesian calibration.",
   "repository": "psw2025-cmd/angel-fno-scanner",
   "default_branch": "main",
   "cloud_resources": {
@@ -14,7 +14,7 @@
     "google_sheet_url": "https://docs.google.com/spreadsheets/d/1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs/edit?usp=sharing"
   },
   "universe": {
-    "total_symbols": 216,
+    "total_symbols": 219,
     "symbols": [
       "360ONE",
       "ABB",
@@ -27,6 +27,7 @@
       "ALKEM",
       "AMBER",
       "AMBUJACEM",
+      "ANANDRATHI",
       "ANGELONE",
       "APLAPOLLO",
       "APOLLOHOSP",
@@ -77,6 +78,7 @@
       "DMART",
       "DRREDDY",
       "EICHERMOT",
+      "ENRIN",
       "ETERNAL",
       "FEDERALBNK",
       "FINNIFTY",
@@ -219,6 +221,7 @@
       "TORNTPHARM",
       "TRENT",
       "TVSMOTOR",
+      "UJJIVANSFB",
       "ULTRACEMCO",
       "UNIONBANK",
       "UNITDSPR",
@@ -257,7 +260,7 @@
         {
           "path": "data/latest_predictions.json",
           "type": "json",
-          "description": "Complete 216-symbol option chain predictions and Greeks"
+          "description": "Complete 219-symbol option chain predictions and Greeks"
         },
         {
           "path": "data/market_news.json",
@@ -301,16 +304,6 @@
           "description": "Executes full forensic audit of 17 Sheet tabs, BigQuery, and state"
         },
         {
-          "command": "/run-cycle",
-          "params": "None",
-          "description": "Triggers immediate live prediction & calibration cycle"
-        },
-        {
-          "command": "/snapshots",
-          "params": "None",
-          "description": "Refreshes and renders latest market intelligence summary"
-        },
-        {
           "command": "/help",
           "params": "None",
           "description": "Displays help menu with available commands"
@@ -329,9 +322,7 @@
         "top_breakouts",
         "predict",
         "query_news",
-        "run_cycle",
-        "verify",
-        "export_snapshots"
+        "verify"
       ]
     },
     "cli_sdk": {
@@ -387,19 +378,24 @@
   "bigquery_tables": [
     {
       "table_id": "option_predictions_live",
-      "row_count": 216,
-      "columns_count": 48,
+      "row_count": 219,
+      "columns_count": 53,
       "description": "Primary real-time option predictions, Black-76 Greeks, gap forecasts, and conviction scores"
     },
     {
       "table_id": "market_news_sentiment",
-      "columns_count": 21,
+      "columns_count": 25,
       "description": "Deduplicated multi-source news knowledge graph with Bayesian tone scores"
     },
     {
       "table_id": "prediction_calibration_log",
-      "columns_count": 11,
+      "columns_count": 15,
       "description": "Weight calibration history tracking hit rate (100%), recall @ 10, and mean rank"
+    },
+    {
+      "table_id": "next_day_gap_predictions",
+      "columns_count": 24,
+      "description": "PAPER-only next-day gap predictions and reconciliation with writer provenance"
     }
   ],
   "google_sheet_tabs": [
@@ -419,6 +415,7 @@
     "NEWS_IMPACT",
     "NEWS_TYPE_TALLY",
     "TOP_GAINERS",
-    "OPTION_PREDICTIONS"
+    "OPTION_PREDICTIONS",
+    "WRITE_PROVENANCE"
   ]
 }
