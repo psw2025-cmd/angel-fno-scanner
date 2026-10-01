@@ -526,23 +526,68 @@ def reconcile_records(
     }
 
 
+HEADER_SIGNATURE_TOKENS = {
+    "symbol", "sym", "ticker", "ltp", "fut_ltp", "spot_ltp", "strike", "atm_strike",
+    "expiry", "nearest_expiry", "side", "contract", "option_contract", "atm_ce_contract",
+    "timestamp", "timestamp_ist", "logged_at_ist", "rank", "rank_time_ist", "gate_id",
+    "session_date", "metric", "check_id", "news_type", "open", "close"
+}
+
+
+def detect_header_row(raw_rows: List[List[Any]], max_scan: int = 10) -> int:
+    """
+    Dynamically identifies the header row index (0-indexed) by scoring
+    recognized domain keywords across the top rows.
+    Leaves title banners, audit notes, and disclaimers intact.
+    """
+    best_idx = 0
+    max_score = -1
+
+    for idx, row in enumerate(raw_rows[:max_scan]):
+        if not row:
+            continue
+        clean_tokens = [
+            str(c).strip().lower().replace(" ", "_").replace("(", "").replace(")", "").replace("%", "pct")
+            for c in row if c
+        ]
+        score = sum(1 for tok in clean_tokens if any(sig in tok for sig in HEADER_SIGNATURE_TOKENS))
+        # Penalty for title or disclaimer rows with few columns or long single text
+        if len(clean_tokens) <= 2:
+            score -= 2
+        if score > max_score:
+            max_score = score
+            best_idx = idx
+
+    return best_idx
+
+
 def load_records_from_csv(file_path: str) -> List[Dict[str, Any]]:
-    """Load records from a CSV file with automatic header normalization."""
-    records = []
+    """Load records from a CSV file with dynamic header discovery and normalization."""
     with open(file_path, "r", encoding="utf-8-sig") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            normalized = {}
-            for k, v in row.items():
-                if not k:
-                    continue
-                clean_k = k.strip().lower().replace(" ", "_").replace("(", "").replace(")", "").replace("%", "pct")
-                normalized[clean_k] = v
-            if "fut_ltp" in normalized and "spot_ltp" not in normalized:
-                normalized["spot_ltp"] = normalized["fut_ltp"]
-            if "forensic_action_signal" in normalized and "action_rating" not in normalized:
-                normalized["action_rating"] = normalized["forensic_action_signal"]
-            records.append(normalized)
+        raw_rows = list(csv.reader(f))
+    if not raw_rows:
+        return []
+
+    header_idx = detect_header_row(raw_rows)
+    raw_headers = raw_rows[header_idx]
+    clean_headers = [
+        str(h).strip().lower().replace(" ", "_").replace("(", "").replace(")", "").replace("%", "pct")
+        for h in raw_headers
+    ]
+
+    records = []
+    for row in raw_rows[header_idx + 1:]:
+        if not any(row):
+            continue
+        normalized = {}
+        for k, v in zip(clean_headers, row):
+            if k:
+                normalized[k] = v
+        if "fut_ltp" in normalized and "spot_ltp" not in normalized:
+            normalized["spot_ltp"] = normalized["fut_ltp"]
+        if "forensic_action_signal" in normalized and "action_rating" not in normalized:
+            normalized["action_rating"] = normalized["forensic_action_signal"]
+        records.append(normalized)
     return records
 
 
@@ -667,8 +712,12 @@ def main():
             ws = sh.worksheet("FORENSIC_LIVE")
             all_values = ws.get_all_values()
             if len(all_values) > 1:
-                headers = [h.strip().lower().replace(" ", "_") for h in all_values[0]]
-                for r in all_values[1:]:
+                header_idx = detect_header_row(all_values)
+                headers = [
+                    str(h).strip().lower().replace(" ", "_").replace("(", "").replace(")", "").replace("%", "pct")
+                    for h in all_values[header_idx]
+                ]
+                for r in all_values[header_idx + 1:]:
                     if any(r):
                         row_dict = dict(zip(headers, r))
                         sheet_records.append(row_dict)

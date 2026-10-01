@@ -26,7 +26,44 @@ from scripts.reconcile_bq_sheet import (
     explode_option_contracts,
     reconcile_contract_level,
     reconcile_records,
+    detect_header_row,
 )
+
+
+def test_detect_header_row_dynamically():
+    # Case 1: Header at Row 0 (index 0 / Row 1)
+    grid_row1 = [
+        ["Symbol", "Nearest Expiry", "Fut LTP", "ATM Strike", "CE LTP", "PE LTP"],
+        ["ABB", "2026-10-29", "6948.5", "6950", "145.2", "132.8"],
+    ]
+    assert detect_header_row(grid_row1) == 0
+
+    # Case 2: Header at Row 1 (index 1 / Row 2, Row 0 is disclaimer banner)
+    grid_row2 = [
+        ["Measured CE/PE rank. No predicted gain percent. Alerts are not orders.", "", "", "", ""],
+        ["Rank time IST", "Symbol", "Fut LTP", "ATM Strike", "CE LTP", "PE LTP", "Ranking Category"],
+        ["2026-10-01 11:45:00", "ABB", "6948.5", "6950", "145.2", "132.8", "TOP_10"],
+    ]
+    assert detect_header_row(grid_row2) == 1
+
+    # Case 3: Header at Row 2 (index 2 / Row 3, Rows 0-1 are title + subtitle)
+    grid_row3 = [
+        ["MEASURED PAPER OUTCOMES", "", "", "", ""],
+        ["Counts only PAPER_ALERT_LOG rows with valid session prints. No sample trades written.", "", "", ""],
+        ["Session Date", "Total Paper Alerts", "Settled Trades", "Wins", "Losses", "Win Rate %"],
+        ["2026-09-28", "279", "279", "184", "95", "65.9%"],
+    ]
+    assert detect_header_row(grid_row3) == 2
+
+    # Case 4: Header at Row 3 (index 3 / Row 4, Rows 0-2 are title banner + metadata + spacer)
+    grid_row4 = [
+        ["⚡ DYNAMIC OPTION CE/PE PREDICTION ENGINE", "", "", "", ""],
+        ["Last Synced: 2026-10-01 11:45:00 IST", "Broker: CONNECTED", "Symbols: 219", ""],
+        ["", "", "", "", ""],
+        ["Rank", "Symbol", "Spot LTP", "Target Open Strike", "Expected Gap %", "Pre-Open Conviction %"],
+        ["1", "ABB", "6948.5", "7000", "+1.85%", "88.5%"],
+    ]
+    assert detect_header_row(grid_row4) == 3
 
 
 def test_normalize_symbol():
