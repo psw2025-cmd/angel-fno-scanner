@@ -23,7 +23,12 @@ import math
 import os
 import sys
 from datetime import datetime, timezone, timedelta
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 
 def normalize_symbol(sym: Any) -> str:
@@ -703,8 +708,8 @@ def main():
             from angel_prediction_engine import get_bigquery_client, get_gspread_client, BQ_DATASET_ID, SHEET_ID
             bq_client = get_bigquery_client()
             query = f"SELECT * FROM `{bq_client.project}.{BQ_DATASET_ID}.option_predictions_live`"
-            df = bq_client.query(query).to_dataframe()
-            bq_records = df.to_dict(orient="records")
+            rows = bq_client.query(query).result()
+            bq_records = [dict(row) for row in rows]
             print(f"[OK] Fetched {len(bq_records)} rows from BigQuery option_predictions_live.")
 
             gc = get_gspread_client()
