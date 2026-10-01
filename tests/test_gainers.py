@@ -16,7 +16,13 @@ from gainers import (
     window_strikes,
     year_fraction,
 )
-from paper_log import alerts_to_append, fill_later_changes, render_production_sheet
+from paper_log import (
+    alerts_to_append,
+    fill_later_changes,
+    measured_outcomes,
+    render_production_sheet,
+    summarize_outcomes,
+)
 
 
 NOW_CLOSED = datetime(2026, 9, 27, 17, 6, 4)  # Sunday
@@ -281,3 +287,42 @@ def test_ce_pe_rankings_are_independent_and_liquidity_gated():
     assert len(ranks["CE"]["top3"]) == 3
     assert len(ranks["CE"]["top5"]) == 4
     assert len(ranks["PE"]["top5"]) == 4
+
+
+def test_paper_outcome_reconciliation_is_idempotent_and_never_fabricates():
+    """
+    Test Section 5: Deterministic Idempotent Outcome Reconciliation & Zero Fabrication
+    1. Calling fill_later_changes on already-filled rows is a no-op (returns None).
+    2. Missing symbol quote leaves the row completely unchanged (does not invent 0.0 or random move).
+    3. Blank outcomes are NEVER counted as wins, losses, or zero P&L.
+    """
+    header = [
+        "Logged at IST", "Session date", "Symbol", "Side", "Fut LTP", "Session change %",
+        "CE contract", "PE contract", "Note", "Later session change %", "Outcome filled at"
+    ]
+    rows = [
+        header,
+        ["2026-09-28 10:00:00", "2026-09-28", "RELIANCE", "CE", "2950.0", "1.2", "REL29SEP263000CE", "", "Alert", "2.5", "2026-09-29 09:15:00"],
+        ["2026-09-30 15:20:00", "2026-09-30", "INFY", "CE", "1850.0", "0.8", "INFY29OCT261860CE", "", "Alert", "", ""],
+        ["2026-09-30 15:20:00", "2026-09-30", "TCS", "PE", "4100.0", "-1.5", "", "TCS29OCT264050PE", "Alert", "", ""],
+    ]
+    now_oct1 = datetime(2026, 10, 1, 9, 30, 0)
+    latest_quotes = {"INFY": 2.1}
+
+    pass1 = fill_later_changes(rows, latest_quotes, now_oct1)
+    assert pass1 is not None
+    assert pass1[1][9] == "2.5"
+    assert pass1[2][9] == 2.1
+    assert pass1[2][10] == "2026-10-01 09:30:00"
+    assert pass1[3][9] == ""
+    assert pass1[3][10] == ""
+
+    pass2 = fill_later_changes(pass1, latest_quotes, now_oct1)
+    assert pass2 is None
+
+    summary = summarize_outcomes(measured_outcomes(pass1))
+    assert summary["count"] == 2
+    assert summary["wins"] == 2
+    assert summary["losses"] == 0
+    assert summary["win_rate"] == 1.0
+
