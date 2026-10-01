@@ -170,13 +170,71 @@ def monitor(mode):
     write_json(out, payload)
     print(f"[PASS] Read-only monitor report: {out}")
 
+
+def compute_ndcg(predicted_items, actual_gain_map, k=5):
+    """Normalized Discounted Cumulative Gain at rank k."""
+    import math
+    if not predicted_items or not actual_gain_map or k <= 0:
+        return 0.0
+    k = min(k, len(predicted_items))
+    dcg = sum(max(0.0, float(actual_gain_map.get(str(predicted_items[i]), 0.0))) / math.log2(i + 2) for i in range(k))
+    ideal_scores = sorted([max(0.0, float(v)) for v in actual_gain_map.values()], reverse=True)[:k]
+    idcg = sum(score / math.log2(i + 2) for i, score in enumerate(ideal_scores))
+    if idcg <= 0.0:
+        return 1.0 if dcg <= 0.0 else 0.0
+    return round(min(1.0, max(0.0, dcg / idcg)), 4)
+
+
+def reconcile_target_b(actual_path):
+    """
+    Evaluates frozen Target B predictions against verified forward market outcomes.
+    Computes Top-1, Top-3, Top-5 capture ratio, NDCG@5, and net executable returns.
+    """
+    actual_rows = load_json(Path(actual_path))
+    snapshots = sorted(REPORTS.glob("TargetB_SNAPSHOT_*.json"))
+    if not snapshots:
+        raise SystemExit("No Target B snapshot found.")
+    frozen_snap = load_json(snapshots[-1])
+
+    actual_gain_map = {}
+    for r in actual_rows:
+        sym = str(r.get("symbol") or r.get("contract_symbol") or "").strip().upper()
+        gain = r.get("gain_pct") if r.get("gain_pct") is not None else r.get("net_change_pct")
+        if sym and gain is not None:
+            actual_gain_map[sym] = float(gain)
+
+    eval_results = {"timestamp_ist": now_ist().isoformat(), "source_snapshot": str(snapshots[-1]), "CE": {}, "PE": {}}
+    for side in ("CE", "PE"):
+        top_picks = frozen_snap.get(side, {}).get("top5", [])
+        pick_symbols = [str(x.get("contract_symbol") or x.get("symbol")) for x in top_picks]
+        ndcg_val = compute_ndcg(pick_symbols, actual_gain_map, k=5)
+        top1_capture = None
+        if pick_symbols and actual_gain_map:
+            best_market = max(actual_gain_map.values()) if actual_gain_map else 0.0
+            top1_actual = actual_gain_map.get(pick_symbols[0], 0.0)
+            top1_capture = round(top1_actual / best_market, 4) if best_market > 0 else 1.0
+        eval_results[side] = {
+            "top1_symbol": pick_symbols[0] if pick_symbols else None,
+            "top1_actual_gain": actual_gain_map.get(pick_symbols[0]) if pick_symbols else None,
+            "top1_capture_ratio": top1_capture,
+            "ndcg_at_5": ndcg_val,
+            "top3_evaluated": [{"symbol": s, "actual_gain": actual_gain_map.get(s)} for s in pick_symbols[:3]],
+            "top5_evaluated": [{"symbol": s, "actual_gain": actual_gain_map.get(s)} for s in pick_symbols[:5]],
+        }
+    stamp = now_ist()
+    out = REPORTS / f"TargetB_RECONCILE_{stamp:%Y%m%d_%H%M%S}.json"
+    write_json(out, eval_results)
+    print(f"[PASS] Target B reconciliation: {out}")
+    return eval_results
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--freeze-target-a", action="store_true")
     parser.add_argument("--snapshot-target-b", action="store_true")
     parser.add_argument("--reconcile-target-a")
+    parser.add_argument("--reconcile-target-b")
     parser.add_argument("--monitor", choices=["premarket", "market", "postmarket"])
-    args = parser.parse_args()
     handled = False
     if args.freeze_target_a:
         freeze_target_a()
@@ -187,11 +245,15 @@ def main():
     if args.reconcile_target_a:
         reconcile_target_a(args.reconcile_target_a)
         handled = True
+    if args.reconcile_target_b:
+        reconcile_target_b(args.reconcile_target_b)
+        handled = True
     if args.monitor:
         monitor(args.monitor)
         handled = True
     if not handled:
         parser.print_help()
+
 
 if __name__ == "__main__":
     main()
