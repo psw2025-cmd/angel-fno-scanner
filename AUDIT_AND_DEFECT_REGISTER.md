@@ -85,7 +85,7 @@ Closed-loop laptop-first repair for psw2025-cmd/angel-fno-scanner on branch fix/
 - Live order enablement: none; PAPER/Analyzer-only boundary retained
 
 ## Final native-node closure — 2026-10-01
-- PR #9 merged into main. Current main SHA at verification: 9cc4fa1f2d31625b972877e2981e55527ae28870.
+- PR #9 merged into main. Merged main SHA: 9cc4fa1f2d31625b972877e2981e55527ae28870; final native-node production-sync SHA: 76b1a9684c4c51369f761e35c6b7c9fd12f04185.
 - Direct .venv\\Scripts\\pytest.exe -q on main: 61 passed in 4.58s after adding pytest.ini with pythonpath = . so the requested direct invocation resolves repository modules consistently.
 - n8n 2.41.4 active after restart; n8n.service ACTIVE; localhost 5678 HTTP 200.
 - Root cause of the ? action nodes: the live n8n runtime's exported node catalog contains n8n-nodes-base.httpRequest but not n8n-nodes-base.executeCommand. The unauthenticated /types/nodes.json HTTP request returned Unauthorized, so the definitive runtime catalog proof was captured with n8n export:nodes: 920 node types, httpRequest present, executeCommand absent.
