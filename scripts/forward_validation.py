@@ -171,6 +171,18 @@ def monitor(mode):
     print(f"[PASS] Read-only monitor report: {out}")
 
 
+def compute_brier_score(forecast_probs, actual_outcomes):
+    """
+    Computes Brier Score: mean squared error between forecast probability and binary outcome.
+    forecast_probs: list of float probabilities in [0.0, 1.0].
+    actual_outcomes: list of binary outcomes in {0, 1}.
+    """
+    if not forecast_probs or not actual_outcomes or len(forecast_probs) != len(actual_outcomes):
+        return None
+    sq_errs = [(float(f) - float(o)) ** 2 for f, o in zip(forecast_probs, actual_outcomes)]
+    return round(sum(sq_errs) / len(sq_errs), 4)
+
+
 def compute_ndcg(predicted_items, actual_gain_map, k=5):
     """Normalized Discounted Cumulative Gain at rank k."""
     import math

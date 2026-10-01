@@ -60,3 +60,12 @@ def test_target_b_reconcile_and_ndcg(monkeypatch, tmp_path):
     assert res["CE"]["top1_capture_ratio"] == 1.0
     assert res["CE"]["ndcg_at_5"] == 1.0
 
+
+def test_brier_score_calibration():
+    assert fv.compute_brier_score([1.0, 0.0], [1, 0]) == 0.0
+    assert fv.compute_brier_score([1.0, 0.0], [0, 1]) == 1.0
+    assert fv.compute_brier_score([0.5], [1]) == 0.25
+    assert fv.compute_brier_score([], []) is None
+    assert fv.compute_brier_score([0.8], []) is None
+
+
