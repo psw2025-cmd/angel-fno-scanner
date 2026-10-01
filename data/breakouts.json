@@ -6,15 +6,15 @@
       "action_rating": "\ud83d\udea8 GAMMA SQUEEZE ALERT (ACCELERATING CE)",
       "directional_bias": "CALL (CE) BULLISH",
       "ce_win_prob": 97.2,
-      "intensity_score": 88,
+      "intensity_score": 89,
       "spot_ltp": 1579.1,
       "atm_strike": 1580.0,
       "ce_ltp": 46.85,
       "ce_chg_pct": 129.66,
-      "ce_iv": 27.73,
+      "ce_iv": 28.27,
       "target_open_strike": "1580 CE",
-      "expected_gap_pct": 2.01,
-      "top_news_headline": "No fresh material catalyst"
+      "expected_gap_pct": 2.05,
+      "top_news_headline": "Top 5 breakout stocks to buy: PVRINOX, JK Tyre, ICICIGI, Texmaco Rail, Mishra Dhatu by Sumeet Bagadia | Target, stoploss"
     },
     {
       "rank": 8,
@@ -27,10 +27,10 @@
       "atm_strike": 1480.0,
       "ce_ltp": 52.1,
       "ce_chg_pct": 76.01,
-      "ce_iv": 30.74,
+      "ce_iv": 31.33,
       "target_open_strike": "1480 CE",
-      "expected_gap_pct": 2.46,
-      "top_news_headline": "Stocks to Watch Today: Fortis Healthcare, Unichem Labs, Clean Max Enviro, Prestige Estates, Signature... - Moneycontrol.com"
+      "expected_gap_pct": 2.51,
+      "top_news_headline": "No fresh material catalyst"
     },
     {
       "rank": 26,
@@ -43,9 +43,9 @@
       "atm_strike": 19750.0,
       "ce_ltp": 649.5,
       "ce_chg_pct": 34.43,
-      "ce_iv": 32.36,
+      "ce_iv": 32.97,
       "target_open_strike": "19750 CE",
-      "expected_gap_pct": 1.41,
+      "expected_gap_pct": 1.44,
       "top_news_headline": "No fresh material catalyst"
     },
     {
@@ -54,46 +54,46 @@
       "action_rating": "\ud83d\udea8 GAMMA SQUEEZE ALERT (ACCELERATING CE)",
       "directional_bias": "CALL (CE) BULLISH",
       "ce_win_prob": 85.0,
-      "intensity_score": 68,
+      "intensity_score": 69,
       "spot_ltp": 1329.2,
       "atm_strike": 1330.0,
       "ce_ltp": 28.1,
       "ce_chg_pct": 44.85,
-      "ce_iv": 19.85,
+      "ce_iv": 20.21,
       "target_open_strike": "1330 CE",
-      "expected_gap_pct": 0.74,
+      "expected_gap_pct": 0.76,
       "top_news_headline": "SENSEX, NIFTY50 edge higher led by gains in ICICI Bank, Reliance Industries - Upstox"
     },
     {
-      "rank": 33,
+      "rank": 31,
       "symbol": "INDHOTEL",
       "action_rating": "\ud83d\udea8 GAMMA SQUEEZE ALERT (ACCELERATING CE)",
       "directional_bias": "CALL (CE) BULLISH",
       "ce_win_prob": 88.3,
-      "intensity_score": 73,
+      "intensity_score": 74,
       "spot_ltp": 734.9,
       "atm_strike": 730.0,
       "ce_ltp": 19.15,
       "ce_chg_pct": 44.53,
-      "ce_iv": 20.98,
+      "ce_iv": 21.36,
       "target_open_strike": "730 CE",
-      "expected_gap_pct": 0.88,
+      "expected_gap_pct": 0.89,
       "top_news_headline": "No fresh material catalyst"
     },
     {
-      "rank": 34,
+      "rank": 33,
       "symbol": "PHOENIXLTD",
       "action_rating": "\ud83d\udea8 GAMMA SQUEEZE ALERT (ACCELERATING CE)",
       "directional_bias": "CALL (CE) BULLISH",
       "ce_win_prob": 70.3,
-      "intensity_score": 67,
+      "intensity_score": 68,
       "spot_ltp": 1956.0,
       "atm_strike": 1960.0,
       "ce_ltp": 50.5,
       "ce_chg_pct": 45.74,
-      "ce_iv": 24.81,
+      "ce_iv": 25.28,
       "target_open_strike": "1960 CE",
-      "expected_gap_pct": 0.56,
+      "expected_gap_pct": 0.57,
       "top_news_headline": "No fresh material catalyst"
     },
     {
@@ -107,9 +107,9 @@
       "atm_strike": 4200.0,
       "ce_ltp": 159.1,
       "ce_chg_pct": 23.62,
-      "ce_iv": 29.41,
+      "ce_iv": 29.96,
       "target_open_strike": "4200 CE",
-      "expected_gap_pct": 1.15,
+      "expected_gap_pct": 1.17,
       "top_news_headline": "No fresh material catalyst"
     },
     {
@@ -123,9 +123,9 @@
       "atm_strike": 2300.0,
       "ce_ltp": 66.65,
       "ce_chg_pct": 25.75,
-      "ce_iv": 26.31,
+      "ce_iv": 26.8,
       "target_open_strike": "2300 CE",
-      "expected_gap_pct": 1.06,
+      "expected_gap_pct": 1.08,
       "top_news_headline": "No fresh material catalyst"
     },
     {
@@ -139,10 +139,10 @@
       "atm_strike": 415.0,
       "ce_ltp": 10.6,
       "ce_chg_pct": 40.4,
-      "ce_iv": 21.11,
+      "ce_iv": 21.45,
       "target_open_strike": "415 CE",
-      "expected_gap_pct": 0.99,
-      "top_news_headline": "Kotak Mahindra Mutual Fund - Kotak Nifty 200 Momentum 30 ETF"
+      "expected_gap_pct": 1.0,
+      "top_news_headline": "Market wrap: Kotak Mahindra Bank, InterGlobe, Apollo Hospital, Max Healthcare top gainers and losers on Nifty and Sensex on Wednesday"
     },
     {
       "rank": 43,
@@ -155,9 +155,9 @@
       "atm_strike": 1120.0,
       "ce_ltp": 46.3,
       "ce_chg_pct": 33.43,
-      "ce_iv": 34.23,
+      "ce_iv": 34.87,
       "target_open_strike": "1120 CE",
-      "expected_gap_pct": 1.29,
+      "expected_gap_pct": 1.32,
       "top_news_headline": "No fresh material catalyst"
     }
   ],
@@ -173,10 +173,10 @@
       "atm_strike": 8100.0,
       "pe_ltp": 204.4,
       "pe_chg_pct": 651.47,
-      "pe_iv": 25.26,
+      "pe_iv": 25.74,
       "target_open_strike": "8100 PE",
-      "expected_gap_pct": -2.92,
-      "top_news_headline": "Hospital stocks Max Healthcare, Apollo Hospitals, Fortis plunge up to 7% - What is driving the stocks down?"
+      "expected_gap_pct": -2.79,
+      "top_news_headline": "Hospital stocks Max Healthcare, Apollo Hospitals, Fortis plunge up to 7% - What is driving the stocks down? - TradingView"
     },
     {
       "rank": 2,
@@ -189,9 +189,9 @@
       "atm_strike": 770.0,
       "pe_ltp": 26.4,
       "pe_chg_pct": 500.0,
-      "pe_iv": 29.67,
+      "pe_iv": 30.23,
       "target_open_strike": "770 PE",
-      "expected_gap_pct": -3.31,
+      "expected_gap_pct": -3.36,
       "top_news_headline": "IHH backs Fortis acquisition amidst India forensic audit order - Singapore Business Review"
     },
     {
@@ -200,14 +200,14 @@
       "action_rating": "\ud83d\udca5 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT]",
       "directional_bias": "PUT (PE) BEARISH",
       "pe_win_prob": 98.2,
-      "intensity_score": 84,
+      "intensity_score": 85,
       "spot_ltp": 916.5,
       "atm_strike": 920.0,
       "pe_ltp": 32.25,
       "pe_chg_pct": 357.45,
-      "pe_iv": 30.74,
+      "pe_iv": 31.33,
       "target_open_strike": "920 PE",
-      "expected_gap_pct": -2.54,
+      "expected_gap_pct": -2.59,
       "top_news_headline": "No fresh material catalyst"
     },
     {
@@ -221,13 +221,29 @@
       "atm_strike": 1170.0,
       "pe_ltp": 35.2,
       "pe_chg_pct": 136.24,
-      "pe_iv": 27.03,
+      "pe_iv": 27.54,
       "target_open_strike": "1170 PE",
-      "expected_gap_pct": -1.42,
-      "top_news_headline": "Symbiotec Pharmalab Receives U.S. FDA EIR With VAI Status For Pithampur Facility - Sahi"
+      "expected_gap_pct": -1.44,
+      "top_news_headline": "Aurobindo Pharma's Subsidiary Acrotech Introduces AdQuey Ointment In US, Starts Dermatology Division - Sahi"
     },
     {
       "rank": 6,
+      "symbol": "SUNPHARMA",
+      "action_rating": "\ud83d\udca5 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT]",
+      "directional_bias": "PUT (PE) BEARISH",
+      "pe_win_prob": 91.6,
+      "intensity_score": 73,
+      "spot_ltp": 1831.4,
+      "atm_strike": 1840.0,
+      "pe_ltp": 38.4,
+      "pe_chg_pct": 81.13,
+      "pe_iv": 17.44,
+      "target_open_strike": "1840 PE",
+      "expected_gap_pct": -0.93,
+      "top_news_headline": "Pharma stocks: Sun Pharma, Dr Reddy\u2019s, Cipla, Biocon and others in focus today; here's why - Business Today"
+    },
+    {
+      "rank": 7,
       "symbol": "OBEROIRLTY",
       "action_rating": "\u26a1 BEARISH PE SURGE [HIGH CONVICTION]",
       "directional_bias": "PUT (PE) BEARISH",
@@ -237,26 +253,10 @@
       "atm_strike": 1780.0,
       "pe_ltp": 57.85,
       "pe_chg_pct": 106.61,
-      "pe_iv": 28.86,
+      "pe_iv": 29.39,
       "target_open_strike": "1780 PE",
-      "expected_gap_pct": -0.9,
+      "expected_gap_pct": -0.91,
       "top_news_headline": "No fresh material catalyst"
-    },
-    {
-      "rank": 7,
-      "symbol": "SUNPHARMA",
-      "action_rating": "\ud83d\udca5 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT]",
-      "directional_bias": "PUT (PE) BEARISH",
-      "pe_win_prob": 91.6,
-      "intensity_score": 72,
-      "spot_ltp": 1831.4,
-      "atm_strike": 1840.0,
-      "pe_ltp": 38.4,
-      "pe_chg_pct": 81.13,
-      "pe_iv": 17.13,
-      "target_open_strike": "1840 PE",
-      "expected_gap_pct": -0.92,
-      "top_news_headline": "Pharma stocks: Sun Pharma, Dr Reddy\u2019s, Cipla, Biocon and others in focus today; here's why - businesstoday.in"
     },
     {
       "rank": 9,
@@ -269,9 +269,9 @@
       "atm_strike": 225.0,
       "pe_ltp": 4.94,
       "pe_chg_pct": 99.19,
-      "pe_iv": 21.7,
+      "pe_iv": 22.13,
       "target_open_strike": "225 PE",
-      "expected_gap_pct": -0.93,
+      "expected_gap_pct": -0.94,
       "top_news_headline": "No fresh material catalyst"
     },
     {
@@ -285,9 +285,9 @@
       "atm_strike": 1020.0,
       "pe_ltp": 30.25,
       "pe_chg_pct": 85.02,
-      "pe_iv": 28.78,
+      "pe_iv": 29.31,
       "target_open_strike": "1020 PE",
-      "expected_gap_pct": -1.07,
+      "expected_gap_pct": -1.09,
       "top_news_headline": "No fresh material catalyst"
     },
     {
@@ -301,10 +301,10 @@
       "atm_strike": 1360.0,
       "pe_ltp": 34.15,
       "pe_chg_pct": 78.8,
-      "pe_iv": 22.26,
+      "pe_iv": 22.66,
       "target_open_strike": "1360 PE",
-      "expected_gap_pct": -0.79,
-      "top_news_headline": "Pharma stocks: Sun Pharma, Dr Reddy\u2019s, Cipla, Biocon and others in focus today; here's why - businesstoday.in"
+      "expected_gap_pct": -0.8,
+      "top_news_headline": "Pharma stocks: Sun Pharma, Dr Reddy\u2019s, Cipla, Biocon and others in focus today; here's why - Business Today"
     },
     {
       "rank": 12,
@@ -317,10 +317,10 @@
       "atm_strike": 1700.0,
       "pe_ltp": 49.0,
       "pe_chg_pct": 69.26,
-      "pe_iv": 24.52,
+      "pe_iv": 24.99,
       "target_open_strike": "1700 PE",
-      "expected_gap_pct": -1.04,
-      "top_news_headline": "IRDAI\u2019s Ajay Seth defends distribution reforms amid concerns over EoM, commission caps - (Re)in Asia"
+      "expected_gap_pct": -1.05,
+      "top_news_headline": "IRDAI\u2019s Ajay Seth defends distribution reforms amid concerns over EoM, commission caps - reinasia.com"
     }
   ]
 }

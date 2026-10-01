@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "timestamp": "2026-09-30T11:12:28.857790+00:00",
+  "timestamp": "2026-10-01T01:19:57.747531+00:00",
   "sheets_audit": {
     "passed": true,
     "summary": {
@@ -64,7 +64,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 8,
+        "row_count": 9,
         "col_count": 6
       },
       "CE_PE_RANK": {
@@ -78,7 +78,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 242,
+        "row_count": 308,
         "col_count": 5
       },
       "PAPER_ALERT_LOG": {
@@ -99,7 +99,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 293,
+        "row_count": 379,
         "col_count": 16
       },
       "NEWS_TYPE_TALLY": {
@@ -132,17 +132,17 @@
         "exists": true,
         "rows": 219,
         "size_mb": 0.11,
-        "columns": 48
+        "columns": 49
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 5815,
-        "size_mb": 5.05,
+        "rows": 6411,
+        "size_mb": 5.63,
         "columns": 21
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 235,
+        "rows": 247,
         "size_mb": 0.16,
         "columns": 11
       }
