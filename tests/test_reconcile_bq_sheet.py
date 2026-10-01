@@ -21,6 +21,7 @@ import pytest
 from scripts.reconcile_bq_sheet import (
     normalize_symbol,
     normalize_price,
+    normalize_expiry,
     parse_timestamp,
     extract_snapshot_id,
     explode_option_contracts,
@@ -271,3 +272,58 @@ def test_reconcile_records_all_categories():
     assert summary["sheet_only_count"] == 1
     assert summary["value_mismatch_count"] == 1
     assert summary["timestamp_mismatch_count"] == 1
+
+
+def test_normalize_expiry():
+    assert normalize_expiry("2026-10-27") == "27OCT26"
+    assert normalize_expiry("27-OCT-2026") == "27OCT26"
+    assert normalize_expiry("27OCT2026") == "27OCT26"
+    assert normalize_expiry("27OCT26") == "27OCT26"
+    assert normalize_expiry("") == ""
+    assert normalize_expiry(None) == ""
+
+
+def test_half_strike_preservation_and_legacy_offset():
+    # Verify half-strike decimal (182.5) is preserved in strike_str and composite contract key
+    bq_wide = [{
+        "symbol": "TATASTEEL",
+        "snapshot_timestamp": "2026-10-01 11:45:00.000000+00:00",
+        "expiry": "2026-10-27",
+        "atm_strike": 182.5,
+        "ce_ltp": 5.4,
+        "pe_ltp": 6.1,
+        "ce_oi": 10000.0,
+        "pe_oi": 12000.0,
+        "ce_chg_pct": 2.5,
+        "pe_chg_pct": -1.8,
+    }]
+    sheet_wide = [{
+        "symbol": "TATASTEEL",
+        "timestamp_ist": "2026-10-01 11:45:00",
+        "nearest_expiry": "27-OCT-2026",
+        "atm_strike": "182.5",
+        "atm_ce_contract": "TATASTEEL27OCT26182.5CE",
+        "atm_pe_contract": "TATASTEEL27OCT26182.5PE",
+        "ce_ltp": "5.40",
+        "pe_ltp": "6.10",
+        "ce_oi": "10,000",
+        "pe_oi": "12,000",
+        "ce_chg_pct": "2.5%",
+        "pe_chg_pct": "-1.8%",
+    }]
+
+    bq_contracts = explode_option_contracts(bq_wide, tolerate_legacy_offset=True)
+    sheet_contracts = explode_option_contracts(sheet_wide, tolerate_legacy_offset=True)
+
+    assert bq_contracts[0]["strike"] == "182.5"
+    assert bq_contracts[0]["contract"] == "TATASTEEL27OCT26182.5CE"
+    assert sheet_contracts[0]["strike"] == "182.5"
+    assert sheet_contracts[0]["contract"] == "TATASTEEL27OCT26182.5CE"
+
+    result = reconcile_contract_level(bq_contracts, sheet_contracts, tolerate_legacy_offset=True)
+    assert result["summary"]["match_count"] == 2
+    assert result["summary"]["bq_only_count"] == 0
+    assert result["summary"]["sheet_only_count"] == 0
+    assert result["summary"]["value_mismatch_count"] == 0
+    assert result["summary"]["timestamp_mismatch_count"] == 0
+

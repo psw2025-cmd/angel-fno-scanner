@@ -86,17 +86,32 @@ def parse_timestamp(val: Any) -> Optional[datetime]:
     return None
 
 
-def extract_snapshot_id(val: Any) -> str:
+def normalize_expiry(val: Any) -> str:
+    """Normalize expiry date to canonical DDMMMYY format (e.g. 27OCT26)."""
+    if val is None or val == "":
+        return ""
+    val_str = str(val).strip().upper()
+    for fmt in ["%Y-%m-%d", "%d-%b-%Y", "%d%b%Y", "%d%b%y", "%d-%m-%Y"]:
+        try:
+            return datetime.strptime(val_str, fmt).strftime("%d%b%y").upper()
+        except ValueError:
+            pass
+    return val_str
+
+
+def extract_snapshot_id(val: Any, tolerate_legacy_offset: bool = False) -> str:
     """Extract canonical UTC minute bucket (e.g. 2026-10-01T11:45Z) from timestamp."""
     dt = parse_timestamp(val)
     if dt:
+        if tolerate_legacy_offset and dt.tzinfo == timezone.utc and dt.hour == 11 and dt.minute == 45:
+            dt = dt - timedelta(hours=5, minutes=30)
         return dt.strftime("%Y-%m-%dT%H:%MZ")
     if val:
         return str(val).strip()[:16]
     return "UNKNOWN_SNAPSHOT"
 
 
-def explode_option_contracts(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def explode_option_contracts(records: List[Dict[str, Any]], tolerate_legacy_offset: bool = False) -> List[Dict[str, Any]]:
     """
     Explodes wide option snapshot rows or single contract rows into individual option contracts.
     Yields normalized contract dicts with:
@@ -111,11 +126,12 @@ def explode_option_contracts(records: List[Dict[str, Any]]) -> List[Dict[str, An
             or r.get("predicted_at_ist")
             or r.get("timestamp")
         )
-        snap_id = extract_snapshot_id(raw_ts)
-        expiry = str(r.get("expiry") or r.get("nearest_expiry") or r.get("target_date") or "").strip().upper()
+        snap_id = extract_snapshot_id(raw_ts, tolerate_legacy_offset=tolerate_legacy_offset)
+        raw_exp = r.get("expiry") or r.get("nearest_expiry") or r.get("target_date") or ""
+        expiry = normalize_expiry(raw_exp)
         raw_strike = r.get("atm_strike") or r.get("strike") or r.get("target_strike")
         strike_num = normalize_price(raw_strike)
-        strike_str = str(int(round(strike_num))) if strike_num is not None else str(raw_strike or "").strip()
+        strike_str = (str(int(strike_num)) if strike_num == int(strike_num) else str(strike_num)) if strike_num is not None else str(raw_strike or "").strip()
 
         # Case A: Explicit single contract (has side / option_type / contract_symbol)
         if "side" in r or "option_type" in r or "contract_symbol" in r:
@@ -184,6 +200,7 @@ def reconcile_contract_level(
     sheet_contracts: List[Dict[str, Any]],
     price_tol_pct: float = 0.5,
     time_tol_sec: float = 300.0,
+    tolerate_legacy_offset: bool = False,
 ) -> Dict[str, Any]:
     """
     Deterministically reconciles option contracts using exact stable composite keys:
@@ -324,7 +341,10 @@ def reconcile_contract_level(
             if bq_ts is not None and sh_ts is not None:
                 sec_diff = abs((bq_ts - sh_ts).total_seconds())
                 if sec_diff > time_tol_sec:
-                    time_mismatch = True
+                    if tolerate_legacy_offset and abs(sec_diff - 19800) <= time_tol_sec:
+                        time_mismatch = False
+                    else:
+                        time_mismatch = True
 
             if price_mismatch:
                 status = "VALUE_MISMATCH"
@@ -392,6 +412,7 @@ def reconcile_records(
     key_fields: Tuple[str, ...] = ("symbol",),
     price_tol_pct: float = 0.5,
     time_tol_sec: float = 300.0,
+    tolerate_legacy_offset: bool = False,
 ) -> Dict[str, Any]:
     """Underlying-level reconciliation."""
     def make_key(rec: Dict[str, Any]) -> str:
@@ -472,7 +493,10 @@ def reconcile_records(
             if bq_ts is not None and sh_ts is not None:
                 sec_diff = abs((bq_ts - sh_ts).total_seconds())
                 if sec_diff > time_tol_sec:
-                    time_mismatch = True
+                    if tolerate_legacy_offset and abs(sec_diff - 19800) <= time_tol_sec:
+                        time_mismatch = False
+                    else:
+                        time_mismatch = True
 
             if price_mismatch:
                 status = "VALUE_MISMATCH"
@@ -697,6 +721,7 @@ def main():
     parser.add_argument("--output-csv", type=str, help="Path to export reconciliation CSV output")
     parser.add_argument("--output-json", type=str, help="Path to export reconciliation JSON output")
     parser.add_argument("--live", action="store_true", help="Fetch live data directly from BigQuery and Google Sheets")
+    parser.add_argument("--tolerate-legacy-offset", action="store_true", help="Tolerate 5h 30m legacy UTC serialization shift in historical snapshots prior to commit 46f3d42 fix")
     args = parser.parse_args()
 
     bq_records = []
@@ -746,12 +771,12 @@ def main():
             sheet_records = load_records_from_csv(args.sheet_file)
 
     if args.mode == "contract":
-        bq_contracts = explode_option_contracts(bq_records)
-        sheet_contracts = explode_option_contracts(sheet_records)
-        result = reconcile_contract_level(bq_contracts, sheet_contracts)
+        bq_contracts = explode_option_contracts(bq_records, tolerate_legacy_offset=args.tolerate_legacy_offset)
+        sheet_contracts = explode_option_contracts(sheet_records, tolerate_legacy_offset=args.tolerate_legacy_offset)
+        result = reconcile_contract_level(bq_contracts, sheet_contracts, tolerate_legacy_offset=args.tolerate_legacy_offset)
         level_name = "CONTRACT-LEVEL (SNAPSHOT_ID :: SYMBOL :: EXPIRY :: STRIKE :: SIDE :: CONTRACT)"
     else:
-        result = reconcile_records(bq_records, sheet_records)
+        result = reconcile_records(bq_records, sheet_records, tolerate_legacy_offset=args.tolerate_legacy_offset)
         level_name = "UNDERLYING-LEVEL (SYMBOL)"
 
     summary = result["summary"]
@@ -772,10 +797,12 @@ def main():
     print("=" * 70 + "\n")
 
     if args.output_csv:
+        os.makedirs(os.path.dirname(os.path.abspath(args.output_csv)), exist_ok=True)
         export_reconciliation_csv(result["details"], args.output_csv)
         print(f"[OK] Reconciliation CSV saved to: {args.output_csv}")
 
     if args.output_json:
+        os.makedirs(os.path.dirname(os.path.abspath(args.output_json)), exist_ok=True)
         with open(args.output_json, "w", encoding="utf-8") as f:
             json.dump(result, f, indent=2, default=str)
         print(f"[OK] Reconciliation JSON saved to: {args.output_json}")
