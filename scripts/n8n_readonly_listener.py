@@ -7,9 +7,12 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 HOST = "127.0.0.1"
-PORT = 5680
-SCRIPT = Path("/mnt/c/AngelFNO_Workstation/repos/angel-fno-scanner/scripts/forward_validation.py")
-REPORTS = Path("/mnt/c/AngelFNO_Workstation/reports")
+if os.name == "nt":
+    SCRIPT = Path(r"C:\AngelFNO_Workstation\repos\angel-fno-scanner\scripts\forward_validation.py")
+    REPORTS = Path(r"C:\AngelFNO_Workstation\reports")
+else:
+    SCRIPT = Path("/mnt/c/AngelFNO_Workstation/repos/angel-fno-scanner/scripts/forward_validation.py")
+    REPORTS = Path("/mnt/c/AngelFNO_Workstation/reports")
 COMMANDS = {
     "/pre-market": ["--freeze-target-a", "--snapshot-target-b"],
     "/market": ["--monitor", "market", "--snapshot-target-b"],
@@ -34,7 +37,8 @@ class Handler(BaseHTTPRequestHandler):
         started = datetime.now(timezone.utc)
         cmd = ["python3", str(SCRIPT), *COMMANDS[self.path]]
         try:
-            p = subprocess.run(cmd, cwd=str(SCRIPT.parent.parent), capture_output=True, text=True, timeout=180, check=False)
+            env = {**os.environ, "ANGEL_REPORTS_DIR": str(REPORTS)}
+            p = subprocess.run(cmd, cwd=str(SCRIPT.parent.parent), env=env, capture_output=True, text=True, timeout=180, check=False)
             evidence = REPORTS / f"n8n_{self.path.strip('/').replace('-', '_')}_{started:%Y%m%d_%H%M%S_%f}.json"
             evidence.write_text(json.dumps({"endpoint": self.path, "started_utc": started.isoformat(), "returncode": p.returncode, "stdout": p.stdout[-12000:], "stderr": p.stderr[-12000:]}, indent=2), encoding="utf-8")
             code = 200 if p.returncode == 0 else 500

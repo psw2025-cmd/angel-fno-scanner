@@ -21,6 +21,11 @@ def test_bigquery_news_replay_dedup_preserves_cross_source_rows():
     assert {row["source"] for row in result} == {"Feed A", "Feed B"}
 
 
-def test_scanner_import_does_not_require_sheet_credentials_at_module_import():
+def test_scanner_import_does_not_require_sheet_credentials_at_module_import(monkeypatch, tmp_path):
+    monkeypatch.delenv("SHEET_ID", raising=False)
+    monkeypatch.delenv("SHEETS_KEY_JSON", raising=False)
+    monkeypatch.delenv("GOOGLE_APPLICATION_CREDENTIALS", raising=False)
+    monkeypatch.setattr("credentials.REPO_ROOT", tmp_path)
     scanner = importlib.import_module("scanner")
+    importlib.reload(scanner)
     assert scanner.SHEET_ID == ""

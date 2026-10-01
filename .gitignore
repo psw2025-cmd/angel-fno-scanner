@@ -6,3 +6,4 @@ logs/
 .env.*
 !.env.example
 .venv/
+cross_agent_packets/

@@ -10,7 +10,18 @@ import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-REPORTS = Path(r"C:\AngelFNO_Workstation\reports")
+
+def resolve_reports_dir():
+    env_dir = os.getenv("ANGEL_REPORTS_DIR")
+    if env_dir:
+        return Path(env_dir)
+    if os.name != "nt":
+        wsl_path = Path("/mnt/c/AngelFNO_Workstation/reports")
+        if wsl_path.parent.exists():
+            return wsl_path
+    return Path(r"C:\AngelFNO_Workstation\reports")
+
+REPORTS = resolve_reports_dir()
 DATA = ROOT / "data"
 IST = dt.timezone(dt.timedelta(hours=5, minutes=30))
 
