@@ -132,7 +132,7 @@ jobs:
       - name: Render GitHub Actions Step Summary
         run: |
           set -eo pipefail
-          echo "## ðŸ¤– Agent API Execution Report" >> $GITHUB_STEP_SUMMARY
+          echo "##  Agent API Execution Report" >> $GITHUB_STEP_SUMMARY
           echo "**Trigger**: \`${{ github.event_name }}\` | **Action**: \`$ACTION\` | **Symbol**: \`$SYMBOL\` | **Timestamp**: \`$(date -u)\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           cat output/result.txt >> $GITHUB_STEP_SUMMARY
