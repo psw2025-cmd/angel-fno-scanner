@@ -77,7 +77,15 @@ def write_grid(ws, rows):
         ws.update(range_name="A1", values=normalized, value_input_option="RAW")
         # Clear any remaining rows from previous larger datasets
         num_rows = len(rows)
-        ws.batch_clear([f"A{num_rows + 1}:ZZ"])
+        row_limit = getattr(ws, "row_count", 0) or 0
+        if row_limit > num_rows:
+            col_limit = getattr(ws, "col_count", 0) or 26
+            from gspread.utils import rowcol_to_a1
+            end_cell = rowcol_to_a1(row_limit, col_limit)
+            try:
+                ws.batch_clear([f"A{num_rows + 1}:{end_cell}"])
+            except Exception as clear_err:
+                print(f"[WARN] Clearing leftover grid rows skipped: {clear_err}")
     except Exception as e:
         print(f"[WARN] write_grid failed: {e}")
         raise

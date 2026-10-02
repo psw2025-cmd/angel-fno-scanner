@@ -150,10 +150,18 @@ def news_dedup_key(item):
     link = str(item.get("source_url") or item.get("link") or "").strip().lower()
     return "::".join((source, link, title))
 
+NSE_HOLIDAYS_2026 = {
+    "2026-01-26", "2026-03-03", "2026-03-26", "2026-03-31", "2026-04-03",
+    "2026-04-14", "2026-05-01", "2026-05-28", "2026-06-26", "2026-09-14",
+    "2026-10-02", "2026-10-20", "2026-11-10", "2026-11-24", "2026-12-25",
+}
+
 def is_market_open(dt=None):
     if dt is None:
         dt = get_ist_time()
     if dt.weekday() >= 5:  # Saturday or Sunday
+        return False
+    if dt.date().isoformat() in NSE_HOLIDAYS_2026:
         return False
     mins = dt.hour * 60 + dt.minute
     return 555 <= mins <= 940  # 9:15 AM (555 mins) to 3:40 PM (940 mins)
@@ -163,6 +171,8 @@ def is_pre_market_time(dt=None):
         dt = get_ist_time()
     if dt.weekday() >= 5:
         return False
+    if dt.date().isoformat() in NSE_HOLIDAYS_2026:
+        return False
     mins = dt.hour * 60 + dt.minute
     return 480 <= mins < 555  # 8:00 AM to 9:15 AM
 
@@ -171,6 +181,8 @@ def is_pre_close_time(dt=None):
         dt = get_ist_time()
     if dt.weekday() >= 5:  # Saturday or Sunday
         return False
+    if dt.date().isoformat() in NSE_HOLIDAYS_2026:
+        return False
     mins = dt.hour * 60 + dt.minute
     return 900 <= mins <= 940  # 15:00 to 15:40 IST (3:00 PM to 3:40 PM)
 
@@ -178,6 +190,8 @@ def is_morning_reconcile_time(dt=None):
     if dt is None:
         dt = get_ist_time()
     if dt.weekday() >= 5:
+        return False
+    if dt.date().isoformat() in NSE_HOLIDAYS_2026:
         return False
     mins = dt.hour * 60 + dt.minute
     return 555 <= mins <= 585  # 09:15 to 09:45 IST
@@ -2554,7 +2568,6 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
 
         job_config_trunc = bigquery.LoadJobConfig(
             write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
-            schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION],
             autodetect=True,
         )
         load_job = bq_client.load_table_from_json(rows_to_insert, table_pred, job_config=job_config_trunc)
