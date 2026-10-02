@@ -1,0 +1,10 @@
+[Unit]
+Description=Health and bounded recovery for existing n8n and local sandbox
+After=network-online.target docker.service sysbox.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/lib/angel-n8n-watchdog/n8n_watchdog.py
+TimeoutStartSec=420
+UMask=0077
+PrivateTmp=true

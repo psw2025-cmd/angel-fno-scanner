@@ -17,6 +17,9 @@ jobs:
     if: ${{ github.event.comment && startsWith(github.event.comment.body, '/') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      ALLOW_PRODUCTION_WRITES: '0'
+      WRITER_ID: readonly_agent
 
     steps:
       - name: Acknowledge Command with Reaction
@@ -80,7 +83,7 @@ jobs:
             /news)
               SYM=${ARG1:-FORTIS}
               LIM=${ARG2:-10}
-              python3 agent_cli.py --query-news --symbol "$SYM" --limit "$LIM" --format markdown > output/body.md
+              python3 agent_cli.py --query-news "$SYM" --limit "$LIM" --format markdown > output/body.md
               ;;
             /verify)
               python3 agent_cli.py --verify --format markdown > output/body.md

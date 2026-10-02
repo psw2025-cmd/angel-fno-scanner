@@ -11,6 +11,7 @@ import argparse
 import datetime
 import json
 import os
+import re
 import sys
 
 # Ensure repository root is on sys.path
@@ -40,11 +41,24 @@ from verify_all_sheets_and_engine import (
 )
 
 
+def validate_query_inputs(symbol=None, limit=10):
+    if symbol is not None:
+        if not isinstance(symbol, str):
+            raise ValueError("Invalid symbol")
+        symbol = symbol.strip().upper()
+        if not re.fullmatch(r"[A-Z0-9&_-]{1,32}", symbol):
+            raise ValueError("Invalid symbol")
+    if isinstance(limit, bool) or not str(limit).isdigit() or not 1 <= int(limit) <= 1000:
+        raise ValueError("Limit must be an integer from 1 to 1000")
+    return symbol, int(limit)
+
+
 def get_bq():
     return get_bigquery_client()
 
 
 def query_predictions(symbol=None, limit=10):
+    symbol, limit = validate_query_inputs(symbol, limit)
     client = get_bq()
     if symbol:
         sql = f"""
@@ -69,6 +83,7 @@ def query_predictions(symbol=None, limit=10):
 
 
 def query_top_gapup(limit=10):
+    _, limit = validate_query_inputs(limit=limit)
     client = get_bq()
     sql = f"""
     SELECT rank, symbol, gap_direction, expected_gap_pct, pre_open_conviction_pct, target_open_strike,
@@ -91,6 +106,7 @@ def query_top_gapup(limit=10):
 
 
 def query_top_breakouts(limit=5):
+    _, limit = validate_query_inputs(limit=limit)
     client = get_bq()
     sql_ce = f"""
     SELECT rank, symbol, action_rating, directional_bias, ce_win_prob, intensity_score,
@@ -114,6 +130,7 @@ def query_top_breakouts(limit=5):
 
 
 def query_news(symbol=None, limit=20):
+    symbol, limit = validate_query_inputs(symbol, limit)
     client = get_bq()
     where_clause = f"WHERE UPPER(symbol) = '{symbol.strip().upper()}'" if symbol else ""
     sql = f"""

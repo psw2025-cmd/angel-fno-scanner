@@ -44,6 +44,9 @@ jobs:
   agent-executor:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      ALLOW_PRODUCTION_WRITES: '0'
+      WRITER_ID: readonly_agent
 
     steps:
       - name: Checkout Code
@@ -72,26 +75,25 @@ jobs:
         id: params
         run: |
           set -eo pipefail
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "ACTION=${{ github.event.inputs.action }}" >> $GITHUB_ENV
-            echo "SYMBOL=${{ github.event.inputs.symbol }}" >> $GITHUB_ENV
-            echo "LIMIT=${{ github.event.inputs.limit }}" >> $GITHUB_ENV
-            echo "FORMAT=${{ github.event.inputs.format }}" >> $GITHUB_ENV
-          elif [ "${{ github.event_name }}" = "repository_dispatch" ]; then
-            ACTION=$(echo '${{ toJson(github.event.client_payload.action) }}' | tr -d '"')
-            SYMBOL=$(echo '${{ toJson(github.event.client_payload.symbol) }}' | tr -d '"')
-            LIMIT=$(echo '${{ toJson(github.event.client_payload.limit) }}' | tr -d '"')
-            FORMAT=$(echo '${{ toJson(github.event.client_payload.format) }}' | tr -d '"')
-            echo "ACTION=${ACTION:-top_gapup}" >> $GITHUB_ENV
-            echo "SYMBOL=${SYMBOL:-POLICYBZR}" >> $GITHUB_ENV
-            echo "LIMIT=${LIMIT:-10}" >> $GITHUB_ENV
-            echo "FORMAT=${FORMAT:-markdown}" >> $GITHUB_ENV
-          else
-            echo "ACTION=top_gapup" >> $GITHUB_ENV
-            echo "SYMBOL=POLICYBZR" >> $GITHUB_ENV
-            echo "LIMIT=10" >> $GITHUB_ENV
-            echo "FORMAT=markdown" >> $GITHUB_ENV
-          fi
+          python - <<'PY'
+          import json, os, re
+          with open(os.environ["GITHUB_EVENT_PATH"], encoding="utf-8") as fh:
+              event = json.load(fh)
+          params = event.get("inputs", {}) if os.environ["GITHUB_EVENT_NAME"] == "workflow_dispatch" else event.get("client_payload", {})
+          action = params.get("action") or "top_gapup"
+          symbol = params.get("symbol") or "POLICYBZR"
+          limit = str(params.get("limit") or "10")
+          output_format = params.get("format") or "markdown"
+          if action not in {"top_gapup", "top_breakouts", "predict", "query_news", "verify"}:
+              raise SystemExit("Unsupported read-only action")
+          if not isinstance(symbol, str) or not re.fullmatch(r"[A-Z0-9&_-]{1,32}", symbol):
+              raise SystemExit("Invalid symbol")
+          if not limit.isdigit() or not 1 <= int(limit) <= 219 or output_format not in {"markdown", "json"}:
+              raise SystemExit("Invalid limit or output format")
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as fh:
+              for key, value in {"ACTION": action, "SYMBOL": symbol, "LIMIT": limit, "FORMAT": output_format}.items():
+                  fh.write(f"{key}={value}\n")
+          PY
 
       - name: Execute Agent CLI Command
         env:

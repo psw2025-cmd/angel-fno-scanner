@@ -1,0 +1,11 @@
+[Unit]
+Description=Check n8n and sandbox health every 30 seconds
+
+[Timer]
+OnBootSec=45
+OnUnitInactiveSec=30
+AccuracySec=1
+Persistent=true
+
+[Install]
+WantedBy=timers.target

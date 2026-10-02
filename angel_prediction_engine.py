@@ -69,7 +69,7 @@ def resolve_bq_project_id():
 
 BQ_PROJECT_ID     = resolve_bq_project_id()
 BQ_DATASET_ID     = "fno_predictions"
-EXPECTED_FNO_UNIVERSE_COUNT = int(os.getenv("EXPECTED_FNO_UNIVERSE_COUNT", "219"))
+from universe_contract import EXPECTED_FNO_UNIVERSE_COUNT, select_verified_universe, require_verified_symbols
 
 STATE_PATH = os.path.expanduser("~/angel_prediction_state.json")
 CALIBRATION_STATE_PATH = os.path.expanduser("~/angel_calibration_state.json")
@@ -1910,11 +1910,7 @@ def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, re
 
     scrip_data = load_or_download_scrip_master()
     universe = discover_fno_universe(scrip_data)
-    if len(universe) < EXPECTED_FNO_UNIVERSE_COUNT:
-        raise RuntimeError(
-            f"F&O universe incomplete: discovered {len(universe)}/{EXPECTED_FNO_UNIVERSE_COUNT}; "
-            "refusing to run a partial-universe prediction cycle."
-        )
+    universe = select_verified_universe(universe)
     symbols = list(universe.keys())
 
     # Multi-source news
@@ -1994,6 +1990,8 @@ def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, re
         fq = fut_quotes.get(info["fut_token"], {})
         ceq = opt_quotes.get(meta["ce_token"], {})
         peq = opt_quotes.get(meta["pe_token"], {})
+        if not ceq or not peq:
+            raise RuntimeError(f"Missing ATM option quote for {sym}; preserving last good publication")
 
         fut_ltp = float(fq.get("ltp", 0.0))
         fut_pct = float(fq.get("percentChange", 0.0))
@@ -2208,6 +2206,8 @@ def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, re
                         "filing_type": str(itm.get("filing_type", ""))
                     })
 
+    require_verified_symbols(p["symbol"] for p in predictions)
+    require_verified_symbols(row[1] for row in forensic_live_rows)
     save_state({
         "symbols": new_symbols_state,
         "seen_news_keys": list(seen_news_keys)[-5000:],
@@ -2256,6 +2256,10 @@ def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, re
 # =====================================================================
 def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_str, next_day_picks=None, sh=None):
     require_authorized_writer()
+    require_verified_symbols(p["symbol"] for p in predictions)
+    if any(len(row) != 18 for row in forensic_live_rows):
+        raise RuntimeError("Invalid FORENSIC_LIVE row width; preserving last good publication")
+    require_verified_symbols(row[1] for row in forensic_live_rows)
     print("[INFO] Syncing outputs across Google Sheet tabs...")
     try:
         if sh is None:
@@ -2457,6 +2461,7 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
 # =====================================================================
 def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
     require_authorized_writer()
+    require_verified_symbols(p["symbol"] for p in predictions)
     print("[INFO] Appending records into BigQuery Sandbox (asia-south1)...")
     try:
         bq_client = get_bigquery_client()
