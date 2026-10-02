@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "timestamp": "2026-10-01T06:18:26.224402+00:00",
+  "timestamp": "2026-10-02T03:25:53.911893+00:00",
   "sheets_audit": {
     "passed": true,
     "summary": {
@@ -22,7 +22,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 57,
+        "row_count": 76,
         "col_count": 18
       },
       "LEGACY_F&O_DASHBOARD_OBJECT": {
@@ -132,19 +132,19 @@
         "exists": true,
         "rows": 219,
         "size_mb": 0.11,
-        "columns": 49
+        "columns": 53
       },
       "market_news_sentiment": {
         "exists": true,
         "rows": 7118,
         "size_mb": 6.29,
-        "columns": 21
+        "columns": 25
       },
       "prediction_calibration_log": {
         "exists": true,
         "rows": 251,
         "size_mb": 0.17,
-        "columns": 11
+        "columns": 15
       }
     }
   },

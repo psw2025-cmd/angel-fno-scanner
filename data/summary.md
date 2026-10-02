@@ -1,23 +1,23 @@
 # Angel One F&O Prediction & Market Intelligence Snapshot
-**Generated**: `2026-10-01 06:18:26 UTC` | **System Status**: `🟢 PASS`
+**Generated**: `2026-10-02 03:25:53 UTC` | **System Status**: `🟢 PASS`
 
 ## 🌆 3:00 - 3:40 PM Pre-Close: Next-Day Gap-Up (CE) Picks
 | Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+50%) | Expected Gap % | Conviction % | Institutional Rationale |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| 1 | **POWERINDIA** | `32000 CE` | `POWERINDIA27OCT2632000CE` | ₹984.15 | ₹836.53 | ₹1476.22 | **+1.79%** | 77.4% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
-| 2 | **ADANIENSOL** | `1360 CE` | `ADANIENSOL27OCT261360CE` | ₹53.20 | ₹45.22 | ₹79.80 | **+1.50%** | 61.2% | [OVERNIGHT GAP-UP CE] Action: 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | ExpG |
-| 3 | **ABB** | `6900 CE` | `ABB27OCT266900CE` | ₹233.50 | ₹198.47 | ₹350.25 | **+1.48%** | 81.1% | [OVERNIGHT GAP-UP CE] Action: 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | ExpG |
-| 4 | **PERSISTENT** | `5400 CE` | `PERSISTENT27OCT265400CE` | ₹205.00 | ₹174.25 | ₹307.50 | **+2.27%** | 70.0% | [OVERNIGHT GAP-UP CE] Action: 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | ExpG |
-| 5 | **INDUSTOWER** | `385 CE` | `INDUSTOWER27OCT26385CE` | ₹9.60 | ₹8.16 | ₹14.40 | **+1.14%** | 75.5% | [OVERNIGHT GAP-UP CE] Action: 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | ExpG |
+| 1 | **ENRIN** | `3350 CE` | `ENRIN27OCT263350CE` | ₹145.20 | ₹123.42 | ₹217.80 | **+2.40%** | 68.0% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
+| 2 | **MPHASIS** | `2250 CE` | `MPHASIS27OCT262250CE` | ₹92.30 | ₹78.45 | ₹138.45 | **+2.29%** | 70.2% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
+| 3 | **HDFCLIFE** | `535 CE` | `HDFCLIFE27OCT26535CE` | ₹16.65 | ₹14.15 | ₹24.97 | **+1.83%** | 86.7% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
+| 4 | **COFORGE** | `1840 CE` | `COFORGE27OCT261840CE` | ₹74.70 | ₹63.49 | ₹112.05 | **+1.76%** | 69.2% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
+| 5 | **INFY** | `1040 CE` | `INFY27OCT261040CE` | ₹39.80 | ₹33.83 | ₹59.70 | **+1.56%** | 76.7% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
 
 ## 🌆 3:00 - 3:40 PM Pre-Close: Next-Day Gap-Down (PE) Picks
 | Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+60%) | Expected Gap % | Conviction % | Institutional Rationale |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| 1 | **BAJAJ-AUTO** | `10000 PE` | `BAJAJ-AUTO27OCT2610000PE` | ₹281.05 | ₹238.89 | ₹449.68 | **-3.00%** | 92.5% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
-| 2 | **AMBUJACEM** | `370 PE` | `AMBUJACEM27OCT26370PE` | ₹10.70 | ₹9.09 | ₹17.12 | **-1.25%** | 79.4% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
-| 3 | **MOTHERSON** | `160 PE` | `MOTHERSON27OCT26160PE` | ₹3.89 | ₹3.31 | ₹6.22 | **-0.92%** | 56.9% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
-| 4 | **PFC** | `325 PE` | `PFC27OCT26325PE` | ₹9.55 | ₹8.12 | ₹15.28 | **-1.21%** | 73.1% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
-| 5 | **POLICYBZR** | `1020 PE` | `POLICYBZR27OCT261020PE` | ₹54.50 | ₹46.32 | ₹87.20 | **-3.01%** | 95.6% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 1 | **POLICYBZR** | `980 PE` | `POLICYBZR27OCT26980PE` | ₹51.95 | ₹44.16 | ₹83.12 | **-3.27%** | 95.5% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 2 | **SWIGGY** | `240 PE` | `SWIGGY27OCT26240PE` | ₹10.00 | ₹8.50 | ₹16.00 | **-2.80%** | 88.0% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 3 | **KALYANKJIL** | `530 PE` | `KALYANKJIL27OCT26530PE` | ₹24.90 | ₹21.16 | ₹39.84 | **-2.94%** | 92.0% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 4 | **UNOMINDA** | `1120 PE` | `UNOMINDA27OCT261120PE` | ₹38.75 | ₹32.94 | ₹62.00 | **-2.44%** | 88.3% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 5 | **KAYNES** | `3350 PE` | `KAYNES27OCT263350PE` | ₹158.65 | ₹134.85 | ₹253.84 | **-2.35%** | 81.6% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
 
 ## 🌅 Top 5 Pre-Market 9:15 AM Gap-Up Picks
 | Rank | Symbol | Target Strike | Expected Gap % | Conviction % | CE LTP | Live Velocity | Top Catalyst Headline |
