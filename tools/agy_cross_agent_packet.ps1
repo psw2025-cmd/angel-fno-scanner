@@ -7,6 +7,8 @@ param(
     [string]$AfterState = "Not supplied",
     [string]$PeerCheckRequest = "Independently verify against GitHub, Google Sheet, BigQuery and available artifacts.",
     [string]$KnownLimitations = "",
+    [string]$BaseSha = "",
+    [string]$ArtifactSha256 = "",
     [ValidateSet("OBSERVED","OPEN_AUTO_FIXABLE","IMPLEMENTED_NOT_DEPLOYED","VERIFIED_LOCAL","VERIFIED_REMOTE","DISPUTED","WAITING_FOR_PEER","WAITING_FOR_USER","RESOLVED_TWO_PARTY")]
     [string]$Status = "WAITING_FOR_PEER",
     [string]$RepoPath = ".",
@@ -66,9 +68,9 @@ $packet = [ordered]@{
     host_or_runtime = $env:COMPUTERNAME
     repo = $repoFullName
     branch = $branch
-    base_sha = $null
+    base_sha = $(if ($BaseSha) { $BaseSha } else { $null })
     head_sha = $(if ($headSha) { $headSha } else { $null })
-    artifact_sha256 = $null
+    artifact_sha256 = $(if ($ArtifactSha256) { $ArtifactSha256 } else { $null })
     claim = $Claim
     observation = $Observation
     exact_commands = @(
@@ -98,9 +100,11 @@ $outDir = Join-Path $resolvedRepo "cross_agent_packets"
 New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 $jsonPath = Join-Path $outDir ($claimId + ".json")
 $packet | ConvertTo-Json -Depth 10 | Set-Content -Path $jsonPath -Encoding UTF8
-$sha256 = (Get-FileHash -Algorithm SHA256 -Path $jsonPath).Hash.ToLowerInvariant()
-$packet.artifact_sha256 = $sha256
-$packet | ConvertTo-Json -Depth 10 | Set-Content -Path $jsonPath -Encoding UTF8
+if (-not $packet.artifact_sha256) {
+    $sha256 = (Get-FileHash -Algorithm SHA256 -Path $jsonPath).Hash.ToLowerInvariant()
+    $packet.artifact_sha256 = $sha256
+    $packet | ConvertTo-Json -Depth 10 | Set-Content -Path $jsonPath -Encoding UTF8
+}
 
 # Re-hash after inserting artifact_sha256 is intentionally not used as self-referential content cannot hash to itself.
 # The artifact_sha256 field identifies the first canonical payload serialization before hash annotation.
