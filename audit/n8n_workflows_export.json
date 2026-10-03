@@ -1,0 +1,429 @@
+[
+  {
+    "id": "angel-fno-read-only-monitor",
+    "name": "Angel FNO Read-Only Session Monitor",
+    "active": true,
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "55 8 * * 1-5"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0,5,10 9 * * 1-5"
+              }
+            ]
+          }
+        },
+        "id": "b3e1a1a1-1111-4111-8111-111111111111",
+        "name": "Pre-Market 08:55 IST",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -520,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "GET",
+          "url": "http://127.0.0.1:5680/pre-market",
+          "options": {
+            "timeout": 180000
+          }
+        },
+        "id": "b3e1a1a1-2222-4222-8222-222222222222",
+        "name": "Pre-Market Read-Only Check",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -260,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "15-55/5 9 * * 1-5"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "*/5 10-14 * * 1-5"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0-40/5 15 * * 1-5"
+              }
+            ]
+          }
+        },
+        "id": "b3e1a1a1-3333-4333-8333-333333333333",
+        "name": "Market Freshness Every 5m",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -520,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "method": "GET",
+          "url": "http://127.0.0.1:5680/market",
+          "options": {
+            "timeout": 180000
+          }
+        },
+        "id": "b3e1a1a1-4444-4444-8444-444444444444",
+        "name": "Market Read-Only Check",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -260,
+          260
+        ]
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "40,45,50,55 15 * * 1-5"
+              },
+              {
+                "field": "cronExpression",
+                "expression": "0 16 * * 1-5"
+              }
+            ]
+          }
+        },
+        "id": "b3e1a1a1-5555-4555-8555-555555555555",
+        "name": "Post-Market 15:40-16:00 IST",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -520,
+          520
+        ]
+      },
+      {
+        "parameters": {
+          "method": "GET",
+          "url": "http://127.0.0.1:5680/post-market",
+          "options": {
+            "timeout": 180000
+          }
+        },
+        "id": "b3e1a1a1-6666-4666-8666-666666666666",
+        "name": "Post-Market Read-Only Check",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -260,
+          520
+        ]
+      },
+      {
+        "parameters": {},
+        "id": "b3e1a1a1-7777-4777-8777-777777777777",
+        "name": "CLI Validation Trigger",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1,
+        "position": [
+          -520,
+          -180
+        ]
+      }
+    ],
+    "connections": {
+      "Pre-Market 08:55 IST": {
+        "main": [
+          [
+            {
+              "node": "Pre-Market Read-Only Check",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Market Freshness Every 5m": {
+        "main": [
+          [
+            {
+              "node": "Market Read-Only Check",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Post-Market 15:40-16:00 IST": {
+        "main": [
+          [
+            {
+              "node": "Post-Market Read-Only Check",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "CLI Validation Trigger": {
+        "main": [
+          [
+            {
+              "node": "Pre-Market Read-Only Check",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "timezone": "Asia/Kolkata",
+      "executionOrder": "v1",
+      "saveDataSuccessExecution": "all",
+      "saveDataErrorExecution": "all",
+      "saveManualExecutions": true,
+      "availableInMCP": true
+    }
+  },
+  {
+    "id": "angel-fno-sandbox-runner",
+    "name": "Angel FNO Local Sandbox Python Runner",
+    "active": true,
+    "nodes": [
+      {
+        "parameters": {},
+        "id": "trigger-sandbox-1",
+        "name": "CLI Validation Trigger",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1,
+        "position": [
+          -200,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://127.0.0.1:8080/sandboxes/cc9406c7-65c7-5c0e-b4c7-20573a7a59cf/executions",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-API-Key",
+                "value": "angel-local-sandbox-key"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ command: 'python3 -c \"' + ($json.code ? $json.code.replace(/\"/g, '\\\\\"') : 'print(5050)') + '\"' }) }}"
+        },
+        "id": "exec-sandbox-1",
+        "name": "Execute in Sandbox",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          100,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "CLI Validation Trigger": {
+        "main": [
+          [
+            {
+              "node": "Execute in Sandbox",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "timezone": "Asia/Kolkata",
+      "executionOrder": "v1",
+      "saveDataSuccessExecution": "all",
+      "saveDataErrorExecution": "all",
+      "saveManualExecutions": true,
+      "availableInMCP": true
+    }
+  },
+  {
+    "id": "angel-fno-bigquery-inspector",
+    "name": "Angel FNO BigQuery Read-Only Inspector",
+    "active": true,
+    "nodes": [
+      {
+        "parameters": {},
+        "id": "trigger-bq-1",
+        "name": "CLI Validation Trigger",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1,
+        "position": [
+          -200,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "GET",
+          "url": "http://127.0.0.1:5680/bigquery"
+        },
+        "id": "exec-bq-1",
+        "name": "Query BigQuery Endpoint",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          100,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "CLI Validation Trigger": {
+        "main": [
+          [
+            {
+              "node": "Query BigQuery Endpoint",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "timezone": "Asia/Kolkata",
+      "executionOrder": "v1",
+      "saveDataSuccessExecution": "all",
+      "saveDataErrorExecution": "all",
+      "saveManualExecutions": true,
+      "availableInMCP": true
+    }
+  },
+  {
+    "id": "angel-fno-sheets-inspector",
+    "name": "Angel FNO Google Sheets Read-Only Inspector",
+    "active": true,
+    "nodes": [
+      {
+        "parameters": {},
+        "id": "trigger-sheets-1",
+        "name": "CLI Validation Trigger",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1,
+        "position": [
+          -200,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "GET",
+          "url": "http://127.0.0.1:5680/sheets"
+        },
+        "id": "exec-sheets-1",
+        "name": "Query Sheets Endpoint",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          100,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "CLI Validation Trigger": {
+        "main": [
+          [
+            {
+              "node": "Query Sheets Endpoint",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "timezone": "Asia/Kolkata",
+      "executionOrder": "v1",
+      "saveDataSuccessExecution": "all",
+      "saveDataErrorExecution": "all",
+      "saveManualExecutions": true,
+      "availableInMCP": true
+    }
+  },
+  {
+    "id": "angel-fno-http-request",
+    "name": "Angel FNO Local Services HTTP Request Tool",
+    "active": true,
+    "nodes": [
+      {
+        "parameters": {},
+        "id": "trigger-http-1",
+        "name": "CLI Validation Trigger",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1,
+        "position": [
+          -200,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "GET",
+          "url": "={{ $json.url || 'http://127.0.0.1:5680/health' }}"
+        },
+        "id": "exec-http-1",
+        "name": "Execute HTTP Request",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          100,
+          0
+        ]
+      }
+    ],
+    "connections": {
+      "CLI Validation Trigger": {
+        "main": [
+          [
+            {
+              "node": "Execute HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "timezone": "Asia/Kolkata",
+      "executionOrder": "v1",
+      "saveDataSuccessExecution": "all",
+      "saveDataErrorExecution": "all",
+      "saveManualExecutions": true,
+      "availableInMCP": true
+    }
+  }
+]
