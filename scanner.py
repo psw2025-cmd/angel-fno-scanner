@@ -64,6 +64,7 @@ def worksheet(book, title, rows=400, cols=26):
         return book.add_worksheet(title=title, rows=rows, cols=cols)
 
 
+
 def heartbeat_age_seconds(book, now):
     try:
         stamped = book.worksheet("HEARTBEAT").acell("A2").value

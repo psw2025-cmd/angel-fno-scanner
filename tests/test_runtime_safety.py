@@ -20,3 +20,31 @@ def test_prediction_engine_uses_current_fno_close():
     source = (ROOT / "angel_prediction_engine.py").read_text(encoding="utf-8")
     assert "return 555 <= mins <= 940" in source
     assert "return 900 <= mins <= 940" in source
+
+
+def test_paper_safety_and_zero_real_orders():
+    """
+    Mandatory Rule: Section 29 of AGENTS.md & Section 14 of 4.txt.
+    PAPER / ANALYZER = ON
+    LIVE ORDER AUTHORITY = OFF
+    REAL BROKER ORDERS = 0
+    Verifies that no real broker order placement APIs exist in production scripts.
+    """
+    for script_name in ("scanner.py", "angel_prediction_engine.py", "agent_cli.py"):
+        code = (ROOT / script_name).read_text(encoding="utf-8")
+        assert "placeOrder" not in code, f"Forbidden live order method found in {script_name}"
+        assert "orderPlacement" not in code, f"Forbidden live order method found in {script_name}"
+        assert "modifyOrder" not in code, f"Forbidden live order method found in {script_name}"
+        assert "cancelOrder" not in code, f"Forbidden live order method found in {script_name}"
+
+
+def test_mock_leakage_prevention():
+    """
+    Verifies that mock frameworks, test doubles, or synthetic fixtures never leak into production runtime engines.
+    """
+    for script_name in ("scanner.py", "angel_prediction_engine.py", "agent_cli.py", "credentials.py"):
+        code = (ROOT / script_name).read_text(encoding="utf-8")
+        assert "unittest.mock" not in code, f"Mock leakage detected in {script_name}"
+        assert "pytest" not in code, f"Pytest import detected in production script {script_name}"
+        assert "MagicMock" not in code, f"MagicMock detected in {script_name}"
+

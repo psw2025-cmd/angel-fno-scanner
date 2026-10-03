@@ -94,8 +94,14 @@ DEFAULT_WEIGHTS = {
 # =====================================================================
 # TIME UTILITIES
 # =====================================================================
+try:
+    from zoneinfo import ZoneInfo
+    IST = ZoneInfo("Asia/Kolkata")
+except Exception:
+    IST = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
+
 def get_ist_time():
-    return datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) + datetime.timedelta(hours=5, minutes=30)
+    return datetime.datetime.now(IST)
 
 def parse_expiry_date(exp_str):
     try:
@@ -147,11 +153,19 @@ def news_dedup_key(item):
     link = str(item.get("source_url") or item.get("link") or "").strip().lower()
     return "::".join((source, link, title))
 
+NSE_HOLIDAYS_2026 = {
+    "2026-01-26", "2026-03-03", "2026-03-26", "2026-03-31", "2026-04-03",
+    "2026-04-14", "2026-05-01", "2026-05-28", "2026-06-26", "2026-09-14",
+    "2026-10-02", "2026-10-20", "2026-11-10", "2026-11-24", "2026-12-25",
+}
+
 def is_market_open(dt=None):
     if dt is None:
         dt = get_ist_time()
     dt = local_market_time(dt)
     if not is_trading_day(dt):
+        return False
+    if dt.date().isoformat() in NSE_HOLIDAYS_2026:
         return False
     mins = dt.hour * 60 + dt.minute
     return 555 <= mins <= 940  # 9:15 AM (555 mins) to 3:40 PM (940 mins)
@@ -162,6 +176,8 @@ def is_pre_market_time(dt=None):
     dt = local_market_time(dt)
     if not is_trading_day(dt):
         return False
+    if dt.date().isoformat() in NSE_HOLIDAYS_2026:
+        return False
     mins = dt.hour * 60 + dt.minute
     return 480 <= mins < 555  # 8:00 AM to 9:15 AM
 
@@ -171,6 +187,8 @@ def is_pre_close_time(dt=None):
     dt = local_market_time(dt)
     if not is_trading_day(dt):
         return False
+    if dt.date().isoformat() in NSE_HOLIDAYS_2026:
+        return False
     mins = dt.hour * 60 + dt.minute
     return 900 <= mins <= 940  # 15:00 to 15:40 IST (3:00 PM to 3:40 PM)
 
@@ -179,6 +197,8 @@ def is_morning_reconcile_time(dt=None):
         dt = get_ist_time()
     dt = local_market_time(dt)
     if not is_trading_day(dt):
+        return False
+    if dt.date().isoformat() in NSE_HOLIDAYS_2026:
         return False
     mins = dt.hour * 60 + dt.minute
     return 555 <= mins <= 585  # 09:15 to 09:45 IST
@@ -1180,6 +1200,12 @@ def generate_next_day_gap_picks(predictions, ist_now=None):
                 "spot_ltp": spot,
                 "target_strike": f"{int(atm_strike)} CE",
                 "contract_symbol": ce_sym,
+                "forecast_contract": ce_sym,
+                "strike": atm_strike,
+                "expiry": p.get("expiry", ""),
+                "forecast_timestamp": ist_str,
+                "underlying_ref_price": spot,
+                "option_ref_price": ce_ltp,
                 "entry_ltp": ce_ltp,
                 "session_change_pct": ce_chg,
                 "expected_gap_pct": exp_gap,
@@ -1207,6 +1233,12 @@ def generate_next_day_gap_picks(predictions, ist_now=None):
                 "spot_ltp": spot,
                 "target_strike": f"{int(atm_strike)} PE",
                 "contract_symbol": pe_sym,
+                "forecast_contract": pe_sym,
+                "strike": atm_strike,
+                "expiry": p.get("expiry", ""),
+                "forecast_timestamp": ist_str,
+                "underlying_ref_price": spot,
+                "option_ref_price": pe_ltp,
                 "entry_ltp": pe_ltp,
                 "session_change_pct": pe_chg,
                 "expected_gap_pct": exp_gap,
@@ -1387,13 +1419,18 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
             entry_ltp = float(m_entry.group(1)) if m_entry else 0.0
 
             open_ltp = 0.0
+            current_atm_contract = ""
             if sym in pred_symbol_map:
                 pred_item = pred_symbol_map[sym]
-                if side == "CE":
+                current_atm_contract = (pred_item.get("ce_symbol") if side == "CE" else pred_item.get("pe_symbol")) or ""
+                # G19 Fix: Only use pred_item LTP if the current ATM contract matches the exact frozen contract.
+                # If ATM drifted intraday/overnight, do NOT substitute the drifted ATM contract's LTP!
+                if side == "CE" and current_atm_contract == contract:
                     open_ltp = float(pred_item.get("ce_ltp", 0.0))
-                else:
+                elif side == "PE" and current_atm_contract == contract:
                     open_ltp = float(pred_item.get("pe_ltp", 0.0))
 
+            # When ATM drifted or open_ltp not yet resolved, query the EXACT frozen contract
             if open_ltp <= 0.0 and smartApi:
                 try:
                     q = smartApi.getLtpData("NFO", contract, "")
@@ -1417,6 +1454,8 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
                     "symbol": sym,
                     "side": side,
                     "trade_date": trade_date,
+                    "forecast_contract": contract,
+                    "current_atm_contract": current_atm_contract,
                     "contract": contract,
                     "entry_ltp": entry_ltp,
                     "actual_open_ltp": open_ltp,
@@ -2568,7 +2607,14 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
         ]
         if unique_news_rows:
             table_news = bq_client.get_table(dataset_ref.table("market_news_sentiment"))
-            load_job_news = bq_client.load_table_from_json(unique_news_rows, table_news, job_config=job_config)
+            news_schema = getattr(table_news, "schema", None)
+            job_config_news = bigquery.LoadJobConfig(
+                write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
+                schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION],
+                schema=news_schema,
+                autodetect=news_schema is None,
+            )
+            load_job_news = bq_client.load_table_from_json(unique_news_rows, table_news, job_config=job_config_news)
             load_job_news.result()
             print(f"[OK] Appended {len(unique_news_rows)} fresh records to BigQuery market_news_sentiment!")
         else:
@@ -2590,7 +2636,14 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
             "miss_root_causes": json.dumps({"causes": "Attributed via online multi-factor model"}),
             "updated_weights_json": json.dumps(reconciliation.get("weights", {}))
         }]
-        load_job_cal = bq_client.load_table_from_json(cal_row, table_cal, job_config=job_config)
+        cal_schema = getattr(table_cal, "schema", None)
+        job_config_cal = bigquery.LoadJobConfig(
+            write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
+            schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION],
+            schema=cal_schema,
+            autodetect=cal_schema is None,
+        )
+        load_job_cal = bq_client.load_table_from_json(cal_row, table_cal, job_config=job_config_cal)
         load_job_cal.result()
         print(f"[OK] Appended reconciliation audit to BigQuery prediction_calibration_log!")
 
