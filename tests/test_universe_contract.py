@@ -63,6 +63,8 @@ def test_partial_publication_preserves_sinks(monkeypatch):
     import angel_prediction_engine as engine
     monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")
     monkeypatch.setenv("WRITER_ID", "market_bot")
+    monkeypatch.setenv("RUN_ID", "test-cycle")
+    monkeypatch.setenv("GIT_SHA", "test-sha")
     rows = [{"symbol": s} for s in verified_symbols() if s != "SAIL"]
     # No cloud client may be reached before the fail-closed coverage check.
     monkeypatch.setattr(engine, "get_bigquery_client", lambda: pytest.fail("BQ accessed"))
@@ -84,6 +86,8 @@ def test_malformed_forensic_row_cannot_be_dropped_into_partial_publication(monke
     import angel_prediction_engine as engine
     monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")
     monkeypatch.setenv("WRITER_ID", "market_bot")
+    monkeypatch.setenv("RUN_ID", "test-cycle")
+    monkeypatch.setenv("GIT_SHA", "test-sha")
     monkeypatch.setattr(engine, "get_gspread_client", lambda: pytest.fail("Sheets accessed"))
     predictions = [{"symbol": s} for s in verified_symbols()]
     forensic = [["test", s] + [0] * 16 for s in verified_symbols()]

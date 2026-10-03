@@ -37,7 +37,8 @@ from angel_prediction_engine import (
 from verify_all_sheets_and_engine import (
     audit_sheets,
     audit_bigquery,
-    audit_engine_state
+    audit_engine_state,
+    audit_publication
 )
 
 
@@ -154,14 +155,16 @@ def run_full_verification():
     sheets_ok, sheets_summary = audit_sheets()
     bq_ok, bq_summary = audit_bigquery()
     state_ok = audit_engine_state()
+    publication_ok, publication_summary = audit_publication()
     state_summary = "Prediction state and calibration state verified" if state_ok else "Engine state files missing"
 
-    all_passed = sheets_ok and bq_ok and state_ok
+    all_passed = sheets_ok and bq_ok and state_ok and publication_ok
     return {
         "status": "PASS" if all_passed else "FAIL",
         "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "sheets_audit": {"passed": sheets_ok, "summary": sheets_summary},
         "bigquery_audit": {"passed": bq_ok, "summary": bq_summary},
+        "publication": {"passed": publication_ok, "summary": publication_summary},
         "engine_state": {"passed": state_ok, "summary": state_summary}
     }
 

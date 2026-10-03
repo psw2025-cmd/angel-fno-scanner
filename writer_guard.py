@@ -1,21 +1,26 @@
 """Single-writer guard and provenance helpers for production sinks."""
 import datetime
 import os
+from contextvars import ContextVar
 from zoneinfo import ZoneInfo
 
 AUTHORIZED_WRITER_ID = "market_bot"
 IST = ZoneInfo("Asia/Kolkata")
+ACTIVE_CYCLE = ContextVar("publication_cycle", default=None)
 
 
 def build_provenance(source_timestamp=None):
     if source_timestamp is None:
         source_timestamp = datetime.datetime.now(IST).replace(microsecond=0).isoformat()
-    return {
+    result = {
         "run_id": (os.getenv("RUN_ID") or os.getenv("GITHUB_RUN_ID") or "UNSET").strip(),
         "git_sha": (os.getenv("GIT_SHA") or os.getenv("GITHUB_SHA") or "UNSET").strip(),
         "writer_id": (os.getenv("WRITER_ID") or "UNSET").strip(),
         "source_timestamp": str(source_timestamp),
     }
+    if ACTIVE_CYCLE.get():
+        result["cycle_id"] = ACTIVE_CYCLE.get()
+    return result
 
 
 def require_authorized_writer():
@@ -26,6 +31,9 @@ def require_authorized_writer():
             "Production sink write blocked: only market_bot with "
             "ALLOW_PRODUCTION_WRITES=1 is authorized."
         )
+    if any(not provenance[field] or provenance[field].upper() == "UNSET"
+           for field in ("run_id", "git_sha")):
+        raise RuntimeError("Production sink write blocked: run_id and git_sha are required")
     return provenance
 
 
