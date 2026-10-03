@@ -2607,7 +2607,14 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
         ]
         if unique_news_rows:
             table_news = bq_client.get_table(dataset_ref.table("market_news_sentiment"))
-            load_job_news = bq_client.load_table_from_json(unique_news_rows, table_news, job_config=job_config)
+            news_schema = getattr(table_news, "schema", None)
+            job_config_news = bigquery.LoadJobConfig(
+                write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
+                schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION],
+                schema=news_schema,
+                autodetect=news_schema is None,
+            )
+            load_job_news = bq_client.load_table_from_json(unique_news_rows, table_news, job_config=job_config_news)
             load_job_news.result()
             print(f"[OK] Appended {len(unique_news_rows)} fresh records to BigQuery market_news_sentiment!")
         else:
@@ -2629,7 +2636,14 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
             "miss_root_causes": json.dumps({"causes": "Attributed via online multi-factor model"}),
             "updated_weights_json": json.dumps(reconciliation.get("weights", {}))
         }]
-        load_job_cal = bq_client.load_table_from_json(cal_row, table_cal, job_config=job_config)
+        cal_schema = getattr(table_cal, "schema", None)
+        job_config_cal = bigquery.LoadJobConfig(
+            write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
+            schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION],
+            schema=cal_schema,
+            autodetect=cal_schema is None,
+        )
+        load_job_cal = bq_client.load_table_from_json(cal_row, table_cal, job_config=job_config_cal)
         load_job_cal.result()
         print(f"[OK] Appended reconciliation audit to BigQuery prediction_calibration_log!")
 
