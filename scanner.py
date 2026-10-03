@@ -32,7 +32,7 @@ load_env()
 SHEET_ID = os.getenv("SHEET_ID", "").strip()
 MAX_RUNTIME_SECONDS = max(1, int(os.getenv("MAX_RUNTIME_SECONDS", "22500")))
 IST = ZoneInfo("Asia/Kolkata")
-EXPECTED_FNO_UNIVERSE_COUNT = int(os.getenv("EXPECTED_FNO_UNIVERSE_COUNT", "219"))
+from universe_contract import EXPECTED_FNO_UNIVERSE_COUNT, select_verified_universe, require_verified_symbols
 DAEMON_FRESH_SECONDS = 90
 FORENSIC_HEADER = [
     "Timestamp (IST)", "Symbol", "Nearest Expiry", "Fut LTP", "Fut Chg %", "Fut OBI",
@@ -198,11 +198,7 @@ def discover_universe(api):
             "expiry": nearest,
             "strikes": both,
         }
-    if len(universe) < EXPECTED_FNO_UNIVERSE_COUNT:
-        raise RuntimeError(
-            f"F&O universe incomplete: discovered {len(universe)}/{EXPECTED_FNO_UNIVERSE_COUNT}; "
-            "refusing to run a partial-universe scan."
-        )
+    universe = select_verified_universe(universe)
     print(f"[OK] Tracking {len(universe)} symbols")
     return universe
 
@@ -365,6 +361,7 @@ def run_angel_loop(book, api):
         forensic_rows, signals, latest_changes = build_forensic_rows(universe, future_quotes, option_quotes, stamped)
         chain_quotes = build_chain_quotes(universe, future_quotes, option_quotes, each_side)
         try:
+            require_verified_symbols(row[1] for row in forensic_rows)
             if forensic_rows:
                 live = worksheet(book, "FORENSIC_LIVE", rows=max(300, len(forensic_rows) + 5), cols=18)
                 write_grid(live, [FORENSIC_HEADER, *forensic_rows])
@@ -465,6 +462,7 @@ def run_angel_loop(book, api):
 
 def refresh_from_forensic(book, now):
     forensic = worksheet(book, "FORENSIC_LIVE").get_all_values()
+    require_verified_symbols(row[1] for row in forensic[1:] if len(row) > 1 and str(row[1]).strip())
     quotes = contracts_from_forensic(forensic)
     if not quotes:
         raise RuntimeError("FORENSIC_LIVE has no priced contracts to publish")
@@ -505,15 +503,12 @@ def main():
     if age is not None and age <= DAEMON_FRESH_SECONDS:
         print(f"[INFO] HEARTBEAT is {int(age)}s old. Skipping a second Angel login.")
         refresh_from_forensic(book, now)
-        return
-    print(f"[INFO] HEARTBEAT age={age}. Opening Angel for a real quote pass.")
-    run_angel_loop(book, angel_login())
-    try:
-        from angel_prediction_engine import run_prediction_pipeline
-        print("[INFO] Invoking Option CE/PE Prediction & Rating Pipeline...")
-        run_prediction_pipeline(bypass_market_check=True)
-    except Exception as exc:
-        print(f"[WARN] Prediction engine run notice: {exc}")
+    else:
+        print(f"[INFO] HEARTBEAT age={age}. Opening Angel for a real quote pass.")
+        run_angel_loop(book, angel_login())
+    from angel_prediction_engine import run_prediction_pipeline
+    print("[INFO] Invoking Option CE/PE Prediction & Rating Pipeline...")
+    run_prediction_pipeline(bypass_market_check=True)
 
 
 if __name__ == "__main__":

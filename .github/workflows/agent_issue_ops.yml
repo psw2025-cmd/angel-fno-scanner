@@ -17,6 +17,9 @@ jobs:
     if: ${{ github.event.comment && startsWith(github.event.comment.body, '/') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      ALLOW_PRODUCTION_WRITES: '0'
+      WRITER_ID: readonly_agent
 
     steps:
       - name: Acknowledge Command with Reaction
@@ -62,7 +65,7 @@ jobs:
           ARG2=$(echo "$CMD_LINE" | awk '{print $3}')
 
           echo "Received IssueOps command: $CMD (ARG1: $ARG1, ARG2: $ARG2)"
-          HEADER="> ðŸ¤– **Angel Intelligence Agent Response** (Command: \`$CMD_LINE\`)\n\n"
+          HEADER=">  **Angel Intelligence Agent Response** (Command: \`$CMD_LINE\`)\n\n"
 
           case "$CMD" in
             /predict)
@@ -80,13 +83,13 @@ jobs:
             /news)
               SYM=${ARG1:-FORTIS}
               LIM=${ARG2:-10}
-              python3 agent_cli.py --query-news --symbol "$SYM" --limit "$LIM" --format markdown > output/body.md
+              python3 agent_cli.py --query-news "$SYM" --limit "$LIM" --format markdown > output/body.md
               ;;
             /verify)
               python3 agent_cli.py --verify --format markdown > output/body.md
               ;;
             /help)
-              echo "### ðŸ“– Available Agent IssueOps Commands" > output/body.md
+              echo "###  Available Agent IssueOps Commands" > output/body.md
               echo "| Command | Arguments | Description | Example |" >> output/body.md
               echo "| :--- | :--- | :--- | :--- |" >> output/body.md
               echo "| \`/predict\` | \`<SYMBOL>\` | Full Black-76 Greeks, probabilities, and news impact for an F&O stock | \`/predict POLICYBZR\` |" >> output/body.md
@@ -97,7 +100,7 @@ jobs:
               echo "| \`/help\` | None | Display this help menu | \`/help\` |" >> output/body.md
               ;;
             *)
-              echo "âš ï¸ **Unknown command.** Type \`/help\` to see all available commands." > output/body.md
+              echo " **Unknown command.** Type \`/help\` to see all available commands." > output/body.md
               ;;
           esac
 

@@ -48,7 +48,8 @@ def test_agent_workflows_are_read_only():
     for source in (dispatch, issueops):
         assert "contents: write" not in source
         assert "ANGEL_API_KEY" not in source
-        assert "ALLOW_PRODUCTION_WRITES" not in source
+        assert "ALLOW_PRODUCTION_WRITES: '0'" in source
+        assert "WRITER_ID: readonly_agent" in source
         assert "git push" not in source
     assert "run_cycle" not in dispatch
     assert "export_snapshots" not in dispatch
