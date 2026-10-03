@@ -37,6 +37,9 @@ from credentials import (
     validate_angel_credentials,
 )
 from writer_guard import append_sheet_provenance, build_provenance, require_authorized_writer
+from sheet_grid import write_grid
+from publication import publish_outputs
+from market_calendar import IST, is_trading_day, local_market_time
 
 load_env()
 
@@ -159,7 +162,8 @@ NSE_HOLIDAYS_2026 = {
 def is_market_open(dt=None):
     if dt is None:
         dt = get_ist_time()
-    if dt.weekday() >= 5:  # Saturday or Sunday
+    dt = local_market_time(dt)
+    if not is_trading_day(dt):
         return False
     if dt.date().isoformat() in NSE_HOLIDAYS_2026:
         return False
@@ -169,7 +173,8 @@ def is_market_open(dt=None):
 def is_pre_market_time(dt=None):
     if dt is None:
         dt = get_ist_time()
-    if dt.weekday() >= 5:
+    dt = local_market_time(dt)
+    if not is_trading_day(dt):
         return False
     if dt.date().isoformat() in NSE_HOLIDAYS_2026:
         return False
@@ -179,7 +184,8 @@ def is_pre_market_time(dt=None):
 def is_pre_close_time(dt=None):
     if dt is None:
         dt = get_ist_time()
-    if dt.weekday() >= 5:  # Saturday or Sunday
+    dt = local_market_time(dt)
+    if not is_trading_day(dt):
         return False
     if dt.date().isoformat() in NSE_HOLIDAYS_2026:
         return False
@@ -189,7 +195,8 @@ def is_pre_close_time(dt=None):
 def is_morning_reconcile_time(dt=None):
     if dt is None:
         dt = get_ist_time()
-    if dt.weekday() >= 5:
+    dt = local_market_time(dt)
+    if not is_trading_day(dt):
         return False
     if dt.date().isoformat() in NSE_HOLIDAYS_2026:
         return False
@@ -2247,11 +2254,11 @@ def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, re
 
     require_verified_symbols(p["symbol"] for p in predictions)
     require_verified_symbols(row[1] for row in forensic_live_rows)
-    save_state({
+    pending_state = {
         "symbols": new_symbols_state,
         "seen_news_keys": list(seen_news_keys)[-5000:],
         "last_updated": ist_str
-    })
+    }
 
     predictions.sort(key=lambda x: x["rank_metric"], reverse=True)
     for idx, r in enumerate(predictions):
@@ -2285,8 +2292,12 @@ def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, re
         reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str, ist_now)
 
     # Sync to Google Sheets & BigQuery Sandbox
-    sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_str, next_day_picks=next_day_picks, sh=sh)
-    sync_to_bigquery(predictions, news_rows_for_bq, reconciliation, ist_now)
+    publish_outputs(
+        sh, bq_client, bq_client.dataset(BQ_DATASET_ID).table("option_predictions_live"), ist_str,
+        sheet_write=lambda: sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_str, next_day_picks=next_day_picks, sh=sh),
+        bq_write=lambda: sync_to_bigquery(predictions, news_rows_for_bq, reconciliation, ist_now),
+    )
+    save_state(pending_state)
 
     return predictions, reconciliation, next_day_picks
 
@@ -2329,8 +2340,7 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
             reverse=True,
         )
 
-        ws_fl.clear()
-        ws_fl.update(range_name="A1", values=normalize_sheet_rows([fl_headers, *valid_fl_rows], 18))
+        write_grid(ws_fl, normalize_sheet_rows([fl_headers, *valid_fl_rows], 18))
         print(f"[OK] FORENSIC_LIVE updated with {len(valid_fl_rows)} validated rows!")
 
         # 2. Update HEARTBEAT with engine metrics, without destroying telemetry
@@ -2345,13 +2355,6 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
         # Update metrics starting at row 5
         ws_hb.update(range_name="A5", values=normalize_sheet_rows(hb_rows, 6), value_input_option="USER_ENTERED")
         
-        # Also dynamically update Last BigQuery Sync
-        headers = ws_hb.row_values(1)
-        if "Last BigQuery Sync (IST)" in headers:
-            col_idx = headers.index("Last BigQuery Sync (IST)")
-            col_letter = chr(65 + col_idx)
-            ws_hb.update(range_name=f"{col_letter}2", values=[[ist_str]])
-
         print("[OK] HEARTBEAT updated with exact 6-column schema and calibration metrics!")
 
         # 3. Update OPTION_PREDICTIONS tab (exact 41 columns fixed width)
@@ -2367,7 +2370,7 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
 
         pred_rows = [
             ["⚡ DYNAMIC OPTION CE/PE PREDICTION, PRE-MARKET GAP & INTENSITY ENGINE", "", "", "", "", "", "", "", "", "", "", ""],
-            [f"Last Synced: {ist_str} IST", "Broker: CONNECTED (Angel One SmartAPI)", f"F&O Symbols: {len(predictions)}", f"Hit Rate: {reconciliation['hit_rate_pct']}%", f"Recall@10: {reconciliation['recall_at_10']}", f"Mean Rank: {reconciliation['mean_rank']}", "BigQuery: ASIA-SOUTH1 SYNCED", "", "", "", "", ""],
+            [f"Last Synced: {ist_str} IST", "Broker: CONNECTED (Angel One SmartAPI)", f"F&O Symbols: {len(predictions)}", f"Hit Rate: {reconciliation['hit_rate_pct']}%", f"Recall@10: {reconciliation['recall_at_10']}", f"Mean Rank: {reconciliation['mean_rank']}", "Publication: PENDING_READBACK", "", "", "", "", ""],
             ["", "", "", "", "", "", "", "", "", "", "", ""],
             ["🌅 PRE-MARKET 9:15 AM GAP EXPLOSION PICKS (ADVANCE PREDICTION BEFORE OPEN)", "", "", "", "", "", "", "", "", "", "", ""],
             ["Rank", "Symbol", "Gap Direction", "Expected Opening Gap %", "Pre-Open Conviction %", "Target 9:15 Strike", "Verified Sources", "Top Catalyst / News Filing", "", "", "", ""]
@@ -2448,8 +2451,7 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
                 p["news_sentiment"], p["top_headline"], ist_str
             ])
 
-        ws_pred.clear()
-        ws_pred.update(range_name="A1", values=normalize_sheet_rows(pred_rows, 41))
+        write_grid(ws_pred, normalize_sheet_rows(pred_rows, 41))
         print(f"[OK] OPTION_PREDICTIONS updated with {len(pred_rows)} rows!")
 
         # 4. Sync to NEWS_LIVE tab (all 219 symbols, strict 12 columns)
@@ -2477,8 +2479,7 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
                     p.get("top_headline", ""), f"{p.get('news_category', '')} [Lvl {p.get('news_severity_level', 1)}]",
                     f"Confirmation: {p.get('market_confirmation', 'NEUTRAL_FLOW')} | Expected: {p.get('expected_move_band', '0.0%')}"
                 ])
-            ws_nl.clear()
-            ws_nl.update(range_name="A1", values=normalize_sheet_rows(nl_rows, 12), value_input_option="USER_ENTERED")
+            write_grid(ws_nl, normalize_sheet_rows(nl_rows, 12))
             print(f"[OK] NEWS_LIVE updated with {len(nl_rows)} validated rows!")
         except Exception as e:
             raise RuntimeError(f"NEWS_LIVE sync failed: {e}") from e
@@ -2489,6 +2490,25 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
             record_count=len(predictions),
             source_timestamp=ist_str,
         )
+
+        # This legacy view has no publisher in the current authoritative cycle.
+        # Preserve its historical data but remove the stale LIVE/216 claim.
+        try:
+            legacy = sh.worksheet("PRE_BREAKOUT_SCANNER")
+        except gspread.WorksheetNotFound:
+            legacy = None
+        if legacy is not None:
+            legacy.update(range_name="A1", values=[[
+                "LEGACY SNAPSHOT — not refreshed by this publisher. "
+                "Canonical 219-symbol output: FORENSIC_LIVE / OPTION_PREDICTIONS. "
+                "Verify PUBLICATION_STATUS before use."
+            ]], value_input_option="RAW")
+
+        return {
+            "FORENSIC_LIVE": normalize_sheet_rows([fl_headers, *valid_fl_rows], 18),
+            "OPTION_PREDICTIONS": normalize_sheet_rows(pred_rows, 41),
+            "NEWS_LIVE": normalize_sheet_rows(nl_rows, 12),
+        }
 
         # Paper trades are specifically and deduplicatedly journaled via journal_pre_close_paper_trades during 15:00 - 15:40 IST pre-close window
 
@@ -2505,8 +2525,9 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
     try:
         bq_client = get_bigquery_client()
         dataset_ref = bq_client.dataset(BQ_DATASET_ID)
-        ts_iso = ist_dt.isoformat()
-        provenance = build_provenance(ist_dt.strftime("%Y-%m-%d %H:%M:%S"))
+        local_dt = local_market_time(ist_dt)
+        ts_iso = local_dt.isoformat()
+        provenance = build_provenance(ts_iso)
 
         job_config = bigquery.LoadJobConfig(
             write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
@@ -2568,7 +2589,8 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
                 "already_priced_in_prob": float(p.get("already_priced_in_prob", 0.50)),
                 "market_confirmation": str(p.get("market_confirmation", "NEUTRAL_FLOW")),
                 "expected_move_band": str(p.get("expected_move_band", "0.0%")),
-                "data_freshness_status": "MARKET_CLOSED" if not is_market_open(ist_dt) else ("LIVE_FRESH" if float(p.get("spot_ltp", 0)) > 0 else "STALE_DEGRADED")
+                # Positive LTP does not establish an exchange tick timestamp.
+                "data_freshness_status": "MARKET_CLOSED" if not is_market_open(ist_dt) else "SOURCE_TIME_UNVERIFIED"
             })
 
         job_config_trunc = bigquery.LoadJobConfig(

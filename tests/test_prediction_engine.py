@@ -655,6 +655,8 @@ def test_reconcile_preserves_exact_contract_identity_when_atm_drifts(monkeypatch
     )
     monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")
     monkeypatch.setenv("WRITER_ID", "market_bot")
+    monkeypatch.setenv("RUN_ID", "123456789")
+    monkeypatch.setenv("GIT_SHA", "abcdef1234567890")
     class MockWorksheet:
         def __init__(self):
             self.rows = [

@@ -284,10 +284,25 @@ def audit_engine_state():
 
     return (state_ok and cal_ok)
 
+
+def audit_publication():
+    """A green table/cell audit alone does not establish a completed cycle."""
+    from publication import verify_current_publication
+    try:
+        client = get_bigquery_client()
+        book = get_gspread_client().open_by_key(SHEET_ID)
+        identity = verify_current_publication(book, client,
+            client.dataset(BQ_DATASET).table("option_predictions_live"))
+        return True, identity
+    except Exception as exc:
+        # Do not put credential-bearing provider exception text in evidence.
+        return False, {"status": "UNVERIFIED", "error_type": type(exc).__name__}
+
 def main():
     sheet_ok, sheet_res = audit_sheets()
     bq_ok, bq_res = audit_bigquery()
     eng_ok = audit_engine_state()
+    publication_ok, publication_evidence = audit_publication()
 
     print(f"\n=======================================================")
     print(f"FINAL SYSTEM VERIFICATION GATE SUMMARY")
@@ -296,7 +311,8 @@ def main():
     print(f"2. BigQuery Sandbox Dataset Audit: {'🟢 100% PASSED' if bq_ok else '🔴 FAILED'}")
     print(f"3. Pre-Market & Calibration Engine: {'🟢 100% PASSED' if eng_ok else '🔴 FAILED'}")
 
-    if sheet_ok and bq_ok and eng_ok:
+    print(f"4. Completed publication/readback: {publication_ok}; {publication_evidence}")
+    if sheet_ok and bq_ok and eng_ok and publication_ok:
         print(f"\n✨ ALL PRODUCTION GATES VERIFIED 100% PASS! EXITING CODE 0.")
         sys.exit(0)
     else:
