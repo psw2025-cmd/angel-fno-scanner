@@ -54,7 +54,7 @@ jobs:
       - name: Test quote & prediction engine math
         run: python -m pytest -v
 
-      - name: Run Option Prediction & Forensic Scanner
+      - name: Run Single Authoritative Scanner and Prediction Cycle
         env:
           ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
           ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
