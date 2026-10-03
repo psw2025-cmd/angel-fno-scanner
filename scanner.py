@@ -27,6 +27,7 @@ from gainers import (
 )
 from paper_log import alerts_to_append, fill_later_changes, render_production_sheet
 from writer_guard import append_sheet_provenance, require_authorized_writer
+from sheet_grid import write_grid
 
 load_env()
 SHEET_ID = os.getenv("SHEET_ID", "").strip()
@@ -61,26 +62,6 @@ def worksheet(book, title, rows=400, cols=26):
         return book.worksheet(title)
     except gspread.WorksheetNotFound:
         return book.add_worksheet(title=title, rows=rows, cols=cols)
-
-
-def write_grid(ws, rows):
-    if not rows:
-        ws.clear()
-        return
-    try:
-        # Google Sheets requires a rectangular value matrix. Pad section headers
-        # and variable-width rows before writing so mixed-schema output cannot
-        # produce partial/misaligned updates.
-        width = max(len(row) for row in rows)
-        normalized = [list(row) + [""] * (width - len(row)) for row in rows]
-        # Update first to avoid destructive partial writes
-        ws.update(range_name="A1", values=normalized, value_input_option="RAW")
-        # Clear any remaining rows from previous larger datasets
-        num_rows = len(rows)
-        ws.batch_clear([f"A{num_rows + 1}:ZZ"])
-    except Exception as e:
-        print(f"[WARN] write_grid failed: {e}")
-        raise
 
 
 def heartbeat_age_seconds(book, now):
@@ -451,7 +432,7 @@ def run_angel_loop(book, api):
                 f"Quote chunk failures {future_failures + option_failures} | Loop #{loop}"
             )
         except Exception as exc:
-            print(f"[WARN] Sheet update failed: {exc}")
+            raise RuntimeError("Scanner publication failed; cycle is unverified") from exc
         loop += 1
         if not market_is_open(now) or MAX_RUNTIME_SECONDS <= 120:
             print("[INFO] Single real quote pass complete.")

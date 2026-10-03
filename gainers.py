@@ -11,6 +11,7 @@ import math
 from dataclasses import dataclass
 from datetime import date, datetime, time
 from typing import Iterable, Mapping, Sequence
+from market_calendar import is_trading_day, local_market_time
 
 DISCOUNT_RATE = 0.065
 YEAR_SECONDS = 365.25 * 24 * 60 * 60
@@ -175,8 +176,8 @@ def parse_expiry(value) -> date | None:
 
 
 def market_is_open(now: datetime) -> bool:
-    local = now.replace(tzinfo=None)
-    if local.weekday() >= 5:
+    local = local_market_time(now)
+    if not is_trading_day(local):
         return False
     minutes = local.hour * 60 + local.minute
     return (9 * 60 + 15) <= minutes <= (15 * 60 + 40)
@@ -505,6 +506,9 @@ def render_gainer_sheet(quotes: Iterable[OptionQuote], now: datetime, source: st
         "Blank cells were missing from the feed. "
         "IV, delta, and theta are Black-76 at a 6.5% discount rate, inverted from the premium. "
         "No price target is calculated."
+        f" Ranked contract view: at most {GAINER_ROW_LIMIT} CE/PE contracts with positive LTP, "
+        "valid previous-close change and an exact contract identity; not a full-underlying universe. "
+        f"Represented underlyings: {len({q.underlying for q in selected})}."
     )
     return [[title], [note], [], HEADERS, *rendered]
 
