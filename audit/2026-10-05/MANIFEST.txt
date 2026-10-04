@@ -1,0 +1,24 @@
+﻿Archive: audit/2026-10-05/
+Purpose: merge closure + forensic artifacts for PRs #12, #17, #20, #22
+Generated: 2026-10-05 01:22:42
+Repo HEAD at archive time: 9631a050a02f6193bdf88c5719ddea0901b42c03
+
+Contents:
+  angel-fno-merge-closure.txt
+  angel-fno-merge-verification.txt
+  angel-fno-pr12-investigation.txt
+  angel-fno-pr12-investigation2.txt
+  angel-fno-pr12-merge.txt
+  angel-fno-pr12-recovery.txt
+  angel-fno-pr17-investigation.txt
+  angel-fno-pr17-merge.txt
+  angel-fno-pr17-recovery.txt
+  angel-fno-pr22-closure.txt
+  angel-fno-pr22-investigation.txt
+  angel-fno-pr-dashboard.txt
+  angel-fno-pytest-after-merge.txt
+  angel-fno-verify.zip
+
+Excluded (intentional):
+  angel-fno-housekeeping-probe.txt  (precondition check only)
+  angel-fno-housekeeping-run.txt    (this run's log)

@@ -1,0 +1,31 @@
+
+===== 0. GUARDS =====
+OK: HEAD=869a8aeb26ba5c200b01fd0913202593dfa9b43a, tree clean
+
+===== 1. FETCH PR #12 =====
+OK: origin/pr/12 = bce1b7b7326c091126d5c026cd14a5418a7e4dc3
+
+===== 2. SCOPE CHECK =====
+present in pr/12: docs/INFRA_READINESS.md  (fd34669069c180cb7dd0135a2bec78c78f5b9d1e)
+present in pr/12: scripts/infra_readiness.py  (d945fda61c15475878aa341cd987fd96576962b9)
+present in pr/12: scripts/prepare_infra_readiness.ps1  (c2e3a4282f059ea6888463baf1b07b9579ee5e66)
+present in pr/12: tests/test_infra_readiness.py  (150d724c77fc8ef11d36aecaa64cb5f9a543d420)
+OK: all 4 expected files present in PR #12
+
+===== 3. REBASE IN TEMP WORKTREE =====
+Preparing worktree (detached HEAD bce1b7b)
+HEAD is now at bce1b7b feat: prepare provenance infrastructure and evidence without market execution
+Rebasing (1/1)
+Successfully rebased and updated refs/heads/pr12-rebase-tmp.
+OK: rebase clean, new tip = 9631a050a02f6193bdf88c5719ddea0901b42c03
+OK: all 4 files present in rebased tree
+OK: rebased tree compiles
+
+===== 6. RUN test_infra_readiness.py IN REBASED TREE =====
+.........                                                                [100%]
+9 passed in 3.73s
+OK: test_infra_readiness.py passed
+
+===== 7. PUSH REBASED BRANCH =====
+error: src refspec feat/infra-readiness-evidence-rebased does not match any
+error: failed to push some refs to 'https://github.com/psw2025-cmd/angel-fno-scanner.git'

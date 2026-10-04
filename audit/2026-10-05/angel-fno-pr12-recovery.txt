@@ -1,0 +1,68 @@
+
+===== 0. STATE GUARD =====
+OK: HEAD=869a8ae, tree clean
+
+===== 1. VERIFY REBASED COMMIT =====
+OK: rebased commit exists: 9631a050a02f6193bdf88c5719ddea0901b42c03
+OK: rebased commit has docs/INFRA_READINESS.md
+OK: rebased commit has scripts/infra_readiness.py
+OK: rebased commit has scripts/prepare_infra_readiness.ps1
+OK: rebased commit has tests/test_infra_readiness.py
+
+===== 2. VERIFY FAST-FORWARD POSSIBILITY =====
+OK: 9631a050a02f6193bdf88c5719ddea0901b42c03 descends from 869a8aeb26ba5c200b01fd0913202593dfa9b43a — fast-forward possible
+
+===== 3. PUSH REBASED COMMIT AS BRANCH =====
+remote: 
+remote: Create a pull request for 'feat/infra-readiness-evidence-rebased' on GitHub by visiting:        
+remote:      https://github.com/psw2025-cmd/angel-fno-scanner/pull/new/feat/infra-readiness-evidence-rebased        
+remote: 
+To https://github.com/psw2025-cmd/angel-fno-scanner.git
+ * [new branch]      9631a050a02f6193bdf88c5719ddea0901b42c03 -> feat/infra-readiness-evidence-rebased
+OK: pushed feat/infra-readiness-evidence-rebased
+
+===== 4. FAST-FORWARD main =====
+Updating 869a8ae..9631a05
+Fast-forward
+ docs/INFRA_READINESS.md             |  51 ++++++
+ scripts/infra_readiness.py          | 309 ++++++++++++++++++++++++++++++++++++
+ scripts/prepare_infra_readiness.ps1 |  39 +++++
+ tests/test_infra_readiness.py       | 140 ++++++++++++++++
+ 4 files changed, 539 insertions(+)
+ create mode 100644 docs/INFRA_READINESS.md
+ create mode 100644 scripts/infra_readiness.py
+ create mode 100644 scripts/prepare_infra_readiness.ps1
+ create mode 100644 tests/test_infra_readiness.py
+OK: main -> 9631a050a02f6193bdf88c5719ddea0901b42c03
+
+===== 5. PUSH main =====
+To https://github.com/psw2025-cmd/angel-fno-scanner.git
+   869a8ae..9631a05  main -> main
+
+===== 6. VERIFY origin/main =====
+OK: origin/main has docs/INFRA_READINESS.md
+OK: origin/main has scripts/infra_readiness.py
+OK: origin/main has scripts/prepare_infra_readiness.ps1
+OK: origin/main has tests/test_infra_readiness.py
+main vs origin/main: ahead=0 behind=0
+
+===== 7. FULL TEST SUITE ON NEW main =====
+........................................................................ [ 46%]
+........................................................................ [ 93%]
+..........                                                               [100%]
+154 passed in 6.29s
+OK: full test suite green
+
+===== 8. CLEANUP =====
+OK: cleanup done
+
+===== 9. CLOSE PR #12 =====
+https://github.com/psw2025-cmd/angel-fno-scanner/pull/12#issuecomment-5983704022
+Ô£ô Closed pull request psw2025-cmd/angel-fno-scanner#12 (Prepare provenance infrastructure and generate readiness evidence)
+PR #12 close attempted
+
+===== 10. COMPLETE =====
+HEAD    : 9631a050a02f6193bdf88c5719ddea0901b42c03
+Branch  : main
+Status  : ## main...origin/main
+Artifact: C:\Temp\angel-fno-pr12-recovery.txt
