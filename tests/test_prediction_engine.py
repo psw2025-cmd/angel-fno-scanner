@@ -640,3 +640,92 @@ def test_pre_market_gap_is_deterministic_from_current_inputs():
     second = compute_pre_market_gap(**kwargs)
     assert first == second
     assert -6.0 <= first["expected_gap_pct"] <= 6.0
+
+
+def test_reconcile_preserves_exact_contract_identity_when_atm_drifts(monkeypatch, tmp_path):
+    """
+    Regression test for G19 Exact Strike / Contract Identity:
+    Proves that when current ATM strike drifts between forecast time and evaluation time,
+    the evaluation logic preserves the exact frozen FORECAST_CONTRACT and queries its quote,
+    and NEVER substitutes the drifted CURRENT_ATM_CONTRACT.
+    """
+    monkeypatch.setattr(
+        "angel_prediction_engine.GAP_RECON_HISTORY_PATH",
+        str(tmp_path / "test_gap_recon.json"),
+    )
+    monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")
+    monkeypatch.setenv("WRITER_ID", "market_bot")
+    monkeypatch.setenv("RUN_ID", "123456789")
+    monkeypatch.setenv("GIT_SHA", "abcdef1234567890")
+    class MockWorksheet:
+        def __init__(self):
+            self.rows = [
+                ["Timestamp", "SessionDate", "Symbol", "Side", "SpotLtp", "ChgPct", "CEContract", "PEContract", "Note", "LaterChg", "FilledAt"],
+                ["2026-10-01 15:20:00", "2026-10-01", "PRESTIGE", "CE", "1482.2", "2.5", "PRESTIGE27OCT261480CE", "", "[OVERNIGHT GAP-UP CE] Action: ALERT | Entry: ₹50.70 | SL: ₹43.09 | Target: ₹76.05", "", ""]
+            ]
+            self.updates = {}
+
+        def get_all_values(self):
+            return self.rows
+
+        def update_cell(self, row, col, val):
+            self.updates[(row, col)] = val
+
+    class MockSpreadsheet:
+        def __init__(self, ws):
+            self.ws = ws
+        def worksheet(self, name):
+            if name == "PAPER_ALERT_LOG":
+                return self.ws
+            raise ValueError(f"Unknown sheet: {name}")
+
+    class MockSmartApi:
+        def __init__(self):
+            self.queries = []
+        def getLtpData(self, seg, tradingsymbol, token=""):
+            self.queries.append((seg, tradingsymbol))
+            if tradingsymbol == "PRESTIGE27OCT261480CE":
+                return {"status": True, "data": {"ltp": 85.0}}
+            return {"status": True, "data": {"ltp": 35.0}}
+
+    # Drifted state: spot moved up, causing ATM strike in pred_symbol_map to become 1520 CE at price 35.0
+    drifting_predictions = [
+        {
+            "symbol": "PRESTIGE",
+            "spot_ltp": 1525.0,
+            "atm_strike": 1520.0,
+            "ce_symbol": "PRESTIGE27OCT261520CE",  # DRIFTED ATM!
+            "ce_ltp": 35.0,                       # Drifted ATM contract price
+            "pe_symbol": "PRESTIGE27OCT261520PE",
+            "pe_ltp": 10.0,
+        }
+    ]
+
+    mock_ws = MockWorksheet()
+    mock_sh = MockSpreadsheet(mock_ws)
+    mock_api = MockSmartApi()
+
+    import datetime
+    from angel_prediction_engine import reconcile_next_day_gap_trades
+
+    ist_now = datetime.datetime(2026, 10, 2, 9, 20, 0)
+    ist_str = "2026-10-02 09:20:00"
+
+    reconcile_next_day_gap_trades(
+        smartApi=mock_api,
+        sh=mock_sh,
+        bq_client=None,
+        predictions=drifting_predictions,
+        ist_str=ist_str,
+        ist_now=ist_now
+    )
+
+    # 1. Assert smartApi was queried for the EXACT frozen contract
+    assert ("NFO", "PRESTIGE27OCT261480CE") in mock_api.queries
+    # 2. Assert PAPER_ALERT_LOG received the outcome based on 85.0 vs 50.7 (+67.65% WIN)
+    result_text = mock_ws.updates.get((2, 10))
+    assert result_text is not None
+    assert "+67.65%" in result_text
+    assert "WIN" in result_text
+
+

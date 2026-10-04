@@ -27,3 +27,45 @@ def test_target_b_output_is_timestamped(monkeypatch,tmp_path):
     monkeypatch.setattr(fv,'DATA',data_dir); monkeypatch.setattr(fv,'REPORTS',report_dir)
     fv.snapshot_target_b(); fv.snapshot_target_b()
     assert len(list(report_dir.glob('TargetB_SNAPSHOT_*.json')))==2
+
+
+def test_target_b_reconcile_and_ndcg(monkeypatch, tmp_path):
+    assert fv.compute_ndcg(["A", "B", "C"], {"A": 30, "B": 20, "C": 10}, k=3) == 1.0
+    reversed_ndcg = fv.compute_ndcg(["C", "B", "A"], {"A": 30, "B": 20, "C": 10}, k=3)
+    assert 0.0 < reversed_ndcg < 1.0
+
+    data_dir = tmp_path / "data"
+    report_dir = tmp_path / "reports"
+    data_dir.mkdir()
+    report_dir.mkdir()
+    monkeypatch.setattr(fv, "DATA", data_dir)
+    monkeypatch.setattr(fv, "REPORTS", report_dir)
+
+    data = [
+        {"symbol": "WIN_STOCK", "ce_symbol": "WIN_STOCK_CE", "ce_ltp": 10, "ce_chg_pct": 50, "ce_oi": 100, "ce_bid_ask_spread": 0.2, "pe_ltp": 5, "pe_chg_pct": 5, "pe_oi": 50, "pe_bid_ask_spread": 0.2},
+        {"symbol": "SEC_STOCK", "ce_symbol": "SEC_STOCK_CE", "ce_ltp": 20, "ce_chg_pct": 30, "ce_oi": 100, "ce_bid_ask_spread": 0.2, "pe_ltp": 10, "pe_chg_pct": 10, "pe_oi": 50, "pe_bid_ask_spread": 0.2},
+    ]
+    (data_dir / "latest_predictions.json").write_text(json.dumps(data), encoding="utf-8")
+    fv.snapshot_target_b()
+
+    actual_file = tmp_path / "actual.json"
+    actual_file.write_text(json.dumps([
+        {"symbol": "WIN_STOCK_CE", "gain_pct": 60.0},
+        {"symbol": "SEC_STOCK_CE", "gain_pct": 35.0},
+    ]), encoding="utf-8")
+
+    res = fv.reconcile_target_b(str(actual_file))
+    assert res["CE"]["top1_symbol"] in ("WIN_STOCK_CE", "WIN_STOCK")
+    assert res["CE"]["top1_actual_gain"] == 60.0
+    assert res["CE"]["top1_capture_ratio"] == 1.0
+    assert res["CE"]["ndcg_at_5"] == 1.0
+
+
+def test_brier_score_calibration():
+    assert fv.compute_brier_score([1.0, 0.0], [1, 0]) == 0.0
+    assert fv.compute_brier_score([1.0, 0.0], [0, 1]) == 1.0
+    assert fv.compute_brier_score([0.5], [1]) == 0.25
+    assert fv.compute_brier_score([], []) is None
+    assert fv.compute_brier_score([0.8], []) is None
+
+

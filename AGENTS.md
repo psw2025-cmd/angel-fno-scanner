@@ -1034,3 +1034,5 @@ If any critical category is unknown or contradictory, status is not fully produc
 > **Do not optimize for historical accuracy claims. Optimize for reproducible forward evidence and safe continuous improvement.**
 
 This file is the permanent starting point. Read it first. Use Issue #3 for living state. Preserve evidence. Resolve disagreements through independent verification. Leave the project more truthful, safer, and more measurable than you found it.
+
+Agents: read FRONT.md first. Autonomous for paper-only work, no approval needed for paper tasks. Paper-only lock is permanent: no live orders, no force-push to main, no secrets in files.
