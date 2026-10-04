@@ -152,3 +152,5 @@ python3 agent_cli.py --export-snapshots
    - `market_news_sentiment` (790 rows, 21 cols)
    - `prediction_calibration_log` (15 rows, 11 cols)
 5. **17-Tab Google Sheet Integration**: Synchronizes real-time predictions, Greeks, news impact, and ranking dashboards with strict cell-level schema validators.
+
+Agents: read FRONT.md first. Autonomous for paper-only work, no approval needed for paper tasks. Paper-only lock is permanent: no live orders, no force-push to main, no secrets in files.
