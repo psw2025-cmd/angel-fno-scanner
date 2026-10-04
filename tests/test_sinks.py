@@ -1,4 +1,5 @@
 import importlib
+from types import SimpleNamespace
 
 from angel_prediction_engine import deduplicate_news_rows, normalize_sheet_rows
 
@@ -32,12 +33,17 @@ def test_scanner_import_does_not_require_sheet_credentials_at_module_import(monk
 
 
 def test_bigquery_news_append_uses_existing_table_schema():
+    """News append must reuse the live table schema so numeric-looking run_id stays STRING."""
     source = importlib.import_module("angel_prediction_engine")
+    SchemaField = source.bigquery.SchemaField
+    schema = [
+        SchemaField("run_id", "STRING"),
+        SchemaField("symbol", "STRING"),
+    ]
+    table = SimpleNamespace(schema=schema)
 
-    class Table:
-        schema = ["run_id:STRING", "symbol:STRING"]
-
-    config = source.build_news_append_job_config(Table())
+    config = source.build_news_append_job_config(table)
     assert config.autodetect is False
-    assert config.schema == Table.schema
     assert config.write_disposition == source.bigquery.WriteDisposition.WRITE_APPEND
+    assert [field.name for field in config.schema] == ["run_id", "symbol"]
+    assert [field.field_type for field in config.schema] == ["STRING", "STRING"]
