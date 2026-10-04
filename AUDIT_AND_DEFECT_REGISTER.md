@@ -126,3 +126,27 @@ The existing local `fix/g19-exact-contract-identity` branch at `791b71904cbf0af4
 - Tracked Python live-order API scan: PASS; no `placeOrder`, `modifyOrder`, or `cancelOrder` matches.
 - PAPER/Analyzer-only safety retained; no order placement or LIVE enablement performed.
 - Remote CI and final pushed SHA are recorded on GitHub Issue #3 after deployment verification.
+
+---
+
+## Batch 8 â€” Merge closure and defect registry reconciliation â€” 2026-10-05
+
+Baseline: remote `main` `6bd63254c778204b4a9ab9b91f71b4c7bec5ce5f`.
+
+This batch records the closure of three defects that were fixed across PRs #11, #18, #20 and are now locked by regression tests on `main`. No new code is added; only the defect registry is updated.
+
+| ID | Defect | Repair | Verification | Status |
+|---|---|---|---|---|
+| B8-01 | BigQuery news append could infer numeric-looking provenance strings (for example GitHub RUN_ID) as INTEGER because `autodetect` was allowed and the write did not lock to the live table schema | News append now uses `build_news_append_job_config(table)`: `WRITE_APPEND` + explicit schema (`autodetect=False`) against the existing `market_news_sentiment` contract. Calibration log keeps explicit schema + `ALLOW_FIELD_ADDITION`. | `tests/test_sinks.py::test_bigquery_news_append_uses_existing_table_schema` asserts `config.autodetect is False`, `write_disposition == WRITE_APPEND`, and the schema is reused. Full suite green (154 tests). Merged via PR #20 (fast-forward into `main`). | **CLOSED** |
+| B8-02 | HEARTBEAT tab wrote a row count (for example `219`) into the `Last BigQuery Sync (IST)` cell, conflating a count with a timestamp and producing a label that could be read as the self-calibration hit rate | `scanner.py` now validates that the cell is either blank or a parseable `%Y-%m-%d %H:%M:%S` timestamp; any non-timestamp value (including row counts) is cleared before the row is written. The heartbeat writes Self-Calibration Hit Rate as a distinct metric. | `tests/test_heartbeat_bq_sync_column.py::test_rejects_row_count_in_bq_sync_column` asserts `"219"` and `219` sanitize to `""` and a real timestamp survives. Merged via PR #18. | **CLOSED** |
+| B8-03 | Contract-identity drift: reconciliation could substitute the current ATM contract's LTP for a frozen overnight paper trade when the ATM had moved between prediction and reconciliation, silently conflating two different contracts | `reconcile_next_day_gap_trades` now compares the current ATM symbol to the exact frozen contract before using the in-memory LTP. If they differ, it falls back to querying the frozen contract directly via `getLtpData` and records both `forecast_contract` and `current_atm_contract` in the reconciliation row. | `tests/test_prediction_engine.py::test_reconcile_preserves_exact_contract_identity_when_atm_drifts` exercises the drift path. Merged via PR #11 (G19). | **CLOSED** |
+
+### Batch 8 verification summary
+
+- Baseline: `main` at `6bd63254c778204b4a9ab9b91f71b4c7bec5ce5f` before this batch, `main` at the batch commit after.
+- Full local regression suite on `main` at archive commit: **154 passed**.
+- Python compilation of all tracked `.py`: PASS.
+- Working tree after batch: clean.
+- Open pull requests: 0.
+- No live-order enablement, no production writes, no broker calls performed by this batch.
+
