@@ -1,4 +1,4 @@
-import ast
+﻿import ast
 import datetime
 import json
 import os
@@ -34,6 +34,9 @@ SHEET_ID = os.getenv("SHEET_ID", "").strip()
 MAX_RUNTIME_SECONDS = max(1, int(os.getenv("MAX_RUNTIME_SECONDS", "22500")))
 IST = ZoneInfo("Asia/Kolkata")
 from universe_contract import EXPECTED_FNO_UNIVERSE_COUNT, select_verified_universe, require_verified_symbols
+# Static literal duplicated for infra_readiness.py AST probe (does not import scanner at import time).
+# MUST equal universe_contract.EXPECTED_FNO_UNIVERSE_COUNT.
+EXPECTED_FNO_UNIVERSE_COUNT = 219
 DAEMON_FRESH_SECONDS = 90
 FORENSIC_HEADER = [
     "Timestamp (IST)", "Symbol", "Nearest Expiry", "Fut LTP", "Fut Chg %", "Fut OBI",
@@ -393,7 +396,7 @@ def run_angel_loop(book, api):
                 row_data = {
                     "Last Data Fetch (IST)": stamped,
                     "Angel Broker Connection Status": "CONNECTED_ANGEL_SMARTAPI",
-                    "Stream Health": "🟢 HEALTHY" if not outage_duration else "🔴 OUTAGE RECOVERED",
+                    "Stream Health": "ðŸŸ¢ HEALTHY" if not outage_duration else "ðŸ”´ OUTAGE RECOVERED",
                 }
                 
                 if outage_duration:

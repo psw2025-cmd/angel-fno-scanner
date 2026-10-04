@@ -1,4 +1,4 @@
-"""Metadata-only preparation. Never imports scanner, engine, or writer helpers."""
+﻿"""Metadata-only preparation. Never imports scanner, engine, or writer helpers."""
 import argparse
 import ast
 import csv
@@ -98,7 +98,7 @@ def local_checks(audit, offline):
     for node in tree.body:
         if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and
                 t.id == 'EXPECTED_FNO_UNIVERSE_COUNT' for t in node.targets):
-            default = ast.literal_eval(node.value.args[0].args[1])
+            default = ast.literal_eval(node.value)
     override = os.getenv('EXPECTED_FNO_UNIVERSE_COUNT', default)
     good = len(symbols) == len(set(symbols)) == manifest['universe']['total_symbols'] == 219
     good = good and str(default) == str(override) == '219'
@@ -262,7 +262,7 @@ def report(audit, mode):
 <title>Infrastructure readiness evidence</title><style>body{font:16px system-ui;background:#101827;color:#e5ecf4;margin:30px;max-width:1400px}h1{font-size:30px}.card{padding:20px;background:#1d293c;border-radius:12px;margin:16px 0}table{border-collapse:collapse;width:100%}td,th{padding:12px;text-align:left;border-bottom:1px solid #40516a;overflow-wrap:anywhere}.PASS{color:#6de7af}.FAIL{color:#ff9494}.UNKNOWN,.NOT_PROVEN{color:#ffd580}a{color:#9dccff}</style>
 <h1>Infrastructure readiness</h1><div class="card">Infrastructure: <strong>''' + result['infrastructure'] + '''</strong><br>Market runtime: <strong>NOT_PROVEN</strong><br>''' + html.escape(mode) + '''<br>''' + result['generated_at'] + '''</div>
 <p>Metadata and configuration evidence only. No broker calls or runtime rows. Static writer checks do not prove deployed IAM or a cross-runtime lease.</p>
-<p><a href="SYSTEM_STATUS.json">JSON</a> · <a href="SYSTEM_STATUS.md">Markdown</a> · <a href="checks.csv">Checks CSV</a> · <a href="bigquery_schema.csv">Schema CSV</a> · <a href="symbols.csv">Symbols CSV</a> · <a href="ci.csv">CI CSV</a> · <a href="raw/operation_log.json">Operation log</a></p>
+<p><a href="SYSTEM_STATUS.json">JSON</a> Â· <a href="SYSTEM_STATUS.md">Markdown</a> Â· <a href="checks.csv">Checks CSV</a> Â· <a href="bigquery_schema.csv">Schema CSV</a> Â· <a href="symbols.csv">Symbols CSV</a> Â· <a href="ci.csv">CI CSV</a> Â· <a href="raw/operation_log.json">Operation log</a></p>
 <table><thead><tr><th>Check</th><th>Status</th><th>Evidence / next action</th></tr></thead><tbody>''' + rows + '</tbody></table></html>'
     (audit.folder / 'SYSTEM_STATUS.html').write_text(page, encoding='utf-8')
     hashes = [{'file': str(p.relative_to(audit.folder)), 'sha256': hashlib.sha256(p.read_bytes()).hexdigest()}
