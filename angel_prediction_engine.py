@@ -1366,7 +1366,8 @@ def journal_pre_close_paper_trades(sh, bq_client, gap_picks, ist_str, ist_now):
         job_config = bigquery.LoadJobConfig(
             write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
             schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION],
-            autodetect=True,
+            schema=table.schema,
+            autodetect=False,
         )
         job = bq_client.load_table_from_json(bq_rows, table, job_config=job_config)
         job.result()
@@ -1515,7 +1516,8 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
                 job_config = bigquery.LoadJobConfig(
                     write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
                     schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION],
-                    autodetect=True,
+                    schema=table.schema,
+                    autodetect=False,
                 )
                 bq_client.load_table_from_json(bq_reconciled_rows, table, job_config=job_config).result()
                 print(f"[OK] Logged {len(bq_reconciled_rows)} reconciliation results to BigQuery!")
@@ -2538,12 +2540,6 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
         ts_iso = local_dt.isoformat()
         provenance = build_provenance(ts_iso)
 
-        job_config = bigquery.LoadJobConfig(
-            write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
-            schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION],
-            autodetect=True,
-        )
-
         # 1. Predictions Table (WRITE_TRUNCATE: maintains latest deduplicated live snapshot)
         table_pred = bq_client.get_table(dataset_ref.table("option_predictions_live"))
         rows_to_insert = []
@@ -2604,7 +2600,8 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
 
         job_config_trunc = bigquery.LoadJobConfig(
             write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
-            autodetect=True,
+            schema=getattr(table_pred, "schema", None),
+            autodetect=False,
         )
         load_job = bq_client.load_table_from_json(rows_to_insert, table_pred, job_config=job_config_trunc)
         load_job.result()
@@ -2648,7 +2645,7 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
             write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
             schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION],
             schema=cal_schema,
-            autodetect=cal_schema is None,
+            autodetect=False,
         )
         load_job_cal = bq_client.load_table_from_json(cal_row, table_cal, job_config=job_config_cal)
         load_job_cal.result()
