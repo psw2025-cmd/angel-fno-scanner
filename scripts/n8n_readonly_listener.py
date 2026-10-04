@@ -5,6 +5,7 @@ import subprocess
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from n8n_runtime_evidence import collect
 
 HOST = "127.0.0.1"
 PORT = 5680
@@ -33,7 +34,18 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/health":
-            return self._send(200, {"status": "ok", "service": "angel-fno-readonly-listener", "port": PORT})
+            try:
+                evidence = collect(REPORTS)
+            except Exception as exc:
+                evidence = {"status": "NOT_VERIFIED", "error_type": type(exc).__name__}
+            return self._send(200, {"status": "ok", "service": "angel-fno-readonly-listener", "port": PORT,
+                                    "runtime_evidence": evidence})
+
+        if self.path == "/runtime-evidence":
+            try:
+                return self._send(200, collect(REPORTS, archive=True))
+            except Exception as exc:
+                return self._send(503, {"status": "NOT_VERIFIED", "error_type": type(exc).__name__})
 
         if self.path == "/bigquery":
             try:

@@ -408,6 +408,19 @@ def run_angel_loop(book, api):
                     current_row = []
                     
                 current_row = (current_row + [""] * len(telemetry_header))[:len(telemetry_header)]
+
+                # Last BigQuery Sync (IST) must be a timestamp or blank - never a row count.
+                bq_sync_col = "Last BigQuery Sync (IST)"
+                if bq_sync_col in telemetry_header:
+                    bq_idx = telemetry_header.index(bq_sync_col)
+                    prev = str(current_row[bq_idx]).strip() if current_row[bq_idx] is not None else ""
+                    if prev:
+                        try:
+                            datetime.datetime.strptime(prev[:19], "%Y-%m-%d %H:%M:%S")
+                        except Exception:
+                            current_row[bq_idx] = ""
+                    else:
+                        current_row[bq_idx] = ""
                 
                 for i, col in enumerate(telemetry_header):
                     if col in row_data:
