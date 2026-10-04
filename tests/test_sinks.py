@@ -33,8 +33,11 @@ def test_scanner_import_does_not_require_sheet_credentials_at_module_import(monk
 
 def test_bigquery_news_append_uses_existing_table_schema():
     source = importlib.import_module("angel_prediction_engine")
-    import inspect
 
-    body = inspect.getsource(source.sync_to_bigquery)
-    assert "schema=table_news.schema" in body
-    assert "autodetect=False" in body
+    class Table:
+        schema = ["run_id:STRING", "symbol:STRING"]
+
+    config = source.build_news_append_job_config(Table())
+    assert config.autodetect is False
+    assert config.schema == Table.schema
+    assert config.write_disposition == source.bigquery.WriteDisposition.WRITE_APPEND
