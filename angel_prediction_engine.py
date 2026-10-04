@@ -2568,7 +2568,16 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
         ]
         if unique_news_rows:
             table_news = bq_client.get_table(dataset_ref.table("market_news_sentiment"))
-            load_job_news = bq_client.load_table_from_json(unique_news_rows, table_news, job_config=job_config)
+            # Append against the existing table contract instead of autodetecting
+            # numeric-looking provenance strings (for example GitHub RUN_ID) as INTEGER.
+            news_job_config = bigquery.LoadJobConfig(
+                write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
+                schema=table_news.schema,
+                autodetect=False,
+            )
+            load_job_news = bq_client.load_table_from_json(
+                unique_news_rows, table_news, job_config=news_job_config
+            )
             load_job_news.result()
             print(f"[OK] Appended {len(unique_news_rows)} fresh records to BigQuery market_news_sentiment!")
         else:
