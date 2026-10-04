@@ -1,0 +1,819 @@
+{
+  "timestamp_ist": "2026-10-05T05:22:41.797955+05:30",
+  "git": {
+    "sha": "a69d18245ff4e95b8392b0f06eb8341cb86d3eee",
+    "branch": "main",
+    "is_clean": false,
+    "uncommitted_changes": [
+      "?? docs/AGENT_CONTRACT.md",
+      "?? docs/AGENT_HANDOFF.md",
+      "?? docs/AGENT_LOCK.md",
+      "?? docs/ARCHITECTURE.md",
+      "?? docs/CHANGELOG.md",
+      "?? docs/DATA_CONTRACTS.md",
+      "?? docs/DEFECT_REGISTER.md",
+      "?? docs/RUNBOOK.md",
+      "?? docs/decisions/",
+      "?? tools/check1_runid_types.py",
+      "?? tools/snapshot_state.py"
+    ]
+  },
+  "bigquery": {
+    "option_predictions_live": {
+      "rows": 219,
+      "partition_field": "snapshot_timestamp",
+      "clustering_fields": [
+        "symbol",
+        "directional_bias"
+      ],
+      "run_id_type": "STRING",
+      "schema": [
+        {
+          "name": "market_confirmation",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "negative_prob",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "news_source_tier",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "gap_direction",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "expected_gap_pct",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "news_sentiment_score",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "pe_vega",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "pe_theta",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "already_priced_in_prob",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "pe_gamma",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "expected_move_band",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "top_news_headline",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "pe_delta",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "target_open_strike",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "pe_oi",
+          "type": "INTEGER",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "news_impact_rating",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "pe_chg_pct",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "data_freshness_status",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "ce_delta",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "pe_ltp",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "action_rating",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "ce_bid_ask_spread",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "max_pain",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "ce_vega",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "rank",
+          "type": "INTEGER",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "pre_open_conviction_pct",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "cycle_id",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "intensity_score",
+          "type": "INTEGER",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "ce_iv",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "pe_oi_change_pct",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "ce_oi",
+          "type": "INTEGER",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "ce_win_prob",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "pe_win_prob",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "snapshot_timestamp",
+          "type": "TIMESTAMP",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "ce_chg_pct",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "atm_pcr",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "ce_ltp",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "positive_prob",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "ce_theta",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "pe_iv",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "source_timestamp",
+          "type": "TIMESTAMP",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "spot_ltp",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "news_severity_level",
+          "type": "INTEGER",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "symbol",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "confidence_pct",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "atm_strike",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "ce_oi_change_pct",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "directional_bias",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "pe_bid_ask_spread",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "expiry",
+          "type": "DATE",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "ce_gamma",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "writer_id",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "git_sha",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "run_id",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        }
+      ]
+    },
+    "market_news_sentiment": {
+      "rows": 7118,
+      "partition_field": "timestamp",
+      "clustering_fields": [
+        "symbol",
+        "news_type"
+      ],
+      "run_id_type": "STRING",
+      "schema": [
+        {
+          "name": "filing_type",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "title",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "source_count",
+          "type": "INTEGER",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "source_agreement_pct",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "impact_rating",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "symbol",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "tone_score",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "sentiment",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "source",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "news_type",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "timestamp",
+          "type": "TIMESTAMP",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "severity_level",
+          "type": "INTEGER",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "source_tier",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "positive_prob",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "negative_prob",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "already_priced_in_prob",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "market_confirmation",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "expected_move_band",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "source_url",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "canonical_url",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "verified_catalyst",
+          "type": "BOOLEAN",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "run_id",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "git_sha",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "writer_id",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "source_timestamp",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        }
+      ]
+    },
+    "next_day_gap_predictions": {
+      "rows": 148,
+      "partition_field": null,
+      "clustering_fields": null,
+      "run_id_type": "STRING",
+      "schema": [
+        {
+          "name": "prediction_date",
+          "type": "DATE",
+          "mode": "REQUIRED"
+        },
+        {
+          "name": "predicted_at_ist",
+          "type": "STRING",
+          "mode": "REQUIRED"
+        },
+        {
+          "name": "symbol",
+          "type": "STRING",
+          "mode": "REQUIRED"
+        },
+        {
+          "name": "target_date",
+          "type": "DATE",
+          "mode": "REQUIRED"
+        },
+        {
+          "name": "side",
+          "type": "STRING",
+          "mode": "REQUIRED"
+        },
+        {
+          "name": "spot_ltp",
+          "type": "FLOAT",
+          "mode": "REQUIRED"
+        },
+        {
+          "name": "target_strike",
+          "type": "STRING",
+          "mode": "REQUIRED"
+        },
+        {
+          "name": "contract_symbol",
+          "type": "STRING",
+          "mode": "REQUIRED"
+        },
+        {
+          "name": "entry_ltp",
+          "type": "FLOAT",
+          "mode": "REQUIRED"
+        },
+        {
+          "name": "expected_gap_pct",
+          "type": "FLOAT",
+          "mode": "REQUIRED"
+        },
+        {
+          "name": "conviction_pct",
+          "type": "FLOAT",
+          "mode": "REQUIRED"
+        },
+        {
+          "name": "stop_loss_ltp",
+          "type": "FLOAT",
+          "mode": "REQUIRED"
+        },
+        {
+          "name": "target_ltp",
+          "type": "FLOAT",
+          "mode": "REQUIRED"
+        },
+        {
+          "name": "rationale",
+          "type": "STRING",
+          "mode": "REQUIRED"
+        },
+        {
+          "name": "news_catalyst",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "dollar_gamma",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "actual_open_ltp",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "actual_return_pct",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "outcome",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "reconciled_at_ist",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "run_id",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "git_sha",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "writer_id",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "source_timestamp",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        }
+      ]
+    },
+    "prediction_calibration_log": {
+      "rows": 251,
+      "partition_field": "timestamp",
+      "clustering_fields": null,
+      "run_id_type": "STRING",
+      "schema": [
+        {
+          "name": "hits",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "miss_root_causes",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "predicted_top10",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "actual_top10",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "mean_rank_of_top10",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "timestamp",
+          "type": "TIMESTAMP",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "recall_at_10",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "cycle_number",
+          "type": "INTEGER",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "updated_weights_json",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "misses",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "top10_hit_rate_pct",
+          "type": "FLOAT",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "run_id",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "git_sha",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "writer_id",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        },
+        {
+          "name": "source_timestamp",
+          "type": "STRING",
+          "mode": "NULLABLE"
+        }
+      ]
+    }
+  },
+  "readiness_probe": {
+    "generated_at": "2026-10-04T23:52:14.814671+00:00",
+    "mode": "VERIFY_ONLY",
+    "infrastructure": "NOT_READY",
+    "runtime": "NOT_PROVEN",
+    "safety": "NO_MARKET_RUN_NO_BROKER_CALLS_NO_RUNTIME_ROWS",
+    "checks": [
+      {
+        "check": "git_head",
+        "status": "PASS",
+        "detail": "a69d18245ff4e95b8392b0f06eb8341cb86d3eee"
+      },
+      {
+        "check": "working_tree",
+        "status": "FAIL",
+        "detail": "Dirty"
+      },
+      {
+        "check": "current_main",
+        "status": "FAIL",
+        "detail": "local=a69d18245ff4e95b8392b0f06eb8341cb86d3eee; remote main=eaccdaf2e7874c77061fec007980b1c1d13c23c1"
+      },
+      {
+        "check": "219_symbol_config",
+        "status": "PASS",
+        "detail": "manifest=219, unique=219, scanner default=219, effective=219; configuration only"
+      },
+      {
+        "check": "single_writer_static",
+        "status": "PASS",
+        "detail": "Workflow/guard source inspection only; cross-runtime lease and IAM not proven"
+      },
+      {
+        "check": "runtime_provenance",
+        "status": "NOT_PROVEN",
+        "detail": "Requires next normal market_bot run: same run_id in sinks, fresh 219 symbols, no duplicates, one prediction cycle"
+      },
+      {
+        "check": "exact_sha_ci",
+        "status": "UNKNOWN",
+        "detail": "No exact-SHA PR Tests run found"
+      },
+      {
+        "check": "bq_option_predictions_live",
+        "status": "PASS",
+        "detail": "Missing=; verified metadata only; no historical backfill"
+      },
+      {
+        "check": "bq_market_news_sentiment",
+        "status": "PASS",
+        "detail": "Missing=; verified metadata only; no historical backfill"
+      },
+      {
+        "check": "bq_prediction_calibration_log",
+        "status": "PASS",
+        "detail": "Missing=; verified metadata only; no historical backfill"
+      },
+      {
+        "check": "bq_next_day_gap_predictions",
+        "status": "PASS",
+        "detail": "Missing=; verified metadata only; no historical backfill"
+      },
+      {
+        "check": "sheet_provenance",
+        "status": "PASS",
+        "detail": "Header verified; no runtime rows created"
+      }
+    ],
+    "schema": [
+      {
+        "table": "option_predictions_live",
+        "field": "source_timestamp",
+        "type": "TIMESTAMP",
+        "mode": "NULLABLE"
+      },
+      {
+        "table": "option_predictions_live",
+        "field": "writer_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "table": "option_predictions_live",
+        "field": "git_sha",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "table": "option_predictions_live",
+        "field": "run_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "table": "market_news_sentiment",
+        "field": "run_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "table": "market_news_sentiment",
+        "field": "git_sha",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "table": "market_news_sentiment",
+        "field": "writer_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "table": "market_news_sentiment",
+        "field": "source_timestamp",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "table": "prediction_calibration_log",
+        "field": "run_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "table": "prediction_calibration_log",
+        "field": "git_sha",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "table": "prediction_calibration_log",
+        "field": "writer_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "table": "prediction_calibration_log",
+        "field": "source_timestamp",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "table": "next_day_gap_predictions",
+        "field": "run_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "table": "next_day_gap_predictions",
+        "field": "git_sha",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "table": "next_day_gap_predictions",
+        "field": "writer_id",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "table": "next_day_gap_predictions",
+        "field": "source_timestamp",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      }
+    ],
+    "ci": []
+  }
+}

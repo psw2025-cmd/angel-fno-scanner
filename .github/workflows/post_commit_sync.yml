@@ -1,0 +1,28 @@
+name: Post-Commit Sync
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Post-Commit Audit Lineage
+        run: |
+          # Note: In production CI, appending live provenance to Google Sheets (WRITE_PROVENANCE)
+          # and BigQuery requires GCP service account credentials configured as GitHub Secrets:
+          # - GCP_SA_KEY: Service Account JSON with BigQuery Data Editor and Sheets API access.
+          # - SHEETS_ID: Target Google Spreadsheet ID.
+          #
+          # When secrets are unconfigured in GitHub Actions runner context, the sync step logs
+          # provenance metadata and safely skips destructive or unauthenticated cloud writes.
+          echo "Commit: ${{ github.sha }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Run ID: ${{ github.run_id }}"
