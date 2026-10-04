@@ -29,3 +29,12 @@ def test_scanner_import_does_not_require_sheet_credentials_at_module_import(monk
     scanner = importlib.import_module("scanner")
     importlib.reload(scanner)
     assert scanner.SHEET_ID == ""
+
+
+def test_bigquery_news_append_uses_existing_table_schema():
+    source = importlib.import_module("angel_prediction_engine")
+    import inspect
+
+    body = inspect.getsource(source.sync_to_bigquery)
+    assert "schema=table_news.schema" in body
+    assert "autodetect=False" in body
