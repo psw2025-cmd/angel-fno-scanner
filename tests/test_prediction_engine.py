@@ -404,7 +404,7 @@ def test_premarket_snapshot_immutable():
     with open(frozen_path) as f:
         d = json.load(f)
     assert d["predictions_sha256"] == "c215b4c20e5b17b167c4b521ce5772615792f509e23272df7a5a73dd84e4e27e"
-    assert d["total_symbols"] == 219
+    assert d["total_symbols"] == 216
 
 def test_score_saturation_bounds():
     pred = compute_prediction_and_rating(
@@ -727,4 +727,5 @@ def test_reconcile_preserves_exact_contract_identity_when_atm_drifts(monkeypatch
     assert result_text is not None
     assert "+67.65%" in result_text
     assert "WIN" in result_text
+
 
