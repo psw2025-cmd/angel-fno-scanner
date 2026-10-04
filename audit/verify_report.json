@@ -1,0 +1,49 @@
+{
+  "verified_at_ist": "2026-10-05T05:26:19.773605+05:30",
+  "overall_status": "PASS",
+  "critical_failures": [],
+  "git": {
+    "status": "PASS",
+    "is_clean": true,
+    "is_synced": true,
+    "local_sha": "aa431ba9e29431cd6fdd556cd5739b321e033feb",
+    "remote_sha": "aa431ba9e29431cd6fdd556cd5739b321e033feb",
+    "uncommitted_files": []
+  },
+  "pytest": {
+    "status": "PASS",
+    "passed_count": 154,
+    "exit_code": 0,
+    "output": "........................................................................ [ 46%]\n........................................................................ [ 93%]\n..........                                                               [100%]\n154 passed in 5.97s"
+  },
+  "bigquery": {
+    "status": "PASS",
+    "tables": {
+      "option_predictions_live": "STRING",
+      "market_news_sentiment": "STRING",
+      "next_day_gap_predictions": "STRING",
+      "prediction_calibration_log": "STRING"
+    }
+  },
+  "readiness_probe": {
+    "status": "PASS",
+    "fail_count": 0,
+    "pass_count": 9,
+    "other_count": 3,
+    "evidence_dir": "C:\\temp\\verify\\INFRA_READY_20261005_052629_965773",
+    "checks": {
+      "git_head": "PASS",
+      "working_tree": "PASS",
+      "current_main": "PASS",
+      "219_symbol_config": "PASS",
+      "single_writer_static": "PASS",
+      "runtime_provenance": "NOT_PROVEN",
+      "exact_sha_ci": "UNKNOWN",
+      "bq_option_predictions_live": "PASS",
+      "bq_market_news_sentiment": "PASS",
+      "bq_prediction_calibration_log": "PASS",
+      "bq_next_day_gap_predictions": "PASS",
+      "sheet_provenance": "UNKNOWN"
+    }
+  }
+}
