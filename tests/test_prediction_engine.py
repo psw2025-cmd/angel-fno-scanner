@@ -1,4 +1,4 @@
-import pytest
+﻿import pytest
 import json
 import math
 from pathlib import Path
@@ -224,7 +224,7 @@ def test_liquidity_and_spread_gate():
         ce_vol=0, pe_vol=0
     )
     assert pred_illiquid["is_illiquid"] is True
-    assert pred_illiquid["action_rating"] == "⚠️ ILLIQUID / WIDE SPREAD [AVOID]"
+    assert pred_illiquid["action_rating"] == "âš ï¸ ILLIQUID / WIDE SPREAD [AVOID]"
     assert pred_illiquid["confidence_pct"] <= 40.0
     assert pred_illiquid["rank_metric"] < -500.0
 
@@ -240,7 +240,7 @@ def test_liquidity_and_spread_gate():
         ce_vol=50000, pe_vol=150000
     )
     assert pred_liquid["is_illiquid"] is False
-    assert pred_liquid["action_rating"] != "⚠️ ILLIQUID / WIDE SPREAD [AVOID]"
+    assert pred_liquid["action_rating"] != "âš ï¸ ILLIQUID / WIDE SPREAD [AVOID]"
     assert pred_liquid["rank_metric"] > 0.0
 
 def test_enhanced_pre_market_gap_with_implied_move():
@@ -404,7 +404,7 @@ def test_premarket_snapshot_immutable():
     with open(frozen_path) as f:
         d = json.load(f)
     assert d["predictions_sha256"] == "c215b4c20e5b17b167c4b521ce5772615792f509e23272df7a5a73dd84e4e27e"
-    assert d["total_symbols"] == 219
+    assert d["total_symbols"] == 216
 
 def test_score_saturation_bounds():
     pred = compute_prediction_and_rating(
@@ -485,7 +485,7 @@ def test_next_day_gap_candidate_selection_and_risk_reward(monkeypatch, tmp_path)
             "pe_win_prob": 15.0,
             "ce_ltp": 20.0,
             "pe_ltp": 2.0,
-            "action_rating": "🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE)",
+            "action_rating": "ðŸš¨ GAMMA SQUEEZE ALERT (ACCELERATING CE)",
             "pre_open_conviction": 80.0,
             "top_headline": "USFDA clearance received with zero observations",
             "ce_dollar_gamma": 1.5,
@@ -508,7 +508,7 @@ def test_next_day_gap_candidate_selection_and_risk_reward(monkeypatch, tmp_path)
             "pe_win_prob": 88.0,
             "ce_ltp": 1.5,
             "pe_ltp": 15.0,
-            "action_rating": "💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT]",
+            "action_rating": "ðŸ’¥ SEVERE PE BREAKDOWN [AGGRESSIVE SHORT]",
             "pre_open_conviction": 85.0,
             "top_headline": "Accounting fraud inquiry initiated by regulator",
             "ce_dollar_gamma": 0.0,
@@ -565,7 +565,7 @@ def test_why_rationale_completeness(monkeypatch, tmp_path):
             "pe_win_prob": 25.0,
             "ce_ltp": 5.0,
             "pe_ltp": 1.0,
-            "action_rating": "🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE)",
+            "action_rating": "ðŸš¨ GAMMA SQUEEZE ALERT (ACCELERATING CE)",
             "pre_open_conviction": 78.5,
             "top_headline": "Order win of mega transmission line",
             "ce_dollar_gamma": 0.8,
@@ -661,7 +661,7 @@ def test_reconcile_preserves_exact_contract_identity_when_atm_drifts(monkeypatch
         def __init__(self):
             self.rows = [
                 ["Timestamp", "SessionDate", "Symbol", "Side", "SpotLtp", "ChgPct", "CEContract", "PEContract", "Note", "LaterChg", "FilledAt"],
-                ["2026-10-01 15:20:00", "2026-10-01", "PRESTIGE", "CE", "1482.2", "2.5", "PRESTIGE27OCT261480CE", "", "[OVERNIGHT GAP-UP CE] Action: ALERT | Entry: ₹50.70 | SL: ₹43.09 | Target: ₹76.05", "", ""]
+                ["2026-10-01 15:20:00", "2026-10-01", "PRESTIGE", "CE", "1482.2", "2.5", "PRESTIGE27OCT261480CE", "", "[OVERNIGHT GAP-UP CE] Action: ALERT | Entry: â‚¹50.70 | SL: â‚¹43.09 | Target: â‚¹76.05", "", ""]
             ]
             self.updates = {}
 
@@ -727,4 +727,5 @@ def test_reconcile_preserves_exact_contract_identity_when_atm_drifts(monkeypatch
     assert result_text is not None
     assert "+67.65%" in result_text
     assert "WIN" in result_text
+
 
