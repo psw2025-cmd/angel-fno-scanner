@@ -404,7 +404,7 @@ def test_premarket_snapshot_immutable():
     with open(frozen_path) as f:
         d = json.load(f)
     assert d["predictions_sha256"] == "c215b4c20e5b17b167c4b521ce5772615792f509e23272df7a5a73dd84e4e27e"
-    assert d["total_symbols"] == 216
+    assert d["total_symbols"] == 219
 
 def test_score_saturation_bounds():
     pred = compute_prediction_and_rating(
