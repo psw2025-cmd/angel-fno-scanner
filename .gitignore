@@ -10,3 +10,4 @@ cross_agent_packets/
 .tmp.driveupload/
 .tmp.drivedownload/
 audit/cloud_exports/
+*.exe

@@ -44,6 +44,14 @@
    - `C:\AngelFNO_Workstation\repos\angel-fno-scanner\tests\test_schema_validator.py`
    - *Purpose:* 23 unit tests verifying schema loading, valid row acceptance across all tables, and rejection of extra columns/wrong types.
 
+### D. Files Created for Windows File Search & Desktop GUI Automation:
+1. **Everything Cross-Desktop IPC Search Bridge:**
+   - `C:\AngelFNO_Workstation\repos\angel-fno-scanner\tools\es_bridge.cs`
+   - *Purpose:* Native C# Windows cross-desktop IPC search bridge for Voidtools Everything. Switches calling thread to `WinSta0\Default`, configures UIPI message filtering for `WM_COPYDATA`, queries the NTFS index instantaneously via Everything IPC, and outputs file paths or formatted JSON arrays.
+2. **Deployed Everything CLI Executable:**
+   - `C:\Users\ADMIN\AppData\Local\agy\bin\es.exe`
+   - *Purpose:* Global CLI executable placed on system PATH for all agents, subagents, and automation scripts. Supports sub-second NTFS queries (`es.exe "keyword"`, `-json`, `-n <limit>`).
+
 ---
 
 ## 2. Google Cloud & BigQuery Master Architecture
@@ -174,6 +182,28 @@ Authoritative declarative JSON schema contracts are located in:
 .\.venv\Scripts\python.exe -c "import sqlite3; conn = sqlite3.connect('audit/cloud_exports/fno_predictions_export_latest.db'); print(conn.execute('SELECT table_name, row_count FROM _cloud_export_manifest').fetchall())"
 ```
 
+### H. Ultra-Fast Windows File Search via Everything CLI (`es.exe`):
+> **STRICT RULE:** Never use slow recursive search commands (e.g. `Get-ChildItem -Recurse` or `findstr /s`). Always use `es.exe` for sub-second NTFS index queries.
+
+```powershell
+# Search files/folders across all NTFS drives in <50ms:
+es.exe "keyword"
+
+# Limit result count:
+es.exe -n 10 "report"
+
+# Output as machine-readable JSON array:
+es.exe -json -n 5 "schema_validator"
+```
+
+### I. Launching Visual Windows Applications (.exe GUI):
+> When launching graphical desktop tools (Power BI Desktop, Everything GUI, Notepad, Explorer, etc.), invoke them detached on the interactive desktop (`WinSta0\Default`) so the user can interact directly on screen:
+
+```powershell
+Start-Process "C:\Program Files\Everything\Everything.exe"
+Start-Process "C:\Program Files\Microsoft Power BI Desktop\bin\PBIDesktop.exe"
+```
+
 ---
 
 ## 6. Current System Health Summary (October 5, 2026)
@@ -188,3 +218,28 @@ Authoritative declarative JSON schema contracts are located in:
 | **Pytest Unit Suite** | **PASS** | **183/183 tests passing** (0 failures, 0 regressions) |
 | **Git Working Tree** | **PASS** | Clean, synchronized with `origin/main` (`ahead=0 behind=0`) |
 | **Single-File Cloud Extractor** | **PASS** | Operational, generated `audit/cloud_exports/fno_predictions_export_latest.db` |
+| **Voidtools Everything CLI** | **PASS** | `es.exe` on PATH, cross-desktop IPC operational, sub-second NTFS queries |
+
+---
+
+## 7. Windows Environment & Cross-Desktop IPC Protocol
+
+### A. Desktop Isolation Architecture
+In modern Windows multi-desktop / agent sandbox environments:
+1. Interactive user sessions run on desktop `WinSta0\Default`.
+2. Agent and CLI runner threads may run on non-interactive or sandbox desktops (`WinSta0\exebox-...`).
+3. Standard `es.exe` looks for the `EVERYTHING_TASKBAR_NOTIFICATION` window class using standard Win32 `FindWindow()`, which is restricted to the caller's desktop.
+4. `tools/es_bridge.cs` bridges this boundary by:
+   - Calling `OpenDesktop("Default", ...)` and `SetThreadDesktop(hDesktop)` to access the user interactive desktop.
+   - Calling `ChangeWindowMessageFilterEx(replyHwnd, WM_COPYDATA, MSGFLT_ALLOW, IntPtr.Zero)` to permit UIPI cross-integrity messaging.
+   - Packing query parameters into `EVERYTHING_IPC_QUERYW` and parsing `EVERYTHING_IPC_LISTW` / `EVERYTHING_IPC_ITEMW` structs.
+   - Forwarding results to stdout or JSON format.
+
+### B. Bootstrap & Recovery
+If `es.exe` is ever missing in a new environment:
+```powershell
+winget install voidtools.Everything
+winget install --id=voidtools.Everything.Cli -e
+& "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe" /nologo /optimize /target:exe /r:System.Windows.Forms.dll /out:"tools\es_bridge.exe" "tools\es_bridge.cs"
+Copy-Item "tools\es_bridge.exe" "$env:LOCALAPPDATA\agy\bin\es.exe" -Force
+```
