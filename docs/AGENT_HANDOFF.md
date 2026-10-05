@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-10-05 by agy CLI (Completion Agent)  
 **Repository state:** clean, in sync / tracking origin/main  
-**HEAD commit:** `057920a` (feat(schemas): implement D-09 Phase 1 declarative schema registry from live BigQuery)  
+**HEAD commit:** `b7e2df8` (docs: record D-09 Phase 1 completion in handoff and changelog)  
 **System Mode:** PAPER / ANALYZER (No live financial risk; safe sheet modifications permitted)  
 
 ---
@@ -11,7 +11,7 @@
 
 Run: `python tools/verify_harness.py`
 
-Current results (as of commit `96b1657`):
+Current results:
 - **9 PASS:**
   - `runid_type_all_string` (all 4 tables STRING)
   - `sheet_vs_bq_runid_match` (cycle matched: sheet=37259385281 bq=37259385281; streaming=37261595211)
@@ -19,7 +19,7 @@ Current results (as of commit `96b1657`):
   - `forensic_live_symbol_count_219` (219)
   - `forensic_live_symbols_match_manifest` (219/219)
   - `gate_formulas_reference_populated_cells` (0 unpopulated refs)
-  - `pytest_154_passed` (156 passed >= 154)
+  - `pytest_154_passed` (179 passed >= 154)
   - `git_tree_clean` (clean)
   - `git_synced_with_origin` (ahead=0 behind=0)
 - **3 PENDING:**
@@ -71,8 +71,8 @@ See `docs/DEFECT_REGISTER.md` for authoritative details:
 
 The permanent remediation for D-09 is phased and documented in [`docs/decisions/D-09_PHASES.md`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/docs/decisions/D-09_PHASES.md):
 - **Phase 1:** Schema Registry (`schemas/*.json`) — **COMPLETED** (5 declarative schemas + `schemas/_contract.md` + `docs/DATA_CONTRACTS.md` updated from live BigQuery)
-- **Phase 2 (NEXT):** Fail-Fast Validator (`tools/schema_validator.py` + `tests/test_schema_validator.py`)
-- **Phase 3:** Writer Wiring (`angel_prediction_engine.py`)
+- **Phase 2:** Fail-Fast Validator (`tools/schema_validator.py` + `tests/test_schema_validator.py`) — **COMPLETED** (23 unit tests passed, 179/179 full suite passed)
+- **Phase 3 (NEXT):** Writer Wiring (`angel_prediction_engine.py`)
 - **Phase 4:** Cycle Status Tracking (BigQuery `cycle_status` table)
 - **Phase 5:** Pre-Open Gate (`tools/pre_open_gate.py`)
 - **Phase 6:** CI Workflows (`.github/workflows/`)

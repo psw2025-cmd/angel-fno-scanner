@@ -1,5 +1,31 @@
 # Changelog
 
+## 2026-10-05 — D-09 Phase 2: Fail-Fast Schema Validator and Unit Tests
+
+**Commit:** Pending HEAD
+
+### What changed
+- Created `tools/schema_validator.py` implementing:
+  - Custom `SchemaValidationError(Exception)` with rich diagnostics (`table_name`, `row_index`, `errors`).
+  - `load_schema(table_name: str)` loading declarative schemas from `schemas/{table_name}.json`.
+  - `get_schema_field_map(table_name: str)` providing cached column definition lookups.
+  - `validate_row(table_name, row, row_index)` and `validate_rows(table_name, rows)`:
+    - Strictly rejects any undeclared or unknown columns (preventing silent column projection per D-09).
+    - Enforces `REQUIRED` column presence and non-nullability.
+    - Accurately checks types against BigQuery types (`STRING`, `INT64`/`INTEGER` [rejecting `bool`], `FLOAT64`/`FLOAT` [rejecting `bool` and `NaN`/`Inf`], `BOOL`/`BOOLEAN`, `TIMESTAMP` [ISO/datetime], `DATE` [date/YYYY-MM-DD string, rejecting datetime]).
+- Created `tests/test_schema_validator.py` with 23 comprehensive unit tests verifying:
+  - Clean loading of all 5 registered schemas.
+  - Valid row acceptance for all 5 tables (`option_predictions_live`, `market_news_sentiment`, `next_day_gap_predictions`, `prediction_calibration_log`, `cycle_status`).
+  - Immediate fail-fast rejection on undeclared columns, missing/None required fields, int-for-str, bool-for-int, bool-for-float, nan/inf, datetime-for-date, invalid date string, and invalid timestamp string.
+- Left `angel_prediction_engine.py` untouched (wiring reserved for Phase 3).
+
+### Evidence
+- Pytest: 23/23 tests in `tests/test_schema_validator.py` PASSED in 0.23s.
+- Pytest full suite: 179/179 tests PASSED in 9.38s (156 existing + 23 new).
+- Zero regression on existing code or pipelines.
+
+---
+
 ## 2026-10-05 — D-09 Phase 1: Declarative BigQuery Schema Registry
 
 **Commit:** `057920a`
