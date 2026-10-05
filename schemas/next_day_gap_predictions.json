@@ -1,0 +1,152 @@
+[
+  {
+    "name": "prediction_date",
+    "type": "DATE",
+    "mode": "REQUIRED",
+    "description": "Field prediction_date of table next_day_gap_predictions"
+  },
+  {
+    "name": "predicted_at_ist",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Field predicted_at_ist of table next_day_gap_predictions"
+  },
+  {
+    "name": "symbol",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Field symbol of table next_day_gap_predictions"
+  },
+  {
+    "name": "target_date",
+    "type": "DATE",
+    "mode": "REQUIRED",
+    "description": "Field target_date of table next_day_gap_predictions"
+  },
+  {
+    "name": "side",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Field side of table next_day_gap_predictions"
+  },
+  {
+    "name": "spot_ltp",
+    "type": "FLOAT64",
+    "mode": "REQUIRED",
+    "description": "Field spot_ltp of table next_day_gap_predictions"
+  },
+  {
+    "name": "target_strike",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Field target_strike of table next_day_gap_predictions"
+  },
+  {
+    "name": "contract_symbol",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Field contract_symbol of table next_day_gap_predictions"
+  },
+  {
+    "name": "entry_ltp",
+    "type": "FLOAT64",
+    "mode": "REQUIRED",
+    "description": "Field entry_ltp of table next_day_gap_predictions"
+  },
+  {
+    "name": "expected_gap_pct",
+    "type": "FLOAT64",
+    "mode": "REQUIRED",
+    "description": "Field expected_gap_pct of table next_day_gap_predictions"
+  },
+  {
+    "name": "conviction_pct",
+    "type": "FLOAT64",
+    "mode": "REQUIRED",
+    "description": "Field conviction_pct of table next_day_gap_predictions"
+  },
+  {
+    "name": "stop_loss_ltp",
+    "type": "FLOAT64",
+    "mode": "REQUIRED",
+    "description": "Field stop_loss_ltp of table next_day_gap_predictions"
+  },
+  {
+    "name": "target_ltp",
+    "type": "FLOAT64",
+    "mode": "REQUIRED",
+    "description": "Field target_ltp of table next_day_gap_predictions"
+  },
+  {
+    "name": "rationale",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Field rationale of table next_day_gap_predictions"
+  },
+  {
+    "name": "news_catalyst",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field news_catalyst of table next_day_gap_predictions"
+  },
+  {
+    "name": "dollar_gamma",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field dollar_gamma of table next_day_gap_predictions"
+  },
+  {
+    "name": "actual_open_ltp",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field actual_open_ltp of table next_day_gap_predictions"
+  },
+  {
+    "name": "actual_return_pct",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field actual_return_pct of table next_day_gap_predictions"
+  },
+  {
+    "name": "outcome",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field outcome of table next_day_gap_predictions"
+  },
+  {
+    "name": "reconciled_at_ist",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field reconciled_at_ist of table next_day_gap_predictions"
+  },
+  {
+    "name": "run_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field run_id of table next_day_gap_predictions"
+  },
+  {
+    "name": "git_sha",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field git_sha of table next_day_gap_predictions"
+  },
+  {
+    "name": "writer_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field writer_id of table next_day_gap_predictions"
+  },
+  {
+    "name": "source_timestamp",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field source_timestamp of table next_day_gap_predictions"
+  },
+  {
+    "name": "cycle_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field cycle_id of table next_day_gap_predictions"
+  }
+]

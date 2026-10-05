@@ -1,0 +1,98 @@
+[
+  {
+    "name": "hits",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field hits of table prediction_calibration_log"
+  },
+  {
+    "name": "miss_root_causes",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field miss_root_causes of table prediction_calibration_log"
+  },
+  {
+    "name": "predicted_top10",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field predicted_top10 of table prediction_calibration_log"
+  },
+  {
+    "name": "actual_top10",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field actual_top10 of table prediction_calibration_log"
+  },
+  {
+    "name": "mean_rank_of_top10",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field mean_rank_of_top10 of table prediction_calibration_log"
+  },
+  {
+    "name": "timestamp",
+    "type": "TIMESTAMP",
+    "mode": "NULLABLE",
+    "description": "Field timestamp of table prediction_calibration_log"
+  },
+  {
+    "name": "recall_at_10",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field recall_at_10 of table prediction_calibration_log"
+  },
+  {
+    "name": "cycle_number",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "Field cycle_number of table prediction_calibration_log"
+  },
+  {
+    "name": "updated_weights_json",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field updated_weights_json of table prediction_calibration_log"
+  },
+  {
+    "name": "misses",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field misses of table prediction_calibration_log"
+  },
+  {
+    "name": "top10_hit_rate_pct",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field top10_hit_rate_pct of table prediction_calibration_log"
+  },
+  {
+    "name": "run_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field run_id of table prediction_calibration_log"
+  },
+  {
+    "name": "git_sha",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field git_sha of table prediction_calibration_log"
+  },
+  {
+    "name": "writer_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field writer_id of table prediction_calibration_log"
+  },
+  {
+    "name": "source_timestamp",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field source_timestamp of table prediction_calibration_log"
+  },
+  {
+    "name": "cycle_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field cycle_id of table prediction_calibration_log"
+  }
+]

@@ -1,0 +1,326 @@
+[
+  {
+    "name": "market_confirmation",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field market_confirmation of table option_predictions_live"
+  },
+  {
+    "name": "negative_prob",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field negative_prob of table option_predictions_live"
+  },
+  {
+    "name": "news_source_tier",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field news_source_tier of table option_predictions_live"
+  },
+  {
+    "name": "gap_direction",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field gap_direction of table option_predictions_live"
+  },
+  {
+    "name": "expected_gap_pct",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field expected_gap_pct of table option_predictions_live"
+  },
+  {
+    "name": "news_sentiment_score",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field news_sentiment_score of table option_predictions_live"
+  },
+  {
+    "name": "pe_vega",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field pe_vega of table option_predictions_live"
+  },
+  {
+    "name": "pe_theta",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field pe_theta of table option_predictions_live"
+  },
+  {
+    "name": "already_priced_in_prob",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field already_priced_in_prob of table option_predictions_live"
+  },
+  {
+    "name": "pe_gamma",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field pe_gamma of table option_predictions_live"
+  },
+  {
+    "name": "expected_move_band",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field expected_move_band of table option_predictions_live"
+  },
+  {
+    "name": "top_news_headline",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field top_news_headline of table option_predictions_live"
+  },
+  {
+    "name": "pe_delta",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field pe_delta of table option_predictions_live"
+  },
+  {
+    "name": "target_open_strike",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field target_open_strike of table option_predictions_live"
+  },
+  {
+    "name": "pe_oi",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "Field pe_oi of table option_predictions_live"
+  },
+  {
+    "name": "news_impact_rating",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field news_impact_rating of table option_predictions_live"
+  },
+  {
+    "name": "pe_chg_pct",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field pe_chg_pct of table option_predictions_live"
+  },
+  {
+    "name": "data_freshness_status",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field data_freshness_status of table option_predictions_live"
+  },
+  {
+    "name": "ce_delta",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field ce_delta of table option_predictions_live"
+  },
+  {
+    "name": "pe_ltp",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field pe_ltp of table option_predictions_live"
+  },
+  {
+    "name": "action_rating",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field action_rating of table option_predictions_live"
+  },
+  {
+    "name": "ce_bid_ask_spread",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field ce_bid_ask_spread of table option_predictions_live"
+  },
+  {
+    "name": "max_pain",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field max_pain of table option_predictions_live"
+  },
+  {
+    "name": "ce_vega",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field ce_vega of table option_predictions_live"
+  },
+  {
+    "name": "rank",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "Field rank of table option_predictions_live"
+  },
+  {
+    "name": "pre_open_conviction_pct",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field pre_open_conviction_pct of table option_predictions_live"
+  },
+  {
+    "name": "cycle_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field cycle_id of table option_predictions_live"
+  },
+  {
+    "name": "intensity_score",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "Field intensity_score of table option_predictions_live"
+  },
+  {
+    "name": "ce_iv",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field ce_iv of table option_predictions_live"
+  },
+  {
+    "name": "pe_oi_change_pct",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field pe_oi_change_pct of table option_predictions_live"
+  },
+  {
+    "name": "ce_oi",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "Field ce_oi of table option_predictions_live"
+  },
+  {
+    "name": "ce_win_prob",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field ce_win_prob of table option_predictions_live"
+  },
+  {
+    "name": "pe_win_prob",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field pe_win_prob of table option_predictions_live"
+  },
+  {
+    "name": "snapshot_timestamp",
+    "type": "TIMESTAMP",
+    "mode": "NULLABLE",
+    "description": "Field snapshot_timestamp of table option_predictions_live"
+  },
+  {
+    "name": "ce_chg_pct",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field ce_chg_pct of table option_predictions_live"
+  },
+  {
+    "name": "atm_pcr",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field atm_pcr of table option_predictions_live"
+  },
+  {
+    "name": "ce_ltp",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field ce_ltp of table option_predictions_live"
+  },
+  {
+    "name": "positive_prob",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field positive_prob of table option_predictions_live"
+  },
+  {
+    "name": "ce_theta",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field ce_theta of table option_predictions_live"
+  },
+  {
+    "name": "pe_iv",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field pe_iv of table option_predictions_live"
+  },
+  {
+    "name": "source_timestamp",
+    "type": "TIMESTAMP",
+    "mode": "NULLABLE",
+    "description": "Field source_timestamp of table option_predictions_live"
+  },
+  {
+    "name": "spot_ltp",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field spot_ltp of table option_predictions_live"
+  },
+  {
+    "name": "news_severity_level",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "Field news_severity_level of table option_predictions_live"
+  },
+  {
+    "name": "symbol",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field symbol of table option_predictions_live"
+  },
+  {
+    "name": "confidence_pct",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field confidence_pct of table option_predictions_live"
+  },
+  {
+    "name": "atm_strike",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field atm_strike of table option_predictions_live"
+  },
+  {
+    "name": "ce_oi_change_pct",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field ce_oi_change_pct of table option_predictions_live"
+  },
+  {
+    "name": "directional_bias",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field directional_bias of table option_predictions_live"
+  },
+  {
+    "name": "pe_bid_ask_spread",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field pe_bid_ask_spread of table option_predictions_live"
+  },
+  {
+    "name": "expiry",
+    "type": "DATE",
+    "mode": "NULLABLE",
+    "description": "Field expiry of table option_predictions_live"
+  },
+  {
+    "name": "ce_gamma",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field ce_gamma of table option_predictions_live"
+  },
+  {
+    "name": "writer_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field writer_id of table option_predictions_live"
+  },
+  {
+    "name": "git_sha",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field git_sha of table option_predictions_live"
+  },
+  {
+    "name": "run_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field run_id of table option_predictions_live"
+  }
+]

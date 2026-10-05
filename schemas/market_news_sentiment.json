@@ -1,0 +1,158 @@
+[
+  {
+    "name": "filing_type",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field filing_type of table market_news_sentiment"
+  },
+  {
+    "name": "title",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field title of table market_news_sentiment"
+  },
+  {
+    "name": "source_count",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "Field source_count of table market_news_sentiment"
+  },
+  {
+    "name": "source_agreement_pct",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field source_agreement_pct of table market_news_sentiment"
+  },
+  {
+    "name": "impact_rating",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field impact_rating of table market_news_sentiment"
+  },
+  {
+    "name": "symbol",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field symbol of table market_news_sentiment"
+  },
+  {
+    "name": "tone_score",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field tone_score of table market_news_sentiment"
+  },
+  {
+    "name": "sentiment",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field sentiment of table market_news_sentiment"
+  },
+  {
+    "name": "source",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field source of table market_news_sentiment"
+  },
+  {
+    "name": "news_type",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field news_type of table market_news_sentiment"
+  },
+  {
+    "name": "timestamp",
+    "type": "TIMESTAMP",
+    "mode": "NULLABLE",
+    "description": "Field timestamp of table market_news_sentiment"
+  },
+  {
+    "name": "severity_level",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "Field severity_level of table market_news_sentiment"
+  },
+  {
+    "name": "source_tier",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field source_tier of table market_news_sentiment"
+  },
+  {
+    "name": "positive_prob",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field positive_prob of table market_news_sentiment"
+  },
+  {
+    "name": "negative_prob",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field negative_prob of table market_news_sentiment"
+  },
+  {
+    "name": "already_priced_in_prob",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Field already_priced_in_prob of table market_news_sentiment"
+  },
+  {
+    "name": "market_confirmation",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field market_confirmation of table market_news_sentiment"
+  },
+  {
+    "name": "expected_move_band",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field expected_move_band of table market_news_sentiment"
+  },
+  {
+    "name": "source_url",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field source_url of table market_news_sentiment"
+  },
+  {
+    "name": "canonical_url",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field canonical_url of table market_news_sentiment"
+  },
+  {
+    "name": "verified_catalyst",
+    "type": "BOOL",
+    "mode": "NULLABLE",
+    "description": "Field verified_catalyst of table market_news_sentiment"
+  },
+  {
+    "name": "run_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field run_id of table market_news_sentiment"
+  },
+  {
+    "name": "git_sha",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field git_sha of table market_news_sentiment"
+  },
+  {
+    "name": "writer_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field writer_id of table market_news_sentiment"
+  },
+  {
+    "name": "source_timestamp",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field source_timestamp of table market_news_sentiment"
+  },
+  {
+    "name": "cycle_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Field cycle_id of table market_news_sentiment"
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "name": "cycle_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Unique identifier for the prediction cycle"
+  },
+  {
+    "name": "run_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "GitHub Actions run_id or workstation execution ID"
+  },
+  {
+    "name": "git_sha",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Exact Git commit SHA of the running engine"
+  },
+  {
+    "name": "sink",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Destination table or sink name (e.g. option_predictions_live, market_news_sentiment)"
+  },
+  {
+    "name": "status",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Lifecycle state: PENDING, IN_PROGRESS, COMPLETED, FAILED, NOT_DUE"
+  },
+  {
+    "name": "records_count",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "Number of rows written to the sink in this cycle"
+  },
+  {
+    "name": "error_message",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Error diagnostic details if status is FAILED"
+  },
+  {
+    "name": "created_at",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "Timezone-aware timestamp when this status record was created"
+  }
+]

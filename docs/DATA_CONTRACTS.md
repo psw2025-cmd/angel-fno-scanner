@@ -115,6 +115,7 @@ Breaking this contract causes the readiness probe to FAIL.
 | `git_sha` | STRING | NULLABLE | Lineage: Git commit SHA |
 | `writer_id` | STRING | NULLABLE | Lineage: Writer ID |
 | `source_timestamp` | STRING | NULLABLE | Lineage: Observation timestamp |
+| `cycle_id` | STRING | NULLABLE | Lineage: Publication cycle identifier |
 
 ---
 
@@ -150,6 +151,7 @@ Breaking this contract causes the readiness probe to FAIL.
 | `git_sha` | STRING | NULLABLE | Lineage: Git commit SHA |
 | `writer_id` | STRING | NULLABLE | Lineage: Writer ID |
 | `source_timestamp` | STRING | NULLABLE | Lineage: Observation timestamp |
+| `cycle_id` | STRING | NULLABLE | Lineage: Publication cycle identifier |
 
 ---
 
@@ -176,3 +178,24 @@ Breaking this contract causes the readiness probe to FAIL.
 | `git_sha` | STRING | NULLABLE | Lineage: Git commit SHA |
 | `writer_id` | STRING | NULLABLE | Lineage: Writer ID |
 | `source_timestamp` | STRING | NULLABLE | Lineage: Observation timestamp |
+| `cycle_id` | STRING | NULLABLE | Lineage: Publication cycle identifier |
+
+---
+
+## 5. `cycle_status`
+- **Table ID**: `fno-angel-prod-1790444589.fno_predictions.cycle_status`
+- **Time Partitioning**: `DAY` on `created_at`
+- **Clustering Fields**: `['status', 'sink']`
+- **Write Disposition**: `WRITE_APPEND`
+
+| Column Name | Type | Mode | Description |
+|---|---|---|---|
+| `cycle_id` | STRING | REQUIRED | Unique publication cycle identifier |
+| `run_id` | STRING | REQUIRED | Lineage: Run ID |
+| `git_sha` | STRING | REQUIRED | Lineage: Git commit SHA |
+| `sink` | STRING | REQUIRED | Destination table / sink name |
+| `status` | STRING | REQUIRED | Status: `PENDING`, `IN_PROGRESS`, `COMPLETED`, `FAILED`, `NOT_DUE` |
+| `records_count` | INTEGER | NULLABLE | Total rows written to sink |
+| `error_message` | STRING | NULLABLE | Error message if status is FAILED |
+| `created_at` | TIMESTAMP | REQUIRED | Partition key: status record timestamp |
+
