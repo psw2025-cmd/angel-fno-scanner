@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-10-05 — Track staging_review as a governed review queue
+
+**Commit:** 9dbe39e
+
+### What changed
+- Removed `staging_review/` from local `.git/info/exclude`.
+- Added `staging_review/README.md` defining governance.
+- Tracked all seven files under `staging_review/` in git.
+
+### Why
+The folder was locally excluded, meaning no other agent or CI could see it.
+That conflicted with the multi-agent synchronization requirement.
+
+### Evidence
+- `git ls-files staging_review/` lists seven files.
+- Fresh `git clone` of origin/main shows the folder.
+- Pre-commit hook validated the commit.
+
+### Rollback
+`git revert 9dbe39e && git push origin main`
+
+### Open follow-ups
+- Add a pre-commit rule forbidding production imports from `staging_review/`.
+- Add this folder to the post-commit sync workflow.
+
+---
+
+
 Reverse chronological. Every production change has an entry. Do not delete entries.
 
 ## 2026-10-05 — Documentation system initialization
