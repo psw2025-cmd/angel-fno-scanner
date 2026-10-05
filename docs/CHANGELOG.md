@@ -1,8 +1,36 @@
 # Changelog
 
-## 2026-10-05 — D-09 Phase 2: Fail-Fast Schema Validator and Unit Tests
+## 2026-10-05 — Google Cloud / BigQuery Single-File Permanent Extractor
 
 **Commit:** Pending HEAD
+
+### What changed
+- Created permanent utility [`tools/export_cloud_database.py`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/tools/export_cloud_database.py) to extract all datasets, tables, schemas, metadata, and records from Google Cloud BigQuery into portable single-file artifacts:
+  - **SQLite Database (`.db`)**: Self-contained relational database containing all tables with mapped types, lookup indices (`symbol`, `cycle_id`, `run_id`, `source_timestamp`), and a built-in `_cloud_export_manifest` audit table.
+  - **Consolidated JSON (`.json`)**: Single structured JSON bundle containing all tables, column schemas, and rows.
+  - **ZIP Archive (`.zip`)**: Single compressed archive of CSV files with an embedded `_manifest.json`.
+- Created comprehensive unit tests in [`tests/test_export_cloud_database.py`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/tests/test_export_cloud_database.py) (4 tests passed).
+- Updated `.gitignore` to ignore `audit/cloud_exports/` to prevent large binary dumps from bloating git.
+- Executed full live extraction of all 8 BigQuery tables (15,472 records) into `audit/cloud_exports/fno_predictions_export_latest.db`.
+
+### Evidence
+- Pytest: 183/183 passed in full test suite (179 existing + 4 new export tests).
+- Extracted 8 BigQuery tables:
+  - `market_news_sentiment` (7,118 rows, 26 cols)
+  - `market_news_sentiment_backup_cycleid_20261005_050920` (7,118 rows, 25 cols)
+  - `next_day_gap_predictions` (148 rows, 25 cols)
+  - `next_day_gap_predictions_backup_cycleid_20261005_050920` (148 rows, 24 cols)
+  - `option_predictions_live` (219 rows, 54 cols)
+  - `option_predictions_live_backup_20261005` (219 rows, 54 cols)
+  - `prediction_calibration_log` (251 rows, 16 cols)
+  - `prediction_calibration_log_backup_cycleid_20261005_050920` (251 rows, 15 cols)
+- Verified SQLite integrity: 8 tables, 15,472 rows queryable instantly.
+
+---
+
+## 2026-10-05 — D-09 Phase 2: Fail-Fast Schema Validator and Unit Tests
+
+**Commit:** `f7d16c9`
 
 ### What changed
 - Created `tools/schema_validator.py` implementing:

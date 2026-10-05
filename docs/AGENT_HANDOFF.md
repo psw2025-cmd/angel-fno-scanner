@@ -19,7 +19,7 @@ Current results:
   - `forensic_live_symbol_count_219` (219)
   - `forensic_live_symbols_match_manifest` (219/219)
   - `gate_formulas_reference_populated_cells` (0 unpopulated refs)
-  - `pytest_154_passed` (179 passed >= 154)
+  - `pytest_154_passed` (183 passed >= 154)
   - `git_tree_clean` (clean)
   - `git_synced_with_origin` (ahead=0 behind=0)
 - **3 PENDING:**
@@ -88,3 +88,4 @@ The permanent remediation for D-09 is phased and documented in [`docs/decisions/
 - [`docs/BACKUP_CLEANUP_LOG.md`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/docs/BACKUP_CLEANUP_LOG.md) — evaluation and safe retention rationale for BigQuery backup tables
 - [`docs/decisions/D-09_PLAN.md`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/docs/decisions/D-09_PLAN.md) — architectural blueprint for validator chain
 - [`docs/decisions/D-09_PHASES.md`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/docs/decisions/D-09_PHASES.md) — 6 executable implementation phases
+- [`tools/export_cloud_database.py`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/tools/export_cloud_database.py) — permanent tool to extract all BigQuery tables, schemas, and records to a single SQLite `.db` or JSON file
