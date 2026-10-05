@@ -1,0 +1,24 @@
+# staging_review/market_bot_workflow_patch.yml
+# Proposed addition to `.github/workflows/market_bot.yml` under jobs.run-scanner.steps:
+#
+# Insert immediately after step `Run Single Authoritative Scanner and Prediction Cycle`:
+
+      - name: Verify Live System Integrity (Harness Gate)
+        env:
+          SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          BQ_PROJECT_ID: ${{ secrets.BQ_PROJECT_ID }}
+        run: |
+          set -eo pipefail
+          echo "=========================================================="
+          echo " RUNNING LIVE VERIFICATION HARNESS POST-PIPELINE"
+          echo "=========================================================="
+          python tools/verify_harness.py
+
+      - name: Upload Verification Evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-evidence-${{ github.run_id }}
+          path: audit/verify_harness_*.json
+          retention-days: 30
