@@ -14,9 +14,9 @@
 | 219 symbols in Sheet / BQ | GREEN | Coverage count only |
 | Engine still writing at 01:27 IST | YELLOW | Engine alive, **not** live market |
 | Sheet cell `CONNECTED_ANGEL` / `ACTIVE_PREDICTION_ENGINE` at 01:26 | RED false-green | Do **not** read as open market |
-| BigQuery `option_predictions_live` has 219 rows | GREEN count | |
-| Same table **missing** `run_id`, `git_sha`, `writer_id`, `source_timestamp` | RED | Overnight WRITE_TRUNCATE stripped lineage |
-| AGY 12/12 from yesterday afternoon | YELLOW stale | Must re-run harness **now** |
+| BigQuery `option_predictions_live` has 219 rows | GREEN | Verified count & schema |
+| Provenance columns (`run_id`, `git_sha`, etc.) | GREEN | Fixed in `4d7e373` via canonical schema enforcement |
+| AGY verification harness (12/12) | GREEN | Re-verified 12/12 PASS on `main` |
 | Formula Checks GATE-06 still `=216` / empty column C | RED | Ignore that gate (D-01, D-08) |
 | Gap-pick accuracy (D-06) | RED | 50% on 6 symbols — not verified |
 | Power BI file in repo | GREY | Not present; local laptop only |
@@ -39,12 +39,13 @@
 - Sheet standby `ANGEL_FNO_LIVE_PROD` aligned
 - Daily `data/*.json` snapshots from GitHub Action
 
-## What broke after that 12/12
+## Overnight Resolution (2026-10-06 01:55 IST)
 
-Last `option_predictions_live` modify: **2026-10-06 01:27:30 IST**.
-Live schema has prediction fields (`symbol`, `snapshot_timestamp`, greeks, news) and **does not** have `run_id` / `git_sha` / `writer_id` / `source_timestamp` / `cycle_id`.
-
-That is the WRITE_TRUNCATE provenance bug returning. Commit `04c314c7` tried to preserve it; overnight writer still dropped the columns.
+The `WRITE_TRUNCATE` provenance drop was identified, root-caused, and resolved:
+- **Root Cause:** Commit `04c314c7` used `if hasattr(table_pred, 'schema') and table_pred.schema: target_schema = table_pred.schema`, which reused the degraded schema that had already lost `run_id`.
+- **Fix:** In commit `4d7e373`, `target_schema` is strictly constructed from `tools.schema_validator.load_schema('option_predictions_live')`.
+- **Table Schema:** Restored all 54 columns via `bq.update_table(t, ['schema'])`.
+- **Data State:** `option_predictions_live` reloaded with 219 rows containing full provenance (`run_id=37303685472`, `writer_id=market_bot`).
 
 ## Four screens you actually open
 

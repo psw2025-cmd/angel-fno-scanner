@@ -1,21 +1,22 @@
 {
-  "claim_time_ist": "2026-10-06T01:35:00+05:30",
+  "claim_time_ist": "2026-10-06T02:00:00+05:30",
   "market_session": "CLOSED",
   "safety": "PAPER_ANALYZER_ONLY",
   "repo": "psw2025-cmd/angel-fno-scanner",
-  "main_sha": "04c314c7f51bc5cbda49eef904675a733409be92",
-  "overall": "DISPUTED",
+  "main_sha": "4d7e373",
+  "overall": "VERIFIED_LOCAL",
   "agy_last_claim": {
-    "when_ist": "2026-10-05 afternoon",
+    "when_ist": "2026-10-06 01:55 IST",
     "harness": "12/12 PASS",
-    "run_id": "37288432509",
-    "status_now": "STALE_VS_OVERNIGHT_BQ"
+    "run_id": "37303685472",
+    "status_now": "PROVENANCE_RESTORED_CANONICAL_SCHEMA_ENFORCED",
+    "fix_commit": "4d7e373 fix(bq): strictly enforce canonical schema from validator on WRITE_TRUNCATE"
   },
   "independent_remote": {
     "option_predictions_live_rows": 219,
-    "option_predictions_live_last_modified_ist": "2026-10-06T01:27:30",
-    "provenance_columns_present": false,
-    "missing_columns": ["run_id", "git_sha", "writer_id", "source_timestamp", "cycle_id"],
+    "option_predictions_live_last_modified_ist": "2026-10-06T01:54:40",
+    "provenance_columns_present": true,
+    "missing_columns": [],
     "next_day_gap_predictions_last_modified_ist": "2026-10-05T17:10:07",
     "live_sheet_id": "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs",
     "standby_sheet_id": "1pI0Dp6ehEcsdA6q_Zuhff4mi1o0dSlB1mOUtUL5W3FA",
@@ -29,7 +30,8 @@
     "canonical_colab_in_drive_search": "NOT_FOUND",
     "latest_colab_in_drive": "Untitled72.ipynb 2026-10-04"
   },
-  "open_defects": ["U-01", "U-02", "D-01", "D-05", "D-06", "D-07", "D-08", "D-09-PHASE-3"],
+  "open_defects": ["U-02", "D-01", "D-05", "D-06", "D-07", "D-08", "D-09-PHASE-3"],
+  "resolved_defects": ["U-01 (BQ WRITE_TRUNCATE provenance drop fixed via canonical schema enforcement)"],
   "do_not_rebuild": ["219-universe", "writer_guard", "C2-heartbeat", "G19-contract-identity", "infra_readiness", "verify_harness"],
   "trader_use_today": "PAPER_RESEARCH_ONLY"
 }
