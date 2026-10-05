@@ -142,7 +142,7 @@
     "market_confirmation": "\ud83d\udfe2 BULLISH_CONFIRMED",
     "expected_move_band": "< 2.0%",
     "news_sentiment_score": 1.0,
-    "top_news_headline": "TMPV Stock in Focus: JLR wholesale volume jumps 24.5% in Q2, retail sales fall 7.5% - zeebiz.com"
+    "top_news_headline": "TMPV Stock in Focus: JLR wholesale volume jumps 24.5% in Q2, retail sales fall 7.5% - Zee Business"
   },
   {
     "rank": 23,
@@ -410,7 +410,7 @@
     "symbol": "ETERNAL",
     "gap_direction": "GAP-UP (CE EXPLOSION)",
     "expected_gap_pct": 1.37,
-    "pre_open_conviction_pct": 60.3,
+    "pre_open_conviction_pct": 63.3,
     "target_open_strike": "320 CE",
     "spot_ltp": 322.0,
     "atm_strike": 320.0,
@@ -427,12 +427,12 @@
     "directional_bias": "CALL (CE) BULLISH",
     "intensity_score": 81,
     "confidence_pct": 79.0,
-    "news_severity_level": 1,
+    "news_severity_level": 2,
     "news_source_tier": "TIER_3_FINANCIAL_MEDIA",
     "market_confirmation": "NEUTRAL_FLOW",
-    "expected_move_band": "0.0%",
+    "expected_move_band": "< 2.0%",
     "news_sentiment_score": 0.0,
-    "top_news_headline": "No fresh material catalyst"
+    "top_news_headline": "Sensex today | Stock Market Live: Sensex rises 472 pts to end at 72,382, Nifty settles at 22,555; ITC, Eternal lead gainers"
   },
   {
     "rank": 29,

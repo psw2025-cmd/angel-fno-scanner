@@ -1,5 +1,5 @@
 # Angel One F&O Prediction & Market Intelligence Snapshot
-**Generated**: `2026-10-05 10:14:58 UTC` | **System Status**: `🟢 PASS`
+**Generated**: `2026-10-05 11:14:11 UTC` | **System Status**: `🟢 PASS`
 
 ## 🌆 3:00 - 3:40 PM Pre-Close: Next-Day Gap-Up (CE) Picks
 | Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+50%) | Expected Gap % | Conviction % | Institutional Rationale |
@@ -15,7 +15,7 @@
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
 | 1 | **DMART** | `3550 PE` | `DMART27OCT263550PE` | ₹109.90 | ₹93.42 | ₹175.84 | **-3.20%** | 98.0% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
 | 2 | **HDFCBANK** | `710 PE` | `HDFCBANK27OCT26710PE` | ₹19.60 | ₹16.66 | ₹31.36 | **-1.72%** | 98.0% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
-| 3 | **HCLTECH** | `1200 PE` | `HCLTECH27OCT261200PE` | ₹45.15 | ₹38.38 | ₹72.24 | **-2.24%** | 95.8% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 3 | **HCLTECH** | `1200 PE` | `HCLTECH27OCT261200PE` | ₹45.15 | ₹38.38 | ₹72.24 | **-2.24%** | 92.8% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
 | 4 | **FORTIS** | `770 PE` | `FORTIS27OCT26770PE` | ₹21.60 | ₹18.36 | ₹34.56 | **-1.73%** | 78.0% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
 | 5 | **UPL** | `505 PE` | `UPL27OCT26505PE` | ₹16.00 | ₹13.60 | ₹25.60 | **-1.41%** | 66.6% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
 
