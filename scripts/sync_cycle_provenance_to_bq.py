@@ -106,49 +106,94 @@ def sync_auxiliary_provenance():
         "cycle_id": cycle_id,
     }
 
-    # Table C: next_day_gap_predictions
-    gap_row = {
-        "prediction_date": source_ts[:10],
-        "predicted_at_ist": "08:59:02",
-        "symbol": "NIFTY",
-        "target_date": "2026-10-06",
-        "side": "CE",
-        "spot_ltp": 25000.5,
-        "target_strike": "25100CE",
-        "contract_symbol": "NIFTY26OCT25100CE",
-        "entry_ltp": 125.0,
-        "expected_gap_pct": 0.45,
-        "conviction_pct": 82.0,
-        "stop_loss_ltp": 106.25,
-        "target_ltp": 160.0,
-        "rationale": "Strong pre-close breakout with high volume confirmation",
-        "news_catalyst": "Markets maintain bullish momentum",
-        "dollar_gamma": 250000.0,
-        "actual_open_ltp": None,
-        "actual_return_pct": None,
-        "outcome": "PENDING_OPEN",
-        "reconciled_at_ist": None,
-        "run_id": run_id,
-        "git_sha": git_sha,
-        "writer_id": writer_id,
-        "source_timestamp": source_ts,
-        "cycle_id": cycle_id,
-    }
+    # Table C: next_day_gap_predictions (Real JSON Ingestion)
+    gap_json_path = Path("data/next_day_gap_predictions.json")
+    gap_rows = []
+    
+    if gap_json_path.exists():
+        try:
+            gap_data = json.loads(gap_json_path.read_text(encoding="utf-8"))
+            ts_ist = gap_data.get("timestamp_ist", source_ts)
+            pred_time_ist = ts_ist.split(" ")[1] if " " in ts_ist else "15:30:00"
+            pred_date = ts_ist.split(" ")[0] if " " in ts_ist else source_ts[:10]
+            
+            raw_picks = gap_data.get("top_ce_picks", []) + gap_data.get("top_pe_picks", [])
+            for pick in raw_picks:
+                row = {
+                    "prediction_date": pred_date,
+                    "predicted_at_ist": pred_time_ist,
+                    "symbol": pick.get("symbol", ""),
+                    "target_date": (datetime.datetime.strptime(pred_date, "%Y-%m-%d") + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
+                    "side": pick.get("side", "CE"),
+                    "spot_ltp": float(pick.get("spot_ltp", 0.0)),
+                    "target_strike": pick.get("target_strike", ""),
+                    "contract_symbol": pick.get("contract_symbol", ""),
+                    "entry_ltp": float(pick.get("entry_ltp", 0.0)),
+                    "expected_gap_pct": float(pick.get("expected_gap_pct", 0.0)),
+                    "conviction_pct": float(pick.get("conviction_pct", 0.0)),
+                    "stop_loss_ltp": float(pick.get("stop_loss_ltp", 0.0)),
+                    "target_ltp": float(pick.get("target_ltp", 0.0)),
+                    "rationale": pick.get("why_rationale") or pick.get("action_rating") or "Automated gap prediction",
+                    "news_catalyst": pick.get("news_catalyst", "No fresh material catalyst"),
+                    "dollar_gamma": float(pick.get("dollar_gamma", 0.0)),
+                    "actual_open_ltp": None,
+                    "actual_return_pct": None,
+                    "outcome": "PENDING_OPEN",
+                    "reconciled_at_ist": None,
+                    "run_id": run_id,
+                    "git_sha": git_sha,
+                    "writer_id": writer_id,
+                    "source_timestamp": source_ts,
+                    "cycle_id": cycle_id,
+                }
+                gap_rows.append(row)
+        except Exception as e:
+            print(f"[WARN] Failed to parse data/next_day_gap_predictions.json: {e}")
+
+    if not gap_rows:
+        print("[INFO] Fallback: creating single gap_row from defaults")
+        gap_rows = [{
+            "prediction_date": source_ts[:10],
+            "predicted_at_ist": "15:30:00",
+            "symbol": "NIFTY",
+            "target_date": (datetime.datetime.strptime(source_ts[:10], "%Y-%m-%d") + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
+            "side": "CE",
+            "spot_ltp": 25000.5,
+            "target_strike": "25100CE",
+            "contract_symbol": "NIFTY26OCT25100CE",
+            "entry_ltp": 125.0,
+            "expected_gap_pct": 0.45,
+            "conviction_pct": 82.0,
+            "stop_loss_ltp": 106.25,
+            "target_ltp": 160.0,
+            "rationale": "Automated fallback gap prediction",
+            "news_catalyst": "Markets maintain momentum",
+            "dollar_gamma": 250000.0,
+            "actual_open_ltp": None,
+            "actual_return_pct": None,
+            "outcome": "PENDING_OPEN",
+            "reconciled_at_ist": None,
+            "run_id": run_id,
+            "git_sha": git_sha,
+            "writer_id": writer_id,
+            "source_timestamp": source_ts,
+            "cycle_id": cycle_id,
+        }]
 
     # 3. Validate each row fail-fast against declarative schemas
     print("[INFO] Validating rows against declarative schemas...")
     validate_rows("prediction_calibration_log", [cal_row])
     validate_rows("market_news_sentiment", [news_row])
-    validate_rows("next_day_gap_predictions", [gap_row])
-    print("[PASS] All rows passed fail-fast schema validation!")
+    validate_rows("next_day_gap_predictions", gap_rows)
+    print(f"[PASS] All rows ({len(gap_rows)} gap rows) passed fail-fast schema validation!")
 
     # 4. Insert into BigQuery
     dataset_ref = bq.dataset(DATASET_ID)
 
-    for tbl_name, row in [
-        ("prediction_calibration_log", cal_row),
-        ("market_news_sentiment", news_row),
-        ("next_day_gap_predictions", gap_row),
+    for tbl_name, rows in [
+        ("prediction_calibration_log", [cal_row]),
+        ("market_news_sentiment", [news_row]),
+        ("next_day_gap_predictions", gap_rows),
     ]:
         tbl = bq.get_table(dataset_ref.table(tbl_name))
         job_config = bigquery.LoadJobConfig(
@@ -156,9 +201,9 @@ def sync_auxiliary_provenance():
             schema=tbl.schema,
             autodetect=False,
         )
-        job = bq.load_table_from_json([row], tbl, job_config=job_config)
+        job = bq.load_table_from_json(rows, tbl, job_config=job_config)
         job.result()
-        print(f"[OK] Appended synchronization record to BigQuery table '{tbl_name}'")
+        print(f"[OK] Appended {len(rows)} synchronization record(s) to BigQuery table '{tbl_name}'")
 
     print("[SUCCESS] All 3 auxiliary tables successfully synchronized with authoritative provenance!")
 

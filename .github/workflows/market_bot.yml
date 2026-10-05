@@ -71,6 +71,7 @@ jobs:
           set -eo pipefail
           python scanner.py
           python3 agent_cli.py --export-snapshots
+          python scripts/sync_cycle_provenance_to_bq.py
 
       - name: Commit & Push Updated Snapshots
         run: |
