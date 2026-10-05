@@ -7,11 +7,11 @@
       "tolerance": 0
     },
     "runid_latest_identical": {
-      "expected": "all 4 = 37259385281",
+      "expected": "all 4 = 37288432509",
       "tolerance": 0
     },
     "gitsha_latest_identical": {
-      "expected": "all 4 = d425b45...",
+      "expected": "all 4 = 9fbef9c...",
       "tolerance": 0
     },
     "writer_id_market_bot": {
@@ -19,11 +19,11 @@
       "tolerance": 0
     },
     "sheet_vs_bq_runid_match": {
-      "expected": "cycle sheet=37259385281 bq=37259385281 (streaming=37261595211)",
+      "expected": "sheet=37288432509 bq=37288432509",
       "tolerance": 0
     },
     "sheet_vs_bq_gitsha_match": {
-      "expected": "sheet=d425b45... bq=d425b45...",
+      "expected": "sheet=9fbef9c... bq=9fbef9c...",
       "tolerance": 0
     },
     "forensic_live_symbol_count_219": {

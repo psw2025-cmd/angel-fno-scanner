@@ -1,8 +1,8 @@
 # Agent Handoff — Current State
 
-**Last updated:** 2026-10-05 by agy CLI (Completion Agent)  
+**Last updated:** 2026-10-05 by agy CLI (Post-Production-Run Sync)  
 **Repository state:** clean, in sync / tracking origin/main  
-**HEAD commit:** `b7e2df8` (docs: record D-09 Phase 1 completion in handoff and changelog)  
+**HEAD commit:** `14f70ca` (chore(data): auto-update daily prediction snapshots [skip ci])  
 **System Mode:** PAPER / ANALYZER (No live financial risk; safe sheet modifications permitted)  
 
 ---
@@ -14,11 +14,11 @@ Run: `python tools/verify_harness.py`
 Current results:
 - **12 PASS (100%):**
   - `runid_type_all_string` (all 4 tables STRING)
-  - `runid_latest_identical` (all 4 = 37259385281)
-  - `gitsha_latest_identical` (all 4 = d425b45...)
+  - `runid_latest_identical` (all 4 = 37288432509)
+  - `gitsha_latest_identical` (all 4 = 9fbef9c...)
   - `writer_id_market_bot` (all 4 = market_bot)
-  - `sheet_vs_bq_runid_match` (cycle matched: sheet=37259385281 bq=37259385281; streaming=37261595211)
-  - `sheet_vs_bq_gitsha_match` (sheet=d425b45... bq=d425b45...)
+  - `sheet_vs_bq_runid_match` (cycle matched: sheet=37288432509 bq=37288432509)
+  - `sheet_vs_bq_gitsha_match` (sheet=9fbef9c... bq=9fbef9c...)
   - `forensic_live_symbol_count_219` (219)
   - `forensic_live_symbols_match_manifest` (219/219)
   - `gate_formulas_reference_populated_cells` (0 unpopulated refs)
@@ -41,7 +41,7 @@ Current results:
   - `PAPER_ALERT_LOG`
   - `PRE_BREAKOUT_SCANNER` (formulas aligned in row 2 linking dynamically to `HEARTBEAT`)
   - `Formula Checks` (formulas 100% verified identical to OLD)
-  - `WRITE_PROVENANCE`
+  - `WRITE_PROVENANCE` (read range expanded to `A1:F500` in harness to capture full streaming session history)
   - `PUBLICATION_STATUS`
   - `PREMARKET_VS_ACTUAL`
   - `TOMORROW_EXPLOSIVE_WATCH`
@@ -61,7 +61,7 @@ See `docs/DEFECT_REGISTER.md` for authoritative details:
 | D-06 | HIGH | PREMARKET_VS_ACTUAL: 50% direction accuracy on 6 symbols | Open (Model Review) |
 | D-07 | LOW | TOMORROW_EXPLOSIVE_WATCH and PREMARKET_VS_ACTUAL are 6 days stale | Open (Scheduler) |
 | D-08 | MEDIUM | CE_PE_RANK column C always empty; GATE-06 formula references it anyway | Open (Schema) |
-| D-09 | HIGH | BigQuery auxiliary tables missing cycle_id schema field | IN_PROGRESS (Data migration applied, backups preserved, awaiting next scheduled `prediction_cycle`; fail-fast plan phased in `docs/decisions/D-09_PHASES.md`) |
+| D-09 | HIGH | BigQuery auxiliary tables missing cycle_id schema field | VERIFIED_PRODUCTION (Data migration & backup complete; run 37288432509 verified with 0 NULLs; Phase 1 schemas & Phase 2 validator complete; next: Phase 3 writer wiring) |
 
 ---
 

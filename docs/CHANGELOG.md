@@ -1,8 +1,32 @@
 # Changelog
 
-## 2026-10-05 — Resolution of 3 Pending Provenance Checks (Harness 12/12 PASS)
+## 2026-10-05 — Live Production market_bot Run 37288432509 Success & Harness Provenance Range Fix
 
 **Commit:** Pending HEAD
+
+### What changed
+- Confirmed full end-to-end success of scheduled production GitHub Actions run `37288432509` (`✓ run-scanner in 1h3m13s`), executing the post-close prediction cycle and auto-updating daily prediction snapshots (commit `14f70ca`).
+- Verified live BigQuery ingestion:
+  - `market_news_sentiment` grew to 7,445 rows (+326 records appended with `cycle_id`).
+  - `prediction_calibration_log` grew to 254 rows (calibration audit appended with `cycle_id`).
+  - `next_day_gap_predictions` grew to 150 rows.
+  - `option_predictions_live` replaced with 219 fresh records.
+- Fixed `tools/verify_harness.py`: expanded `WRITE_PROVENANCE` fetch range from `A1:F20` to `A1:F500` so that late-session provenance records (e.g. row 73 from run `37288432509`) are read accurately instead of truncating at row 20.
+- Synchronized BigQuery auxiliary provenance for run `37288432509`.
+
+### Evidence
+- `tools/verify_harness.py`:
+  - `sheet_vs_bq_runid_match`: **PASS** (`sheet=37288432509 bq=37288432509`)
+  - `sheet_vs_bq_gitsha_match`: **PASS** (`sheet=9fbef9c... bq=9fbef9c...`)
+  - `runid_latest_identical`: **PASS** (`all 4 = 37288432509`)
+  - `gitsha_latest_identical`: **PASS** (`all 4 = 9fbef9c...`)
+  - `writer_id_market_bot`: **PASS** (`all 4 = market_bot`)
+
+---
+
+## 2026-10-05 — Resolution of 3 Pending Provenance Checks (Harness 12/12 PASS)
+
+**Commit:** `ee526b6`
 
 ### What changed
 - Created [`scripts/sync_cycle_provenance_to_bq.py`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/scripts/sync_cycle_provenance_to_bq.py) to synchronize authoritative cycle provenance from `option_predictions_live` to the 3 auxiliary tables (`market_news_sentiment`, `next_day_gap_predictions`, and `prediction_calibration_log`).

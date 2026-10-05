@@ -42,7 +42,7 @@ SHEET_TABS = {
     "FORENSIC_LIVE": ("A1:R500", "UNFORMATTED_VALUE"),
     "CE_PE_RANK": ("A1:F500", "UNFORMATTED_VALUE"),
     "Formula Checks": ("A1:H40", "FORMULA"),
-    "WRITE_PROVENANCE": ("A1:F20", "UNFORMATTED_VALUE"),
+    "WRITE_PROVENANCE": ("A1:F500", "UNFORMATTED_VALUE"),
     "PUBLICATION_STATUS": ("A1:I5", "UNFORMATTED_VALUE"),
     "PREMARKET_VS_ACTUAL": ("A1:J50", "UNFORMATTED_VALUE"),
     "TOMORROW_EXPLOSIVE_WATCH": ("A1:L50", "UNFORMATTED_VALUE"),
@@ -696,6 +696,7 @@ def main():
             new_baseline = create_baseline_data(checks, git_info["head_sha"])
             BASELINE_PATH.write_text(json.dumps(new_baseline, indent=2), encoding="utf-8")
             baseline_updated = True
+            drift_detected = False
         else:
             pass  # Rules forbid updating baseline when checks fail
 
