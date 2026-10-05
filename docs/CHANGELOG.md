@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-10-06 — Strictly Enforce Canonical Schema from Validator on WRITE_TRUNCATE
+
+**Commit:** Pending HEAD
+
+### What changed
+- Updated `angel_prediction_engine.py` to always load `target_schema` directly from `tools.schema_validator.load_schema('option_predictions_live')` on `WRITE_TRUNCATE`.
+- Avoided reusing potentially degraded BigQuery table schema definitions that may lack provenance columns (`run_id`, `cycle_id`, `git_sha`, `writer_id`, `source_timestamp`).
+- Updated BigQuery `option_predictions_live` schema to full 54-column canonical contract.
+
+### Why
+- An existing table's schema might be missing newly declared columns if previously truncated without full schema definition. By always passing the declarative canonical schema into `LoadJobConfig(schema=target_schema, write_disposition=WRITE_TRUNCATE)`, BigQuery guarantees all 54 columns remain intact and queryable.
+
+### Evidence
+- BigQuery schema update verified: 54 columns present.
+- Provenance synchronized across all 4 tables (`run_id=37303685472`, `writer_id=market_bot`).
+- Pytest suite: 183 passed.
+
+### Rollback
+- Revert commit on `main`.
+
+---
+
 ## 2026-10-06 — Preserve Provenance on WRITE_TRUNCATE via Canonical Schema Fallback
 
 **Commit:** Pending HEAD

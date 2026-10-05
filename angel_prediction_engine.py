@@ -2598,15 +2598,12 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
                 "data_freshness_status": "MARKET_CLOSED" if not is_market_open(ist_dt) else "SOURCE_TIME_UNVERIFIED"
             })
 
-        if hasattr(table_pred, "schema") and table_pred.schema:
-            target_schema = table_pred.schema
-        else:
-            from tools.schema_validator import load_schema
-            raw_schema = load_schema("option_predictions_live")
-            target_schema = [
-                bigquery.SchemaField(f["name"], f["type"], mode=f.get("mode", "NULLABLE"))
-                for f in raw_schema
-            ]
+        from tools.schema_validator import load_schema
+        raw_schema = load_schema("option_predictions_live")
+        target_schema = [
+            bigquery.SchemaField(f["name"], f["type"], mode=f.get("mode", "NULLABLE"))
+            for f in raw_schema
+        ]
 
         job_config_trunc = bigquery.LoadJobConfig(
             write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
