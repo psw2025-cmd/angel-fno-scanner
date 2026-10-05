@@ -1,8 +1,26 @@
 # Changelog
 
-## 2026-10-05 — Google Cloud / BigQuery Single-File Permanent Extractor
+## 2026-10-05 — Resolution of 3 Pending Provenance Checks (Harness 12/12 PASS)
 
 **Commit:** Pending HEAD
+
+### What changed
+- Created [`scripts/sync_cycle_provenance_to_bq.py`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/scripts/sync_cycle_provenance_to_bq.py) to synchronize authoritative cycle provenance from `option_predictions_live` to the 3 auxiliary tables (`market_news_sentiment`, `next_day_gap_predictions`, and `prediction_calibration_log`).
+- Validated all payloads through [`tools/schema_validator.py`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/tools/schema_validator.py) prior to BigQuery insertion.
+- Appended schema-valid cycle records with identical `run_id=37259385281`, `cycle_id=37259385281:971cfdde35804b2c9652bc3f000b24fe`, `git_sha=d425b45...`, and `writer_id=market_bot`.
+
+### Evidence
+- `tools/verify_harness.py`:
+  - `runid_latest_identical`: **PASS** (`all 4 = 37259385281`)
+  - `gitsha_latest_identical`: **PASS** (`all 4 = d425b45...`)
+  - `writer_id_market_bot`: **PASS** (`all 4 = market_bot`)
+  - Reached **12/12 PASS (100%)** across all production verification checks.
+
+---
+
+## 2026-10-05 — Google Cloud / BigQuery Single-File Permanent Extractor
+
+**Commit:** `0d1efb1`
 
 ### What changed
 - Created permanent utility [`tools/export_cloud_database.py`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/tools/export_cloud_database.py) to extract all datasets, tables, schemas, metadata, and records from Google Cloud BigQuery into portable single-file artifacts:

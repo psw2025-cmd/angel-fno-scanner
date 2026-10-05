@@ -12,8 +12,11 @@
 Run: `python tools/verify_harness.py`
 
 Current results:
-- **9 PASS:**
+- **12 PASS (100%):**
   - `runid_type_all_string` (all 4 tables STRING)
+  - `runid_latest_identical` (all 4 = 37259385281)
+  - `gitsha_latest_identical` (all 4 = d425b45...)
+  - `writer_id_market_bot` (all 4 = market_bot)
   - `sheet_vs_bq_runid_match` (cycle matched: sheet=37259385281 bq=37259385281; streaming=37261595211)
   - `sheet_vs_bq_gitsha_match` (sheet=d425b45... bq=d425b45...)
   - `forensic_live_symbol_count_219` (219)
@@ -22,12 +25,7 @@ Current results:
   - `pytest_154_passed` (183 passed >= 154)
   - `git_tree_clean` (clean)
   - `git_synced_with_origin` (ahead=0 behind=0)
-- **3 PENDING:**
-  - `runid_latest_identical` (pre-cycle: option_predictions_live populated, 3 auxiliary tables awaiting first cycle)
-  - `gitsha_latest_identical` (pre-cycle: option_predictions_live populated, 3 auxiliary tables awaiting first cycle)
-  - `writer_id_market_bot` (pre-cycle: option_predictions_live is market_bot, 3 auxiliary tables awaiting first cycle)
-- **0 FAIL** (Overall: PENDING 9/12)
-- Note: Pre-cycle awareness is now active in the harness. The 3 PENDING checks will automatically resolve to PASS once the next scheduled `prediction_cycle` executes in GitHub Actions.
+- **0 PENDING, 0 FAIL** (Overall: PASS 12/12)
 
 ---
 
