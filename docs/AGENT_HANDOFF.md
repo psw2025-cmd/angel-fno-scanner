@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-10-05 by agy CLI (Documentation & Sync Agent)  
 **Repository state:** clean, in sync / tracking origin/main  
-**HEAD commit:** `a69d182` "docs(audit): complete audit of existing repository documentation"  
+**HEAD commit:** Pending HEAD "fix(harness)+docs: pytest count, sheet investigation, D-09 status"  
 
 ## How To Verify Current State
 
@@ -26,6 +26,7 @@ See `docs/DEFECT_REGISTER.md` for the authoritative list. Summary:
 | D-06 | HIGH | PREMARKET_VS_ACTUAL: 50% direction accuracy on 6 symbols | Open (Model Review) |
 | D-07 | LOW | TOMORROW_EXPLOSIVE_WATCH and PREMARKET_VS_ACTUAL are 6 days stale | Open (Scheduler) |
 | D-08 | MEDIUM | CE_PE_RANK column C always empty; GATE-06 formula references it anyway | Open (Schema) |
+| D-09 | HIGH | BigQuery auxiliary tables missing cycle_id schema field | In Progress (staging_review) |
 
 ## Recently Closed Defects
 
@@ -34,6 +35,7 @@ See `docs/DEFECT_REGISTER.md` for the authoritative list. Summary:
 | D-02 | `eaccdaf` | 2026-10-05 |
 | D-03 | `e1a68c0` | 2026-10-05 |
 | D-04 | `e1a68c0` | 2026-10-05 |
+| D-10 | Pending HEAD | 2026-10-05 |
 
 ## Pending Scheduled Events
 

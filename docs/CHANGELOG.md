@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026-10-05 — Harness pytest count fix, Sheet/BQ mismatch investigation, and Sheet switch readiness
+
+**Commit:** Pending HEAD  
+**Defects closed:** D-10  
+**Defects diagnosed:** D-09  
+
+### What changed
+- `tools/verify_harness.py`: Updated `pytest_154_passed` check to dynamically parse passed test count and accept `>= 154` (currently 156 tests passing in suite). Updated `compare_with_baseline` to prevent false drift when tests increase.
+- `tools/verify_harness.py`: Added 4-attempt retry loop to Google Sheets authentication and spreadsheet opening (`pull_google_sheets`) to eliminate transient connection reset failures.
+- Investigated BigQuery vs Sheet `run_id` divergence: Sheet `37261595211` is currently actively streaming via `market_bot` in `scanner.py` (`sink="scanner_quote_loop"`), while BigQuery has `37259385281` from the pre-market completion cycle.
+- Inspected Google Sheet switch targets: Prompt candidate `1pOIOwgI6x6OxcUAsFZxDrnNwJt4Q0oSn5BpUPHKW5PA` returns 404 (non-existent); verified live production sheet `1pI0Dp6ehEcsdA6q_Zuhff4mi1o0dSlB1mOUtUL5W3FA` contains all 12 clean production tabs with all 7 required tabs intact.
+
+### Why
+- Prevent cosmetic CI/CD harness failure when tests are added to test suite.
+- Provide definitive code-level diagnosis of why Google Sheet shows newer `run_id` than BigQuery during active market trading sessions.
+- Verify readiness of new production spreadsheet before updating repository secret.
+
+### Evidence
+- `tools/verify_harness.py` passes `pytest_154_passed` with `156 passed`.
+- `scanner.py` lines 441-446 establish that quote loop writes to sheet during session, and line 507 invokes BigQuery prediction pipeline after loop completion.
+- `gspread` inspect confirms 12 clean tabs on `1pI0Dp6ehEcsdA6q_Zuhff4mi1o0dSlB1mOUtUL5W3FA`.
+
+---
+
 ## 2026-10-05 — Track staging_review as a governed review queue
 
 **Commit:** 9dbe39e

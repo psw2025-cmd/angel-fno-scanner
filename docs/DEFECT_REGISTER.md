@@ -12,6 +12,8 @@ Every defect ever found. Status tracked. Never delete rows.
 | D-06 | 2026-10-05 | PREMARKET_VS_ACTUAL: 50% direction accuracy on 6 symbols | HIGH | OPEN | — | See `docs/decisions/D-06.md` |
 | D-07 | 2026-10-05 | TOMORROW_EXPLOSIVE_WATCH and PREMARKET_VS_ACTUAL are 6 days stale | LOW | OPEN | — | See `docs/decisions/D-07.md` |
 | D-08 | 2026-10-05 | CE_PE_RANK column C always empty; GATE-06 formula references it anyway | MEDIUM | OPEN | — | See `docs/decisions/D-08.md` |
+| D-09 | 2026-10-05 | BigQuery auxiliary tables missing cycle_id schema field causing 400 Bad Request on append | HIGH | IN_PROGRESS | — | Staged in staging_review/migrate_bq_cycle_id.py |
+| D-10 | 2026-10-05 | Harness pytest check asserted exact string '154 passed', failing when suite grew to 156 | LOW | CLOSED | Pending HEAD | Dynamically parse test count with >= 154 assertion |
 
 ## Status definitions
 - **OPEN**: defect confirmed, no fix in progress
@@ -56,3 +58,12 @@ Both need regeneration or renaming. See `docs/decisions/D-07.md`.
 Every data row in `CE_PE_RANK` has an empty column C.
 GATE-06 formula references `CE_PE_RANK!C3:C218` which is therefore always 0 or blank.
 Either the formula is wrong or the data schema is wrong. See `docs/decisions/D-08.md`.
+
+### D-09 — BigQuery auxiliary tables missing cycle_id
+`angel_prediction_engine.py` constructs rows for `market_news_sentiment`, `next_day_gap_predictions`, and `prediction_calibration_log` containing `cycle_id`.
+However, the BigQuery table schemas in `fno_predictions` currently lack the `cycle_id` column, causing BigQuery append jobs to throw `400 Bad Request: No such field: cycle_id`.
+Fix is prepared and staged in `staging_review/migrate_bq_cycle_id.py` and `staging_review/schema_projection.py`.
+
+### D-10 — Harness pytest assertion exact count mismatch
+`tools/verify_harness.py` checked `if retcode == 0 and "154 passed" in py_summary:`. When documentation tests were added bringing the count to 156, the harness failed.
+Fixed to regex parse the passed integer and assert `>= 154`.
