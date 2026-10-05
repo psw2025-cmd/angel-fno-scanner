@@ -2,9 +2,12 @@
 
 **Last updated:** 2026-10-05 by agy CLI (Completion Agent)  
 **Repository state:** clean, in sync / tracking origin/main  
-**HEAD commit:** `c4484aa` (docs(decisions): plan fail-fast validator chain for D-09 permanent fix)  
+**HEAD commit:** `e8c0021` (docs(decisions): split D-09 validator chain into six executable phases)  
+**System Mode:** PAPER / ANALYZER (No live financial risk; safe sheet modifications permitted)  
 
-## Current Verification Status
+---
+
+## 1. Current Verification Status
 
 Run: `python tools/verify_harness.py`
 
@@ -24,11 +27,34 @@ Current results (as of commit `96b1657`):
   - `gitsha_latest_identical` (pre-cycle: option_predictions_live populated, 3 auxiliary tables awaiting first cycle)
   - `writer_id_market_bot` (pre-cycle: option_predictions_live is market_bot, 3 auxiliary tables awaiting first cycle)
 - **0 FAIL** (Overall: PENDING 9/12)
-- Note: The verification harness now treats pre-cycle NULL `run_id`s in auxiliary tables as `PENDING` rather than `FAIL`. It is also cycle-aware regarding live quote loop streaming to the sheet. Full 12/12 PASS will automatically resolve when the next scheduled `prediction_cycle` executes in GitHub Actions.
+- Note: Pre-cycle awareness is now active in the harness. The 3 PENDING checks will automatically resolve to PASS once the next scheduled `prediction_cycle` executes in GitHub Actions.
 
-## Open Defects
+---
 
-See `docs/DEFECT_REGISTER.md` for the authoritative list. Summary:
+## 2. Google Sheets State
+
+- **OLD Sheet (`1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs`):** 26 tabs. Currently the active production target for `scanner.py` streaming and scheduled prediction runs.
+- **NEW Sheet (`1pI0Dp6ehEcsdA6q_Zuhff4mi1o0dSlB1mOUtUL5W3FA`):** 14 tabs. Structurally aligned with OLD. Contains all 14 required pipeline tabs:
+  - `FORENSIC_LIVE`
+  - `CE_PE_RANK`
+  - `OPTION_PREDICTIONS`
+  - `NEWS_LIVE`
+  - `HEARTBEAT`
+  - `PAPER_ALERT_LOG`
+  - `PRE_BREAKOUT_SCANNER` (formulas aligned in row 2 linking dynamically to `HEARTBEAT`)
+  - `Formula Checks` (formulas 100% verified identical to OLD)
+  - `WRITE_PROVENANCE`
+  - `PUBLICATION_STATUS`
+  - `PREMARKET_VS_ACTUAL`
+  - `TOMORROW_EXPLOSIVE_WATCH`
+  - `PRODUCTION_APPROVED` (added; header structure A1:H11 initialized)
+  - `TOP_GAINERS` (added; header structure A1:W4 initialized)
+
+---
+
+## 3. Defect Ledger Status
+
+See `docs/DEFECT_REGISTER.md` for authoritative details:
 
 | ID | Severity | Description | Status |
 |---|---|---|---|
@@ -37,34 +63,28 @@ See `docs/DEFECT_REGISTER.md` for the authoritative list. Summary:
 | D-06 | HIGH | PREMARKET_VS_ACTUAL: 50% direction accuracy on 6 symbols | Open (Model Review) |
 | D-07 | LOW | TOMORROW_EXPLOSIVE_WATCH and PREMARKET_VS_ACTUAL are 6 days stale | Open (Scheduler) |
 | D-08 | MEDIUM | CE_PE_RANK column C always empty; GATE-06 formula references it anyway | Open (Schema) |
-| D-09 | HIGH | BigQuery auxiliary tables missing cycle_id schema field | IN_PROGRESS (Data fixed with `cycle_id STRING NULLABLE` and backups; awaiting first cycle run; plan documented in `docs/decisions/D-09_PLAN.md`) |
+| D-09 | HIGH | BigQuery auxiliary tables missing cycle_id schema field | IN_PROGRESS (Data migration applied, backups preserved, awaiting next scheduled `prediction_cycle`; fail-fast plan phased in `docs/decisions/D-09_PHASES.md`) |
 
-*Note: No new defects (D-10) were discovered during this execution.*
+---
 
-## Recently Closed Defects
+## 4. Next Project: Fail-Fast Validator Chain
 
-| ID | Closed by | Date | Note |
-|---|---|---|---|
-| D-02 | `eaccdaf` | 2026-10-05 | BigQuery run_id INT64 schema fix |
-| D-03 | `e1a68c0` | 2026-10-05 | Timestamp format ISO serialization |
-| D-04 | `e1a68c0` | 2026-10-05 | Provenance fields spread across writers |
+The permanent remediation for D-09 is phased and documented in [`docs/decisions/D-09_PHASES.md`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/docs/decisions/D-09_PHASES.md):
+- **Phase 1:** Schema Registry (`schemas/*.json`)
+- **Phase 2:** Fail-Fast Validator (`tools/schema_validator.py` + tests)
+- **Phase 3:** Writer Wiring (`angel_prediction_engine.py`)
+- **Phase 4:** Cycle Status Tracking (BigQuery `cycle_status` table)
+- **Phase 5:** Pre-Open Gate (`tools/pre_open_gate.py`)
+- **Phase 6:** CI Workflows (`.github/workflows/`)
 
-## Pending Scheduled Events
+---
 
-- Next `prediction_cycle` run in GitHub Actions to populate rows into `market_news_sentiment`, `next_day_gap_predictions`, and `prediction_calibration_log` with valid `run_id` and `cycle_id`.
-- Human decision on switching Google Sheet `SHEET_ID` secret from OLD (`1Zu_9uJDQd...`) to NEW (`1pI0Dp6ehEcsd...`) per `docs/decisions/SHEET_SWITCH.md`.
+## 5. Where Full Evidence Lives
 
-## Protected Files — Read Before Editing
-
-- `writer_guard.py` — single-writer contract
-- `publication.py` — digest and lineage
-- `universe_contract.py` — 219-symbol freeze
-- All files in `tests/`
-
-## Where Full History Lives
-
-- `docs/CHANGELOG.md` — every commit, reverse chronological
-- `docs/DEFECT_REGISTER.md` — every defect, all statuses
-- `docs/decisions/SHEET_SWITCH.md` — Old vs New sheet analysis
-- `docs/decisions/D-09_PLAN.md` — Fail-fast schema validator chain architecture
-- `audit/` — forensic snapshots and evidence folders
+- [`docs/CHANGELOG.md`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/docs/CHANGELOG.md) — every commit, reverse chronological
+- [`docs/SHEET_FULL_DIFF.md`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/docs/SHEET_FULL_DIFF.md) — complete structural and data diff between OLD and NEW sheets
+- [`docs/SHEET_ALIGNMENT_LOG.md`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/docs/SHEET_ALIGNMENT_LOG.md) — log of structural formula alignment on NEW sheet
+- [`docs/SHEET_TAB_ADDITIONS.md`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/docs/SHEET_TAB_ADDITIONS.md) — log of `PRODUCTION_APPROVED` and `TOP_GAINERS` additions
+- [`docs/BACKUP_CLEANUP_LOG.md`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/docs/BACKUP_CLEANUP_LOG.md) — evaluation and safe retention rationale for BigQuery backup tables
+- [`docs/decisions/D-09_PLAN.md`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/docs/decisions/D-09_PLAN.md) — architectural blueprint for validator chain
+- [`docs/decisions/D-09_PHASES.md`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/docs/decisions/D-09_PHASES.md) — 6 executable implementation phases

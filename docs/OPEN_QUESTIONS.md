@@ -32,21 +32,28 @@ This document tracks unresolved product, architecture, and operational decisions
 
 ---
 
-## 5. OQ-05 — Live Production Stream Transition to ANGEL_FNO_LIVE_PROD (Sheet Switch)
-- **Context**: Detailed analysis in `docs/decisions/SHEET_SWITCH.md` compared the live OLD sheet (`1Zu_9uJDQd...`, 26 tabs) with the provisioned NEW sheet (`1pI0Dp6ehEcsd...`, 12 tabs). The NEW sheet has user quota (15 GB) and includes all 12 key tabs (`FORENSIC_LIVE`, `CE_PE_RANK`, `OPTION_PREDICTIONS`, `NEWS_LIVE`, `HEARTBEAT`, `PAPER_ALERT_LOG`, `PRE_BREAKOUT_SCANNER`, `Formula Checks`, `WRITE_PROVENANCE`, `PUBLICATION_STATUS`, `PREMARKET_VS_ACTUAL`, `TOMORROW_EXPLOSIVE_WATCH`). However, `scanner.py` also writes to `PRODUCTION_APPROVED` and `TOP_GAINERS`, which are absent in NEW.
-- **Question & Recommendation**: Do not switch the GitHub Actions secret `SHEET_ID` immediately. First, provision the two missing worksheets (`PRODUCTION_APPROVED` and `TOP_GAINERS`) in the NEW sheet. Second, archive historical data rows. Once validated, execute the human secret update in GitHub repository settings.
+## 5. OQ-05 — Live Production Stream Transition to NEW Sheet (Sheet Switch)
+- **Context**: NEW sheet `1pI0Dp6ehEcsdA6q_Zuhff4mi1o0dSlB1mOUtUL5W3FA` has been fully provisioned and structurally aligned. It now possesses all 14 required tabs, matching OLD sheet `1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs`.
+- **Status / Decision**: **DEFERRED**. The system is operating in paper mode with no financial risk. Both sheets are viable targets. The secret switch remains a zero-urgency human action when the team chooses to cut over.
 - **Related Defect**: D-09 / Architectural Improvement
 
 ---
 
 ## 6. OQ-06 — Fail-Fast Schema Validator Chain Implementation
-- **Context**: The D-09 schema divergence investigation led to the architecture defined in `docs/decisions/D-09_PLAN.md`. It rejects permissive projection (`staging_review/schema_projection.py`) and outlines a 6-phase fail-fast pipeline: (1) `schemas/*.json`, (2) `tools/schema_validator.py` + tests, (3) writer wiring, (4) BigQuery `cycle_status` table, (5) `tools/pre_open_gate.py`, and (6) CI workflow enforcement.
-- **Question**: Confirm start of Phase 1 implementation as the next dedicated engineering cycle.
+- **Context**: The D-09 schema divergence investigation led to the architecture defined in `docs/decisions/D-09_PLAN.md`.
+- **Status / Decision**: **PLANNED IN `D-09_PHASES.md`**. Six sequential executable phases are defined with deliverables, unit tests, verification commands, and rollback procedures. Ready for execution beginning with Phase 1.
 - **Related Defect**: D-09
 
 ---
 
-## 7. OQ-07 — Single-Writer Lease & Concurrency Governance Across Environments
-- **Context**: `scanner.py` runs streaming quote loops during market hours, while pre-market and pre-close prediction cycles run periodically via GitHub Actions and local workstation scripts. Multi-writer race conditions must be prevented per `AGENTS.md` Section 13.
-- **Question**: Should an explicit atomic BigQuery / Redis / Cloud Storage writer lease token be required before any writer acquires publish authority, ensuring zero collision between local workstation testing and GitHub Actions scheduled jobs?
-- **Related Defect**: Architectural Governance
+## 7. OQ-07 — New Sheet Review & Structural Parity
+- **Context**: Thorough audit was needed to determine if NEW sheet missed any structural elements present in OLD.
+- **Status / Decision**: **RESOLVED VIA `docs/SHEET_FULL_DIFF.md` AND `docs/SHEET_ALIGNMENT_LOG.md`**. All formulas, headers, and tabs have been audited. `PRE_BREAKOUT_SCANNER` formulas were linked to `HEARTBEAT`, and `PRODUCTION_APPROVED` and `TOP_GAINERS` tabs were added.
+- **Related Defect**: Architecture
+
+---
+
+## 8. OQ-08 — BigQuery Backup Table Retention Policy
+- **Context**: Evaluation of the 4 backup tables in BigQuery `fno_predictions` (`market_news_sentiment_backup_cycleid_20261005_050920`, `next_day_gap_predictions_backup_cycleid_20261005_050920`, `option_predictions_live_backup_20261005`, `prediction_calibration_log_backup_cycleid_20261005_050920`).
+- **Status / Decision**: **PRESERVED PER 24-HOUR AGE GATE**. Logged in `docs/BACKUP_CLEANUP_LOG.md`. All tables are under 24 hours old (1.7 to 10.4 hours old) and are retained as active rollback points until the first post-migration `prediction_cycle` executes.
+- **Related Defect**: D-09 Governance
