@@ -1,10 +1,8 @@
-name: Angel One Daily Option Prediction & Forensic Bot
+﻿name: Angel One Daily Option Prediction & Forensic Bot
 
 on:
   schedule:
-    # 03:00 UTC = 08:30 AM IST (Pre-market news & sentiment sync)
     - cron: '0 3 * * 1-5'
-    # 03:40 UTC = 09:10 AM IST (Market hours live streaming daemon)
     - cron: '40 3 * * 1-5'
   workflow_dispatch:
   push:
@@ -22,12 +20,12 @@ permissions:
 
 concurrency:
   group: market-bot
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   run-scanner:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 420
 
     steps:
       - name: Checkout Code
@@ -71,9 +69,7 @@ jobs:
         continue-on-error: false
         run: |
           set -eo pipefail
-          # scanner.py owns the single prediction/write cycle at the end of its session.
           python scanner.py
-          # Snapshot export is read-only against production sinks.
           python3 agent_cli.py --export-snapshots
 
       - name: Commit & Push Updated Snapshots

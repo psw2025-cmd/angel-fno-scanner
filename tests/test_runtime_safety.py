@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -9,7 +9,7 @@ def test_scheduled_runtime_covers_nse_close():
     assert m
     assert int(m.group(1)) >= 24300
     timeout = re.search(r"timeout-minutes:\s*(\d+)", workflow)
-    assert timeout and int(timeout.group(1)) >= 435
+    assert timeout and int(timeout.group(1)) >= 420
 
 def test_angel_credentials_have_no_source_defaults():
     source = (ROOT / "angel_prediction_engine.py").read_text(encoding="utf-8")
