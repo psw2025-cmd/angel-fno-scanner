@@ -7,8 +7,11 @@ Dry-run test suite for the staging review components:
 2. Tests provenance retention (run_id, git_sha, writer_id)
 3. Tests against live BigQuery table schemas in read-only mode
 """
+import os
 import sys
 from pathlib import Path
+
+import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
@@ -47,6 +50,10 @@ def test_synthetic_projection():
     print("  [PASS] Synthetic schema projection successfully pruned extra keys while keeping required columns.")
 
 
+@pytest.mark.skipif(
+    not (os.getenv("BQ_PROJECT_ID") or os.getenv("GOOGLE_APPLICATION_CREDENTIALS")),
+    reason="Requires live BigQuery credentials; skipped when not configured",
+)
 def test_live_bigquery_projection():
     print("\n[TEST 2] Testing projection against live BigQuery market_news_sentiment schema...")
     bq = get_bigquery_client()
