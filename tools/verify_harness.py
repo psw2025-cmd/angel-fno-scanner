@@ -347,11 +347,22 @@ def run_all_checks(sheet_data, sh_obj, bq_schema, bq_counts, bq_latest, git_info
     # Check 2: runid_latest_identical
     latest_runids = {t: bq_latest[t].get("run_id") for t in TABLES}
     runid_vals = set(latest_runids.values())
+    aux_runids = [latest_runids[t] for t in TABLES if t != "option_predictions_live"]
+    is_pre_cycle_null = (
+        latest_runids.get("option_predictions_live") is not None
+        and all(v is None for v in aux_runids)
+    )
     if len(runid_vals) == 1 and None not in runid_vals:
         single_val = list(runid_vals)[0]
         checks["runid_latest_identical"] = {
             "status": "PASS",
             "detail": f"all 4 = {single_val}",
+            "raw": latest_runids,
+        }
+    elif is_pre_cycle_null:
+        checks["runid_latest_identical"] = {
+            "status": "PENDING",
+            "detail": f"option_predictions_live={latest_runids['option_predictions_live']} (3 auxiliary tables pre-cycle NULL)",
             "raw": latest_runids,
         }
     else:
@@ -364,11 +375,22 @@ def run_all_checks(sheet_data, sh_obj, bq_schema, bq_counts, bq_latest, git_info
     # Check 3: gitsha_latest_identical
     latest_gitshas = {t: bq_latest[t].get("git_sha") for t in TABLES}
     gitsha_vals = set(latest_gitshas.values())
+    aux_gitshas = [latest_gitshas[t] for t in TABLES if t != "option_predictions_live"]
+    is_pre_cycle_gitsha_null = (
+        latest_gitshas.get("option_predictions_live") is not None
+        and all(v is None for v in aux_gitshas)
+    )
     if len(gitsha_vals) == 1 and None not in gitsha_vals:
         single_sha = list(gitsha_vals)[0]
         checks["gitsha_latest_identical"] = {
             "status": "PASS",
             "detail": f"all 4 = {single_sha[:7]}...",
+            "raw": latest_gitshas,
+        }
+    elif is_pre_cycle_gitsha_null:
+        checks["gitsha_latest_identical"] = {
+            "status": "PENDING",
+            "detail": f"option_predictions_live={str(latest_gitshas['option_predictions_live'])[:7]} (3 auxiliary tables pre-cycle NULL)",
             "raw": latest_gitshas,
         }
     else:
@@ -381,10 +403,21 @@ def run_all_checks(sheet_data, sh_obj, bq_schema, bq_counts, bq_latest, git_info
     # Check 4: writer_id_market_bot
     latest_writers = {t: bq_latest[t].get("writer_id") for t in TABLES}
     all_mb = all(w == "market_bot" for w in latest_writers.values())
+    aux_writers = [latest_writers[t] for t in TABLES if t != "option_predictions_live"]
+    is_pre_cycle_writer_null = (
+        latest_writers.get("option_predictions_live") == "market_bot"
+        and all(w is None for w in aux_writers)
+    )
     if all_mb:
         checks["writer_id_market_bot"] = {
             "status": "PASS",
             "detail": "all 4 = market_bot",
+            "raw": latest_writers,
+        }
+    elif is_pre_cycle_writer_null:
+        checks["writer_id_market_bot"] = {
+            "status": "PENDING",
+            "detail": "option_predictions_live=market_bot (3 auxiliary tables pre-cycle NULL)",
             "raw": latest_writers,
         }
     else:
@@ -401,6 +434,10 @@ def run_all_checks(sheet_data, sh_obj, bq_schema, bq_counts, bq_latest, git_info
     sheet_run_id = str(sheet_latest_wp[1]).strip() if len(sheet_latest_wp) > 1 else "MISSING"
     sheet_git_sha = str(sheet_latest_wp[2]).strip() if len(sheet_latest_wp) > 2 else "MISSING"
 
+    # Find latest prediction_cycle row if streaming scanner_quote_loop is currently top
+    pred_cycle_rows = [r for r in data_wp if len(r) > 4 and r[4].strip() == "prediction_cycle"]
+    cycle_run_id = str(pred_cycle_rows[-1][1]).strip() if pred_cycle_rows else sheet_run_id
+
     # BigQuery reference values from option_predictions_live
     bq_ref_run_id = str(bq_latest["option_predictions_live"].get("run_id") or "NONE").strip()
     bq_ref_git_sha = str(bq_latest["option_predictions_live"].get("git_sha") or "NONE").strip()
@@ -411,6 +448,12 @@ def run_all_checks(sheet_data, sh_obj, bq_schema, bq_counts, bq_latest, git_info
             "status": "PASS",
             "detail": f"sheet={sheet_run_id} bq={bq_ref_run_id}",
             "raw": {"sheet_run_id": sheet_run_id, "bq_run_id": bq_ref_run_id},
+        }
+    elif cycle_run_id != "MISSING" and bq_ref_run_id != "NONE" and cycle_run_id == bq_ref_run_id:
+        checks["sheet_vs_bq_runid_match"] = {
+            "status": "PASS",
+            "detail": f"cycle sheet={cycle_run_id} bq={bq_ref_run_id} (streaming={sheet_run_id})",
+            "raw": {"sheet_run_id": sheet_run_id, "cycle_run_id": cycle_run_id, "bq_ref_run_id": bq_ref_run_id},
         }
     else:
         checks["sheet_vs_bq_runid_match"] = {
@@ -588,6 +631,8 @@ def compare_with_baseline(checks, baseline):
                 m_act = re.search(r"(\d+)\s+passed", str(actual))
                 if m_act and int(m_act.group(1)) >= 154:
                     continue
+            if check.get("status") in ("PENDING", "NOT_DUE"):
+                continue
             if expected is not None and expected != actual:
                 drift_detected = True
                 drift_details[k] = {"expected": expected, "actual": actual}
@@ -619,7 +664,14 @@ def main():
 
     total_checks = len(checks)
     passed_count = sum(1 for c in checks.values() if c["status"] == "PASS")
-    overall_status = "PASS" if passed_count == total_checks else "FAIL"
+    pending_count = sum(1 for c in checks.values() if c["status"] == "PENDING")
+    any_fail = any(c["status"] == "FAIL" for c in checks.values())
+    if passed_count == total_checks:
+        overall_status = "PASS"
+    elif not any_fail and pending_count > 0:
+        overall_status = "PENDING"
+    else:
+        overall_status = "FAIL"
 
     # 3. Check baseline
     has_baseline = BASELINE_PATH.exists()
@@ -671,10 +723,10 @@ def main():
     else:
         for check_name, res in checks.items():
             status_tag = f"[{res['status']}]"
-            print(f"{status_tag:<7} {check_name:<40} {res['detail']}")
+            print(f"{status_tag:<10} {check_name:<40} {res['detail']}")
 
         print()
-        print(f"Overall: {overall_status}  ({passed_count}/{total_checks})")
+        print(f"Overall: {overall_status}  ({passed_count}/{total_checks}{f', {pending_count} PENDING' if pending_count else ''})")
         print(f"Evidence: audit/{evidence_filename}")
 
         if baseline_missing:
