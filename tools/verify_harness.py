@@ -633,6 +633,15 @@ def compare_with_baseline(checks, baseline):
                     continue
             if check.get("status") in ("PENDING", "NOT_DUE"):
                 continue
+            # Dynamic provenance checks: when status is PASS, identical run_id/git_sha across all tables
+            # and matching between Sheet and BQ represents normal production cycle progression, not drift.
+            if k in (
+                "runid_latest_identical",
+                "gitsha_latest_identical",
+                "sheet_vs_bq_runid_match",
+                "sheet_vs_bq_gitsha_match",
+            ) and check.get("status") == "PASS":
+                continue
             if expected is not None and expected != actual:
                 drift_detected = True
                 drift_details[k] = {"expected": expected, "actual": actual}
@@ -736,6 +745,11 @@ def main():
 
         if baseline_updated:
             print("[INFO] audit/baseline.json updated with current verified state.")
+
+        if drift_detected:
+            print(f"[DRIFT] Baseline drift detected in {len(drift_details)} checks:")
+            for k, d in drift_details.items():
+                print(f"        - {k}: expected='{d['expected']}', actual='{d['actual']}'")
 
     # 7. Exit codes:
     # 0 = all pass
