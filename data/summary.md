@@ -1,5 +1,5 @@
 # Angel One F&O Prediction & Market Intelligence Snapshot
-**Generated**: `2026-10-05 11:14:11 UTC` | **System Status**: `🟢 PASS`
+**Generated**: `2026-10-05 11:39:44 UTC` | **System Status**: `🟢 PASS`
 
 ## 🌆 3:00 - 3:40 PM Pre-Close: Next-Day Gap-Up (CE) Picks
 | Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+50%) | Expected Gap % | Conviction % | Institutional Rationale |
