@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-10-05 by agy CLI (Completion Agent)  
 **Repository state:** clean, in sync / tracking origin/main  
-**HEAD commit:** `e8c0021` (docs(decisions): split D-09 validator chain into six executable phases)  
+**HEAD commit:** `057920a` (feat(schemas): implement D-09 Phase 1 declarative schema registry from live BigQuery)  
 **System Mode:** PAPER / ANALYZER (No live financial risk; safe sheet modifications permitted)  
 
 ---
@@ -70,8 +70,8 @@ See `docs/DEFECT_REGISTER.md` for authoritative details:
 ## 4. Next Project: Fail-Fast Validator Chain
 
 The permanent remediation for D-09 is phased and documented in [`docs/decisions/D-09_PHASES.md`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/docs/decisions/D-09_PHASES.md):
-- **Phase 1:** Schema Registry (`schemas/*.json`)
-- **Phase 2:** Fail-Fast Validator (`tools/schema_validator.py` + tests)
+- **Phase 1:** Schema Registry (`schemas/*.json`) — **COMPLETED** (5 declarative schemas + `schemas/_contract.md` + `docs/DATA_CONTRACTS.md` updated from live BigQuery)
+- **Phase 2 (NEXT):** Fail-Fast Validator (`tools/schema_validator.py` + `tests/test_schema_validator.py`)
 - **Phase 3:** Writer Wiring (`angel_prediction_engine.py`)
 - **Phase 4:** Cycle Status Tracking (BigQuery `cycle_status` table)
 - **Phase 5:** Pre-Open Gate (`tools/pre_open_gate.py`)

@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-10-05 — D-09 Phase 1: Declarative BigQuery Schema Registry
+
+**Commit:** `057920a`
+
+### What changed
+- Created 5 declarative JSON schema files in `schemas/`:
+  - `schemas/option_predictions_live.json` (54 columns)
+  - `schemas/market_news_sentiment.json` (26 columns, including `cycle_id`)
+  - `schemas/next_day_gap_predictions.json` (25 columns, including `cycle_id`)
+  - `schemas/prediction_calibration_log.json` (16 columns, including `cycle_id`)
+  - `schemas/cycle_status.json` (8 columns)
+- Kept `schemas/cross_agent_packet.schema.json` untouched.
+- Created `schemas/_contract.md` defining the schema registry governance.
+- Updated `docs/DATA_CONTRACTS.md` adding `cycle_id` to the 3 auxiliary tables and adding section 5 for `cycle_status`.
+
+### Evidence
+- Schemas pulled directly from live BigQuery `INFORMATION_SCHEMA.COLUMNS` (project `fno-angel-prod-1790444589`, dataset `fno_predictions`).
+- Verified all 4 tables contain `run_id=STRING` and `cycle_id=STRING`.
+- Zero `.py` runtime files modified.
+- Pytest: 156 passed.
+
+---
+
 ## 2026-10-05 — BigQuery cycle_id schema migration on three auxiliary tables
 
 **Commit:** Pending HEAD
