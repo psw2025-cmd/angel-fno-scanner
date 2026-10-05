@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-10-06 — Preserve Provenance on WRITE_TRUNCATE via Canonical Schema Fallback
+
+**Commit:** Pending HEAD
+
+### What changed
+- Updated `angel_prediction_engine.py` to preserve BigQuery table schema during `WRITE_TRUNCATE` loads.
+- If `table_pred.schema` is absent or empty, fall back to loading the canonical schema from `tools.schema_validator.load_schema('option_predictions_live')`.
+- Ensures provenance columns (`run_id`, `git_sha`, `writer_id`, `source_timestamp`, `cycle_id`) are preserved in BigQuery table schema and populated during production runs.
+
+### Why
+- Previously, `getattr(table_pred, "schema", None)` could resolve to `None` if the TableReference object lacked schema attributes, causing BigQuery `WRITE_TRUNCATE` loads to drop columns not present in raw inserted JSON dicts.
+- Explicit schema pinning ensures all 5 provenance columns remain intact in BigQuery across truncate-reloads.
+
+### Evidence
+- Pytest suite: 183 passed.
+- Pre-deploy schema check confirms all 5 provenance columns in canonical schema.
+
+### Rollback
+- Revert commit on `main`.
+
+---
+
 ## 2026-10-05 — Live Production market_bot Run 37288432509 Success & Harness Provenance Range Fix
 
 **Commit:** Pending HEAD
