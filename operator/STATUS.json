@@ -1,0 +1,35 @@
+{
+  "claim_time_ist": "2026-10-06T01:35:00+05:30",
+  "market_session": "CLOSED",
+  "safety": "PAPER_ANALYZER_ONLY",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "main_sha": "04c314c7f51bc5cbda49eef904675a733409be92",
+  "overall": "DISPUTED",
+  "agy_last_claim": {
+    "when_ist": "2026-10-05 afternoon",
+    "harness": "12/12 PASS",
+    "run_id": "37288432509",
+    "status_now": "STALE_VS_OVERNIGHT_BQ"
+  },
+  "independent_remote": {
+    "option_predictions_live_rows": 219,
+    "option_predictions_live_last_modified_ist": "2026-10-06T01:27:30",
+    "provenance_columns_present": false,
+    "missing_columns": ["run_id", "git_sha", "writer_id", "source_timestamp", "cycle_id"],
+    "next_day_gap_predictions_last_modified_ist": "2026-10-05T17:10:07",
+    "live_sheet_id": "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs",
+    "standby_sheet_id": "1pI0Dp6ehEcsdA6q_Zuhff4mi1o0dSlB1mOUtUL5W3FA",
+    "sheet_overnight_label": "CONNECTED_ANGEL_SMARTAPI / ACTIVE_PREDICTION_ENGINE at 01:26 IST — false-green for closed market"
+  },
+  "visual_artifacts": {
+    "live_google_sheet": "LIVE_LINK_ONLY",
+    "excel_export_in_repo": "MISSING",
+    "power_bi_pbix_in_repo": "MISSING",
+    "drive_pbix_found": "op.pbix 2024-08-27 STALE",
+    "canonical_colab_in_drive_search": "NOT_FOUND",
+    "latest_colab_in_drive": "Untitled72.ipynb 2026-10-04"
+  },
+  "open_defects": ["U-01", "U-02", "D-01", "D-05", "D-06", "D-07", "D-08", "D-09-PHASE-3"],
+  "do_not_rebuild": ["219-universe", "writer_guard", "C2-heartbeat", "G19-contract-identity", "infra_readiness", "verify_harness"],
+  "trader_use_today": "PAPER_RESEARCH_ONLY"
+}
