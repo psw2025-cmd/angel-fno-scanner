@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-10-05 — BigQuery cycle_id schema migration on three auxiliary tables
+
+**Commit:** Pending HEAD
+
+### What changed
+- Added `cycle_id STRING NULLABLE` to `market_news_sentiment`, `next_day_gap_predictions`, `prediction_calibration_log`.
+- Backups created:
+  - `market_news_sentiment_backup_cycleid_20261005_050920`
+  - `next_day_gap_predictions_backup_cycleid_20261005_050920`
+  - `prediction_calibration_log_backup_cycleid_20261005_050920`
+
+### Why
+Commit `0b7e097` added `cycle_id` to `build_provenance()`. Three tables lacked the column. Every write to them since has failed silently. The writer code is correct; the schemas were missing the field.
+
+### Evidence
+- Row counts preserved: 7118 → 7118, 148 → 148, 251 → 251.
+- `cycle_id` type verified as STRING on all four tables.
+- All rows currently NULL in `run_id` / `cycle_id` because no `prediction_cycle` has run since the migration.
+
+### Rollback
+Restore from the three `_backup_cycleid_20261005_050920` tables.
+
+### Open follow-ups
+- Wait for next `prediction_cycle` to populate `run_id` on the three tables.
+- Then re-run `tools/verify_harness.py` and confirm 12/12 PASS.
+
+---
+
 ## 2026-10-05 — Harness pytest count fix, Sheet/BQ mismatch investigation, and Sheet switch readiness
 
 **Commit:** Pending HEAD  
