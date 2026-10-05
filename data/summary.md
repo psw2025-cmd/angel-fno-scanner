@@ -1,47 +1,47 @@
 # Angel One F&O Prediction & Market Intelligence Snapshot
-**Generated**: `2026-10-02 03:25:53 UTC` | **System Status**: `🟢 PASS`
+**Generated**: `2026-10-05 10:14:58 UTC` | **System Status**: `🟢 PASS`
 
 ## 🌆 3:00 - 3:40 PM Pre-Close: Next-Day Gap-Up (CE) Picks
 | Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+50%) | Expected Gap % | Conviction % | Institutional Rationale |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| 1 | **ENRIN** | `3350 CE` | `ENRIN27OCT263350CE` | ₹145.20 | ₹123.42 | ₹217.80 | **+2.40%** | 68.0% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
-| 2 | **MPHASIS** | `2250 CE` | `MPHASIS27OCT262250CE` | ₹92.30 | ₹78.45 | ₹138.45 | **+2.29%** | 70.2% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
-| 3 | **HDFCLIFE** | `535 CE` | `HDFCLIFE27OCT26535CE` | ₹16.65 | ₹14.15 | ₹24.97 | **+1.83%** | 86.7% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
-| 4 | **COFORGE** | `1840 CE` | `COFORGE27OCT261840CE` | ₹74.70 | ₹63.49 | ₹112.05 | **+1.76%** | 69.2% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
-| 5 | **INFY** | `1040 CE` | `INFY27OCT261040CE` | ₹39.80 | ₹33.83 | ₹59.70 | **+1.56%** | 76.7% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
+| 1 | **KALYANKJIL** | `560 CE` | `KALYANKJIL27OCT26560CE` | ₹23.75 | ₹20.19 | ₹35.62 | **+2.95%** | 72.1% | [OVERNIGHT GAP-UP CE] Action: 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | ExpG |
+| 2 | **BLUESTARCO** | `1480 CE` | `BLUESTARCO27OCT261480CE` | ₹47.75 | ₹40.59 | ₹71.62 | **+2.08%** | 65.6% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
+| 3 | **KFINTECH** | `860 CE` | `KFINTECH27OCT26860CE` | ₹27.95 | ₹23.76 | ₹41.92 | **+2.17%** | 66.3% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
+| 4 | **AUBANK** | `1030 CE` | `AUBANK27OCT261030CE` | ₹32.20 | ₹27.37 | ₹48.30 | **+1.82%** | 77.7% | [OVERNIGHT GAP-UP CE] Action: 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | ExpG |
+| 5 | **ANGELONE** | `285 CE` | `ANGELONE27OCT26285CE` | ₹12.75 | ₹10.84 | ₹19.12 | **+2.15%** | 80.1% | [OVERNIGHT GAP-UP CE] Action: 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | ExpG |
 
 ## 🌆 3:00 - 3:40 PM Pre-Close: Next-Day Gap-Down (PE) Picks
 | Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+60%) | Expected Gap % | Conviction % | Institutional Rationale |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| 1 | **POLICYBZR** | `980 PE` | `POLICYBZR27OCT26980PE` | ₹51.95 | ₹44.16 | ₹83.12 | **-3.27%** | 95.5% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
-| 2 | **SWIGGY** | `240 PE` | `SWIGGY27OCT26240PE` | ₹10.00 | ₹8.50 | ₹16.00 | **-2.80%** | 88.0% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
-| 3 | **KALYANKJIL** | `530 PE` | `KALYANKJIL27OCT26530PE` | ₹24.90 | ₹21.16 | ₹39.84 | **-2.94%** | 92.0% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
-| 4 | **UNOMINDA** | `1120 PE` | `UNOMINDA27OCT261120PE` | ₹38.75 | ₹32.94 | ₹62.00 | **-2.44%** | 88.3% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
-| 5 | **KAYNES** | `3350 PE` | `KAYNES27OCT263350PE` | ₹158.65 | ₹134.85 | ₹253.84 | **-2.35%** | 81.6% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 1 | **DMART** | `3550 PE` | `DMART27OCT263550PE` | ₹109.90 | ₹93.42 | ₹175.84 | **-3.20%** | 98.0% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 2 | **HDFCBANK** | `710 PE` | `HDFCBANK27OCT26710PE` | ₹19.60 | ₹16.66 | ₹31.36 | **-1.72%** | 98.0% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 3 | **HCLTECH** | `1200 PE` | `HCLTECH27OCT261200PE` | ₹45.15 | ₹38.38 | ₹72.24 | **-2.24%** | 95.8% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 4 | **FORTIS** | `770 PE` | `FORTIS27OCT26770PE` | ₹21.60 | ₹18.36 | ₹34.56 | **-1.73%** | 78.0% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 5 | **UPL** | `505 PE` | `UPL27OCT26505PE` | ₹16.00 | ₹13.60 | ₹25.60 | **-1.41%** | 66.6% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
 
 ## 🌅 Top 5 Pre-Market 9:15 AM Gap-Up Picks
 | Rank | Symbol | Target Strike | Expected Gap % | Conviction % | CE LTP | Live Velocity | Top Catalyst Headline |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| 20 | **PERSISTENT** | `5400 CE` | **+2.27%** | 70.0% | ₹205.00 | +37.5% | IT stocks rally: Coforge, Mphasis, TCS, Persistent Systems g |
-| 8 | **ENRIN** | `3350 CE` | **+2.19%** | 80.4% | ₹137.00 | +54.8% | No fresh material catalyst |
-| 22 | **COFORGE** | `1820 CE` | **+1.89%** | 93.2% | ₹73.70 | +42.0% | IT stocks rally: Coforge, Mphasis, TCS, Persistent Systems g |
-| 3 | **POWERINDIA** | `32000 CE` | **+1.79%** | 77.4% | ₹984.15 | +84.3% | No fresh material catalyst |
-| 15 | **MPHASIS** | `2250 CE` | **+1.78%** | 72.3% | ₹76.80 | +54.1% | IT stocks rally: Coforge, Mphasis, TCS, Persistent Systems g |
+| 5 | **KALYANKJIL** | `560 CE` | **+2.95%** | 72.1% | ₹23.75 | +81.3% | No fresh material catalyst |
+| 6 | **KFINTECH** | `860 CE` | **+2.17%** | 66.3% | ₹27.95 | +75.8% | No fresh material catalyst |
+| 27 | **ANGELONE** | `285 CE` | **+2.15%** | 80.1% | ₹12.75 | +43.3% | No fresh material catalyst |
+| 3 | **BLUESTARCO** | `1480 CE` | **+2.08%** | 65.6% | ₹47.75 | +89.9% | No fresh material catalyst |
+| 17 | **TMPV** | `290 CE` | **+2.01%** | 68.1% | ₹8.30 | +66.0% | TMPV Stock in Focus: JLR wholesale volume jumps 24.5% in Q2, |
 
 ## 🏆 Top Conviction Call (CE) Breakouts
 | Rank | Symbol | Action Rating | Win Prob % | Spot LTP | CE LTP | Target Strike |
 | :---: | :--- | :--- | :---: | :---: | :---: | :---: |
-| 3 | **POWERINDIA** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 98.2% | ₹31790.00 | ₹984.15 | `32000 CE` |
-| 8 | **ENRIN** | 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | 84.8% | ₹3343.60 | ₹137.00 | `3350 CE` |
-| 10 | **ADANIENSOL** | 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | 93.0% | ₹1364.00 | ₹53.20 | `1360 CE` |
-| 12 | **BHEL** | 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | 88.2% | ₹428.45 | ₹15.25 | `430 CE` |
-| 13 | **INDUSTOWER** | 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | 87.0% | ₹384.95 | ₹9.60 | `385 CE` |
+| 2 | **ITC** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 95.0% | ₹269.65 | ₹4.85 | `270 CE` |
+| 3 | **BLUESTARCO** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 97.9% | ₹1474.30 | ₹47.75 | `1480 CE` |
+| 4 | **AUBANK** | 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | 94.7% | ₹1034.50 | ₹32.20 | `1030 CE` |
+| 5 | **KALYANKJIL** | 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | 96.4% | ₹560.00 | ₹23.75 | `560 CE` |
+| 6 | **KFINTECH** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 96.0% | ₹855.80 | ₹27.95 | `860 CE` |
 
 ## 💥 Top Conviction Put (PE) Breakdowns
 | Rank | Symbol | Action Rating | Win Prob % | Spot LTP | PE LTP | Target Strike |
 | :---: | :--- | :--- | :---: | :---: | :---: | :---: |
-| 1 | **BAJAJ-AUTO** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 98.2% | ₹9954.00 | ₹281.05 | `10000 PE` |
-| 2 | **BOSCHLTD** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 94.0% | ₹45745.00 | ₹1068.90 | `45500 PE` |
-| 4 | **GRASIM** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 80.4% | ₹2999.80 | ₹60.95 | `3000 PE` |
-| 5 | **EICHERMOT** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 75.3% | ₹7027.50 | ₹148.20 | `7000 PE` |
-| 6 | **TVSMOTOR** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 87.6% | ₹4029.80 | ₹134.00 | `4050 PE` |
+| 1 | **DMART** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 98.2% | ₹3549.00 | ₹109.90 | `3550 PE` |
+| 9 | **UPL** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 87.2% | ₹503.65 | ₹16.00 | `505 PE` |
+| 15 | **HCLTECH** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 92.8% | ₹1195.70 | ₹45.15 | `1200 PE` |
+| 16 | **SUNPHARMA** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 85.1% | ₹1778.50 | ₹33.80 | `1780 PE` |
+| 20 | **PRESTIGE** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 83.5% | ₹1449.60 | ₹44.95 | `1440 PE` |

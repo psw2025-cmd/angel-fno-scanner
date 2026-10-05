@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "timestamp": "2026-10-02T03:25:53.911893+00:00",
+  "timestamp": "2026-10-05T10:14:58.657860+00:00",
   "sheets_audit": {
     "passed": true,
     "summary": {
@@ -22,7 +22,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 76,
+        "row_count": 57,
         "col_count": 18
       },
       "LEGACY_F&O_DASHBOARD_OBJECT": {
@@ -43,7 +43,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 475,
+        "row_count": 658,
         "col_count": 8
       },
       "Cloud_Automation_Setup": {
@@ -65,14 +65,14 @@
         "date_serials": [],
         "dummy_strings": [],
         "row_count": 9,
-        "col_count": 6
+        "col_count": 8
       },
       "CE_PE_RANK": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 218,
-        "col_count": 28
+        "row_count": 204,
+        "col_count": 23
       },
       "NSE_EVENTS": {
         "formula_errors": [],
@@ -85,7 +85,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 648,
+        "row_count": 764,
         "col_count": 11
       },
       "NEWS_LIVE": {
@@ -131,21 +131,30 @@
       "option_predictions_live": {
         "exists": true,
         "rows": 219,
-        "size_mb": 0.11,
-        "columns": 53
+        "size_mb": 0.13,
+        "columns": 54
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 7118,
-        "size_mb": 6.29,
-        "columns": 25
+        "rows": 7444,
+        "size_mb": 6.62,
+        "columns": 26
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 251,
+        "rows": 253,
         "size_mb": 0.17,
-        "columns": 15
+        "columns": 16
       }
+    }
+  },
+  "publication": {
+    "passed": true,
+    "summary": {
+      "cycle_id": "37288432509:8f637958a8224d8db71f705e45f545f7",
+      "run_id": "37288432509",
+      "git_sha": "9fbef9cd6106f821ed2f09f1481c3d8d08317f7b",
+      "writer_id": "market_bot"
     }
   },
   "engine_state": {
