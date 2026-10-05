@@ -32,14 +32,21 @@ This document tracks unresolved product, architecture, and operational decisions
 
 ---
 
-## 5. OQ-05 — Live Production Stream Transition to ANGEL_FNO_LIVE_PROD
-- **Context**: Fresh production workbook `ANGEL_FNO_LIVE_PROD` (`1pI0Dp6ehEcsdA6q_Zuhff4mi1o0dSlB1mOUtUL5W3FA`) has been provisioned with all 12 clean tabs, verified under user quota, and formulas verified.
-- **Question**: When should GitHub Actions secret `SHEET_ID` be switched from legacy `1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs` to `1pI0Dp6ehEcsdA6q_Zuhff4mi1o0dSlB1mOUtUL5W3FA`?
-- **Related Defect**: Architectural improvement / Clutter elimination
+## 5. OQ-05 — Live Production Stream Transition to ANGEL_FNO_LIVE_PROD (Sheet Switch)
+- **Context**: Detailed analysis in `docs/decisions/SHEET_SWITCH.md` compared the live OLD sheet (`1Zu_9uJDQd...`, 26 tabs) with the provisioned NEW sheet (`1pI0Dp6ehEcsd...`, 12 tabs). The NEW sheet has user quota (15 GB) and includes all 12 key tabs (`FORENSIC_LIVE`, `CE_PE_RANK`, `OPTION_PREDICTIONS`, `NEWS_LIVE`, `HEARTBEAT`, `PAPER_ALERT_LOG`, `PRE_BREAKOUT_SCANNER`, `Formula Checks`, `WRITE_PROVENANCE`, `PUBLICATION_STATUS`, `PREMARKET_VS_ACTUAL`, `TOMORROW_EXPLOSIVE_WATCH`). However, `scanner.py` also writes to `PRODUCTION_APPROVED` and `TOP_GAINERS`, which are absent in NEW.
+- **Question & Recommendation**: Do not switch the GitHub Actions secret `SHEET_ID` immediately. First, provision the two missing worksheets (`PRODUCTION_APPROVED` and `TOP_GAINERS`) in the NEW sheet. Second, archive historical data rows. Once validated, execute the human secret update in GitHub repository settings.
+- **Related Defect**: D-09 / Architectural Improvement
 
 ---
 
-## 6. OQ-06 — Application of BigQuery cycle_id Migration
-- **Context**: `staging_review/migrate_bq_cycle_id.py` adds `cycle_id STRING` to `market_news_sentiment`, `next_day_gap_predictions`, and `prediction_calibration_log`.
-- **Question**: Confirm permission to run `--apply` against production BigQuery dataset `fno_predictions` to restore historical logging for auxiliary tables.
+## 6. OQ-06 — Fail-Fast Schema Validator Chain Implementation
+- **Context**: The D-09 schema divergence investigation led to the architecture defined in `docs/decisions/D-09_PLAN.md`. It rejects permissive projection (`staging_review/schema_projection.py`) and outlines a 6-phase fail-fast pipeline: (1) `schemas/*.json`, (2) `tools/schema_validator.py` + tests, (3) writer wiring, (4) BigQuery `cycle_status` table, (5) `tools/pre_open_gate.py`, and (6) CI workflow enforcement.
+- **Question**: Confirm start of Phase 1 implementation as the next dedicated engineering cycle.
 - **Related Defect**: D-09
+
+---
+
+## 7. OQ-07 — Single-Writer Lease & Concurrency Governance Across Environments
+- **Context**: `scanner.py` runs streaming quote loops during market hours, while pre-market and pre-close prediction cycles run periodically via GitHub Actions and local workstation scripts. Multi-writer race conditions must be prevented per `AGENTS.md` Section 13.
+- **Question**: Should an explicit atomic BigQuery / Redis / Cloud Storage writer lease token be required before any writer acquires publish authority, ensuring zero collision between local workstation testing and GitHub Actions scheduled jobs?
+- **Related Defect**: Architectural Governance
