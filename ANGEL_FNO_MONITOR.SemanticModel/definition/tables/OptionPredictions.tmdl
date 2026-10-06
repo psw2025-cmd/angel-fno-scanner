@@ -1,0 +1,405 @@
+table OptionPredictions
+	lineageTag: t0000000-0000-0000-0000-000000000001
+
+	column symbol
+		dataType: string
+		lineageTag: c0000000-0000-0000-0000-000000000001
+		summarizeBy: none
+		sourceColumn: symbol
+
+	column ce_win_prob
+		dataType: double
+		formatString: 0.0"%"
+		lineageTag: c0000000-0000-0000-0000-000000000002
+		summarizeBy: sum
+		sourceColumn: ce_win_prob
+
+	column pe_win_prob
+		dataType: double
+		formatString: 0.0"%"
+		lineageTag: c0000000-0000-0000-0000-000000000003
+		summarizeBy: sum
+		sourceColumn: pe_win_prob
+
+	column confidence_pct
+		dataType: double
+		formatString: 0.0"%"
+		lineageTag: c0000000-0000-0000-0000-000000000004
+		summarizeBy: sum
+		sourceColumn: confidence_pct
+
+		annotation SummarizationSetBy = Automatic
+
+	column intensity_score
+		dataType: double
+		formatString: 0.0
+		lineageTag: c0000000-0000-0000-0000-000000000005
+		summarizeBy: sum
+		sourceColumn: intensity_score
+
+		annotation SummarizationSetBy = Automatic
+
+	column expected_gap_pct
+		dataType: double
+		formatString: +0.00"%";-0.00"%";0.00"%"
+		lineageTag: c0000000-0000-0000-0000-000000000006
+		summarizeBy: sum
+		sourceColumn: expected_gap_pct
+
+		annotation SummarizationSetBy = Automatic
+
+	column gap_direction
+		dataType: string
+		lineageTag: c0000000-0000-0000-0000-000000000007
+		summarizeBy: none
+		sourceColumn: gap_direction
+
+	column pre_open_conviction_pct
+		dataType: double
+		formatString: 0.0"%"
+		lineageTag: c0000000-0000-0000-0000-000000000008
+		summarizeBy: sum
+		sourceColumn: pre_open_conviction_pct
+
+		annotation SummarizationSetBy = Automatic
+
+	column target_open_strike
+		dataType: string
+		lineageTag: c0000000-0000-0000-0000-000000000009
+		summarizeBy: none
+		sourceColumn: target_open_strike
+
+	column ce_chg_pct
+		dataType: double
+		formatString: 0.00"%"
+		lineageTag: c0000000-0000-0000-0000-000000000010
+		summarizeBy: sum
+		sourceColumn: ce_chg_pct
+
+		annotation SummarizationSetBy = Automatic
+
+	column pe_chg_pct
+		dataType: double
+		formatString: 0.00"%"
+		lineageTag: c0000000-0000-0000-0000-000000000011
+		summarizeBy: sum
+		sourceColumn: pe_chg_pct
+
+		annotation SummarizationSetBy = Automatic
+
+	column ce_oi
+		dataType: int64
+		formatString: #,##0
+		lineageTag: c0000000-0000-0000-0000-000000000012
+		summarizeBy: sum
+		sourceColumn: ce_oi
+
+	column pe_oi
+		dataType: int64
+		formatString: #,##0
+		lineageTag: c0000000-0000-0000-0000-000000000013
+		summarizeBy: sum
+		sourceColumn: pe_oi
+
+	column ce_ltp
+		dataType: double
+		formatString: 0.00
+		lineageTag: c0000000-0000-0000-0000-000000000014
+		summarizeBy: sum
+		sourceColumn: ce_ltp
+
+		annotation SummarizationSetBy = Automatic
+
+	column pe_ltp
+		dataType: double
+		formatString: 0.00
+		lineageTag: c0000000-0000-0000-0000-000000000015
+		summarizeBy: sum
+		sourceColumn: pe_ltp
+
+		annotation SummarizationSetBy = Automatic
+
+	column ce_bid_ask_spread
+		dataType: double
+		formatString: 0.00
+		lineageTag: c0000000-0000-0000-0000-000000000016
+		summarizeBy: sum
+		sourceColumn: ce_bid_ask_spread
+
+		annotation SummarizationSetBy = Automatic
+
+	column pe_bid_ask_spread
+		dataType: double
+		formatString: 0.00
+		lineageTag: c0000000-0000-0000-0000-000000000017
+		summarizeBy: sum
+		sourceColumn: pe_bid_ask_spread
+
+		annotation SummarizationSetBy = Automatic
+
+	column atm_pcr
+		dataType: double
+		formatString: 0.00
+		lineageTag: c0000000-0000-0000-0000-000000000018
+		summarizeBy: sum
+		sourceColumn: atm_pcr
+
+		annotation SummarizationSetBy = Automatic
+
+	column ce_iv
+		dataType: double
+		formatString: 0.00
+		lineageTag: c0000000-0000-0000-0000-000000000019
+		summarizeBy: sum
+		sourceColumn: ce_iv
+
+		annotation SummarizationSetBy = Automatic
+
+	column pe_iv
+		dataType: double
+		formatString: 0.00
+		lineageTag: c0000000-0000-0000-0000-000000000020
+		summarizeBy: sum
+		sourceColumn: pe_iv
+
+		annotation SummarizationSetBy = Automatic
+
+	column ce_delta
+		dataType: double
+		formatString: 0.0000
+		lineageTag: c0000000-0000-0000-0000-000000000021
+		summarizeBy: sum
+		sourceColumn: ce_delta
+
+		annotation SummarizationSetBy = Automatic
+
+	column pe_delta
+		dataType: double
+		formatString: 0.0000
+		lineageTag: c0000000-0000-0000-0000-000000000022
+		summarizeBy: sum
+		sourceColumn: pe_delta
+
+		annotation SummarizationSetBy = Automatic
+
+	column ce_gamma
+		dataType: double
+		formatString: 0.000000
+		lineageTag: c0000000-0000-0000-0000-000000000023
+		summarizeBy: sum
+		sourceColumn: ce_gamma
+
+		annotation SummarizationSetBy = Automatic
+
+	column pe_gamma
+		dataType: double
+		formatString: 0.000000
+		lineageTag: c0000000-0000-0000-0000-000000000024
+		summarizeBy: sum
+		sourceColumn: pe_gamma
+
+		annotation SummarizationSetBy = Automatic
+
+	column top_news_headline
+		dataType: string
+		lineageTag: c0000000-0000-0000-0000-000000000025
+		summarizeBy: none
+		sourceColumn: top_news_headline
+
+	column news_severity_level
+		dataType: int64
+		formatString: 0
+		lineageTag: c0000000-0000-0000-0000-000000000026
+		summarizeBy: sum
+		sourceColumn: news_severity_level
+
+		annotation SummarizationSetBy = Automatic
+
+	column snapshot_timestamp
+		dataType: string
+		lineageTag: c0000000-0000-0000-0000-000000000027
+		summarizeBy: none
+		sourceColumn: snapshot_timestamp
+
+	column snapshot_time_ist_corrected
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: c0000000-0000-0000-0000-000000000028
+		summarizeBy: none
+		sourceColumn: snapshot_time_ist_corrected
+
+		variation Variation
+			isDefault
+			relationship: 071a9b4c-1cd2-4ded-952d-ef0bc17755da
+			defaultHierarchy: LocalDateTable_2d59eba7-2d6e-4bb7-aff5-d75e0575aee5.'Date Hierarchy'
+
+	column model_side
+		dataType: string
+		lineageTag: c0000000-0000-0000-0000-000000000029
+		summarizeBy: none
+		sourceColumn: model_side
+
+	column probability_sum
+		dataType: double
+		formatString: 0.00
+		lineageTag: c0000000-0000-0000-0000-000000000030
+		summarizeBy: sum
+		sourceColumn: probability_sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column probability_valid
+		dataType: boolean
+		lineageTag: c0000000-0000-0000-0000-000000000031
+		summarizeBy: none
+		sourceColumn: probability_valid
+
+	column liquidity_status
+		dataType: string
+		lineageTag: c0000000-0000-0000-0000-000000000032
+		summarizeBy: none
+		sourceColumn: liquidity_status
+
+	column forecast_window
+		dataType: string
+		lineageTag: c0000000-0000-0000-0000-000000000033
+		summarizeBy: none
+		sourceColumn: forecast_window
+
+	partition OptionPredictions = m
+		mode: import
+		source =
+				let
+				    Url = "https://raw.githubusercontent.com/psw2025-cmd/angel-fno-scanner/main/data/latest_predictions.json",
+				    RawBytes = try Web.Contents(Url) otherwise null,
+				    RawJson = if RawBytes <> null then Json.Document(RawBytes) else {},
+				    Raw = Table.FromRecords(RawJson),
+				    FixSnapshot = Table.AddColumn(
+				        Raw,
+				        "snapshot_time_ist_corrected",
+				        each
+				            let
+				                T = try Text.From([snapshot_timestamp]) otherwise null,
+				                Wall = if T = null then null else Text.Start(T, 19),
+				                WallDT = try DateTime.FromText(Wall) otherwise null,
+				                RawZone = try DateTimeZone.FromText(T) otherwise null
+				            in
+				                if T = null then null
+				                else if pTreatSnapshotOffsetAsWallClock and WallDT <> null
+				                    then DateTimeZone.RemoveZone(DateTime.AddZone(WallDT, 5, 30))
+				                    else if RawZone <> null
+				                        then DateTimeZone.RemoveZone(DateTimeZone.SwitchZone(RawZone, 5, 30))
+				                        else null,
+				        type datetime
+				    ),
+				    AddSide = Table.AddColumn(
+				        FixSnapshot,
+				        "model_side",
+				        each
+				            let
+				                ce = try Number.From([ce_win_prob]) otherwise 0,
+				                pe = try Number.From([pe_win_prob]) otherwise 0
+				            in
+				                if ce > pe then "CE"
+				                else if pe > ce then "PE"
+				                else "NEUTRAL",
+				        type text
+				    ),
+				    AddProbabilitySum = Table.AddColumn(
+				        AddSide,
+				        "probability_sum",
+				        each try Number.From([ce_win_prob]) + Number.From([pe_win_prob]) otherwise null,
+				        type number
+				    ),
+				    AddProbabilityValid = Table.AddColumn(
+				        AddProbabilitySum,
+				        "probability_valid",
+				        each if [probability_sum] = null then false else Number.Abs([probability_sum] - 100) <= 0.25,
+				        type logical
+				    ),
+				    AddLiquidity = Table.AddColumn(
+				        AddProbabilityValid,
+				        "liquidity_status",
+				        each
+				            let
+				                ceoi = try Number.From([ce_oi]) otherwise 0,
+				                peoi = try Number.From([pe_oi]) otherwise 0,
+				                cel = try Number.From([ce_ltp]) otherwise 0,
+				                pel = try Number.From([pe_ltp]) otherwise 0,
+				                ces = try Number.From([ce_bid_ask_spread]) otherwise null,
+				                pes = try Number.From([pe_bid_ask_spread]) otherwise null
+				            in
+				                if ceoi <= 0 or peoi <= 0 or cel <= 0 or pel <= 0 then "REJECT"
+				                else if (ces <> null and ces > cel * 0.25) or (pes <> null and pes > pel * 0.25) then "REJECT"
+				                else "PASS",
+				        type text
+				    ),
+				    AddForecastWindow = Table.AddColumn(
+				        AddLiquidity,
+				        "forecast_window",
+				        each
+				            let
+				                z = [snapshot_time_ist_corrected],
+				                h = if z = null then null else Time.Hour(z)
+				            in
+				                if h = null then "UNKNOWN"
+				                else if h >= 15 or h < 9 then "NEXT_SESSION_ELIGIBLE"
+				                else "INTRADAY_SNAPSHOT",
+				        type text
+				    ),
+				    KeepCols = Table.SelectColumns(
+				        AddForecastWindow,
+				        {
+				            "symbol", "ce_win_prob", "pe_win_prob", "confidence_pct", "intensity_score",
+				            "expected_gap_pct", "gap_direction", "pre_open_conviction_pct", "target_open_strike",
+				            "ce_chg_pct", "pe_chg_pct", "ce_oi", "pe_oi", "ce_ltp", "pe_ltp",
+				            "ce_bid_ask_spread", "pe_bid_ask_spread", "atm_pcr", "ce_iv", "pe_iv",
+				            "ce_delta", "pe_delta", "ce_gamma", "pe_gamma", "top_news_headline",
+				            "news_severity_level", "snapshot_timestamp", "snapshot_time_ist_corrected",
+				            "model_side", "probability_sum", "probability_valid", "liquidity_status",
+				            "forecast_window"
+				        },
+				        MissingField.UseNull
+				    ),
+				    Types = Table.TransformColumnTypes(
+				        KeepCols,
+				        {
+				            {"symbol", type text},
+				            {"ce_win_prob", type number},
+				            {"pe_win_prob", type number},
+				            {"confidence_pct", type number},
+				            {"intensity_score", type number},
+				            {"expected_gap_pct", type number},
+				            {"gap_direction", type text},
+				            {"pre_open_conviction_pct", type number},
+				            {"target_open_strike", type text},
+				            {"ce_chg_pct", type number},
+				            {"pe_chg_pct", type number},
+				            {"ce_oi", Int64.Type},
+				            {"pe_oi", Int64.Type},
+				            {"ce_ltp", type number},
+				            {"pe_ltp", type number},
+				            {"ce_bid_ask_spread", type number},
+				            {"pe_bid_ask_spread", type number},
+				            {"atm_pcr", type number},
+				            {"ce_iv", type number},
+				            {"pe_iv", type number},
+				            {"ce_delta", type number},
+				            {"pe_delta", type number},
+				            {"ce_gamma", type number},
+				            {"pe_gamma", type number},
+				            {"top_news_headline", type text},
+				            {"news_severity_level", Int64.Type},
+				            {"snapshot_timestamp", type text},
+				            {"snapshot_time_ist_corrected", type datetime},
+				            {"model_side", type text},
+				            {"probability_sum", type number},
+				            {"probability_valid", type logical},
+				            {"liquidity_status", type text},
+				            {"forecast_window", type text}
+				        },
+				        "en-US"
+				    )
+				in
+				    Types
+

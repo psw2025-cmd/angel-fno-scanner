@@ -1,0 +1,61 @@
+table Calibration
+	lineageTag: t0000000-0000-0000-0000-000000000006
+
+	column calibration_date
+		dataType: string
+		lineageTag: k0000000-0000-0000-0000-000000000001
+		summarizeBy: none
+		sourceColumn: calibration_date
+
+	column top10_hit_rate
+		dataType: double
+		formatString: 0.0"%"
+		lineageTag: k0000000-0000-0000-0000-000000000002
+		summarizeBy: average
+		sourceColumn: top10_hit_rate
+
+	column recall_at_10
+		dataType: double
+		formatString: 0.0"%"
+		lineageTag: k0000000-0000-0000-0000-000000000003
+		summarizeBy: average
+		sourceColumn: recall_at_10
+
+	column brier_score
+		dataType: double
+		formatString: 0.0000
+		lineageTag: k0000000-0000-0000-0000-000000000004
+		summarizeBy: average
+		sourceColumn: brier_score
+
+	column mean_rank
+		dataType: double
+		formatString: 0.0
+		lineageTag: k0000000-0000-0000-0000-000000000005
+		summarizeBy: average
+		sourceColumn: mean_rank
+
+	partition Calibration = m
+		mode: import
+		source =
+				let
+				    Source = #table(
+				        {"calibration_date", "top10_hit_rate", "recall_at_10", "brier_score", "mean_rank"},
+				        {
+				            {"2026-09-27", 100.0, 100.0, 0.045, 5.5},
+				            {"2026-09-28", 100.0, 95.0, 0.048, 5.2}
+				        }
+				    ),
+				    Types = Table.TransformColumnTypes(
+				        Source,
+				        {
+				            {"calibration_date", type text},
+				            {"top10_hit_rate", type number},
+				            {"recall_at_10", type number},
+				            {"brier_score", type number},
+				            {"mean_rank", type number}
+				        }
+				    )
+				in
+				    Types
+

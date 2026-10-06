@@ -1,0 +1,501 @@
+table _Measures
+	lineageTag: m0000000-0000-0000-0000-000000000001
+
+	measure 'Live Symbols' = DISTINCTCOUNT(OptionPredictions[symbol])
+		formatString: #,##0
+		lineageTag: m0000000-0000-0000-0000-000000000002
+
+	measure 'Universe Health' = IF([Live Symbols] = 216, "PASS 216/216", "FAIL / INCOMPLETE")
+		lineageTag: m0000000-0000-0000-0000-000000000003
+
+	measure 'Latest Model Snapshot IST' = MAX(OptionPredictions[snapshot_time_ist_corrected])
+		formatString: General Date
+		lineageTag: m0000000-0000-0000-0000-000000000004
+
+	measure 'Latest Forensic Time' = MAX(ForensicLive[time_ist])
+		lineageTag: m0000000-0000-0000-0000-000000000005
+
+	measure 'Top Real CE %' =
+			MAXX(
+			    FILTER(ForensicLive, ForensicLive[ce_valid] = TRUE()),
+			    ForensicLive[ce_chg_pct]
+			)
+		formatString: #,##0.00"%"
+		lineageTag: m0000000-0000-0000-0000-000000000006
+
+	measure 'Top Real CE Symbol' =
+			VAR T =
+			    TOPN(
+			        1,
+			        FILTER(ForensicLive, ForensicLive[ce_valid] = TRUE()),
+			        ForensicLive[ce_chg_pct], DESC,
+			        ForensicLive[symbol], ASC
+			    )
+			RETURN
+			    CONCATENATEX(T, ForensicLive[symbol], ", ")
+		lineageTag: m0000000-0000-0000-0000-000000000007
+
+	measure 'Top Real PE %' =
+			MAXX(
+			    FILTER(ForensicLive, ForensicLive[pe_valid] = TRUE()),
+			    ForensicLive[pe_chg_pct]
+			)
+		formatString: #,##0.00"%"
+		lineageTag: m0000000-0000-0000-0000-000000000008
+
+	measure 'Top Real PE Symbol' =
+			VAR T =
+			    TOPN(
+			        1,
+			        FILTER(ForensicLive, ForensicLive[pe_valid] = TRUE()),
+			        ForensicLive[pe_chg_pct], DESC,
+			        ForensicLive[symbol], ASC
+			    )
+			RETURN
+			    CONCATENATEX(T, ForensicLive[symbol], ", ")
+		lineageTag: m0000000-0000-0000-0000-000000000009
+
+	measure 'CE Alert Count' =
+			CALCULATE(
+			    COUNTROWS(CERank),
+			    CERank[rank_status] = "CE ALERT"
+			)
+		formatString: #,##0
+		lineageTag: m0000000-0000-0000-0000-000000000010
+
+	measure 'PE Alert Count' =
+			CALCULATE(
+			    COUNTROWS(CERank),
+			    CERank[rank_status] = "PE ALERT"
+			)
+		formatString: #,##0
+		lineageTag: m0000000-0000-0000-0000-000000000011
+
+	measure 'Watch Count' =
+			CALCULATE(
+			    COUNTROWS(CERank),
+			    CERank[rank_status] = "WATCH"
+			)
+		formatString: #,##0
+		lineageTag: m0000000-0000-0000-0000-000000000012
+
+	measure 'Liquidity PASS Count' =
+			CALCULATE(
+			    COUNTROWS(OptionPredictions),
+			    OptionPredictions[liquidity_status] = "PASS"
+			)
+		formatString: #,##0
+		lineageTag: m0000000-0000-0000-0000-000000000013
+
+	measure 'Liquidity REJECT Count' =
+			CALCULATE(
+			    COUNTROWS(OptionPredictions),
+			    OptionPredictions[liquidity_status] = "REJECT"
+			)
+		formatString: #,##0
+		lineageTag: m0000000-0000-0000-0000-000000000014
+
+	measure 'Probability Error Count' =
+			CALCULATE(
+			    COUNTROWS(OptionPredictions),
+			    OptionPredictions[probability_valid] = FALSE()
+			)
+		formatString: #,##0
+		lineageTag: m0000000-0000-0000-0000-000000000015
+
+	measure 'Average Confidence %' = AVERAGEX(OptionPredictions, 1.0 * OptionPredictions[confidence_pct])
+		formatString: 0.0"%"
+		lineageTag: m0000000-0000-0000-0000-000000000016
+
+	measure 'Average Intensity' = AVERAGEX(OptionPredictions, 1.0 * OptionPredictions[intensity_score])
+		formatString: 0.0
+		lineageTag: m0000000-0000-0000-0000-000000000017
+
+	measure 'Average PCR' = AVERAGEX(OptionPredictions, 1.0 * OptionPredictions[atm_pcr])
+		formatString: 0.00
+		lineageTag: m0000000-0000-0000-0000-000000000018
+
+	measure 'Top Model CE Probability' = MAX(OptionPredictions[ce_win_prob])
+		formatString: 0.0"%"
+		lineageTag: m0000000-0000-0000-0000-000000000019
+
+	measure 'Top Model PE Probability' = MAX(OptionPredictions[pe_win_prob])
+		formatString: 0.0"%"
+		lineageTag: m0000000-0000-0000-0000-000000000020
+
+	measure 'Largest Expected Gap Up %' = MAX(OptionPredictions[expected_gap_pct])
+		formatString: +0.00"%";-0.00"%";0.00"%"
+		lineageTag: m0000000-0000-0000-0000-000000000021
+
+	measure 'Largest Expected Gap Down %' = MIN(OptionPredictions[expected_gap_pct])
+		formatString: +0.00"%";-0.00"%";0.00"%"
+		lineageTag: m0000000-0000-0000-0000-000000000022
+
+	measure 'Top Gap Up Symbol' =
+			VAR NextEligible =
+			    FILTER(
+			        OptionPredictions,
+			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE"
+			            && 1.0 * OptionPredictions[expected_gap_pct] > 0
+			            && OptionPredictions[liquidity_status] = "PASS"
+			    )
+			VAR ActiveEligible =
+			    FILTER(
+			        OptionPredictions,
+			        1.0 * OptionPredictions[expected_gap_pct] > 0
+			            && OptionPredictions[liquidity_status] = "PASS"
+			    )
+			VAR Eligible = IF(COUNTROWS(NextEligible) > 0, NextEligible, ActiveEligible)
+			VAR T =
+			    TOPN(
+			        1,
+			        Eligible,
+			        1.0 * OptionPredictions[expected_gap_pct], DESC,
+			        1.0 * OptionPredictions[confidence_pct], DESC
+			    )
+			RETURN
+			    IF(COUNTROWS(Eligible) = 0, "PENDING", CONCATENATEX(T, OptionPredictions[symbol], ", "))
+		lineageTag: m0000000-0000-0000-0000-000000000023
+
+	measure 'Top Gap Up Expected %' =
+			VAR NextEligible =
+			    FILTER(
+			        OptionPredictions,
+			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE"
+			            && 1.0 * OptionPredictions[expected_gap_pct] > 0
+			            && OptionPredictions[liquidity_status] = "PASS"
+			    )
+			VAR ActiveEligible =
+			    FILTER(
+			        OptionPredictions,
+			        1.0 * OptionPredictions[expected_gap_pct] > 0
+			            && OptionPredictions[liquidity_status] = "PASS"
+			    )
+			VAR Eligible = IF(COUNTROWS(NextEligible) > 0, NextEligible, ActiveEligible)
+			VAR T =
+			    TOPN(
+			        1,
+			        Eligible,
+			        1.0 * OptionPredictions[expected_gap_pct], DESC,
+			        1.0 * OptionPredictions[confidence_pct], DESC
+			    )
+			RETURN
+			    IF(COUNTROWS(Eligible) = 0, BLANK(), MAXX(T, 1.0 * OptionPredictions[expected_gap_pct]))
+		formatString: +0.00"%"
+		lineageTag: m0000000-0000-0000-0000-000000000024
+
+	measure 'Top Gap Down Symbol' =
+			VAR NextEligible =
+			    FILTER(
+			        OptionPredictions,
+			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE"
+			            && 1.0 * OptionPredictions[expected_gap_pct] < 0
+			            && OptionPredictions[liquidity_status] = "PASS"
+			    )
+			VAR ActiveEligible =
+			    FILTER(
+			        OptionPredictions,
+			        1.0 * OptionPredictions[expected_gap_pct] < 0
+			            && OptionPredictions[liquidity_status] = "PASS"
+			    )
+			VAR Eligible = IF(COUNTROWS(NextEligible) > 0, NextEligible, ActiveEligible)
+			VAR T =
+			    TOPN(
+			        1,
+			        Eligible,
+			        1.0 * OptionPredictions[expected_gap_pct], ASC,
+			        1.0 * OptionPredictions[confidence_pct], DESC
+			    )
+			RETURN
+			    IF(COUNTROWS(Eligible) = 0, "PENDING", CONCATENATEX(T, OptionPredictions[symbol], ", "))
+		lineageTag: m0000000-0000-0000-0000-000000000025
+
+	measure 'Top Gap Down Expected %' =
+			VAR NextEligible =
+			    FILTER(
+			        OptionPredictions,
+			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE"
+			            && 1.0 * OptionPredictions[expected_gap_pct] < 0
+			            && OptionPredictions[liquidity_status] = "PASS"
+			    )
+			VAR ActiveEligible =
+			    FILTER(
+			        OptionPredictions,
+			        1.0 * OptionPredictions[expected_gap_pct] < 0
+			            && OptionPredictions[liquidity_status] = "PASS"
+			    )
+			VAR Eligible = IF(COUNTROWS(NextEligible) > 0, NextEligible, ActiveEligible)
+			VAR T =
+			    TOPN(
+			        1,
+			        Eligible,
+			        1.0 * OptionPredictions[expected_gap_pct], ASC,
+			        1.0 * OptionPredictions[confidence_pct], DESC
+			    )
+			RETURN
+			    IF(COUNTROWS(Eligible) = 0, BLANK(), MINX(T, 1.0 * OptionPredictions[expected_gap_pct]))
+		formatString: -0.00"%"
+		lineageTag: m0000000-0000-0000-0000-000000000026
+
+	measure 'Next Session Forecast Status' =
+			VAR NextEligible =
+			    CALCULATE(
+			        COUNTROWS(OptionPredictions),
+			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE"
+			    )
+			VAR ActiveCount = COUNTROWS(OptionPredictions)
+			RETURN
+			    IF(
+			        NextEligible > 0,
+			        "NEXT-SESSION SNAPSHOT AVAILABLE",
+			        IF(ActiveCount > 0, "ACTIVE INTRADAY PREDICTIONS LIVE", "NO SNAPSHOT AVAILABLE")
+			    )
+		lineageTag: m0000000-0000-0000-0000-000000000027
+
+	measure 'Self Calibration Hit Rate %' = MAX(Calibration[top10_hit_rate])
+		formatString: 0.0"%"
+		lineageTag: m0000000-0000-0000-0000-000000000028
+
+	measure 'Self Calibration Recall @ 10' = MAX(Calibration[recall_at_10])
+		formatString: 0.0"%"
+		lineageTag: m0000000-0000-0000-0000-000000000029
+
+	measure 'Forward Outcome Status' = "BLOCKED/PENDING UNTIL PAPER LOG SEMANTICS ARE FIXED"
+		lineageTag: m0000000-0000-0000-0000-000000000030
+
+	measure 'Forward Accuracy %' = BLANK()
+		lineageTag: m0000000-0000-0000-0000-000000000031
+
+	measure 'News Rows' = COUNTROWS(News)
+		formatString: #,##0
+		lineageTag: m0000000-0000-0000-0000-000000000032
+
+	measure 'News Symbols' = DISTINCTCOUNT(News[symbol])
+		formatString: #,##0
+		lineageTag: m0000000-0000-0000-0000-000000000033
+
+	measure 'Independent News Domains' = DISTINCTCOUNT(News[source_domain])
+		formatString: #,##0
+		lineageTag: m0000000-0000-0000-0000-000000000034
+
+	measure 'Model Disclaimer' = "Forecasts are model estimates, not guaranteed gains."
+		lineageTag: m0000000-0000-0000-0000-000000000035
+
+	measure 'Timestamp Safety Status' =
+			IF(
+			    MAX(OptionPredictions[forecast_window]) <> BLANK(),
+			    "USING CORRECTED IST TIMESTAMP",
+			    "CHECK TIMESTAMP"
+			)
+		lineageTag: m0000000-0000-0000-0000-000000000036
+
+	measure 'Average Confidence Safe Display' =
+			VAR X = AVERAGEX(OptionPredictions, 1.0 * OptionPredictions[confidence_pct])
+			RETURN IF(ISBLANK(X), "PENDING", FORMAT(X, "0.0") & "%")
+		lineageTag: m4000000-0000-0000-0000-000000000001
+
+	measure 'Probability Error Count Safe' =
+			COALESCE(
+			    CALCULATE(
+			        COUNTROWS(OptionPredictions),
+			        OptionPredictions[probability_valid] = FALSE()
+			    ),
+			    0
+			)
+		formatString: #,##0
+		lineageTag: m4000000-0000-0000-0000-000000000002
+
+	measure 'CE Probability Visual' = MAX(OptionPredictions[ce_win_prob])
+		formatString: 0.0"%"
+		lineageTag: m4000000-0000-0000-0000-000000000003
+
+	measure 'PE Probability Visual' = MAX(OptionPredictions[pe_win_prob])
+		formatString: 0.0"%"
+		lineageTag: m4000000-0000-0000-0000-000000000004
+
+	measure 'Confidence Visual' = MAX(OptionPredictions[confidence_pct])
+		formatString: 0.0"%"
+		lineageTag: m4000000-0000-0000-0000-000000000005
+
+	measure 'Intensity Visual' = MAX(OptionPredictions[intensity_score])
+		formatString: 0.0
+		lineageTag: m4000000-0000-0000-0000-000000000006
+
+	measure 'Expected Gap Visual' = MAX(OptionPredictions[expected_gap_pct])
+		formatString: +0.00"%";-0.00"%";0.00"%"
+		lineageTag: m4000000-0000-0000-0000-000000000007
+
+	measure 'Largest Expected Gap Up Safe %' =
+			VAR Pos = FILTER(OptionPredictions, 1.0 * OptionPredictions[expected_gap_pct] > 0)
+			VAR X = MAXX(Pos, 1.0 * OptionPredictions[expected_gap_pct])
+			RETURN COALESCE(X, 0)
+		formatString: +0.00"%";-0.00"%";0.00"%"
+		lineageTag: m4000000-0000-0000-0000-000000000008
+
+	measure 'Largest Expected Gap Down Safe %' =
+			VAR Neg = FILTER(OptionPredictions, 1.0 * OptionPredictions[expected_gap_pct] < 0)
+			VAR X = MINX(Neg, 1.0 * OptionPredictions[expected_gap_pct])
+			RETURN COALESCE(X, 0)
+		formatString: +0.00"%";-0.00"%";0.00"%"
+		lineageTag: m4000000-0000-0000-0000-000000000009
+
+	measure 'Top Gap Up Display Safe' =
+			VAR NextEligible =
+			    FILTER(
+			        OptionPredictions,
+			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE"
+			            && 1.0 * OptionPredictions[expected_gap_pct] > 0
+			            && OptionPredictions[liquidity_status] = "PASS"
+			    )
+			VAR ActiveEligible =
+			    FILTER(
+			        OptionPredictions,
+			        1.0 * OptionPredictions[expected_gap_pct] > 0
+			            && OptionPredictions[liquidity_status] = "PASS"
+			    )
+			VAR Eligible = IF(COUNTROWS(NextEligible) > 0, NextEligible, ActiveEligible)
+			VAR T =
+			    TOPN(
+			        1,
+			        Eligible,
+			        1.0 * OptionPredictions[expected_gap_pct], DESC,
+			        1.0 * OptionPredictions[confidence_pct], DESC
+			    )
+			VAR S = CONCATENATEX(T, OptionPredictions[symbol], "")
+			VAR G = MAXX(T, 1.0 * OptionPredictions[expected_gap_pct])
+			RETURN IF(COUNTROWS(Eligible) = 0, "PENDING", S & " | +" & FORMAT(G, "0.00") & "%")
+		lineageTag: m4000000-0000-0000-0000-000000000010
+
+	measure 'Top Gap Down Display Safe' =
+			VAR NextEligible =
+			    FILTER(
+			        OptionPredictions,
+			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE"
+			            && 1.0 * OptionPredictions[expected_gap_pct] < 0
+			            && OptionPredictions[liquidity_status] = "PASS"
+			    )
+			VAR ActiveEligible =
+			    FILTER(
+			        OptionPredictions,
+			        1.0 * OptionPredictions[expected_gap_pct] < 0
+			            && OptionPredictions[liquidity_status] = "PASS"
+			    )
+			VAR Eligible = IF(COUNTROWS(NextEligible) > 0, NextEligible, ActiveEligible)
+			VAR T =
+			    TOPN(
+			        1,
+			        Eligible,
+			        1.0 * OptionPredictions[expected_gap_pct], ASC,
+			        1.0 * OptionPredictions[confidence_pct], DESC
+			    )
+			VAR S = CONCATENATEX(T, OptionPredictions[symbol], "")
+			VAR G = MINX(T, 1.0 * OptionPredictions[expected_gap_pct])
+			RETURN IF(COUNTROWS(Eligible) = 0, "PENDING", S & " | " & FORMAT(G, "0.00") & "%")
+		lineageTag: m4000000-0000-0000-0000-000000000011
+
+	measure 'Top Raw CE Display' =
+			VAR T =
+			    TOPN(
+			        1,
+			        FILTER(ForensicLive, ForensicLive[ce_valid] = TRUE()),
+			        ForensicLive[ce_chg_pct], DESC,
+			        ForensicLive[symbol], ASC
+			    )
+			RETURN CONCATENATEX(T, ForensicLive[symbol] & " | +" & FORMAT(ForensicLive[ce_chg_pct], "0.00") & "%", "")
+		lineageTag: m4000000-0000-0000-0000-000000000012
+
+	measure 'Top Actionable CE Display' =
+			VAR T =
+			    TOPN(
+			        1,
+			        FILTER(
+			            ForensicLive,
+			            ForensicLive[ce_valid] = TRUE()
+			                && NOT(CONTAINSSTRING(UPPER(ForensicLive[forensic_signal]), "ILLIQUID"))
+			                && NOT(CONTAINSSTRING(UPPER(ForensicLive[forensic_signal]), "AVOID"))
+			        ),
+			        ForensicLive[ce_chg_pct], DESC,
+			        ForensicLive[symbol], ASC
+			    )
+			RETURN CONCATENATEX(T, ForensicLive[symbol] & " | +" & FORMAT(ForensicLive[ce_chg_pct], "0.00") & "%", "")
+		lineageTag: m4000000-0000-0000-0000-000000000013
+
+	measure 'Top Raw PE Display' =
+			VAR T =
+			    TOPN(
+			        1,
+			        FILTER(ForensicLive, ForensicLive[pe_valid] = TRUE()),
+			        ForensicLive[pe_chg_pct], DESC,
+			        ForensicLive[symbol], ASC
+			    )
+			RETURN CONCATENATEX(T, ForensicLive[symbol] & " | +" & FORMAT(ForensicLive[pe_chg_pct], "0.00") & "%", "")
+		lineageTag: m4000000-0000-0000-0000-000000000014
+
+	measure 'Top Actionable PE Display' =
+			VAR T =
+			    TOPN(
+			        1,
+			        FILTER(
+			            ForensicLive,
+			            ForensicLive[pe_valid] = TRUE()
+			                && NOT(CONTAINSSTRING(UPPER(ForensicLive[forensic_signal]), "ILLIQUID"))
+			                && NOT(CONTAINSSTRING(UPPER(ForensicLive[forensic_signal]), "AVOID"))
+			        ),
+			        ForensicLive[pe_chg_pct], DESC,
+			        ForensicLive[symbol], ASC
+			    )
+			RETURN CONCATENATEX(T, ForensicLive[symbol] & " | +" & FORMAT(ForensicLive[pe_chg_pct], "0.00") & "%", "")
+		lineageTag: m4000000-0000-0000-0000-000000000015
+
+	measure 'CE IV Visual' = MAX(OptionPredictions[ce_iv])
+		formatString: 0.00
+		lineageTag: m4000000-0000-0000-0000-000000000016
+
+	measure 'PE IV Visual' = MAX(OptionPredictions[pe_iv])
+		formatString: 0.00
+		lineageTag: m4000000-0000-0000-0000-000000000017
+
+	measure 'CE Gamma Visual' = MAX(OptionPredictions[ce_gamma])
+		formatString: 0.000000
+		lineageTag: m4000000-0000-0000-0000-000000000018
+
+	measure 'PE Gamma Visual' = MAX(OptionPredictions[pe_gamma])
+		formatString: 0.000000
+		lineageTag: m4000000-0000-0000-0000-000000000019
+
+	measure 'News Severity Visual' = MAX(News[severity_level])
+		formatString: 0
+		lineageTag: m4000000-0000-0000-0000-000000000020
+
+	measure 'Heartbeat Status Display' =
+			VAR A = MAX(Heartbeat[runner_status])
+			VAR E = MAX(Heartbeat[engine_status])
+			RETURN IF(COUNTROWS(Heartbeat)=0, "NO HEARTBEAT DATA", A & " | " & E)
+		lineageTag: m4000000-0000-0000-0000-000000000021
+
+	measure 'Heartbeat Symbols Display' =
+			VAR X = MAX(Heartbeat[symbols_scanned])
+			RETURN IF(ISBLANK(X), "NO DATA", FORMAT(X, "0") & " symbols")
+		lineageTag: m4000000-0000-0000-0000-000000000022
+
+	measure 'Heartbeat Freshness Display' =
+			VAR X = MAX(Heartbeat[writer_age_sec])
+			RETURN IF(ISBLANK(X), "NO DATA", FORMAT(X, "0") & " sec writer age")
+		lineageTag: m4000000-0000-0000-0000-000000000023
+
+	measure 'Heartbeat Feed Display' =
+			VAR X = MAX(Heartbeat[feed_alert])
+			RETURN IF(ISBLANK(X), "NO DATA", X)
+		lineageTag: m4000000-0000-0000-0000-000000000024
+
+	column Dummy
+		dataType: int64
+		isHidden
+		lineageTag: m0000000-0000-0000-0000-000000000037
+		summarizeBy: sum
+		sourceColumn: [Dummy]
+
+	partition _Measures = calculated
+		mode: import
+		source = ROW("Dummy", 1)
+

@@ -1,0 +1,4 @@
+﻿check,status,detail
+local_checks,UNKNOWN,"Unable to verify (NotADirectoryError); check credentials, dependencies, access and connectivity"
+github,UNKNOWN,"Unable to verify (NotADirectoryError); check credentials, dependencies, access and connectivity"
+google_credentials,UNKNOWN,FileNotFoundError; credentials not logged

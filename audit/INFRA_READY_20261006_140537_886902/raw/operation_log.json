@@ -1,0 +1,17 @@
+[
+  {
+    "check": "local_checks",
+    "status": "UNKNOWN",
+    "detail": "Unable to verify (NotADirectoryError); check credentials, dependencies, access and connectivity"
+  },
+  {
+    "check": "github",
+    "status": "UNKNOWN",
+    "detail": "Unable to verify (NotADirectoryError); check credentials, dependencies, access and connectivity"
+  },
+  {
+    "check": "google_credentials",
+    "status": "UNKNOWN",
+    "detail": "FileNotFoundError; credentials not logged"
+  }
+]

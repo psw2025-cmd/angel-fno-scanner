@@ -1,0 +1,95 @@
+table News
+	lineageTag: t0000000-0000-0000-0000-000000000005
+
+	column symbol
+		dataType: string
+		lineageTag: n0000000-0000-0000-0000-000000000001
+		summarizeBy: none
+		sourceColumn: symbol
+
+	column headline
+		dataType: string
+		lineageTag: n0000000-0000-0000-0000-000000000002
+		summarizeBy: none
+		sourceColumn: headline
+
+	column severity_level
+		dataType: int64
+		formatString: 0
+		lineageTag: n0000000-0000-0000-0000-000000000003
+		summarizeBy: average
+		sourceColumn: severity_level
+
+	column sentiment_score
+		dataType: double
+		formatString: 0.00
+		lineageTag: n0000000-0000-0000-0000-000000000004
+		summarizeBy: average
+		sourceColumn: sentiment_score
+
+	column source_domain
+		dataType: string
+		lineageTag: n0000000-0000-0000-0000-000000000005
+		summarizeBy: none
+		sourceColumn: source_domain
+
+	column source_url
+		dataType: string
+		lineageTag: n0000000-0000-0000-0000-000000000006
+		summarizeBy: none
+		sourceColumn: source_url
+
+	column published_at
+		dataType: string
+		lineageTag: n0000000-0000-0000-0000-000000000007
+		summarizeBy: none
+		sourceColumn: published_at
+
+	partition News = m
+		mode: import
+		source =
+				let
+				    Url = "https://raw.githubusercontent.com/psw2025-cmd/angel-fno-scanner/main/data/market_news.json",
+				    RawBytes = try Web.Contents(Url) otherwise null,
+				    RawJson = if RawBytes <> null then Json.Document(RawBytes) else {},
+				    Raw0 = if Value.Is(RawJson, type list) then Table.FromRecords(RawJson) else #table({}, {}),
+				    Rename = Table.RenameColumns(
+				        Raw0,
+				        {
+				            {"title", "headline"},
+				            {"tone_score", "sentiment_score"},
+				            {"timestamp", "published_at"}
+				        },
+				        MissingField.Ignore
+				    ),
+				    AddDomain = Table.AddColumn(
+				        Rename,
+				        "source_domain",
+				        each
+				            let
+				                U = try Uri.Parts(Text.From([source_url])) otherwise null,
+				                H = if U = null then null else try U[Host] otherwise null
+				            in H,
+				        type text
+				    ),
+				    Keep = Table.SelectColumns(
+				        AddDomain,
+				        {"symbol","headline","severity_level","sentiment_score","source_domain","source_url","published_at"},
+				        MissingField.UseNull
+				    ),
+				    Types = Table.TransformColumnTypes(
+				        Keep,
+				        {
+				            {"symbol", type text},
+				            {"headline", type text},
+				            {"severity_level", Int64.Type},
+				            {"sentiment_score", type number},
+				            {"source_domain", type text},
+				            {"source_url", type text},
+				            {"published_at", type text}
+				        },
+				        "en-US"
+				    )
+				in
+				    Types
+

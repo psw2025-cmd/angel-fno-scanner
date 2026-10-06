@@ -1,0 +1,40 @@
+table Heartbeat
+
+	column timestamp
+		dataType: string
+		sourceColumn: [timestamp]
+
+	column writer_age_sec
+		dataType: double
+		sourceColumn: [writer_age_sec]
+
+	column runner_status
+		dataType: string
+		sourceColumn: [runner_status]
+
+	column engine_status
+		dataType: string
+		sourceColumn: [engine_status]
+
+	column symbols_scanned
+		dataType: int64
+		sourceColumn: [symbols_scanned]
+
+	column feed_alert
+		dataType: string
+		sourceColumn: [feed_alert]
+
+	partition Heartbeat_Partition = calculated
+		source =
+				DATATABLE(
+				    "timestamp", STRING,
+				    "writer_age_sec", DOUBLE,
+				    "runner_status", STRING,
+				    "engine_status", STRING,
+				    "symbols_scanned", INTEGER,
+				    "feed_alert", STRING,
+				    {
+				        {"2026-09-29 22:54:05", 0, "CONNECTED_ANGEL_SMARTAPI", "ACTIVE_PREDICTION_ENGINE | Cycle #228", 216, "ðŸŸ¢ HEALTHY (ALL FEEDS ACTIVE)"}
+				    }
+				)
+

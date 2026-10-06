@@ -1,0 +1,119 @@
+table PaperLog
+	lineageTag: t0000000-0000-0000-0000-000000000007
+
+	column entry_time
+		dataType: string
+		lineageTag: p0000000-0000-0000-0000-000000000001
+		summarizeBy: none
+		sourceColumn: entry_time
+
+	column session_date
+		dataType: string
+		lineageTag: p0000000-0000-0000-0000-000000000006
+		summarizeBy: none
+		sourceColumn: session_date
+
+	column symbol
+		dataType: string
+		lineageTag: p0000000-0000-0000-0000-000000000002
+		summarizeBy: none
+		sourceColumn: symbol
+
+	column action
+		dataType: string
+		lineageTag: p0000000-0000-0000-0000-000000000003
+		summarizeBy: none
+		sourceColumn: action
+
+	column fut_ltp
+		dataType: double
+		formatString: #,##0.00
+		lineageTag: p0000000-0000-0000-0000-000000000007
+		summarizeBy: average
+		sourceColumn: fut_ltp
+
+	column raw_session_change_pct
+		dataType: double
+		formatString: +0.00"%";-0.00"%";0.00"%"
+		lineageTag: p0000000-0000-0000-0000-000000000004
+		summarizeBy: average
+		sourceColumn: raw_session_change_pct
+
+	column note
+		dataType: string
+		lineageTag: p0000000-0000-0000-0000-000000000008
+		summarizeBy: none
+		sourceColumn: note
+
+	column raw_later_session_change_pct
+		dataType: double
+		formatString: +0.00"%";-0.00"%";0.00"%"
+		lineageTag: p0000000-0000-0000-0000-000000000009
+		summarizeBy: average
+		sourceColumn: raw_later_session_change_pct
+
+	column outcome_filled_at
+		dataType: string
+		lineageTag: p0000000-0000-0000-0000-000000000010
+		summarizeBy: none
+		sourceColumn: outcome_filled_at
+
+	column forward_accuracy_eligible
+		dataType: boolean
+		lineageTag: p0000000-0000-0000-0000-000000000011
+		summarizeBy: none
+		sourceColumn: forward_accuracy_eligible
+
+	partition PaperLog = m
+		mode: import
+		source =
+				let
+				    Raw = try SheetCsv("PAPER_ALERT_LOG", "A1:K500") otherwise #table(
+				        {"Logged at IST","Session date","Symbol","Side","Fut LTP","Session change %","CE contract","PE contract","Note","Later session change %","Outcome filled at"},
+				        {}
+				    ),
+				    Rename = Table.RenameColumns(
+				        Raw,
+				        {
+				            {"Logged at IST", "entry_time"},
+				            {"Session date", "session_date"},
+				            {"Symbol", "symbol"},
+				            {"Side", "action"},
+				            {"Fut LTP", "fut_ltp"},
+				            {"Session change %", "raw_session_change_pct"},
+				            {"Note", "note"},
+				            {"Later session change %", "raw_later_session_change_pct"},
+				            {"Outcome filled at", "outcome_filled_at"}
+				        },
+				        MissingField.Ignore
+				    ),
+				    Keep = Table.SelectColumns(
+				        Rename,
+				        {"entry_time","session_date","symbol","action","fut_ltp","raw_session_change_pct","note","raw_later_session_change_pct","outcome_filled_at"},
+				        MissingField.UseNull
+				    ),
+				    AddEligibility = Table.AddColumn(
+				        Keep,
+				        "forward_accuracy_eligible",
+				        each false,
+				        type logical
+				    ),
+				    Types = Table.TransformColumnTypes(
+				        AddEligibility,
+				        {
+				            {"entry_time", type text},
+				            {"session_date", type text},
+				            {"symbol", type text},
+				            {"action", type text},
+				            {"fut_ltp", type number},
+				            {"raw_session_change_pct", type number},
+				            {"note", type text},
+				            {"raw_later_session_change_pct", type number},
+				            {"outcome_filled_at", type text},
+				            {"forward_accuracy_eligible", type logical}
+				        },
+				        "en-US"
+				    )
+				in
+				    Types
+

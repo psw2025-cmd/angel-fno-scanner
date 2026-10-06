@@ -1,0 +1,114 @@
+table SheetNews
+	lineageTag: t0000000-0000-0000-0000-000000000008
+
+	column symbol
+		dataType: string
+		lineageTag: s0000000-0000-0000-0000-000000000001
+		summarizeBy: none
+		sourceColumn: symbol
+
+	column sentiment
+		dataType: string
+		lineageTag: s0000000-0000-0000-0000-000000000004
+		summarizeBy: none
+		sourceColumn: sentiment
+
+	column tone_rating
+		dataType: double
+		formatString: 0.0
+		lineageTag: s0000000-0000-0000-0000-000000000005
+		summarizeBy: average
+		sourceColumn: tone_rating
+
+	column source_count
+		dataType: int64
+		formatString: 0
+		lineageTag: s0000000-0000-0000-0000-000000000006
+		summarizeBy: sum
+		sourceColumn: source_count
+
+	column source_agreement_pct
+		dataType: double
+		formatString: 0.0"%"
+		lineageTag: s0000000-0000-0000-0000-000000000007
+		summarizeBy: average
+		sourceColumn: source_agreement_pct
+
+	column event
+		dataType: string
+		lineageTag: s0000000-0000-0000-0000-000000000008
+		summarizeBy: none
+		sourceColumn: event
+
+	column headline
+		dataType: string
+		lineageTag: s0000000-0000-0000-0000-000000000002
+		summarizeBy: none
+		sourceColumn: headline
+
+	column time_ist
+		dataType: string
+		lineageTag: s0000000-0000-0000-0000-000000000003
+		summarizeBy: none
+		sourceColumn: time_ist
+
+	column nse_filing
+		dataType: string
+		lineageTag: s0000000-0000-0000-0000-000000000009
+		summarizeBy: none
+		sourceColumn: nse_filing
+
+	column meaning
+		dataType: string
+		lineageTag: s0000000-0000-0000-0000-000000000010
+		summarizeBy: none
+		sourceColumn: meaning
+
+	partition SheetNews = m
+		mode: import
+		source =
+				let
+				    Raw = try SheetCsv("NEWS_LIVE", "A2:L240") otherwise #table(
+				        {"Symbol","Sentiment","Tone rating 0-100","Tone arrow","Sources","Source agreement %","Event","Latest time","NSE filing","Headlines","Trigger words","Meaning"},
+				        {}
+				    ),
+				    Rename = Table.RenameColumns(
+				        Raw,
+				        {
+				            {"Symbol", "symbol"},
+				            {"Sentiment", "sentiment"},
+				            {"Tone rating 0-100", "tone_rating"},
+				            {"Sources", "source_count"},
+				            {"Source agreement %", "source_agreement_pct"},
+				            {"Event", "event"},
+				            {"Latest time", "time_ist"},
+				            {"NSE filing", "nse_filing"},
+				            {"Headlines", "headline"},
+				            {"Meaning", "meaning"}
+				        },
+				        MissingField.Ignore
+				    ),
+				    Keep = Table.SelectColumns(
+				        Rename,
+				        {"symbol","sentiment","tone_rating","source_count","source_agreement_pct","event","headline","time_ist","nse_filing","meaning"},
+				        MissingField.UseNull
+				    ),
+				    Types = Table.TransformColumnTypes(
+				        Keep,
+				        {
+				            {"symbol", type text},
+				            {"sentiment", type text},
+				            {"tone_rating", type number},
+				            {"source_count", Int64.Type},
+				            {"source_agreement_pct", type number},
+				            {"event", type text},
+				            {"headline", type text},
+				            {"time_ist", type text},
+				            {"nse_filing", type text},
+				            {"meaning", type text}
+				        },
+				        "en-US"
+				    )
+				in
+				    Types
+

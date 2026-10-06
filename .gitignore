@@ -11,3 +11,15 @@ cross_agent_packets/
 .tmp.drivedownload/
 audit/cloud_exports/
 *.exe
+
+# Power BI & Visual Monitor binary cache / live telemetry
+*.abf
+*.pdf
+desktop.ini
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+system_live_telemetry.json
+tools/system_live_telemetry.json
+operator/monitor/system_live_telemetry.json
+tools/SYSTEM_LIVE_DNA_AUDIT.csv
+audit/verify_harness_*.json

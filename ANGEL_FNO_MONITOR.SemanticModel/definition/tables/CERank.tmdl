@@ -1,0 +1,310 @@
+table CERank
+
+	column rank_time_ist
+		dataType: string
+		sourceColumn: [rank_time_ist]
+
+	column symbol
+		dataType: string
+		sourceColumn: [symbol]
+
+	column rank_status
+		dataType: string
+		sourceColumn: [rank_status]
+
+	column fut_chg_pct
+		dataType: double
+		sourceColumn: [fut_chg_pct]
+
+	column opening_gap_pct
+		dataType: double
+		sourceColumn: [opening_gap_pct]
+
+	column fut_obi
+		dataType: double
+		sourceColumn: [fut_obi]
+
+	column ce_chg_pct
+		dataType: double
+		sourceColumn: [ce_chg_pct]
+
+	column pe_chg_pct
+		dataType: double
+		sourceColumn: [pe_chg_pct]
+
+	column ce_oi
+		dataType: int64
+		sourceColumn: [ce_oi]
+
+	column pe_oi
+		dataType: int64
+		sourceColumn: [pe_oi]
+
+	column ce_oi_change
+		dataType: double
+		sourceColumn: [ce_oi_change]
+
+	column pe_oi_change
+		dataType: double
+		sourceColumn: [pe_oi_change]
+
+	column ce_obi
+		dataType: double
+		sourceColumn: [ce_obi]
+
+	column atm_pcr
+		dataType: double
+		sourceColumn: [atm_pcr]
+
+	column ce_streak
+		dataType: int64
+		sourceColumn: [ce_streak]
+
+	column pe_streak
+		dataType: int64
+		sourceColumn: [pe_streak]
+
+	column explanation
+		dataType: string
+		sourceColumn: [explanation]
+
+	partition CERank_Partition = calculated
+		source =
+				DATATABLE(
+				    "rank_time_ist", STRING,
+				    "symbol", STRING,
+				    "rank_status", STRING,
+				    "fut_chg_pct", DOUBLE,
+				    "opening_gap_pct", DOUBLE,
+				    "fut_obi", DOUBLE,
+				    "ce_chg_pct", DOUBLE,
+				    "pe_chg_pct", DOUBLE,
+				    "ce_oi", INTEGER,
+				    "pe_oi", INTEGER,
+				    "ce_oi_change", DOUBLE,
+				    "pe_oi_change", DOUBLE,
+				    "ce_obi", DOUBLE,
+				    "atm_pcr", DOUBLE,
+				    "ce_streak", INTEGER,
+				    "pe_streak", INTEGER,
+				    "explanation", STRING,
+				    {
+				        {"2026-09-29 23:10:12", "DELHIVERY", "MARKET CLOSED", 2.55, 0, 1, 2362.5, -98.84, 109975, 149400, 0, 0, -1, 1.36, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "VMM", "MARKET CLOSED", 2.46, 0, 1, 224.32, -27.04, 388000, 780850, 0, 0, 1, 2.01, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "HYUNDAI", "MARKET CLOSED", 1.83, 0, 1, -90.7, -9.65, 33275, 30250, 0, 0, 0, 0.91, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "MANAPPURAM", "MARKET CLOSED", 1.79, 0, 1, -89.19, -40.5, 333000, 324000, 0, 0, -1, 0.97, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "RADICO", "MARKET CLOSED", 0.45, 0, 1, -98.9, 303.7, 26550, 30150, 0, 0, 0.333, 1.14, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ADANIPORTS", "MARKET CLOSED", 3.92, 0, 1, -87.5, -38.31, 296400, 176700, 0, 0, -1, 0.6, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "DLF", "MARKET CLOSED", 3.28, 0, 1, -83.33, -49.16, 739100, 167200, 0, 0, -1, 0.23, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "SUNPHARMA", "MARKET CLOSED", 1.85, 0, 1, -95.65, -71.71, 364000, 139650, 0, 0, -1, 0.38, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "UNIONBANK", "MARKET CLOSED", 1.83, 0, 1, -94.23, -68.52, 1243425, 1340775, 0, 0, -1, 1.08, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "COALINDIA", "MARKET CLOSED", 1.81, 0, 1, -75, -18.71, 2560950, 1135350, 0, 0, -1, 0.44, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "AMBUJACEM", "MARKET CLOSED", 1.6, 0, 1, -92.31, 79.1, 324000, 108000, 0, 0, -1, 0.33, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "JSWENERGY", "MARKET CLOSED", 1.56, 0, 1, -98.08, -38.06, 105350, 109650, 0, 0, -1, 1.04, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "NATIONALUM", "MARKET CLOSED", 1.13, 0, 1, -95, -88.78, 697500, 489375, 0, 0, -1, 0.7, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "IOC", "MARKET CLOSED", 0.88, 0, 1, -70.59, 75.51, 2544750, 1696500, 0, 0, -0.489, 0.67, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "EICHERMOT", "MARKET CLOSED", 0.75, 0, 1, -99.73, 84.09, 44100, 44100, 0, 0, -1, 1, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "SWIGGY", "MARKET CLOSED", 0.62, 0, 1, -95.83, -41.75, 1768425, 1328600, 0, 0, -1, 0.75, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "VBL", "MARKET CLOSED", 0.27, 0, 1, -98.08, -97.3, 1254600, 710175, 0, 0, -1, 0.57, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "LUPIN", "MARKET CLOSED", 0.22, 0, 1, -51.61, -17.43, 62900, 63325, 0, 0, 0, 1.01, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "GODREJPROP", "MARKET CLOSED", -0.08, 0, 1, -94.97, 210.08, 26975, 47775, 0, 0, -1, 1.77, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "MOTILALOFS", "MARKET CLOSED", -0.24, 0, 1, -65.37, 58.62, 105400, 148800, 0, 0, 0, 1.41, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "IDFCFIRSTB", "MARKET CLOSED", -0.48, 0, 1, -94.32, -96.67, 1586025, 1780800, 0, 0, -1, 1.12, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "SUPREMEIND", "MARKET CLOSED", -0.55, 0, 1, -24.78, -98.91, 15750, 37625, 0, 0, -1, 2.39, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "SHREECEM", "MARKET CLOSED", -0.56, 0, 1, -93.4, -10.61, 350, 1700, 0, 0, -1, 4.86, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BOSCHLTD", "MARKET CLOSED", -1.14, 0, 1, -73.21, 28.56, 1425, 1975, 0, 0, -1, 1.39, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "MFSL", "MARKET CLOSED", -1.89, 0, 1, -99.49, 757.81, 62400, 40400, 0, 0, 0.7, 0.65, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "FORTIS", "MARKET CLOSED", -2.32, 0, 1, -88.09, 30, 13175, 127100, 0, 0, 0, 9.65, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "PREMIERENE", "MARKET CLOSED", -3.11, 0, 1, -96.59, 1423.08, 143000, 119600, 0, 0, -1, 0.84, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "PIDILITIND", "MARKET CLOSED", -1.44, 0, -1, -99.62, -98.44, 17500, 35000, 0, 0, 0, 2, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "TORNTPHARM", "MARKET CLOSED", -1.64, 0, -1, -33.42, -98.39, 9625, 44500, 0, 0, 0, 4.62, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "LTM", "MARKET CLOSED", -4.67, 0, -1, -23.07, 5.26, 5250, 20250, 0, 0, 0, 3.86, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "POWERINDIA", "MARKET CLOSED", 1.26, 0, -0.924, 224.2, -96.01, 7525, 6525, 0, 0, 0.565, 0.87, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BSE", "MARKET CLOSED", 0.06, 0, -0.906, -62.22, -99.35, 473000, 541600, 0, 0, -0.984, 1.15, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "AUBANK", "MARKET CLOSED", -0.26, 0, 0.9, -97.83, -29.45, 234000, 184000, 0, 0, -1, 0.79, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "COCHINSHIP", "MARKET CLOSED", 0.62, 0, -0.892, 253.42, 62.15, 47200, 75600, 0, 0, 0, 1.6, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BIOCON", "MARKET CLOSED", 0.95, 0, 0.889, -94.44, -50.41, 445000, 547500, 0, 0, -1, 1.23, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "LODHA", "MARKET CLOSED", -2.42, 0, -0.869, -99.79, -95.45, 118125, 183125, 0, 0, -1, 1.55, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "POLYCAB", "MARKET CLOSED", -1.26, 0, -0.842, -62.86, -8.26, 26625, 10625, 0, 0, 1, 0.4, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "KOTAKBANK", "MARKET CLOSED", 2.31, 0, 0.84, -90.91, -49.46, 2256000, 2106000, 0, 0, -1, 0.93, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "CGPOWER", "MARKET CLOSED", 2.29, 0, 0.833, -94.87, 27.49, 189550, 276250, 0, 0, -1, 1.46, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "TATAELXSI", "MARKET CLOSED", -2.11, 0, 0.833, -88.79, -66.67, 2375, 7125, 0, 0, 0, 3, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "IRFC", "MARKET CLOSED", -0.96, 0, 0.81, -21.25, -97.22, 358050, 412300, 0, 0, -0.333, 1.15, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "KFINTECH", "MARKET CLOSED", -6.27, 0, -0.8, -71.18, 9900, 575, 6900, 0, 0, 0, 10, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "WIPRO", "MARKET CLOSED", -1.47, 0, 0.795, -94.27, 0, 1071000, 945000, 0, 0, -0.774, 0.88, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BAJFINANCE", "MARKET CLOSED", -0.92, 0, 0.791, -99.62, -96.97, 72000, 120750, 0, 0, 0, 1.68, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "MANKIND", "MARKET CLOSED", 6.39, 0, 0.789, -23.08, -38.48, 27000, 5500, 0, 0, -0.939, 0.2, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "INDUSTOWER", "MARKET CLOSED", 2.24, 0, 0.778, 137.5, -94.48, 32300, 45900, 0, 0, -1, 1.42, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "LT", "MARKET CLOSED", -0.31, 0, 0.778, -85.29, -99.45, 164850, 119350, 0, 0, -1, 0.72, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ABB", "MARKET CLOSED", 0.34, 0, 0.771, -99.81, 125.83, 15125, 18125, 0, 0, -1, 1.2, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "TATASTEEL", "MARKET CLOSED", 1.11, 0, 0.765, 5.88, -96.23, 2920500, 2959000, 0, 0, -0.2, 1.01, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ABCAPITAL", "MARKET CLOSED", 0.64, 0, 0.75, -96.77, 25, 226300, 158100, 0, 0, -1, 0.7, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "HINDPETRO", "MARKET CLOSED", 0.44, 0, 0.75, -50, -96.97, 72900, 317925, 0, 0, 0, 4.36, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "SIEMENS", "MARKET CLOSED", -0.28, 0, -0.75, -38.13, 18.01, 14350, 19775, 0, 0, 1, 1.38, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "TVSMOTOR", "MARKET CLOSED", 0.48, 0, 0.737, -9.09, -92.68, 32200, 36400, 0, 0, -1, 1.13, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "KPITTECH", "MARKET CLOSED", -0.52, 0, 0.733, -6.59, -84.62, 43400, 68975, 0, 0, 1, 1.59, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "GODREJCP", "MARKET CLOSED", -0.9, 0, 0.733, -99.48, 235.9, 99500, 84000, 0, 0, -1, 0.84, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "UNITDSPR", "MARKET CLOSED", -2.93, 0, -0.733, -78.28, -91.67, 9600, 48000, 0, 0, 0, 5, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "AXISBANK", "MARKET CLOSED", 0.61, 0, 0.73, -95, -30.56, 383125, 488750, 0, 0, -1, 1.28, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "NAM-INDIA", "MARKET CLOSED", -2.68, 0, -0.714, 0, -81.82, 0, 31875, 0, 0, 0, 0, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "OFSS", "MARKET CLOSED", -4.48, 0, -0.714, -65.7, -99.7, 16900, 19000, 0, 0, -1, 1.12, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "DIXON", "MARKET CLOSED", -1.99, 0, 0.709, -99.98, 243.98, 20300, 18650, 0, 0, -1, 0.92, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ITC", "MARKET CLOSED", -0.45, 0, -0.707, -96.43, -91.67, 3953700, 2095875, 0, 0, -1, 0.53, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "RBLBANK", "MARKET CLOSED", -0.39, 0, 0.704, -88.89, -96.55, 501650, 346075, 0, 0, -1, 0.69, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "HDFCAMC", "MARKET CLOSED", -0.85, 0, 0.7, -99.41, 300.55, 27600, 27600, 0, 0, -1, 1, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ICICIGI", "MARKET CLOSED", -1.57, 0, 0.692, -94.62, 34.21, 20150, 21450, 0, 0, -1, 1.06, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "PRESTIGE", "MARKET CLOSED", -2.42, 0, -0.692, -95.6, -21.43, 31050, 36000, 0, 0, 0, 1.16, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "CANBK", "MARKET CLOSED", -0.12, 0, 0.684, -98.94, -55.79, 1559250, 1491750, 0, 0, -1, 0.96, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "HINDUNILVR", "MARKET CLOSED", -1.62, 0, 0.684, -80.81, -96.55, 6900, 27300, 0, 0, 0, 3.96, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "MAZDOCK", "MARKET CLOSED", -1.74, 0, -0.667, -99.95, -98.15, 18675, 37800, 0, 0, -1, 2.02, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "LAURUSLABS", "MARKET CLOSED", -1.01, 0, -0.658, -94.64, -55.28, 226950, 124100, 0, 0, -1, 0.55, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "CIPLA", "MARKET CLOSED", -0.84, 0, 0.647, -27.57, -99.01, 75225, 72250, 0, 0, 0, 0.96, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "SBIN", "MARKET CLOSED", 0.22, 0, 0.645, -34.07, -98.7, 648000, 664500, 0, 0, -0.455, 1.03, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "NAUKRI", "MARKET CLOSED", -0.58, 0, 0.636, -79.41, -98.73, 109450, 257400, 0, 0, 0, 2.35, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "INDIGO", "MARKET CLOSED", -0.2, 0, 0.628, -99.45, 12.89, 556500, 118500, 0, 0, -1, 0.21, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "JINDALSTEL", "MARKET CLOSED", -0.16, 0, 0.619, -93.67, -88.89, 120000, 141875, 0, 0, -0.238, 1.18, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ADANIGREEN", "MARKET CLOSED", 1.49, 0, 0.6, -93.67, -99.66, 76800, 90600, 0, 0, -1, 1.18, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "NYKAA", "MARKET CLOSED", 0.89, 0, 0.6, -60, -72.73, 234375, 256250, 0, 0, -1, 1.09, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "CHOLAFIN", "MARKET CLOSED", 0.25, 0, 0.6, -98.86, -92.54, 82500, 80625, 0, 0, 0, 0.98, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "GODFRYPHLP", "MARKET CLOSED", -0.74, 0, -0.6, -62.48, 644.68, 23650, 11825, 0, 0, 0, 0.5, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "SAIL", "MARKET CLOSED", -3.04, 0, -0.6, -70.48, -98.33, 634500, 1250200, 0, 0, -1, 1.97, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "INDHOTEL", "MARKET CLOSED", 0.37, 0, 0.588, 164.2, -97.26, 102000, 111000, 0, 0, 0, 1.09, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "SUZLON", "MARKET CLOSED", 0.28, 0, 0.576, -96.15, -26.47, 1727200, 736600, 0, 0, -1, 0.43, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "TATACONSUM", "MARKET CLOSED", 0.45, 0, 0.571, -93.62, -16.3, 113300, 125400, 0, 0, -1, 1.11, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "NMDC", "MARKET CLOSED", -1.23, 0, -0.565, -72.22, -89.47, 114750, 87750, 0, 0, -1, 0.76, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "CONCOR", "MARKET CLOSED", -1.7, 0, 0.562, 0, 40, 0, 38750, 0, 0, 0, 0, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ZYDUSLIFE", "MARKET CLOSED", -0.73, 0, 0.556, -98.5, -98.97, 108000, 86400, 0, 0, 0, 0.8, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "TITAN", "MARKET CLOSED", -3.03, 0, 0.55, -99.92, -98.33, 17500, 38850, 0, 0, -1, 2.22, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "SBICARD", "MARKET CLOSED", -0.64, 0, 0.538, -95.92, -57.14, 74400, 61600, 0, 0, -0.6, 0.83, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BRITANNIA", "MARKET CLOSED", -1.07, 0, -0.538, -99.9, 532.43, 4750, 4250, 0, 0, -1, 0.89, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "VOLTAS", "MARKET CLOSED", -3.52, 0, -0.533, -99.85, 685.71, 76500, 68250, 0, 0, -1, 0.89, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BHARTIARTL", "MARKET CLOSED", 0.12, 0, 0.532, -83.18, -9.91, 131100, 183825, 0, 0, -1, 1.4, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ONGC", "MARKET CLOSED", -0.4, 0, 0.529, -99.25, -99.04, 645750, 758250, 0, 0, -1, 1.17, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "HAVELLS", "MARKET CLOSED", -4.96, 0, -0.529, -70.47, -33.33, 5500, 59500, 0, 0, 0, 10, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "DRREDDY", "MARKET CLOSED", 1.05, 0, -0.528, -97.78, -99.73, 760625, 351875, 0, 0, -1, 0.46, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ALKEM", "MARKET CLOSED", 2.26, 0, 0.524, -52.38, -74.51, 12750, 19375, 0, 0, -1, 1.52, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "PNB", "MARKET CLOSED", -0.83, 0, 0.52, -99.09, -91.3, 960000, 1832000, 0, 0, -1, 1.91, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ICICIBANK", "MARKET CLOSED", -0.3, 0, 0.506, -99.02, -80.77, 862400, 887600, 0, 0, -1, 1.03, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "APOLLOHOSP", "MARKET CLOSED", -2.47, 0, 0.5, -67.87, -92.86, 6750, 17000, 0, 0, 0, 2.52, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "PGEL", "MARKET CLOSED", -2.57, 0, 0.5, 0, -90, 0, 12350, 0, 0, 0, 0, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BAJAJFINSV", "MARKET CLOSED", -2.14, 0, -0.5, -0.51, -94.74, 7800, 30900, 0, 0, 0, 3.96, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "SAGILITY", "MARKET CLOSED", -2.35, 0, -0.5, -14, 400, 216000, 408000, 0, 0, -0.692, 1.89, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "PAGEIND", "MARKET CLOSED", -3.19, 0, -0.5, -55.29, -99.75, 2540, 3540, 0, 0, -1, 1.39, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "FINNIFTY", "MARKET CLOSED", -0.19, 0, -0.478, -99.96, -98.42, 134220, 178080, 0, 0, -1, 1.33, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "MIDCPNIFTY", "MARKET CLOSED", -0.65, 0, -0.477, -99.96, -97.34, 504120, 1195920, 0, 0, -1, 2.37, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "YESBANK", "MARKET CLOSED", -0.33, 0, 0.474, -84, -87.5, 6468800, 8117100, 0, 0, -1, 1.25, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BAJAJ-AUTO", "MARKET CLOSED", -1.91, 0, 0.474, -75.19, -98.23, 1650, 18225, 0, 0, -1, 10, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "RVNL", "MARKET CLOSED", -2.59, 0, -0.467, -97.25, 837.5, 548625, 392700, 0, 0, 0.182, 0.72, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "HINDALCO", "MARKET CLOSED", 0.28, 0, 0.462, -95.76, -84.71, 326200, 279300, 0, 0, -0.963, 0.86, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "KALYANKJIL", "MARKET CLOSED", 0.95, 0, 0.459, -96.88, -99.49, 145800, 133650, 0, 0, -1, 0.92, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "TMPV", "MARKET CLOSED", -0.48, 0, 0.455, -80.77, -95.65, 347200, 403200, 0, 0, -1, 1.16, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "JSWSTEEL", "MARKET CLOSED", -0.59, 0, 0.455, -76.88, -99.38, 102600, 128925, 0, 0, -1, 1.26, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "TIINDIA", "MARKET CLOSED", -1.46, 0, 0.455, 29.78, -96.77, 800, 8600, 0, 0, 0, 10, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "TECHM", "MARKET CLOSED", -1.88, 0, 0.455, -93.6, -16.67, 75000, 120000, 0, 0, -1, 1.6, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ICICIPRULI", "MARKET CLOSED", -1.17, 0, -0.45, -97.17, -96.88, 89725, 74925, 0, 0, -1, 0.84, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BANDHANBNK", "MARKET CLOSED", 1.6, 0, 0.448, -97.87, -95.02, 900000, 914400, 0, 0, -1, 1.02, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ANGELONE", "MARKET CLOSED", -0.55, 0, 0.444, -96.88, -68.42, 230000, 162500, 0, 0, -1, 0.71, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "CDSL", "MARKET CLOSED", -1.76, 0, 0.444, -38.21, -92.31, 6175, 79800, 0, 0, 0, 10, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "NBCC", "MARKET CLOSED", -0.8, 0, -0.444, -98.55, 109.68, 643500, 500500, 0, 0, -1, 0.78, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "IDEA", "MARKET CLOSED", 0.15, 0, 0.432, -75, -1.89, 218427600, 120578325, 0, 0, -1, 0.55, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BAJAJHLDNG", "MARKET CLOSED", 2.07, 0, 0.429, -97.72, 48.95, 7050, 5325, 0, 0, -1, 0.76, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "UNOMINDA", "MARKET CLOSED", -1.8, 0, 0.429, -99.5, -28.57, 12100, 39050, 0, 0, 0, 3.23, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "GLENMARK", "MARKET CLOSED", 3.61, 0, -0.429, -81.13, -98.95, 166125, 66750, 0, 0, 0.919, 0.4, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "MPHASIS", "MARKET CLOSED", -1.81, 0, -0.429, -75, 244.83, 18700, 21450, 0, 0, -1, 1.15, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ATHERENERG", "MARKET CLOSED", -1.9, 0, -0.429, -99.25, 307.81, 33375, 19500, 0, 0, -1, 0.58, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "MARICO", "MARKET CLOSED", -0.72, 0, 0.417, -24.09, 1677.78, 69600, 85200, 0, 0, -1, 1.22, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "SONACOMS", "MARKET CLOSED", 1.87, 0, 0.412, -98.41, -85.71, 74725, 47775, 0, 0, -0.333, 0.64, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "SHRIRAMFIN", "MARKET CLOSED", 1.38, 0, 0.412, -98.92, -45.54, 133650, 144375, 0, 0, 0, 1.08, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "HCLTECH", "MARKET CLOSED", -2.31, 0, 0.412, -98.36, 300, 70400, 85600, 0, 0, 0, 1.22, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "CAMS", "MARKET CLOSED", -3.36, 0, 0.412, -99.81, -66.67, 6600, 20625, 0, 0, 0, 3.12, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "TRENT", "MARKET CLOSED", 0.31, 0, 0.405, -90.24, -51.62, 52650, 69525, 0, 0, -1, 1.32, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "FEDERALBNK", "MARKET CLOSED", -1.1, 0, 0.389, -85.38, -93.75, 670000, 1112500, 0, 0, -1, 1.66, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "NIFTYFPI", "MARKET CLOSED", -0.98, 0, 0.385, 0, -98.67, 0, 0, 0, 0, 1, 0, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "SRF", "MARKET CLOSED", -3.15, 0, -0.385, -54.23, -88.89, 8200, 52600, 0, 0, 0, 6.41, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "MARUTI", "MARKET CLOSED", -1.2, 0, 0.38, -83.59, 234.05, 7000, 9400, 0, 0, 0, 1.34, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ADANIENT", "MARKET CLOSED", 5.19, 0, 0.379, -97.67, -99.96, 94554, 110931, 0, 0, -1, 1.17, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "GAIL", "MARKET CLOSED", 1, 0, 0.375, -82.14, 24.59, 2176150, 695800, 0, 0, -1, 0.32, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BLUESTARCO", "MARKET CLOSED", -2.74, 0, 0.371, -99.86, -94.74, 94900, 84825, 0, 0, 0, 0.89, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "GMRAIRPORT", "MARKET CLOSED", -1.16, 0, 0.368, -39.02, -90.91, 488250, 334800, 0, 0, 0, 0.69, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "LICI", "MARKET CLOSED", -1.92, 0, -0.367, -35.9, 566.67, 140000, 252000, 0, 0, 0, 1.8, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "PFC", "MARKET CLOSED", -1.77, 0, 0.346, -99.79, 50, 62400, 72800, 0, 0, -1, 1.17, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ASTRAL", "MARKET CLOSED", -0.42, 0, 0.333, -2.79, -97.18, 22525, 25925, 0, 0, -1, 1.15, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "NHPC", "MARKET CLOSED", -1.51, 0, 0.333, -94.65, 275, 479550, 611600, 0, 0, -1, 1.28, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "OIL", "MARKET CLOSED", -2.66, 0, -0.333, -34.23, -80, 12600, 82600, 0, 0, 0, 6.56, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "IREDA", "MARKET CLOSED", -3.55, 0, 0.318, -95.43, -93.33, 1443475, 1271525, 0, 0, 0, 0.88, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "HDFCLIFE", "MARKET CLOSED", -2.2, 0, 0.316, -99.02, -85.71, 466400, 458700, 0, 0, -1, 0.98, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "JIOFIN", "MARKET CLOSED", -0.34, 0, 0.308, -92.88, -93.15, 185650, 206800, 0, 0, 1, 1.11, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "GRASIM", "MARKET CLOSED", -2.16, 0, 0.3, 20.23, -20, 1000, 35000, 0, 0, 0, 10, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "NTPC", "MARKET CLOSED", 0.31, 0, 0.296, 43.75, -96.55, 273000, 522000, 0, 0, 0, 1.91, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ADANIPOWER", "MARKET CLOSED", 1.92, 0, 0.29, -93.75, -60.17, 1487450, 1089850, 0, 0, -0.767, 0.73, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BPCL", "MARKET CLOSED", -0.38, 0, 0.286, -96.83, -96, 223175, 254775, 0, 0, 0, 1.14, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "AMBER", "MARKET CLOSED", -4.82, 0, -0.286, 1.16, -97.22, 1700, 4100, 0, 0, 1, 2.41, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ULTRACEMCO", "MARKET CLOSED", -1.44, 0, 0.28, -79.39, -97.92, 9950, 19350, 0, 0, 0, 1.94, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "POWERGRID", "MARKET CLOSED", 0.17, 0, 0.263, -52.38, -5, 146300, 152000, 0, 0, -1, 1.04, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "MUTHOOTFIN", "MARKET CLOSED", -0.05, 0, 0.257, -93.22, -99.69, 43175, 53075, 0, 0, 0, 1.23, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BANKNIFTY", "MARKET CLOSED", -0.55, 0, -0.257, -99.99, -69.96, 2626260, 1714500, 0, 0, -1, 0.65, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "VEDL", "MARKET CLOSED", 1.75, 0, 0.256, -83.33, -14.66, 2542650, 2395450, 0, 0, -1, 0.94, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "TATAPOWER", "MARKET CLOSED", -2.09, 0, -0.238, -99.2, -80, 743850, 894650, 0, 0, -1, 1.2, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "MAXHEALTH", "MARKET CLOSED", -1.45, 0, 0.226, -53.52, -15.79, 49875, 68775, 0, 0, 0, 1.38, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BANKBARODA", "MARKET CLOSED", 0.68, 0, 0.222, -98.7, -44.03, 514800, 412425, 0, 0, -1, 0.8, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "MCX", "MARKET CLOSED", 0.31, 0, 0.212, -91.56, -15.34, 117450, 105075, 0, 0, -0.646, 0.89, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BANKINDIA", "MARKET CLOSED", 0.32, 0, -0.208, -98.98, -98.13, 286000, 358800, 0, 0, -1, 1.25, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "HAL", "MARKET CLOSED", -2.39, 0, 0.207, -93.75, -51.22, 57750, 46950, 0, 0, -0.783, 0.81, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "INFY", "MARKET CLOSED", -0.84, 0, 0.204, -99.41, -81.25, 358000, 439600, 0, 0, -1, 1.23, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ADANIENSOL", "MARKET CLOSED", 1.96, 0, 0.2, -88.68, -99.69, 57375, 60075, 0, 0, -1, 1.05, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "GVT&D", "MARKET CLOSED", 1.06, 0, 0.2, -98.69, 24.61, 57500, 60375, 0, 0, -1, 1.05, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "RECLTD", "MARKET CLOSED", -3.61, 0, -0.2, -88.66, -75, 37800, 242550, 0, 0, 1, 6.42, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "OBEROIRLTY", "MARKET CLOSED", -3.79, 0, -0.2, -78.72, -86.67, 50050, 22750, 0, 0, 0, 0.45, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ASHOKLEY", "MARKET CLOSED", -0.29, 0, 0.191, -98.73, -10.71, 540000, 540000, 0, 0, -1, 1, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "PAYTM", "MARKET CLOSED", 3.73, 0, 0.188, -96, -74.36, 332050, 305950, 0, 0, -1, 0.92, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BHARATFORG", "MARKET CLOSED", -1.47, 0, 0.176, -43.69, 176.74, 74000, 79000, 0, 0, 1, 1.07, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "LTF", "MARKET CLOSED", -3.24, 0, 0.176, -99.68, -87.5, 182250, 227250, 0, 0, 0, 1.25, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "POLICYBZR", "MARKET CLOSED", -5.96, 0, 0.176, -98.97, -93.94, 52500, 84000, 0, 0, -1, 1.6, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "NIFTYNXT50", "MARKET CLOSED", -1.54, 0, -0.175, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "MAHABANK", "MARKET CLOSED", -0.4, 0, 0.167, -92.24, -92.45, 585000, 565500, 0, 0, -0.944, 0.97, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BDL", "MARKET CLOSED", -2.69, 0, 0.167, -72.33, -43.75, 37400, 99025, 0, 0, 0, 2.65, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "CROMPTON", "MARKET CLOSED", -2.66, 0, -0.161, -86.98, 678.85, 47300, 247250, 0, 0, -0.429, 5.23, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "INOXWIND", "MARKET CLOSED", 1.52, 0, -0.159, -96.55, -86.36, 1036800, 608000, 0, 0, 0.396, 0.59, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "AUROPHARMA", "MARKET CLOSED", 1.59, 0, 0.154, -96.36, -14.53, 225500, 94050, 0, 0, -1, 0.42, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "SOLARINDS", "MARKET CLOSED", 1.42, 0, 0.143, -99.89, -72.86, 6500, 5450, 0, 0, -1, 0.84, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "SBILIFE", "MARKET CLOSED", -0.5, 0, 0.143, -24.88, -81.37, 71250, 52875, 0, 0, 0, 0.74, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "DMART", "MARKET CLOSED", 0.92, 0, -0.143, -99.01, -36.56, 42600, 34050, 0, 0, -1, 0.8, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "HINDZINC", "MARKET CLOSED", -0.47, 0, -0.143, 7.69, 125.3, 203350, 219275, 0, 0, -1, 1.08, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "JUBLFOOD", "MARKET CLOSED", -3.61, 0, -0.143, -82.18, 66.67, 25000, 195000, 0, 0, 0, 7.8, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "M&M", "MARKET CLOSED", -0.97, 0, 0.134, -99.87, -88.51, 37600, 35800, 0, 0, -1, 0.95, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "COFORGE", "MARKET CLOSED", -1.18, 0, 0.13, -78.14, -98.53, 107825, 206150, 0, 0, 0, 1.91, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BHEL", "MARKET CLOSED", 1.09, 0, 0.125, -94.12, -76.47, 805875, 771750, 0, 0, -0.192, 0.96, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "APLAPOLLO", "MARKET CLOSED", 1.45, 0, -0.125, -98.68, -94.7, 47950, 32200, 0, 0, -1, 0.67, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "HDFCBANK", "MARKET CLOSED", -0.63, 0, -0.124, -98.04, -98.15, 9867650, 3264950, 0, 0, -1, 0.33, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "KAYNES", "MARKET CLOSED", -4.55, 0, 0.12, -93.33, -98.73, 70800, 70650, 0, 0, 0, 1, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "PATANJALI", "MARKET CLOSED", -5.29, 0, -0.116, -92.57, 157.14, 144050, 167700, 0, 0, 0, 1.16, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "MOTHERSON", "MARKET CLOSED", 0.54, 0, 0.111, -75, 313.22, 1734300, 3468600, 0, 0, -0.778, 2, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "PERSISTENT", "MARKET CLOSED", -2.14, 0, 0.111, -74.59, -98.53, 49000, 50000, 0, 0, 0, 1.02, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "PIIND", "MARKET CLOSED", -3.26, 0, -0.111, -40.25, -80, 44625, 33950, 0, 0, 0, 0.76, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "IEX", "MARKET CLOSED", -4.3, 0, 0.103, -99.85, -80, 156600, 265350, 0, 0, -1, 1.69, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "NESTLEIND", "MARKET CLOSED", -2.37, 0, 0.091, -36.2, -94.74, 9000, 53500, 0, 0, 0, 5.94, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "TCS", "MARKET CLOSED", -1.45, 0, -0.091, -90.91, -98.86, 38250, 54450, 0, 0, -0.956, 1.42, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "DIVISLAB", "MARKET CLOSED", -1.01, 0, 0.087, -60.72, -99.68, 22900, 29900, 0, 0, 0, 1.31, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "PETRONET", "MARKET CLOSED", -2.52, 0, 0.077, 35.5, -85.71, 210900, 305900, 0, 0, 1, 1.45, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "RELIANCE", "MARKET CLOSED", -1.52, 0, 0.075, -95.06, -96.3, 52500, 602000, 0, 0, -1, 10, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ETERNAL", "MARKET CLOSED", -0.02, 0, -0.064, -96.97, 100, 2650525, 1811475, 0, 0, -1, 0.68, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "NIFTY", "MARKET CLOSED", -0.46, 0, -0.063, -89.13, -99.86, 16266510, 20374835, 0, 0, 0.837, 1.25, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "INDUSINDBK", "MARKET CLOSED", -1.46, 0, 0.059, -99.5, -95.83, 114100, 115500, 0, 0, -0.97, 1.01, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "PNBHOUSING", "MARKET CLOSED", 1.16, 0, 0.056, 273.91, -85.33, 74100, 67600, 0, 0, -1, 0.91, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "DABUR", "MARKET CLOSED", -1.64, 0, -0.034, -47.55, -80, 168750, 236250, 0, 0, 0, 1.4, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "BEL", "MARKET CLOSED", -0.12, 0, -0.027, -28.57, -95.24, 458850, 363375, 0, 0, -0.952, 0.79, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "LICHSGFIN", "MARKET CLOSED", -2.31, 0, 0.021, -97.83, -66.67, 941000, 930000, 0, 0, -0.663, 0.99, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "ASIANPAINT", "MARKET CLOSED", -0.44, 0, 0, -16.59, -97.38, 70750, 96250, 0, 0, 0, 1.36, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "360ONE", "MARKET CLOSED", -0.47, 0, 0, -99.09, 117.39, 23000, 24500, 0, 0, -0.031, 1.07, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "CUMMINSIND", "MARKET CLOSED", -0.76, 0, 0, -42.29, -99.57, 2400, 18800, 0, 0, 1, 7.83, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "INDIANB", "MARKET CLOSED", -0.86, 0, 0, -94.84, 136.71, 14000, 23000, 0, 0, -1, 1.64, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "FORCEMOT", "MARKET CLOSED", -0.94, 0, 0, -98.71, -67.45, 2775, 2525, 0, 0, -1, 0.91, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "KEI", "MARKET CLOSED", -1.19, 0, 0, -95.04, -99.28, 31500, 27475, 0, 0, -0.877, 0.87, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "PHOENIXLTD", "MARKET CLOSED", -1.48, 0, 0, -95.83, 33.33, 28350, 68250, 0, 0, -1, 2.41, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "COLPAL", "MARKET CLOSED", -1.96, 0, 0, -99.39, -92.86, 96800, 113300, 0, 0, 0, 1.17, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "WAAREEENER", "MARKET CLOSED", -2.54, 0, 0, -98.35, 250.88, 9800, 14350, 0, 0, -1, 1.46, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "UPL", "MARKET CLOSED", -2.68, 0, 0, -10.63, -75, 23035, 100270, 0, 0, -1, 4.35, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."},
+				        {"2026-09-29 23:10:12", "HEROMOTOCO", "MARKET CLOSED", -3.53, 0, 0, -69.19, -97.5, 73950, 170100, 0, 0, -0.333, 2.3, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."}
+				    }
+				)
+

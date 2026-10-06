@@ -1,0 +1,8 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "a606721e63fc506d3d66",
+  "displayName": "9. Calibration and QA",
+  "displayOption": "FitToWidth",
+  "height": 720,
+  "width": 1280
+}

@@ -1,0 +1,8 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.0.0/schema.json",
+  "name": "192de5745678467bd204",
+  "displayName": "1. Live Command Center",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280
+}

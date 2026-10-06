@@ -1,0 +1,36 @@
+expression pProjectId = "fno-angel-prod-1790444589" meta [IsParameterQuery=true, Type="text", IsParameterQueryRequired=true]
+	lineageTag: e0000000-0000-0000-0000-000000000001
+
+	annotation PBI_ResultType = Text
+
+expression pDataset = "fno_predictions" meta [IsParameterQuery=true, Type="text", IsParameterQueryRequired=true]
+	lineageTag: e0000000-0000-0000-0000-000000000002
+
+	annotation PBI_ResultType = Text
+
+expression pSheetId = "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs" meta [IsParameterQuery=true, Type="text", IsParameterQueryRequired=true]
+	lineageTag: e0000000-0000-0000-0000-000000000003
+
+	annotation PBI_ResultType = Text
+
+expression pTreatSnapshotOffsetAsWallClock = true meta [IsParameterQuery=true, Type="logical", IsParameterQueryRequired=true]
+	lineageTag: e0000000-0000-0000-0000-000000000004
+
+	annotation PBI_ResultType = Logical
+
+expression SheetCsv =
+		(TabName as text, optional RangeA1 as nullable text) as table =>
+		let
+		    Base = "https://docs.google.com/spreadsheets/d/" & pSheetId & "/gviz/tq",
+		    Q = if RangeA1 = null
+		        then [tqx="out:csv", sheet=TabName]
+		        else [tqx="out:csv", sheet=TabName, range=RangeA1],
+		    Binary = Web.Contents(Base, [Query=Q]),
+		    Csv = Csv.Document(Binary, [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+		    Promoted = Table.PromoteHeaders(Csv, [PromoteAllScalars=true])
+		in
+		    Promoted
+	lineageTag: e0000000-0000-0000-0000-000000000005
+
+	annotation PBI_ResultType = Function
+

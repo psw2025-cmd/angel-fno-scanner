@@ -1,0 +1,286 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.2.0/schema.json",
+  "name": "ebd9e3d00691a16e922b",
+  "position": {
+    "x": 20,
+    "y": 480,
+    "z": 3000,
+    "height": 210,
+    "width": 1240,
+    "tabOrder": 9000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "OptionPredictions"
+                    }
+                  },
+                  "Property": "symbol"
+                }
+              },
+              "queryRef": "OptionPredictions.symbol",
+              "displayName": "Symbol"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "OptionPredictions"
+                    }
+                  },
+                  "Property": "probability_valid"
+                }
+              },
+              "queryRef": "OptionPredictions.probability_valid",
+              "displayName": "Probability valid"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "OptionPredictions"
+                    }
+                  },
+                  "Property": "liquidity_status"
+                }
+              },
+              "queryRef": "OptionPredictions.liquidity_status",
+              "displayName": "Liquidity"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "OptionPredictions"
+                        }
+                      },
+                      "Property": "probability_sum"
+                    }
+                  },
+                  "Function": 1
+                }
+              },
+              "queryRef": "Avg(OptionPredictions.probability_sum)",
+              "displayName": "CE+PE"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "OptionPredictions"
+                        }
+                      },
+                      "Property": "ce_ltp"
+                    }
+                  },
+                  "Function": 1
+                }
+              },
+              "queryRef": "Avg(OptionPredictions.ce_ltp)",
+              "displayName": "CE LTP"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "OptionPredictions"
+                        }
+                      },
+                      "Property": "pe_ltp"
+                    }
+                  },
+                  "Function": 1
+                }
+              },
+              "queryRef": "Avg(OptionPredictions.pe_ltp)",
+              "displayName": "PE LTP"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "OptionPredictions"
+                        }
+                      },
+                      "Property": "ce_bid_ask_spread"
+                    }
+                  },
+                  "Function": 1
+                }
+              },
+              "queryRef": "Avg(OptionPredictions.ce_bid_ask_spread)",
+              "displayName": "CE spread"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "OptionPredictions"
+                        }
+                      },
+                      "Property": "pe_bid_ask_spread"
+                    }
+                  },
+                  "Function": 1
+                }
+              },
+              "queryRef": "Avg(OptionPredictions.pe_bid_ask_spread)",
+              "displayName": "PE spread"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "OptionPredictions"
+                    }
+                  },
+                  "Property": "snapshot_time_ist_corrected"
+                }
+              },
+              "queryRef": "OptionPredictions.snapshot_time_ist_corrected",
+              "displayName": "Snapshot IST"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "grid": [
+        {
+          "properties": {
+            "rowPadding": {
+              "expr": {
+                "Literal": {
+                  "Value": "3D"
+                }
+              }
+            },
+            "textSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "columnHeaders": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9D"
+                }
+              }
+            },
+            "autoSizeColumnWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Prediction QA'"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Segoe UI Semibold'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

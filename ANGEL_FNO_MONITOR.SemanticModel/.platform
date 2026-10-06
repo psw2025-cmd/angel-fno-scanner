@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "ANGEL_FNO_MONITOR"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "043e843d-5f05-433a-bd75-b07680e8ceae"
+  }
+}

@@ -1,0 +1,29 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		fastCombine
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_QueryOrder = ["pProjectId","pDataset","pSheetId","pTreatSnapshotOffsetAsWallClock","SheetCsv","OptionPredictions","News","Calibration","PaperLog","SheetNews"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table _Measures
+ref table OptionPredictions
+ref table News
+ref table Calibration
+ref table PaperLog
+ref table SheetNews
+ref table DateTableTemplate_4a4d3f4c-4678-481d-bc36-ae9a317f711c
+ref table LocalDateTable_2d59eba7-2d6e-4bb7-aff5-d75e0575aee5
+ref table Heartbeat
+ref table ForensicLive
+ref table CERank
+
+ref cultureInfo en-US
+

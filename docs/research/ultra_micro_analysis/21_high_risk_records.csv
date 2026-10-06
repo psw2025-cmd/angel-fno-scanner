@@ -1,0 +1,24 @@
+rank,symbol,directional_bias,ce_win_prob,pe_win_prob,confidence_pct,expected_gap_pct,ce_chg_pct,pe_chg_pct,atm_pcr,ce_iv,pe_iv,ce_oi,pe_oi,ce_bid_ask_spread,pe_bid_ask_spread,news_severity_level,top_news_headline
+1,FORTIS,PUT (PE) BEARISH,2.9,97.1,94.4,-2.32,-94.88,1820.0,1.6,48.54,48.37,87575,140275,0.6000000000000001,0.6000000000000001,4,Supreme Court Refuses To Interfere With Forensic Probe Order Against Fortis Healthcare - LawBeat
+3,PAYTM,PUT (PE) BEARISH,4.4,95.6,93.0,-1.9100000000000001,-74.11,311.3,1.19,56.81,57.83,447325,531425,0.8,0.9500000000000001,4,Supreme Court Refuses To Interfere With Forensic Probe Order Against Fortis Healthcare - LawBeat
+9,MAHABANK,CALL (CE) BULLISH,89.5,10.5,87.6,2.43,200.0,-69.12,1.11,44.62,44.62,2632500,2931500,0.27,0.92,1,No fresh material catalyst
+11,AXISBANK,CALL (CE) BULLISH,90.0,10.0,88.0,1.69,181.54,-69.64,0.9500000000000001,36.27,39.0,1246875,1181875,0.25,0.30000000000000004,4,"YES Bank, Axis Bank: Supreme Court to Hear Forensic Audit Case Plea on Tuesday - sahi.com"
+21,ZYDUSLIFE,CALL (CE) BULLISH,76.3,23.7,75.7,1.21,68.42,0.0,0.0,34.23,350.0,291600,0,0.30000000000000004,70.05,2,Zydus Lifesciences USFDA Inspection: Nil Observations in NJ - Rediff MoneyWiz
+30,POLICYBZR,PUT (PE) BEARISH,1.8,98.2,95.4,-2.77,-46.75,34.96,0.64,140.57,139.71,397600,254450,0.8,0.8,4,Supreme Court Refuses To Interfere With Forensic Probe Order Against Fortis Healthcare - LawBeat
+43,BAJAJHLDNG,CALL (CE) BULLISH,88.3,11.7,86.5,1.78,19.42,-36.14,0.81,33.74,55.96,8850,7125,0.0,363.0,1,No fresh material catalyst
+54,SBILIFE,PUT (PE) BEARISH,28.7,71.3,71.2,-0.65,-38.28,25.73,0.9500000000000001,34.57,36.36,119625,114000,2.65,1.5,4,"IRDAI proposes commission caps and lower expense limits, rattling insurance stocks - (Re)in Asia"
+64,HDFCBANK,CALL (CE) BULLISH,56.9,43.1,58.2,-0.04,29.85,-31.52,0.4,39.51,43.6,20125300,8149700,0.05,0.2,4,"Insurance Stocks Crash: PB Fintech, Max Financial, HDFC Life Tumble After IRDAI Proposes Commission Caps - Goodreturns"
+72,ADANIPORTS,CALL (CE) BULLISH,80.6,19.4,79.5,0.61,8.96,-58.48,1.09,25.71,25.54,664050,722475,1.4,0.45,4,Supreme Court Refuses To Interfere With Forensic Probe Order Against Fortis Healthcare - LawBeat
+91,ADANIENT,CALL (CE) BULLISH,70.2,29.8,70.2,0.42,-2.49,-45.21,0.8300000000000001,39.09,40.79,684126,564543,0.7000000000000001,0.85,4,Supreme Court Refuses To Interfere With Forensic Probe Order Against Fortis Healthcare - LawBeat
+100,ICICIPRULI,PUT (PE) BEARISH,17.8,82.2,81.0,-1.01,-48.82,-26.72,0.41000000000000003,41.22,41.22,508750,209975,0.35000000000000003,0.8,4,"IRDAI proposes commission caps and lower expense limits, rattling insurance stocks - (Re)in Asia"
+123,FORCEMOT,NEUTRAL,51.8,48.2,53.6,0.6000000000000001,5.03,-45.82,0.62,43.76,40.15,17250,10750,3.0,364.25,1,No fresh material catalyst
+144,SBIN,PUT (PE) BEARISH,42.8,57.2,58.5,-0.1,-19.48,-35.29,1.19,24.01,26.9,1728750,2061000,0.25,0.2,4,"SBI Life, LIC face least impact from new commission caps by IRDAI, says Harshal Mehta - CNBC TV18"
+153,DABUR,PUT (PE) BEARISH,43.8,56.2,57.6,-0.26,-14.29,-23.94,1.0,31.33,35.76,425000,426250,0.2,0.25,4,Supreme Court Refuses To Interfere With Forensic Probe Order Against Fortis Healthcare - LawBeat
+157,LICI,PUT (PE) BEARISH,43.9,56.1,57.5,0.28,10.26,-50.32,0.5700000000000001,33.38,35.76,1857800,1058400,0.2,0.4,4,"IRDAI proposes commission caps and lower expense limits, rattling insurance stocks - (Re)in Asia"
+166,HDFCLIFE,CALL (CE) BULLISH,56.7,43.3,58.0,0.11,-18.06,-23.97,1.51,51.1,52.46,1430000,2161500,0.30000000000000004,0.4,4,"IRDAI proposes commission caps and lower expense limits, rattling insurance stocks - (Re)in Asia"
+168,VEDL,NEUTRAL,48.5,51.5,53.4,-0.46,-25.45,-18.37,1.8,35.08,38.49,2210300,3972100,0.15,0.2,4,Supreme Court Refuses To Interfere With Forensic Probe Order Against Fortis Healthcare - LawBeat
+183,YESBANK,CALL (CE) BULLISH,60.1,39.9,24.4,0.0,-42.86,-13.11,0.79,0.0,44.62,72431900,56913000,0.02,0.07,4,YES Bank Limited (NSE: YESBANK) Forensic Audit Case and Supreme Court Hearing Update - Kalkine India
+200,TIINDIA,PUT (PE) BEARISH,24.0,76.0,30.2,0.0,-18.86,43.01,8.5,167.66,40.36,6800,57800,46.95,6.45,1,No fresh material catalyst
+205,SAIL,PUT (PE) BEARISH,8.8,91.2,35.6,0.0,22.22,-57.14,1.19,24.18,65.07,1555700,1851800,5.63,3.88,3,"26% returns in 6 months, SAIL stock final dividend 2026 record date next week; check amount per share, payment date"
+208,MANAPPURAM,CALL (CE) BULLISH,70.0,30.0,28.0,0.0,195.0,-44.9,0.55,54.17,64.05,489000,267000,4.3,4.1,1,No fresh material catalyst
+215,NIFTYNXT50,CALL (CE) BULLISH,70.6,29.4,28.2,0.0,0.0,0.0,0.0,243.36,186.35,0,0,599.9,2347.9,1,No fresh material catalyst

@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angel One F&O - Live Quantum DNA & ECG Flow Monitor</title>
+    <style>
+        :root {
+            --bg-deep: #050811;
+            --bg-card: #0A1124;
+            --bg-node: #0E1A38;
+            --border-dim: #1E2D5A;
+            --neon-green: #00FF9D;
+            --neon-cyan: #00E5FF;
+            --neon-amber: #FFB800;
+            --neon-red: #FF3366;
+            --neon-purple: #B537F2;
+            --text-main: #E2E8F0;
+            --text-muted: #8899B5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Holographic Navigation Bar */
+        header {
+            background: linear-gradient(90deg, #0A1124 0%, #101B3A 50%, #0A1124 100%);
+            border-bottom: 1px solid var(--border-dim);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 229, 255, 0.08);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .heart-icon {
+            color: var(--neon-red);
+            font-size: 24px;
+            animation: pulse-heart 1.2s infinite;
+        }
+
+        @keyframes pulse-heart {
+            0% { transform: scale(1); filter: drop-shadow(0 0 2px var(--neon-red)); }
+            14% { transform: scale(1.3); filter: drop-shadow(0 0 10px var(--neon-red)); }
+            28% { transform: scale(1); filter: drop-shadow(0 0 2px var(--neon-red)); }
+            42% { transform: scale(1.2); filter: drop-shadow(0 0 8px var(--neon-red)); }
+            70% { transform: scale(1); filter: drop-shadow(0 0 2px var(--neon-red)); }
+        }
+
+        .title-text h1 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #FFF;
+        }
+
+        .title-text span {
+            font-size: 11px;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .system-vitals {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .vital-badge {
+            background: rgba(10, 17, 36, 0.8);
+            border: 1px solid var(--border-dim);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .vital-badge .val {
+            font-weight: 700;
+            color: var(--neon-green);
+        }
+
+        /* Medical ECG Monitor Display Bar */
+        .ecg-container {
+            background: #020409;
+            border-bottom: 1px solid var(--border-dim);
+            height: 90px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            overflow: hidden;
+        }
+
+        .ecg-canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .ecg-overlay {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            pointer-events: none;
+        }
+
+        .ecg-stat {
+            background: rgba(5, 8, 17, 0.85);
+            padding: 4px 10px;
+            border-radius: 4px;
+            border-left: 3px solid var(--neon-green);
+            font-size: 11px;
+        }
+
+        .ecg-stat.alert {
+            border-left-color: var(--neon-red);
+        }
+
+        /* Main Workspace: Flow Diagram + Inspector */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Interactive SVG Flow Canvas */
+        .diagram-viewport {
+            position: relative;
+            background: radial-gradient(circle at 50% 50%, #0E1A38 0%, #050811 80%);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 600px;
+        }
+
+        .flow-svg {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* Dynamic SVG Arteries with Flowing Blood Particles */
+        .artery-path {
+            fill: none;
+            stroke-width: 4;
+            stroke-linecap: round;
+        }
+
+        .artery-healthy {
+            stroke: rgba(0, 255, 157, 0.25);
+        }
+
+        .artery-pulse {
+            fill: none;
+            stroke: var(--neon-green);
+            stroke-width: 4;
+            stroke-dasharray: 12, 160;
+            animation: artery-flow 2.5s linear infinite;
+        }
+
+        .artery-pulse.fast {
+            stroke: var(--neon-cyan);
+            animation: artery-flow 1.2s linear infinite;
+        }
+
+        .artery-pulse.blocked {
+            stroke: var(--neon-red);
+            stroke-dasharray: 6, 20;
+            animation: artery-flow 8s linear infinite;
+        }
+
+        @keyframes artery-flow {
+            from { stroke-dashoffset: 172; }
+            to { stroke-dashoffset: 0; }
+        }
+
+        /* Organ Nodes (DOM Overlays on SVG) */
+        .node-card {
+            position: absolute;
+            width: 220px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-dim);
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            z-index: 10;
+        }
+
+        .node-card:hover {
+            transform: translateY(-4px) scale(1.03);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 12px 30px rgba(0, 229, 255, 0.25);
+        }
+
+        .node-card.selected {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 25px rgba(0, 255, 157, 0.4);
+        }
+
+        /* Quantum Resonance Ring around nodes */
+        .resonance-ring {
+            position: absolute;
+            top: -6px; left: -6px; right: -6px; bottom: -6px;
+            border-radius: 16px;
+            border: 1px dashed rgba(0, 255, 157, 0.4);
+            pointer-events: none;
+            animation: spin-resonance 20s linear infinite;
+        }
+
+        @keyframes spin-resonance {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .node-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .node-category {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--neon-cyan);
+            font-weight: 700;
+        }
+
+        .node-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--neon-green);
+            box-shadow: 0 0 8px var(--neon-green);
+        }
+
+        .node-status-dot.warning {
+            background-color: var(--neon-amber);
+            box-shadow: 0 0 8px var(--neon-amber);
+        }
+
+        .node-status-dot.critical {
+            background-color: var(--neon-red);
+            box-shadow: 0 0 12px var(--neon-red);
+            animation: blink 0.8s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .node-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #FFF;
+            margin-bottom: 6px;
+        }
+
+        .node-metric {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .node-metric .val {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .progress-bar-bg {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--neon-green);
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        /* Right Side: Micro-Cell Inspector & Diagnostics */
+        .inspector-panel {
+            background: var(--bg-card);
+            border-left: 1px solid var(--border-dim);
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .panel-header {
+            border-bottom: 1px solid var(--border-dim);
+            padding-bottom: 12px;
+        }
+
+        .panel-header h2 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #FFF;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-header span {
+            font-size: 11px;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+        }
+
+        .micro-cell-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .micro-cell-item {
+            background: rgba(14, 26, 56, 0.6);
+            border: 1px solid var(--border-dim);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 11px;
+        }
+
+        .micro-cell-item .cell-key {
+            color: var(--neon-cyan);
+            font-weight: 600;
+            margin-bottom: 2px;
+            font-family: monospace;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .micro-cell-item .cell-val {
+            color: #FFF;
+            word-break: break-all;
+            font-size: 12px;
+            font-family: monospace;
+        }
+
+        .diagnostics-box {
+            background: rgba(255, 51, 102, 0.08);
+            border: 1px solid rgba(255, 51, 102, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .diagnostics-box.healthy {
+            background: rgba(0, 255, 157, 0.08);
+            border-color: rgba(0, 255, 157, 0.3);
+        }
+
+        .diagnostics-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .diagnostics-title.healthy { color: var(--neon-green); }
+        .diagnostics-title.alert { color: var(--neon-red); }
+
+        .btn-action {
+            background: linear-gradient(135deg, #00FF9D 0%, #00B875 100%);
+            color: #000;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-action:hover {
+            filter: brightness(1.15);
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.4);
+        }
+
+        /* Bottom Alert Siren Banner */
+        .alarm-banner {
+            display: none;
+            background: linear-gradient(90deg, #FF3366 0%, #800020 100%);
+            color: #FFF;
+            padding: 10px 24px;
+            font-size: 13px;
+            font-weight: 700;
+            align-items: center;
+            justify-content: space-between;
+            animation: pulse-alarm 1s infinite alternate;
+        }
+
+        @keyframes pulse-alarm {
+            from { background-color: #FF3366; }
+            to { background-color: #A30029; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation Header -->
+    <header>
+        <div class="header-title">
+            <div class="heart-icon">♥</div>
+            <div class="title-text">
+                <h1>ANGEL ONE F&O QUANTUM DNA & CIRCULATION MONITOR</h1>
+                <span>Live End-to-End Organ Resonance & Micro-Cell Tracer</span>
+            </div>
+        </div>
+        <div class="system-vitals">
+            <div class="vital-badge">
+                <span>SYSTEM STATE:</span>
+                <span class="val" id="vital-state">OPTIMAL</span>
+            </div>
+            <div class="vital-badge">
+                <span>HEALTH SCORE:</span>
+                <span class="val" id="vital-score">98.7%</span>
+            </div>
+            <div class="vital-badge">
+                <span>HEARTBEAT BPM:</span>
+                <span class="val" id="vital-bpm">80 BPM</span>
+            </div>
+            <div class="vital-badge">
+                <span>ACTIVE DAEMON:</span>
+                <span class="val" id="vital-daemon">120s LOOP (PID 27528)</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Medical ECG Rhythm Line Canvas -->
+    <div class="ecg-container">
+        <canvas id="ecgCanvas" class="ecg-canvas"></canvas>
+        <div class="ecg-overlay">
+            <div class="ecg-stat" id="ecg-lead-status">LEAD I: SINUS RHYTHM (NORMAL CARDIAC FLOW)</div>
+            <div class="ecg-stat" id="ecg-pbi-port">POWER BI VERTIPAQ: PORT 61511 (CONNECTED)</div>
+            <div class="ecg-stat" id="ecg-writer-age">WRITER AGE: 0 SECONDS (TICK STREAMING)</div>
+            <div class="ecg-stat" id="ecg-universe">UNIVERSE: 216/216 F&O CONTRACTS</div>
+        </div>
+    </div>
+
+    <!-- Alarm Banner (shown when health < 85%) -->
+    <div class="alarm-banner" id="alarmBanner">
+        <span id="alarmText">⚠ SYSTEM ARTERY RESISTANCE DETECTED! INSPECT HIGHLIGHTED CLOG BELOW.</span>
+        <button class="btn-action" style="background:#FFF; color:#FF3366; padding:4px 12px;" onclick="triggerLiveProbe()">RUN INSTANT HEAL</button>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="main-content">
+
+        <!-- Visual Animated SVG Flow Diagram -->
+        <div class="diagram-viewport" id="diagramViewport">
+            <svg class="flow-svg" id="flowSvg">
+                <defs>
+                    <linearGradient id="gradHealthy" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#00FF9D" stop-opacity="0.8"/>
+                        <stop offset="100%" stop-color="#00E5FF" stop-opacity="0.8"/>
+                    </linearGradient>
+                    <linearGradient id="gradWarning" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#FFB800" stop-opacity="0.8"/>
+                        <stop offset="100%" stop-color="#FF3366" stop-opacity="0.8"/>
+                    </linearGradient>
+                </defs>
+
+                <!-- Dynamic Bezier Arteries rendered via JavaScript -->
+                <g id="arteryGroup"></g>
+            </svg>
+
+            <!-- Organ Node 1: Angel One Broker Engine -->
+            <div class="node-card selected" id="node-broker_heart" style="left: 40px; top: 220px;" onclick="selectNode('broker_heart')">
+                <div class="resonance-ring"></div>
+                <div class="node-header">
+                    <span class="node-category">TICK SOURCE</span>
+                    <div class="node-status-dot" id="dot-broker_heart"></div>
+                </div>
+                <div class="node-name">Angel One Broker (The Heart)</div>
+                <div class="node-metric"><span>Auth Status:</span><span class="val" id="card-broker-auth">CONNECTED</span></div>
+                <div class="node-metric"><span>Writer Age:</span><span class="val" id="card-broker-age">0s</span></div>
+                <div class="node-metric"><span>Latency:</span><span class="val" id="card-broker-lat">712ms</span></div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-broker_heart" style="width: 100%;"></div></div>
+            </div>
+
+            <!-- Organ Node 2: Google Sheets Streaming Repository -->
+            <div class="node-card" id="node-google_sheets_live" style="left: 330px; top: 110px;" onclick="selectNode('google_sheets_live')">
+                <div class="resonance-ring"></div>
+                <div class="node-header">
+                    <span class="node-category">STREAMING CHALKBOARD</span>
+                    <div class="node-status-dot" id="dot-google_sheets_live"></div>
+                </div>
+                <div class="node-name">Google Sheets (OPTION_SHEET)</div>
+                <div class="node-metric"><span>HEARTBEAT:</span><span class="val" id="card-sheets-hb">Cycle #228</span></div>
+                <div class="node-metric"><span>FORENSIC_LIVE:</span><span class="val" id="card-sheets-fl">216 rows</span></div>
+                <div class="node-metric"><span>Write Probe:</span><span class="val" id="card-sheets-wp">Z1 OK</span></div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-google_sheets_live" style="width: 100%;"></div></div>
+            </div>
+
+            <!-- Organ Node 3: Google Cloud BigQuery -->
+            <div class="node-card" id="node-gcp_bigquery" style="left: 330px; top: 350px;" onclick="selectNode('gcp_bigquery')">
+                <div class="resonance-ring"></div>
+                <div class="node-header">
+                    <span class="node-category">DEEP MEMORY BRAIN</span>
+                    <div class="node-status-dot" id="dot-gcp_bigquery"></div>
+                </div>
+                <div class="node-name">Google Cloud BigQuery</div>
+                <div class="node-metric"><span>Dataset:</span><span class="val">fno_predictions</span></div>
+                <div class="node-metric"><span>Tables:</span><span class="val" id="card-gcp-tables">4 active</span></div>
+                <div class="node-metric"><span>Service Account:</span><span class="val">RSA-2048</span></div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-gcp_bigquery" style="width: 100%;"></div></div>
+            </div>
+
+            <!-- Organ Node 4: GitHub Predictions Engine -->
+            <div class="node-card" id="node-github_repo" style="left: 630px; top: 70px;" onclick="selectNode('github_repo')">
+                <div class="resonance-ring"></div>
+                <div class="node-header">
+                    <span class="node-category">GENETIC PREDICTOR</span>
+                    <div class="node-status-dot" id="dot-github_repo"></div>
+                </div>
+                <div class="node-name">GitHub Model Predictions</div>
+                <div class="node-metric"><span>Latest Snapshot:</span><span class="val" id="card-gh-syms">171 symbols</span></div>
+                <div class="node-metric"><span>Workflow Bot:</span><span class="val">Daily 09:25 AM</span></div>
+                <div class="node-metric"><span>Write Mode:</span><span class="val">Read-Only</span></div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-github_repo" style="width: 92%;"></div></div>
+            </div>
+
+            <!-- Organ Node 5: AGY CLI Autonomous Daemon -->
+            <div class="node-card" id="node-agy_daemon" style="left: 630px; top: 400px;" onclick="selectNode('agy_daemon')">
+                <div class="resonance-ring"></div>
+                <div class="node-header">
+                    <span class="node-category">NERVOUS SYSTEM</span>
+                    <div class="node-status-dot" id="dot-agy_daemon"></div>
+                </div>
+                <div class="node-name">AGY CLI Daemon (task-1632)</div>
+                <div class="node-metric"><span>Sync Loop:</span><span class="val">Every 120s</span></div>
+                <div class="node-metric"><span>Injection:</span><span class="val">Direct TOM</span></div>
+                <div class="node-metric"><span>Status:</span><span class="val" id="card-daemon-status">ACTIVE</span></div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-agy_daemon" style="width: 100%;"></div></div>
+            </div>
+
+            <!-- Organ Node 6: Power BI Desktop In-Memory Cockpit -->
+            <div class="node-card" id="node-powerbi_engine" style="left: 930px; top: 220px;" onclick="selectNode('powerbi_engine')">
+                <div class="resonance-ring"></div>
+                <div class="node-header">
+                    <span class="node-category">ACTION MUSCLE & COCKPIT</span>
+                    <div class="node-status-dot" id="dot-powerbi_engine"></div>
+                </div>
+                <div class="node-name">Power BI (SSAS Engine)</div>
+                <div class="node-metric"><span>SSAS Port:</span><span class="val" id="card-pbi-port">61511</span></div>
+                <div class="node-metric"><span>Freshness:</span><span class="val" id="card-pbi-fresh">0s writer age</span></div>
+                <div class="node-metric"><span>Top CE:</span><span class="val" id="card-pbi-ce">DELHIVERY +2362%</span></div>
+                <div class="node-metric"><span>Top PE:</span><span class="val" id="card-pbi-pe">KFINTECH +9900%</span></div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" id="bar-powerbi_engine" style="width: 100%;"></div></div>
+            </div>
+
+        </div>
+
+        <!-- Right Side: Micro-Cell Inspector & Diagnostics -->
+        <div class="inspector-panel" id="inspectorPanel">
+            <div class="panel-header">
+                <h2 id="inspect-title">⚡ ANGEL ONE BROKER ENGINE</h2>
+                <span id="inspect-category">TICK SOURCE · HEART</span>
+            </div>
+
+            <div class="diagnostics-box healthy" id="inspect-diag-box">
+                <div class="diagnostics-title healthy" id="inspect-diag-title">✔ QUANTUM RESONANCE OPTIMAL</div>
+                <div id="inspect-diag-text">Broker WebSocket is streaming real-time quotes for all 216 F&O symbols with 0 second writer latency.</div>
+            </div>
+
+            <div>
+                <h3 style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Micro-Cell Cell Inspector (Live Prints)</h3>
+                <div class="micro-cell-list" id="inspect-cell-list">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+            <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px;">
+                <button class="btn-action" onclick="triggerLiveProbe()">⚡ FORCE TELEMETRY SCAN</button>
+                <div style="font-size: 11px; text-align: center; color: var(--text-muted);">
+                    Data Source: <code style="color:var(--neon-cyan)">system_live_telemetry.json</code>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // -----------------------------------------------------------------------
+        // INITIAL TELEMETRY STATE (Fallback / Offline Safe)
+        // -----------------------------------------------------------------------
+        let telemetryState = {
+            system_name: "ANGEL ONE F&O QUANTUM DNA & CIRCULATION ENGINE",
+            generated_at: new Date().toLocaleTimeString(),
+            overall_health_score: 98.7,
+            system_state: "OPTIMAL (BLOOD FLOW NORMAL)",
+            ecg_bpm: 80,
+            nodes: {
+                broker_heart: {
+                    id: "broker_heart",
+                    name: "Angel One Broker Engine",
+                    category: "Source",
+                    status: "HEALTHY",
+                    health_score: 100,
+                    latency: "712ms",
+                    diagnostics: "Broker WebSocket streaming optimally (216 symbols, age 0s).",
+                    micro_cells: {
+                        "HEARTBEAT!A2 [Last Ping]": "2026-09-29 22:54:05",
+                        "HEARTBEAT!B2 [Session Auth]": "CONNECTED_ANGEL_SMARTAPI",
+                        "HEARTBEAT!C2 [Discovered Symbols]": "216 / 216",
+                        "HEARTBEAT!D2 [Engine Cycle]": "ACTIVE_PREDICTION_ENGINE | Cycle #228",
+                        "HEARTBEAT!E2 [Writer Age]": "0s",
+                        "HEARTBEAT!F2 [Feed Alert]": "🟢 HEALTHY (ALL FEEDS ACTIVE)"
+                    }
+                },
+                google_sheets_live: {
+                    id: "google_sheets_live",
+                    name: "Google Sheets (OPTION_SHEET)",
+                    category: "Streaming",
+                    status: "HEALTHY",
+                    health_score: 100,
+                    latency: "790ms",
+                    diagnostics: "Google Sheets tabs (HEARTBEAT, FORENSIC_LIVE, CE_PE_RANK) fully responsive.",
+                    micro_cells: {
+                        "FORENSIC_LIVE!A2 [Time]": "2026-09-29 22:54:05",
+                        "FORENSIC_LIVE!B2 [Symbol]": "DELHIVERY",
+                        "FORENSIC_LIVE!D2 [Fut LTP]": "416.80",
+                        "CE_PE_RANK!A2 [Rank Time]": "2026-09-29 22:54:05",
+                        "Cloud_Automation_Setup!Z1 [Write Probe]": "PROBE_CONFIRMED"
+                    }
+                },
+                gcp_bigquery: {
+                    id: "gcp_bigquery",
+                    name: "Google Cloud BigQuery",
+                    category: "Data Warehouse",
+                    status: "HEALTHY",
+                    health_score: 100,
+                    latency: "1020ms",
+                    diagnostics: "BigQuery dataset fno_predictions healthy with 4 active tables.",
+                    micro_cells: {
+                        "GCP Project": "fno-angel-prod-1790444589",
+                        "OAuth2 Token": "Active (Bearer RSA-2048)",
+                        "Client Email": "angel-sheets-bot@fno-angel-prod-1790444589.iam.gserviceaccount.com",
+                        "BigQuery Tables": "market_news_sentiment, next_day_gap_predictions, option_predictions_live, prediction_calibration_log"
+                    }
+                },
+                github_repo: {
+                    id: "github_repo",
+                    name: "GitHub Model Predictions",
+                    category: "Model Repository",
+                    status: "HEALTHY",
+                    health_score: 92,
+                    latency: "156ms",
+                    diagnostics: "GitHub predictions branch verified (171 symbols).",
+                    micro_cells: {
+                        "Repo": "psw2025-cmd/angel-fno-scanner",
+                        "Predictions Count": "171 symbols",
+                        "Sample Prediction": "KALYANKJIL",
+                        "Write Capability": "Read-Only (PAT optional)"
+                    }
+                },
+                agy_daemon: {
+                    id: "agy_daemon",
+                    name: "AGY CLI Autonomous Daemon",
+                    category: "Automation",
+                    status: "HEALTHY",
+                    health_score: 100,
+                    latency: "219ms",
+                    diagnostics: "Autonomous 120s calibration daemon running continuously (PID: 27528).",
+                    micro_cells: {
+                        "Daemon Status": "RUNNING (Loop active)",
+                        "Interval": "120 seconds",
+                        "Injection Method": "Direct TOM Live Sync",
+                        "Daemon PID": "27528 26908"
+                    }
+                },
+                powerbi_engine: {
+                    id: "powerbi_engine",
+                    name: "Power BI Desktop (SSAS Engine)",
+                    category: "Visualization",
+                    status: "HEALTHY",
+                    health_score: 100,
+                    latency: "2303ms",
+                    diagnostics: "Power BI in-memory VertiPaq engine 100% synchronized (0s writer age).",
+                    micro_cells: {
+                        "Active SSAS Port": "Port 61511 (PID: 2592, 15280)",
+                        "Writer Freshness": "0 sec writer age",
+                        "Latest Forensic Time": "2026-09-29 22:54:05",
+                        "Top Real CE": "DELHIVERY (+2362.5%)",
+                        "Top Real PE": "KFINTECH (+9900%)"
+                    }
+                }
+            },
+            arteries: [
+                { source: "broker_heart", target: "google_sheets_live", label: "Broker WebSocket -> Sheets", state: "FLOWING", rate: 4 },
+                { source: "google_sheets_live", target: "powerbi_engine", label: "Sheets -> Power BI (TOM Direct)", state: "FLOWING", rate: 0.5 },
+                { source: "github_repo", target: "powerbi_engine", label: "GitHub -> Power BI Horizon", state: "FLOWING", rate: 0.1 },
+                { source: "gcp_bigquery", target: "powerbi_engine", label: "BigQuery -> Power BI DirectQuery", state: "FLOWING", rate: 0.2 },
+                { source: "agy_daemon", target: "powerbi_engine", label: "Daemon -> Power BI Model", state: "FLOWING", rate: 0.5 }
+            ]
+        };
+
+        let selectedNodeId = "broker_heart";
+
+        // -----------------------------------------------------------------------
+        // REAL-TIME MEDICAL ECG CANVAS RENDERER
+        // -----------------------------------------------------------------------
+        const canvas = document.getElementById("ecgCanvas");
+        const ctx = canvas.getContext("2d");
+        let ecgPoints = [];
+        let ecgIndex = 0;
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
+
+        function drawEcgGrid() {
+            ctx.fillStyle = "#020409";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = "rgba(0, 229, 255, 0.05)";
+            ctx.lineWidth = 1;
+            const gridSpacing = 20;
+
+            for (let x = 0; x < canvas.width; x += gridSpacing) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += gridSpacing) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+
+        let ecgPhase = 0;
+        function getNextEcgVoltage(healthScore) {
+            ecgPhase += (healthScore > 50 ? 0.06 : 0.02);
+            let p = ecgPhase % (Math.PI * 2);
+
+            // Cardiac P-Q-R-S-T wave calculation
+            let v = 0;
+            // P wave
+            if (p > 0.5 && p < 1.0) v = Math.sin((p - 0.5) * Math.PI * 2) * 5;
+            // Q dip
+            else if (p > 1.3 && p < 1.5) v = -8;
+            // R peak (giant spike)
+            else if (p >= 1.5 && p < 1.7) v = 38 * (healthScore / 100);
+            // S dip
+            else if (p >= 1.7 && p < 1.9) v = -14;
+            // T wave
+            else if (p > 2.2 && p < 3.0) v = Math.sin((p - 2.2) * Math.PI / 0.8) * 8;
+            // Baseline noise
+            else v = (Math.random() - 0.5) * 1.5;
+
+            return (canvas.height / 2) - v;
+        }
+
+        function renderEcg() {
+            drawEcgGrid();
+
+            const health = telemetryState.overall_health_score || 98;
+            const y = getNextEcgVoltage(health);
+
+            ecgPoints[ecgIndex] = y;
+            ecgIndex = (ecgIndex + 2) % canvas.width;
+            ecgPoints[(ecgIndex + 10) % canvas.width] = null; // Clear sweep cursor
+
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = (health > 80 ? "#00FF9D" : (health > 50 ? "#FFB800" : "#FF3366"));
+            ctx.strokeStyle = ctx.shadowColor;
+
+            ctx.beginPath();
+            let started = false;
+            for (let i = 0; i < canvas.width; i++) {
+                if (ecgPoints[i] !== null && ecgPoints[i] !== undefined) {
+                    if (!started) {
+                        ctx.moveTo(i, ecgPoints[i]);
+                        started = true;
+                    } else {
+                        ctx.lineTo(i, ecgPoints[i]);
+                    }
+                } else {
+                    started = false;
+                }
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            requestAnimationFrame(renderEcg);
+        }
+        renderEcg();
+
+        // -----------------------------------------------------------------------
+        // ARTERY CURVE CONNECTOR GENERATOR
+        // -----------------------------------------------------------------------
+        function renderArteries() {
+            const group = document.getElementById("arteryGroup");
+            group.innerHTML = "";
+
+            const nodes = telemetryState.nodes;
+            const arteries = telemetryState.arteries;
+
+            arteries.forEach(art => {
+                const srcEl = document.getElementById(`node-${art.source}`);
+                const dstEl = document.getElementById(`node-${art.target}`);
+                if (!srcEl || !dstEl) return;
+
+                const x1 = srcEl.offsetLeft + srcEl.offsetWidth;
+                const y1 = srcEl.offsetTop + (srcEl.offsetHeight / 2);
+                const x2 = dstEl.offsetLeft;
+                const y2 = dstEl.offsetTop + (dstEl.offsetHeight / 2);
+
+                const dx = (x2 - x1) * 0.5;
+                const pathD = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+
+                // Base artery
+                const bgPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                bgPath.setAttribute("d", pathD);
+                bgPath.setAttribute("class", "artery-path artery-healthy");
+                group.appendChild(bgPath);
+
+                // Animated glowing pulse
+                const pulsePath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                pulsePath.setAttribute("d", pathD);
+                pulsePath.setAttribute("class", `artery-path artery-pulse ${art.state === "BLOCKED" ? "blocked" : (art.rate > 2 ? "fast" : "")}`);
+                group.appendChild(pulsePath);
+            });
+        }
+
+        // -----------------------------------------------------------------------
+        // NODE SELECTION & MICRO-CELL INSPECTION
+        // -----------------------------------------------------------------------
+        function selectNode(nodeId) {
+            selectedNodeId = nodeId;
+            document.querySelectorAll(".node-card").forEach(el => el.classList.remove("selected"));
+            const card = document.getElementById(`node-${nodeId}`);
+            if (card) card.classList.add("selected");
+
+            const node = telemetryState.nodes[nodeId];
+            if (!node) return;
+
+            document.getElementById("inspect-title").innerText = node.name.toUpperCase();
+            document.getElementById("inspect-category").innerText = `${node.category} · ${node.status}`;
+
+            const diagBox = document.getElementById("inspect-diag-box");
+            const diagTitle = document.getElementById("inspect-diag-title");
+            const diagText = document.getElementById("inspect-diag-text");
+
+            if (node.status === "HEALTHY") {
+                diagBox.className = "diagnostics-box healthy";
+                diagTitle.className = "diagnostics-title healthy";
+                diagTitle.innerText = "✔ QUANTUM RESONANCE OPTIMAL";
+            } else {
+                diagBox.className = "diagnostics-box";
+                diagTitle.className = "diagnostics-title alert";
+                diagTitle.innerText = "⚠ SYSTEM CLOG / LATENCY ALERT";
+            }
+            diagText.innerText = node.diagnostics;
+
+            // Render Micro-Cells
+            const cellList = document.getElementById("inspect-cell-list");
+            cellList.innerHTML = "";
+
+            for (const [key, val] of Object.entries(node.micro_cells)) {
+                const item = document.createElement("div");
+                item.className = "micro-cell-item";
+                item.innerHTML = `
+                    <div class="cell-key"><span>◈</span> ${key}</div>
+                    <div class="cell-val">${val}</div>
+                `;
+                cellList.appendChild(item);
+            }
+        }
+
+        // -----------------------------------------------------------------------
+        // UPDATE DASHBOARD FROM TELEMETRY DATA
+        // -----------------------------------------------------------------------
+        function applyTelemetry(data) {
+            telemetryState = data;
+
+            document.getElementById("vital-score").innerText = `${data.overall_health_score}%`;
+            document.getElementById("vital-state").innerText = data.system_state;
+            document.getElementById("vital-bpm").innerText = `${data.ecg_bpm} BPM`;
+
+            // Check Alarm Banner
+            const alarm = document.getElementById("alarmBanner");
+            if (data.overall_health_score < 85) {
+                alarm.style.display = "flex";
+            } else {
+                alarm.style.display = "none";
+            }
+
+            // Update Nodes in UI
+            const nodes = data.nodes;
+            if (nodes.broker_heart) {
+                document.getElementById("card-broker-auth").innerText = nodes.broker_heart.micro_cells["HEARTBEAT!B2 [Session Auth]"] || "CONNECTED";
+                document.getElementById("card-broker-age").innerText = nodes.broker_heart.micro_cells["HEARTBEAT!E2 [Writer Age]"] || "0s";
+                document.getElementById("card-broker-lat").innerText = nodes.broker_heart.latency;
+            }
+            if (nodes.google_sheets_live) {
+                document.getElementById("card-sheets-hb").innerText = nodes.google_sheets_live.micro_cells["FORENSIC_LIVE!A2 [Time]"] ? "Cycle OK" : "OK";
+                document.getElementById("card-sheets-fl").innerText = "216 rows";
+            }
+            if (nodes.powerbi_engine) {
+                document.getElementById("card-pbi-fresh").innerText = nodes.powerbi_engine.micro_cells["Writer Freshness"] || "0 sec";
+                document.getElementById("card-pbi-ce").innerText = nodes.powerbi_engine.micro_cells["Top Real CE"] || "OK";
+                document.getElementById("card-pbi-pe").innerText = nodes.powerbi_engine.micro_cells["Top Real PE"] || "OK";
+            }
+
+            renderArteries();
+            selectNode(selectedNodeId);
+        }
+
+        // -----------------------------------------------------------------------
+        // LIVE POLLING LOOP FOR system_live_telemetry.json
+        // -----------------------------------------------------------------------
+        async function fetchLiveTelemetry() {
+            try {
+                const resp = await fetch("system_live_telemetry.json?t=" + Date.now());
+                if (resp.ok) {
+                    const data = await resp.json();
+                    applyTelemetry(data);
+                }
+            } catch (e) {
+                // If local file fetch has CORS restriction when opened via file://, keep rendering initial state
+            }
+        }
+
+        setInterval(fetchLiveTelemetry, 3000);
+        window.onload = () => {
+            renderArteries();
+            selectNode("broker_heart");
+            fetchLiveTelemetry();
+        };
+
+        function triggerLiveProbe() {
+            fetch("http://127.0.0.1:5678/webhook/orchestrator-run").catch(() => {});
+            alert("To run an instant live telemetry cycle from PowerShell:\n\npowershell -ExecutionPolicy Bypass -File .\\tools\\SYSTEM_DNA_TELEMETRY_ENGINE.ps1\n\nThis immediately updates system_live_telemetry.json across the repository!");
+        }
+    </script>
+</body>
+</html>

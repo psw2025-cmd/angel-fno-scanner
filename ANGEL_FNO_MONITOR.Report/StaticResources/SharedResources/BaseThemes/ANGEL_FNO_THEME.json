@@ -1,0 +1,35 @@
+{
+  "name": "ANGEL FNO Operational",
+  "dataColors": [
+    "#1F77B4",
+    "#D62728",
+    "#2CA02C",
+    "#FF7F0E",
+    "#9467BD",
+    "#17BECF",
+    "#8C564B",
+    "#7F7F7F"
+  ],
+  "background": "#0D1117",
+  "foreground": "#F0F6FC",
+  "tableAccent": "#1F77B4",
+  "visualStyles": {
+    "*": {
+      "*": [
+        {
+          "title": [
+            {
+              "fontSize": 12,
+              "fontFamily": "Segoe UI Semibold"
+            }
+          ],
+          "labels": [
+            {
+              "fontFamily": "Segoe UI"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

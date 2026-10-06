@@ -1,0 +1,31 @@
+rank,symbol,directional_bias,ce_win_prob,pe_win_prob,confidence_pct,intensity_score,pre_open_conviction_pct,expected_gap_pct,atm_pcr,ce_iv,pe_iv,ce_oi,pe_oi,ce_bid_ask_spread,pe_bid_ask_spread,news_sentiment_score,news_severity_level,top_news_headline
+1,FORTIS,PUT (PE) BEARISH,2.9,97.1,94.4,99,79.4,-2.32,1.6,48.54,48.37,87575,140275,0.6000000000000001,0.6000000000000001,-0.013000000000000001,4,Supreme Court Refuses To Interfere With Forensic Probe Order Against Fortis Healthcare - LawBeat
+2,MAXHEALTH,PUT (PE) BEARISH,8.3,91.7,89.5,91,78.7,-1.96,1.76,44.62,42.41,72450,127575,0.7000000000000001,0.55,0.0,1,No fresh material catalyst
+3,PAYTM,PUT (PE) BEARISH,4.4,95.6,93.0,99,70.3,-1.9100000000000001,1.19,56.81,57.83,447325,531425,0.8,0.9500000000000001,-0.032,4,Supreme Court Refuses To Interfere With Forensic Probe Order Against Fortis Healthcare - LawBeat
+4,FEDERALBNK,PUT (PE) BEARISH,14.2,85.8,84.2,87,60.9,-1.45,1.32,69.16,71.21,1407500,1855000,0.5,0.65,0.0,1,No fresh material catalyst
+5,SUPREMEIND,CALL (CE) BULLISH,85.6,14.4,84.0,83,60.4,1.3900000000000001,0.6000000000000001,35.81,37.51,44100,26425,1.2,4.35,0.0,1,No fresh material catalyst
+6,KAYNES,CALL (CE) BULLISH,78.6,21.4,77.7,99,56.2,0.8300000000000001,0.33,59.71,51.91,64800,21450,4.45,62.65,0.0,1,No fresh material catalyst
+7,IREDA,CALL (CE) BULLISH,90.2,9.8,88.2,99,59.5,1.27,0.84,45.99,48.71,2135800,1787375,0.09,0.04,0.0,1,No fresh material catalyst
+8,ASIANPAINT,CALL (CE) BULLISH,80.7,19.3,79.6,76,63.5,1.0,0.52,29.46,33.38,292500,151500,1.0,1.75,0.0,2,"Sumeet Bagadia's stock picks for Monday — Mahindra And Mahindra, Asian Paints, HCL Tech | Target, SL, market outlook"
+9,MAHABANK,CALL (CE) BULLISH,89.5,10.5,87.6,99,88.2,2.43,1.11,44.62,44.62,2632500,2931500,0.27,0.92,0.0,1,No fresh material catalyst
+10,HYUNDAI,CALL (CE) BULLISH,80.6,19.4,79.5,87,56.8,0.91,0.39,42.84,44.8,124025,48400,0.35000000000000003,4.9,0.0,1,No fresh material catalyst
+11,AXISBANK,CALL (CE) BULLISH,90.0,10.0,88.0,83,74.7,1.69,0.9500000000000001,36.27,39.0,1246875,1181875,0.25,0.30000000000000004,0.0,4,"YES Bank, Axis Bank: Supreme Court to Hear Forensic Audit Case Plea on Tuesday - sahi.com"
+12,RECLTD,CALL (CE) BULLISH,72.5,27.5,72.2,86,54.6,0.61,0.54,38.49,41.9,1245825,675675,0.15,0.30000000000000004,0.0,1,No fresh material catalyst
+13,MCX,PUT (PE) BEARISH,12.0,88.0,86.2,99,66.5,-1.4,1.52,54.04,58.26,233325,355500,4.95,1.6,0.0,2,Gold price outlook: MCX gold slips for the week as US Fed rate hike bets rise; what’s next for the yellow metal?
+14,BANDHANBNK,CALL (CE) BULLISH,83.5,16.5,82.2,87,75.2,1.5,0.7000000000000001,61.67,62.35,3402000,2383200,0.05,0.17,0.0,1,No fresh material catalyst
+15,LAURUSLABS,PUT (PE) BEARISH,21.9,78.1,77.3,77,66.7,-1.43,0.53,34.66,36.1,765000,408850,0.9,1.7000000000000002,0.0,1,No fresh material catalyst
+16,ABB,PUT (PE) BEARISH,18.7,81.3,80.2,82,75.0,-1.47,2.11,35.36,42.18,29625,62625,10.35,4.9,0.0,1,No fresh material catalyst
+17,M&M,CALL (CE) BULLISH,74.0,26.0,73.6,80,60.9,0.65,0.5,32.7,34.74,323200,161600,0.4,0.9500000000000001,0.0,2,"Sumeet Bagadia's stock picks for Monday — Mahindra And Mahindra, Asian Paints, HCL Tech | Target, SL, market outlook"
+18,RADICO,CALL (CE) BULLISH,89.6,10.4,87.6,78,58.2,1.09,0.88,32.91,39.77,33750,29700,3.7,15.95,0.0,1,No fresh material catalyst
+19,TRENT,PUT (PE) BEARISH,17.7,82.3,81.1,84,74.5,-1.4,1.5,45.09,44.88,68400,102600,1.25,1.35,0.0,1,No fresh material catalyst
+20,JUBLFOOD,CALL (CE) BULLISH,56.2,43.8,57.6,87,54.1,0.55,0.47000000000000003,40.88,39.85,496250,232500,0.30000000000000004,4.2,0.0,1,No fresh material catalyst
+21,ZYDUSLIFE,CALL (CE) BULLISH,76.3,23.7,75.7,81,62.1,1.21,0.0,34.23,350.0,291600,0,0.30000000000000004,70.05,0.0,2,Zydus Lifesciences USFDA Inspection: Nil Observations in NJ - Rediff MoneyWiz
+22,PIIND,CALL (CE) BULLISH,72.9,27.1,72.6,86,52.6,0.35000000000000003,0.75,36.19,40.45,162400,122325,1.7000000000000002,1.65,0.0,1,No fresh material catalyst
+23,BHARTIARTL,PUT (PE) BEARISH,11.8,88.2,86.4,70,81.7,-1.16,0.58,25.71,27.41,1003675,583775,0.25,0.8,0.0,2,"New mobile recharge rules: 30-day plans, call-only options and more; TRAI rules explained - The Times of India"
+24,TMPV,PUT (PE) BEARISH,15.9,84.1,82.7,82,83.7,-1.43,2.7,37.81,40.54,1056000,2851200,0.25,0.15,0.0,2,"RIL, PB Fintech, HUL, TMPV, Maruti among 24 BSE 500 stocks at 52-week lows - Business Standard"
+25,NMDC,PUT (PE) BEARISH,16.7,83.3,82.0,79,73.7,-1.29,1.75,33.72,33.72,2160000,3786750,0.04,0.16,0.0,1,No fresh material catalyst
+26,TVSMOTOR,CALL (CE) BULLISH,71.9,28.1,71.7,75,55.4,0.72,0.43,35.93,36.53,146825,62825,2.95,2.65,0.0,1,No fresh material catalyst
+27,NAUKRI,CALL (CE) BULLISH,82.9,17.1,81.6,84,74.9,1.45,0.68,41.56,40.19,180950,123750,0.35000000000000003,1.45,0.0,1,No fresh material catalyst
+28,INOXWIND,CALL (CE) BULLISH,81.1,18.9,80.0,88,60.0,1.33,0.75,39.17,39.17,9868800,7436800,0.18,0.25,0.0,1,No fresh material catalyst
+29,DMART,CALL (CE) BULLISH,83.2,16.8,81.9,77,65.2,1.23,1.6099999999999999,36.83,40.49,103950,167250,3.5,1.8,0.0,1,No fresh material catalyst
+30,POLICYBZR,PUT (PE) BEARISH,1.8,98.2,95.4,99,97.8,-2.77,0.64,140.57,139.71,397600,254450,0.8,0.8,-0.047,4,Supreme Court Refuses To Interfere With Forensic Probe Order Against Fortis Healthcare - LawBeat

@@ -1,0 +1,351 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.2.0/schema.json",
+  "name": "7e9b08680e33ccfb7cd9",
+  "position": {
+    "x": 20,
+    "y": 370,
+    "z": 3000,
+    "height": 320,
+    "width": 1240,
+    "tabOrder": 4000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "CERank"
+                    }
+                  },
+                  "Property": "symbol"
+                }
+              },
+              "queryRef": "CERank.symbol",
+              "displayName": "Symbol"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "CERank"
+                    }
+                  },
+                  "Property": "rank_status"
+                }
+              },
+              "queryRef": "CERank.rank_status",
+              "displayName": "Status"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "CERank"
+                        }
+                      },
+                      "Property": "fut_chg_pct"
+                    }
+                  },
+                  "Function": 1
+                }
+              },
+              "queryRef": "Avg(CERank.fut_chg_pct)",
+              "displayName": "Future %"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "CERank"
+                        }
+                      },
+                      "Property": "opening_gap_pct"
+                    }
+                  },
+                  "Function": 1
+                }
+              },
+              "queryRef": "Avg(CERank.opening_gap_pct)",
+              "displayName": "Open gap %"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "CERank"
+                        }
+                      },
+                      "Property": "fut_obi"
+                    }
+                  },
+                  "Function": 1
+                }
+              },
+              "queryRef": "Avg(CERank.fut_obi)",
+              "displayName": "Fut OBI"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "CERank"
+                        }
+                      },
+                      "Property": "ce_oi_change"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(CERank.ce_oi_change)",
+              "displayName": "CE OI Δ"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "CERank"
+                        }
+                      },
+                      "Property": "pe_oi_change"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(CERank.pe_oi_change)",
+              "displayName": "PE OI Δ"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "CERank"
+                        }
+                      },
+                      "Property": "atm_pcr"
+                    }
+                  },
+                  "Function": 1
+                }
+              },
+              "queryRef": "Avg(CERank.atm_pcr)",
+              "displayName": "PCR"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "CERank"
+                        }
+                      },
+                      "Property": "ce_streak"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(CERank.ce_streak)",
+              "displayName": "CE streak"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "CERank"
+                        }
+                      },
+                      "Property": "pe_streak"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(CERank.pe_streak)",
+              "displayName": "PE streak"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "CERank"
+                    }
+                  },
+                  "Property": "explanation"
+                }
+              },
+              "queryRef": "CERank.explanation",
+              "displayName": "Why"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Aggregation": {
+                "Expression": {
+                  "Column": {
+                    "Expression": {
+                      "SourceRef": {
+                        "Entity": "CERank"
+                      }
+                    },
+                    "Property": "fut_chg_pct"
+                  }
+                },
+                "Function": 1
+              }
+            },
+            "direction": "Ascending"
+          }
+        ]
+      }
+    },
+    "objects": {
+      "grid": [
+        {
+          "properties": {
+            "rowPadding": {
+              "expr": {
+                "Literal": {
+                  "Value": "3D"
+                }
+              }
+            },
+            "textSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "columnHeaders": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "9D"
+                }
+              }
+            },
+            "autoSizeColumnWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Measured confirmation matrix'"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Segoe UI Semibold'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}
