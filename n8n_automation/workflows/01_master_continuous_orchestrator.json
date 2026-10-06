@@ -1,0 +1,236 @@
+{
+  "id": "angel-fno-master-orchestrator",
+  "name": "Angel FNO Master Continuous Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/5 9-15 * * 1-5"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "*/15 0-8,16-23 * * *"
+            }
+          ]
+        }
+      },
+      "id": "wf1-node-sched",
+      "name": "Every 5m Market / 15m Off-Peak",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -600,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "path": "orchestrator-run",
+        "httpMethod": "GET",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "wf1-node-webhook",
+      "name": "Webhook: Orchestrator Run",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -600,
+        300
+      ],
+      "webhookId": "orchestrator-run-webhook"
+    },
+    {
+      "parameters": {},
+      "id": "wf1-node-manual",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:5680/orchestrator-status",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "wf1-node-http-status",
+      "name": "Fetch Orchestrator Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -300,
+        300
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-verdict",
+              "leftValue": "={{ $json.orchestrator_verdict }}",
+              "rightValue": "HEALTHY",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "wf1-node-if-healthy",
+      "name": "If Status HEALTHY",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "// Format Healthy Heartbeat Telemetry\nconst data = $input.first().json;\nreturn [{\n  json: {\n    status: \"HEALTHY\",\n    timestamp_ist: new Date().toLocaleString(\"en-IN\", {timeZone: \"Asia/Kolkata\"}),\n    powerbi_verdict: data.components?.powerbi?.verdict || \"UNKNOWN\",\n    bigquery_rows: data.components?.bigquery?.total || 0,\n    bigquery_with_runid: data.components?.bigquery?.with_runid || 0,\n    evidence_id: data.components?.runtime_evidence?.evidence_id || \"N/A\",\n    message: \"All 5 subsystems (Laptop, PowerBI, BigQuery, Sheets, GitHub) validated healthy.\"\n  }\n}];"
+      },
+      "id": "wf1-node-healthy-log",
+      "name": "Log Healthy Heartbeat",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:5680/auto-remediate",
+        "options": {
+          "timeout": 90000
+        }
+      },
+      "id": "wf1-node-trigger-remediate",
+      "name": "Trigger Auto-Remediate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        300,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:5680/verification-harness",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "wf1-node-reverify",
+      "name": "Post-Remediation Re-Verify",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        550,
+        420
+      ]
+    }
+  ],
+  "connections": {
+    "Every 5m Market / 15m Off-Peak": {
+      "main": [
+        [
+          {
+            "node": "Fetch Orchestrator Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: Orchestrator Run": {
+      "main": [
+        [
+          {
+            "node": "Fetch Orchestrator Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Orchestrator Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Orchestrator Status": {
+      "main": [
+        [
+          {
+            "node": "If Status HEALTHY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Status HEALTHY": {
+      "main": [
+        [
+          {
+            "node": "Log Healthy Heartbeat",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Trigger Auto-Remediate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Auto-Remediate": {
+      "main": [
+        [
+          {
+            "node": "Post-Remediation Re-Verify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true,
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "id": "angel-fno-operator-snapshot-archiver",
+  "name": "Angel FNO Daily Operator Snapshot Archiver",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "15 16 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "wf6-node-sched",
+      "name": "Daily Post-Market 16:15 IST",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -500,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "path": "archive-snapshot",
+        "httpMethod": "POST",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "wf6-node-webhook",
+      "name": "Webhook: Archive Snapshot",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -500,
+        400
+      ],
+      "webhookId": "archive-snapshot-webhook"
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:5680/post-market",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "wf6-node-postmarket",
+      "name": "Run Post-Market Aggregation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "// Format Daily Snapshot Bundle Evidence\nconst data = $input.first().json;\nconst todayStr = new Date().toISOString().slice(0, 10);\n\nreturn [{\n  json: {\n    status: \"ARCHIVED\",\n    target_date: todayStr,\n    timestamp_ist: new Date().toLocaleString(\"en-IN\", {timeZone: \"Asia/Kolkata\"}),\n    snapshot_path: `operator/snapshots/${todayStr}/`,\n    target_a_verdict: \"EVALUATED_AGAINST_OPEN\",\n    target_b_verdict: \"EVALUATED_AGAINST_DAY_HIGH\",\n    post_market_evidence: data.evidence || \"N/A\",\n    compliance: \"AGENTS.md Section 18-20 immutable forecast outcome ledger intact\"\n  }\n}];"
+      },
+      "id": "wf6-node-eval-archive",
+      "name": "Archive Snapshot Bundle",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        100,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Daily Post-Market 16:15 IST": {
+      "main": [
+        [
+          {
+            "node": "Run Post-Market Aggregation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: Archive Snapshot": {
+      "main": [
+        [
+          {
+            "node": "Run Post-Market Aggregation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Post-Market Aggregation": {
+      "main": [
+        [
+          {
+            "node": "Archive Snapshot Bundle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true,
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  }
+}

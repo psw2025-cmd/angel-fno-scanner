@@ -1,0 +1,117 @@
+{
+  "id": "angel-fno-powerbi-watchdog",
+  "name": "Angel FNO Power BI Desktop & Analysis Services Watchdog",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/10 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "wf3-node-sched",
+      "name": "Every 10m PowerBI Check",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -500,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "path": "powerbi-check",
+        "httpMethod": "GET",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "wf3-node-webhook",
+      "name": "Webhook: PowerBI Check",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -500,
+        400
+      ],
+      "webhookId": "powerbi-check-webhook"
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:5680/powerbi",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "wf3-node-inspect-pbi",
+      "name": "Inspect PowerBI Desktop & AS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "// Validate PowerBI Process and Port Health\nconst data = $input.first().json;\nconst pbiHealthy = data.verdict === \"HEALTHY\";\nconst pbiProc = data.pbi_desktop?.running === true;\nconst asProc = data.analysis_services?.running === true;\nconst ports = (data.analysis_services?.listener_ports || []).map(p => p.LocalPort);\n\nreturn [{\n  json: {\n    status: pbiHealthy ? \"HEALTHY\" : \"DEGRADED\",\n    timestamp_ist: new Date().toLocaleString(\"en-IN\", {timeZone: \"Asia/Kolkata\"}),\n    pbi_desktop_running: pbiProc,\n    analysis_services_running: asProc,\n    listener_ports: ports,\n    verdict: data.verdict,\n    recommendation: data.recommendation || \"Maintain monitoring\"\n  }\n}];"
+      },
+      "id": "wf3-node-eval-pbi",
+      "name": "Evaluate PowerBI Telemetry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        100,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Every 10m PowerBI Check": {
+      "main": [
+        [
+          {
+            "node": "Inspect PowerBI Desktop & AS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: PowerBI Check": {
+      "main": [
+        [
+          {
+            "node": "Inspect PowerBI Desktop & AS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inspect PowerBI Desktop & AS": {
+      "main": [
+        [
+          {
+            "node": "Evaluate PowerBI Telemetry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true,
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  }
+}

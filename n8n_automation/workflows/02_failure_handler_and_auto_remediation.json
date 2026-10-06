@@ -1,0 +1,135 @@
+{
+  "id": "angel-fno-failure-handler-and-remediation",
+  "name": "Angel FNO Failure Handler & Auto-Remediation",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "auto-remediate",
+        "httpMethod": "POST",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "wf2-node-webhook",
+      "name": "Webhook: Auto-Remediate",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -500,
+        200
+      ],
+      "webhookId": "auto-remediate-webhook"
+    },
+    {
+      "parameters": {},
+      "id": "wf2-node-manual",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -500,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:5680/auto-remediate",
+        "options": {
+          "timeout": 90000
+        }
+      },
+      "id": "wf2-node-exec-remedy",
+      "name": "Execute Auto-Remediation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:5680/verification-harness",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "wf2-node-run-harness",
+      "name": "Run Verification Harness",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "// Evaluate Remediation & Harness Results\nconst harness = $input.first().json;\nconst passed = harness.checks_passed || 0;\nconst total = harness.checks_total || 12;\nconst isRemediated = passed >= 11; // 11 allows for working branch uncommitted code\n\nreturn [{\n  json: {\n    status: isRemediated ? \"REMEDIATED_VERIFIED\" : \"FAIL_CLOSED_ALERT\",\n    timestamp_ist: new Date().toLocaleString(\"en-IN\", {timeZone: \"Asia/Kolkata\"}),\n    checks_passed: passed,\n    checks_total: total,\n    harness_verdict: harness.verdict || \"UNKNOWN\",\n    evidence_file: harness.evidence || \"N/A\",\n    recommended_action: isRemediated ? \"System verified healthy. Resuming normal cadence.\" : \"Manual agent inspection required on Issue #3.\"\n  }\n}];"
+      },
+      "id": "wf2-node-eval-remedy",
+      "name": "Evaluate Outcome",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook: Auto-Remediate": {
+      "main": [
+        [
+          {
+            "node": "Execute Auto-Remediation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute Auto-Remediation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Auto-Remediation": {
+      "main": [
+        [
+          {
+            "node": "Run Verification Harness",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Verification Harness": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true,
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  }
+}

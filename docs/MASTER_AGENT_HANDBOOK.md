@@ -243,3 +243,41 @@ winget install --id=voidtools.Everything.Cli -e
 & "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe" /nologo /optimize /target:exe /r:System.Windows.Forms.dll /out:"tools\es_bridge.exe" "tools\es_bridge.cs"
 Copy-Item "tools\es_bridge.exe" "$env:LOCALAPPDATA\agy\bin\es.exe" -Force
 ```
+
+---
+
+## 8. n8n Multi-Agent Orchestration & Power BI Architecture (October 6, 2026)
+
+### A. Core Architecture Overview
+The n8n automation engine operates inside WSL2 (Ubuntu-24.04) on port `5678`, communicating with the Windows host via the read-only listener on port `5680`.
+Comprehensive architecture documentation is maintained in [`docs/N8N_ORCHESTRATION_ARCHITECTURE.md`](file:///C:/AngelFNO_Workstation/repos/angel-fno-scanner/docs/N8N_ORCHESTRATION_ARCHITECTURE.md).
+
+### B. The 6 Production Workflows (`n8n_automation/workflows/`)
+1. **01_master_continuous_orchestrator.json (`angel-fno-master-orchestrator`):**
+   - Coordinates 5m market / 15m off-peak checks across Laptop, Power BI, BQ, Sheets, and GitHub.
+   - Evaluates aggregate status; branches to auto-remediation if degraded.
+2. **02_failure_handler_and_auto_remediation.json (`angel-fno-failure-handler-and-remediation`):**
+   - Triggers `/auto-remediate` on red alerts, removes stale lock files, heals BQ 54-column DDL, syncs cycle provenance, and re-runs the 12-check verification harness.
+3. **03_powerbi_watchdog.json (`angel-fno-powerbi-watchdog`):**
+   - Continuously monitors `PBIDesktop.exe` PID, `msmdsrv.exe` PID, and active Analysis Services listener on port `62289`.
+4. **04_bigquery_schema_lineage_guardian.json (`angel-fno-bigquery-schema-lineage-guardian`):**
+   - Asserts 219 universe rows, 54 columns, and 100% provenance completeness every 30 minutes.
+5. **05_google_sheet_formula_forensic_verifier.json (`angel-fno-google-sheet-formula-verifier`):**
+   - Validates all 26 tabs in `OPTION_SHEET`, `FORENSIC_LIVE` 219 rows, and live gate formulas.
+6. **06_operator_snapshot_archiver.json (`angel-fno-operator-snapshot-archiver`):**
+   - Archives daily post-market snapshot bundles into `operator/snapshots/YYYY-MM-DD/`.
+
+### C. Live Webhook Endpoints
+- Orchestrator Run: `GET http://127.0.0.1:5678/webhook/orchestrator-run`
+- Auto-Remediate: `POST http://127.0.0.1:5678/webhook/auto-remediate`
+- Power BI Check: `GET http://127.0.0.1:5678/webhook/powerbi-check`
+- BigQuery Audit: `GET http://127.0.0.1:5678/webhook/bigquery-audit`
+- Sheets Verify: `GET http://127.0.0.1:5678/webhook/sheets-verify`
+- Archive Snapshot: `POST http://127.0.0.1:5678/webhook/archive-snapshot`
+
+### D. Synchronization & Maintenance Tools
+- Workflow Generator: `python tools/generate_n8n_workflows.py`
+- Database Sync & Activation: `wsl -d Ubuntu-24.04 python3 /mnt/c/AngelFNO_Workstation/repos/angel-fno-scanner/tools/n8n_sync.py --sync`
+- Power BI Inspector: `python tools/powerbi_inspector.py`
+- Listener Service Restart: `wsl -d Ubuntu-24.04 systemctl --user restart angel-fno-readonly-listener.service`
+

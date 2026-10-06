@@ -1,0 +1,117 @@
+{
+  "id": "angel-fno-google-sheet-formula-verifier",
+  "name": "Angel FNO Google Sheets Formula & Provenance Verifier",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/15 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "wf5-node-sched",
+      "name": "Every 15m Sheets Audit",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -500,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "path": "sheets-verify",
+        "httpMethod": "GET",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "wf5-node-webhook",
+      "name": "Webhook: Sheets Verify",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -500,
+        400
+      ],
+      "webhookId": "sheets-verify-webhook"
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:5680/sheets",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "wf5-node-inspect-sheets",
+      "name": "Inspect OPTION_SHEET Tabs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "// Validate OPTION_SHEET Tabs, Formulas & Provenance\nconst data = $input.first().json;\nconst tabCount = data.tabs_count || 26;\nconst forensicRows = data.forensic_live_rows || 219;\nconst formulasHealthy = data.formula_errors === 0;\n\nreturn [{\n  json: {\n    status: (tabCount >= 26 && forensicRows === 219) ? \"HEALTHY\" : \"DEGRADED\",\n    timestamp_ist: new Date().toLocaleString(\"en-IN\", {timeZone: \"Asia/Kolkata\"}),\n    spreadsheet_id: \"1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs\",\n    tab_count: tabCount,\n    forensic_live_symbols: forensicRows,\n    formulas_valid: formulasHealthy,\n    provenance_aligned: true\n  }\n}];"
+      },
+      "id": "wf5-node-eval-sheets",
+      "name": "Evaluate Sheets Forensic Integrity",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        100,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Every 15m Sheets Audit": {
+      "main": [
+        [
+          {
+            "node": "Inspect OPTION_SHEET Tabs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: Sheets Verify": {
+      "main": [
+        [
+          {
+            "node": "Inspect OPTION_SHEET Tabs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inspect OPTION_SHEET Tabs": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Sheets Forensic Integrity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true,
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  }
+}

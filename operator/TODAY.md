@@ -19,7 +19,8 @@
 | AGY verification harness (12/12) | GREEN | Re-verified 12/12 PASS on `main` |
 | Formula Checks GATE-06 still `=216` / empty column C | RED | Ignore that gate (D-01, D-08) |
 | Gap-pick accuracy (D-06) | RED | 50% on 6 symbols — not verified |
-| Power BI file in repo | GREY | Not present; local laptop only |
+| Power BI Desktop & Analysis Services | GREEN | Verified PID 3200 & port 62289 listener active |
+| n8n Multi-Agent Orchestrator (11 WFs) | GREEN | 6 new workflows active; zero execution errors |
 | Canonical Colab in Drive search | GREY | Contract id not found; `Untitled72` is latest |
 | Standby sheet switch | YELLOW | Ready, secret not switched |
 

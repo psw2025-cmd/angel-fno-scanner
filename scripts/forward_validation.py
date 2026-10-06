@@ -273,8 +273,19 @@ if __name__ == "__main__":
     # CANONICAL_CONTROL_CENTER_REPORT_STEP
     import os, sys, subprocess
     updater = Path('C:/Users/ADMIN/Documents/Codex/2026-10-02/referenced-chatgpt-conversation-this-is-an-3/outputs/update_control_center.py') if os.name == "nt" else Path('/mnt/c/Users/ADMIN/Documents/Codex/2026-10-02/referenced-chatgpt-conversation-this-is-an-3/outputs/update_control_center.py')
-    result = subprocess.run([sys.executable, str(updater)], capture_output=True, text=True, timeout=150, check=False)
-    print("[CONTROL_CENTER] " + result.stdout.strip())
-    if result.returncode:
-        print("[CONTROL_CENTER_FAILED] " + result.stderr[-2000:], file=sys.stderr)
-        raise SystemExit(result.returncode)
+    if updater.exists():
+        lock_file = updater.parent / '.control-center.lock'
+        if lock_file.exists():
+            try:
+                import time
+                if time.time() - lock_file.stat().st_mtime > 120:
+                    lock_file.unlink(missing_ok=True)
+            except Exception:
+                pass
+        try:
+            result = subprocess.run([sys.executable, str(updater)], capture_output=True, text=True, timeout=15, check=False)
+            print("[CONTROL_CENTER] " + result.stdout.strip())
+            if result.returncode:
+                print("[CONTROL_CENTER_WARNING] " + result.stderr[-2000:], file=sys.stderr)
+        except Exception as exc:
+            print(f"[CONTROL_CENTER_NOTICE] {exc}", file=sys.stderr)

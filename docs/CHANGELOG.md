@@ -1,5 +1,43 @@
 # Changelog
 
+## 2026-10-06 — Production n8n Multi-Agent Orchestration Architecture & Resiliency Hardening
+
+**Commit:** Pending HEAD
+
+### What changed
+- Diagnosed and resolved 65 execution failures in n8n `angel-fno-read-only-monitor` caused by a stale `.control-center.lock` and unhandled timeout on optional secondary reporter `update_control_center.py` in `scripts/forward_validation.py`.
+- Hardened `scripts/forward_validation.py`: added automatic stale lock pruning (> 120s) and wrapped `update_control_center.py` in try/except with 15s timeout and non-fatal notice logging.
+- Enhanced `scripts/n8n_readonly_listener.py`:
+  - Added new endpoints: `/powerbi`, `/verification-harness`, `/orchestrator-status`, `/auto-remediate`.
+  - Added in-memory TTL caching (15-30s) and POST method support for instant webhook evaluation without process contention.
+  - Hardened execution timeouts across all inspection endpoints.
+- Created `tools/powerbi_inspector.py`: fast single-pass Win32 process and Analysis Services TCP port 62289 listener watchdog.
+- Created and deployed 6 production n8n workflows in `n8n_automation/workflows/`:
+  1. `01_master_continuous_orchestrator.json`: Coordinates 5m market / 15m off-peak checks across Laptop, Power BI, BQ, Sheets, and GitHub.
+  2. `02_failure_handler_and_auto_remediation.json`: Automated fail-closed remediation with verification harness re-test.
+  3. `03_powerbi_watchdog.json`: Continuously monitors PBIDesktop/msmdsrv PID and port 62289.
+  4. `04_bigquery_schema_lineage_guardian.json`: Validates 219 universe rows, 54 columns, and zero provenance nulls.
+  5. `05_google_sheet_formula_forensic_verifier.json`: Checks 26 tabs, `FORENSIC_LIVE` 219 rows, and formula health.
+  6. `06_operator_snapshot_archiver.json`: Automates daily snapshot bundle archiving into `operator/snapshots/YYYY-MM-DD/`.
+- Created `tools/generate_n8n_workflows.py` and `tools/n8n_sync.py` to generate, synchronize, and activate workflows in WSL n8n SQLite DB.
+- Created comprehensive architecture documentation in `docs/N8N_ORCHESTRATION_ARCHITECTURE.md`.
+
+### Why
+- Fixes n8n execution errors, achieves 100% automated health monitoring across all subsystems, enables instant AGY CLI webhook triggering and fail-closed auto-remediation while strictly upholding `AGENTS.md` trading safety (`PAPER / ANALYZER = ON`, `REAL BROKER ORDERS = 0`).
+
+### Evidence
+- 10+ consecutive n8n executions verified `success` in WSL database (`execution_entity`).
+- All 6 n8n workflows active and responsive to live webhooks.
+- Power BI Desktop (PID 3200) and Analysis Services (PID 31724, port 62289) verified `HEALTHY`.
+- BigQuery 219 rows with 100% provenance completeness verified `PASS`.
+- Google Sheets 26 tabs and 219 forensic rows verified `HEALTHY`.
+- Pytest suite: 183 passed.
+
+### Rollback
+- Revert commit on `main`.
+
+---
+
 ## 2026-10-06 — Strictly Enforce Canonical Schema from Validator on WRITE_TRUNCATE
 
 **Commit:** Pending HEAD

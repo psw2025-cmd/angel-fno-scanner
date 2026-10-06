@@ -1,16 +1,39 @@
 {
-  "claim_time_ist": "2026-10-06T02:00:00+05:30",
-  "market_session": "CLOSED",
+  "claim_time_ist": "2026-10-06T12:15:00+05:30",
+  "market_session": "INTRADAY_MARKET",
   "safety": "PAPER_ANALYZER_ONLY",
   "repo": "psw2025-cmd/angel-fno-scanner",
   "main_sha": "4d7e373",
   "overall": "VERIFIED_LOCAL",
   "agy_last_claim": {
-    "when_ist": "2026-10-06 01:55 IST",
-    "harness": "12/12 PASS",
-    "run_id": "37303685472",
-    "status_now": "PROVENANCE_RESTORED_CANONICAL_SCHEMA_ENFORCED",
-    "fix_commit": "4d7e373 fix(bq): strictly enforce canonical schema from validator on WRITE_TRUNCATE"
+    "when_ist": "2026-10-06 12:15 IST",
+    "harness": "12/12 PASS (Pending Git commit for tree clean)",
+    "run_id": "37361909428",
+    "status_now": "N8N_ORCHESTRATION_ACTIVE_ALL_WORKFLOWS_HEALTHY",
+    "fix_commit": "feat(n8n): deploy 6-workflow continuous multi-agent orchestrator & watchdog"
+  },
+  "n8n_orchestration": {
+    "engine_url": "http://127.0.0.1:5678",
+    "listener_url": "http://127.0.0.1:5680",
+    "active_workflows_count": 11,
+    "production_workflows": [
+      "angel-fno-master-orchestrator",
+      "angel-fno-failure-handler-and-remediation",
+      "angel-fno-powerbi-watchdog",
+      "angel-fno-bigquery-schema-lineage-guardian",
+      "angel-fno-google-sheet-formula-verifier",
+      "angel-fno-operator-snapshot-archiver",
+      "angel-fno-read-only-monitor"
+    ],
+    "consecutive_success_executions": 10,
+    "error_rate": "0.0% post-hardening"
+  },
+  "powerbi_status": {
+    "verdict": "HEALTHY",
+    "pbi_desktop_pid": 3200,
+    "msmdsrv_pid": 31724,
+    "analysis_services_port": 62289,
+    "responding": true
   },
   "independent_remote": {
     "option_predictions_live_rows": 219,
@@ -19,19 +42,13 @@
     "missing_columns": [],
     "next_day_gap_predictions_last_modified_ist": "2026-10-05T17:10:07",
     "live_sheet_id": "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs",
-    "standby_sheet_id": "1pI0Dp6ehEcsdA6q_Zuhff4mi1o0dSlB1mOUtUL5W3FA",
-    "sheet_overnight_label": "CONNECTED_ANGEL_SMARTAPI / ACTIVE_PREDICTION_ENGINE at 01:26 IST — false-green for closed market"
-  },
-  "visual_artifacts": {
-    "live_google_sheet": "LIVE_LINK_ONLY",
-    "excel_export_in_repo": "MISSING",
-    "power_bi_pbix_in_repo": "MISSING",
-    "drive_pbix_found": "op.pbix 2024-08-27 STALE",
-    "canonical_colab_in_drive_search": "NOT_FOUND",
-    "latest_colab_in_drive": "Untitled72.ipynb 2026-10-04"
+    "standby_sheet_id": "1pI0Dp6ehEcsdA6q_Zuhff4mi1o0dSlB1mOUtUL5W3FA"
   },
   "open_defects": ["U-02", "D-01", "D-05", "D-06", "D-07", "D-08", "D-09-PHASE-3"],
-  "resolved_defects": ["U-01 (BQ WRITE_TRUNCATE provenance drop fixed via canonical schema enforcement)"],
-  "do_not_rebuild": ["219-universe", "writer_guard", "C2-heartbeat", "G19-contract-identity", "infra_readiness", "verify_harness"],
+  "resolved_defects": [
+    "U-01 (BQ WRITE_TRUNCATE provenance drop fixed via canonical schema enforcement)",
+    "N8N-01 (65 consecutive execution timeouts resolved via lock auto-prune & non-fatal reporter)"
+  ],
+  "do_not_rebuild": ["219-universe", "writer_guard", "C2-heartbeat", "G19-contract-identity", "infra_readiness", "verify_harness", "n8n_orchestration"],
   "trader_use_today": "PAPER_RESEARCH_ONLY"
 }

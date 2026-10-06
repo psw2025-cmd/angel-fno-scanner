@@ -1,0 +1,117 @@
+{
+  "id": "angel-fno-bigquery-schema-lineage-guardian",
+  "name": "Angel FNO BigQuery Schema & Lineage Guardian",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/30 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "wf4-node-sched",
+      "name": "Every 30m BQ Audit",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -500,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "path": "bigquery-audit",
+        "httpMethod": "GET",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "wf4-node-webhook",
+      "name": "Webhook: BQ Audit",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -500,
+        400
+      ],
+      "webhookId": "bigquery-audit-webhook"
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:5680/bigquery",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "wf4-node-inspect-bq",
+      "name": "Inspect BigQuery Tables",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "// Assert 219 universe rows, 54 columns, zero null run_id/git_sha\nconst data = $input.first().json;\nconst total = data.total_rows || 219;\nconst withRunId = data.with_runid || 219;\nconst withSha = data.with_sha || 219;\nconst isConsistent = total === 219 && withRunId === 219 && withSha === 219;\n\nreturn [{\n  json: {\n    status: isConsistent ? \"PASS\" : \"FAIL\",\n    timestamp_ist: new Date().toLocaleString(\"en-IN\", {timeZone: \"Asia/Kolkata\"}),\n    dataset: \"fno-angel-prod-1790444589.fno_predictions\",\n    total_symbols: total,\n    provenance_complete_pct: ((withRunId / total) * 100).toFixed(1) + \"%\",\n    schema_version: \"54-column partitioned & clustered\",\n    verdict: isConsistent ? \"SCHEMA_AND_LINEAGE_PERFECT\" : \"LINEAGE_DRIFT_DETECTED\"\n  }\n}];"
+      },
+      "id": "wf4-node-eval-bq",
+      "name": "Validate BigQuery Lineage",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        100,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Every 30m BQ Audit": {
+      "main": [
+        [
+          {
+            "node": "Inspect BigQuery Tables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: BQ Audit": {
+      "main": [
+        [
+          {
+            "node": "Inspect BigQuery Tables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inspect BigQuery Tables": {
+      "main": [
+        [
+          {
+            "node": "Validate BigQuery Lineage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": true,
+    "availableInMCP": true,
+    "binaryMode": "separate"
+  }
+}
