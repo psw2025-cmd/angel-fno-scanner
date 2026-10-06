@@ -14,6 +14,7 @@
 - Restored one authoritative GitHub market session at 09:15 IST (03:45 UTC) with MAX_RUNTIME_SECONDS=24300; scanner now performs bounded-retry intraday prediction/readback cycles every 15 minutes while the quote loop remains the single market writer.
 - workflow_dispatch uses a short 90-second scanner pass for controlled live verification without a second long-running writer.
 - Fixed Nightly Verify dependency setup to install pytest.
+- Added a laptop-side GitHub Actions fallback guard: every 15 minutes it checks whether a recent/active market_bot run exists during the reviewed NSE session and dispatches main only when the GitHub schedule has been missed.
 - Filtered the exact known synthetic news signature from agent_cli.py runtime reads. Existing synthetic rows were exported to a backup evidence file before quarantine work.
 - Added tests/test_automation_integrity.py to prevent unsafe auto-remediation, fake n8n defaults, workflow cadence regression, and n8n DB-integrity regressions.
 
