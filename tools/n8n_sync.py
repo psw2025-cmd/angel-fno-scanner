@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
-"""
-tools/n8n_sync.py
+"""Controlled local n8n workflow synchronizer.
 
-Synchronizes and activates all workflow definitions from n8n_automation/workflows/
-directly into the n8n SQLite database (/home/pritam/n8n-data/.n8n/database.sqlite).
-Ensures foreign keys in workflow_history and shared_workflow are completely aligned.
+Run only while the n8n service is stopped. The tool creates a SQLite backup,
+repairs missing workflow_history rows, writes workflow definitions, enables
+foreign-key enforcement, and refuses to finish with FK violations.
 """
+from __future__ import annotations
 
 import argparse
-import datetime
+import datetime as dt
 import json
 import os
+import shutil
 import sqlite3
 import sys
 import uuid
@@ -18,7 +19,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 WORKFLOWS_DIR = REPO_ROOT / "n8n_automation" / "workflows"
-PROJECT_ID = "OKyqNwSceCfE62Zq"  # Default n8n project id in local environment
+PROJECT_ID = "OKyqNwSceCfE62Zq"
 
 
 def get_db_path():
@@ -27,124 +28,142 @@ def get_db_path():
     return Path("/home/pritam/n8n-data/.n8n/database.sqlite")
 
 
+def backup_db(db_path: Path):
+    stamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+    if os.name == "nt":
+        out = Path(r"C:\AngelFNO_Workstation\backups") / f"n8n_sync_{stamp}.sqlite"
+    else:
+        out = Path("/mnt/c/AngelFNO_Workstation/backups") / f"n8n_sync_{stamp}.sqlite"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    src = sqlite3.connect(str(db_path))
+    dst = sqlite3.connect(str(out))
+    src.backup(dst)
+    dst.close()
+    src.close()
+    print(f"[BACKUP] {out}")
+    return out
+
+
+def _history_exists(cur, version_id):
+    return cur.execute("SELECT 1 FROM workflow_history WHERE versionId=?", (version_id,)).fetchone() is not None
+
+
+def repair_missing_history(conn):
+    cur = conn.cursor()
+    now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    repaired = []
+    rows = cur.execute(
+        "SELECT id,name,nodes,connections,description,activeVersionId,nodeGroups FROM workflow_entity "
+        "WHERE activeVersionId IS NOT NULL"
+    ).fetchall()
+    for workflow_id, name, nodes, connections, description, version_id, node_groups in rows:
+        if _history_exists(cur, version_id):
+            continue
+        cur.execute(
+            """INSERT INTO workflow_history
+               (versionId,workflowId,authors,createdAt,updatedAt,nodes,connections,name,autosaved,description,nodeGroups)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+            (version_id, workflow_id, "[]", now, now, nodes, connections, name, 0,
+             description or "", node_groups or "[]"),
+        )
+        repaired.append(workflow_id)
+        print(f"[REPAIRED_HISTORY] {workflow_id} -> {version_id}")
+    conn.commit()
+    return repaired
+
+
 def sync_workflows(conn, activate=True):
     cur = conn.cursor()
+    now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
     synced = []
-
-    json_files = sorted(WORKFLOWS_DIR.glob("*.json"))
-    if not json_files:
-        print(f"[WARN] No workflow json files found in {WORKFLOWS_DIR}")
-        return synced
-
-    now_utc = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-
-    for jf in json_files:
-        with open(jf, "r", encoding="utf-8") as f:
-            wf = json.load(f)
-
-        wf_id = wf.get("id") or jf.stem.replace("_", "-")
-        wf_name = wf.get("name") or jf.stem
-        nodes_str = json.dumps(wf.get("nodes", []))
-        connections_str = json.dumps(wf.get("connections", {}))
-        settings_str = json.dumps(wf.get("settings", {}))
+    for jf in sorted(WORKFLOWS_DIR.glob("*.json")):
+        wf = json.loads(jf.read_text(encoding="utf-8"))
+        wf_id = wf["id"]
+        wf_name = wf["name"]
+        nodes = json.dumps(wf.get("nodes", []), separators=(",", ":"))
+        connections = json.dumps(wf.get("connections", {}), separators=(",", ":"))
+        settings = json.dumps(wf.get("settings", {}), separators=(",", ":"))
         version_id = str(uuid.uuid4())
+        current = cur.execute(
+            "SELECT createdAt,versionCounter FROM workflow_entity WHERE id=?", (wf_id,)
+        ).fetchone()
+        created_at = current[0] if current else now
+        version_counter = int(current[1] or 0) + 1 if current else 1
 
-        # 1. Insert into workflow_history
         cur.execute(
-            """
-            INSERT INTO workflow_history (versionId, workflowId, authors, createdAt, updatedAt, nodes, connections, name, autosaved, description, nodeGroups)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (version_id, wf_id, "[]", now_utc, now_utc, nodes_str, connections_str, wf_name, 0, "", "[]"),
+            """INSERT INTO workflow_history
+               (versionId,workflowId,authors,createdAt,updatedAt,nodes,connections,name,autosaved,description,nodeGroups)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+            (version_id, wf_id, "[]", now, now, nodes, connections, wf_name, 0,
+             "Fail-closed read-only Angel F&O automation", "[]"),
         )
-
-        # 2. Upsert into workflow_entity
         cur.execute(
-            """
-            INSERT INTO workflow_entity (
-                id, name, active, nodes, connections, settings, staticData, pinData,
-                versionId, triggerCount, meta, parentFolderId, createdAt, updatedAt,
-                isArchived, versionCounter, description, activeVersionId, nodeGroups, sourceWorkflowId
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(id) DO UPDATE SET
-                name=excluded.name,
-                active=excluded.active,
-                nodes=excluded.nodes,
-                connections=excluded.connections,
-                settings=excluded.settings,
-                versionId=excluded.versionId,
-                activeVersionId=excluded.activeVersionId,
-                updatedAt=excluded.updatedAt
-            """,
-            (
-                wf_id,
-                wf_name,
-                1 if activate else 0,
-                nodes_str,
-                connections_str,
-                settings_str,
-                None,
-                None,
-                version_id,
-                len(wf.get("nodes", [])),
-                None,
-                None,
-                now_utc,
-                now_utc,
-                0,
-                1,
-                "",
-                version_id,
-                "[]",
-                None,
-            ),
+            """INSERT INTO workflow_entity
+               (id,name,active,nodes,connections,settings,staticData,pinData,versionId,triggerCount,meta,parentFolderId,
+                createdAt,updatedAt,isArchived,versionCounter,description,activeVersionId,nodeGroups,sourceWorkflowId)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+               ON CONFLICT(id) DO UPDATE SET
+                 name=excluded.name, active=excluded.active, nodes=excluded.nodes,
+                 connections=excluded.connections, settings=excluded.settings,
+                 versionId=excluded.versionId, activeVersionId=excluded.activeVersionId,
+                 updatedAt=excluded.updatedAt, versionCounter=excluded.versionCounter,
+                 description=excluded.description""",
+            (wf_id, wf_name, 1 if activate else 0, nodes, connections, settings,
+             None, None, version_id, len(wf.get("nodes", [])), None, None,
+             created_at, now, 0, version_counter,
+             "Fail-closed read-only Angel F&O automation", version_id, "[]", None),
         )
-
-        # 3. Upsert shared_workflow
         cur.execute(
-            """
-            INSERT INTO shared_workflow (workflowId, projectId, role, createdAt, updatedAt)
-            VALUES (?, ?, ?, ?, ?)
-            ON CONFLICT(workflowId, projectId) DO UPDATE SET
-                updatedAt=excluded.updatedAt
-            """,
-            (wf_id, PROJECT_ID, "workflow:owner", now_utc, now_utc),
+            """INSERT INTO shared_workflow (workflowId,projectId,role,createdAt,updatedAt)
+               VALUES (?,?,?,?,?)
+               ON CONFLICT(workflowId,projectId) DO UPDATE SET role=excluded.role,updatedAt=excluded.updatedAt""",
+            (wf_id, PROJECT_ID, "workflow:owner", now, now),
         )
-
-        synced.append((wf_id, wf_name))
-        print(f"[SYNCED] {wf_name} (ID: {wf_id}, active: {1 if activate else 0})")
-
+        synced.append(wf_id)
+        print(f"[SYNCED] {wf_id} -> {version_id}")
     conn.commit()
     return synced
 
 
-def list_all(conn):
-    cur = conn.cursor()
-    cur.execute("SELECT id, name, active, triggerCount, updatedAt FROM workflow_entity ORDER BY id")
-    rows = cur.fetchall()
-    print(f"\nTotal Registered Workflows in n8n: {len(rows)}")
-    for r in rows:
-        print(f"  - [{r[0]}] {r[1]} (Active: {bool(r[2])}, Nodes/Triggers: {r[3]}, Updated: {r[4]})")
+def assert_integrity(conn):
+    quick = conn.execute("PRAGMA quick_check").fetchone()[0]
+    fk = conn.execute("PRAGMA foreign_key_check").fetchall()
+    print(f"[DB] quick_check={quick} foreign_key_violations={len(fk)}")
+    if quick != "ok" or fk:
+        for row in fk:
+            print("[FK]", row, file=sys.stderr)
+        raise SystemExit(2)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="n8n Database Workflow Sync")
-    parser.add_argument("--sync", action="store_true", help="Sync all workflow JSONs into n8n DB")
-    parser.add_argument("--list", action="store_true", help="List all registered workflows")
-    args = parser.parse_args()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--sync", action="store_true")
+    ap.add_argument("--repair-history", action="store_true")
+    ap.add_argument("--list", action="store_true")
+    args = ap.parse_args()
 
     db_path = get_db_path()
     if not db_path.exists():
-        print(f"[ERROR] Database not found: {db_path}", file=sys.stderr)
-        sys.exit(1)
+        raise SystemExit(f"Database not found: {db_path}")
+
+    if args.sync or args.repair_history:
+        backup_db(db_path)
 
     conn = sqlite3.connect(str(db_path))
+    conn.execute("PRAGMA foreign_keys=ON")
 
-    if args.sync or (not args.sync and not args.list):
+    if args.repair_history or args.sync:
+        repair_missing_history(conn)
+    if args.sync:
         sync_workflows(conn, activate=True)
 
-    list_all(conn)
+    assert_integrity(conn)
+
+    if args.list or not (args.sync or args.repair_history):
+        for row in conn.execute(
+            "SELECT id,name,active,activeVersionId,versionId,updatedAt FROM workflow_entity ORDER BY name"
+        ):
+            print(row)
     conn.close()
 
 

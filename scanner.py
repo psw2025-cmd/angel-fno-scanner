@@ -1,4 +1,4 @@
-﻿import ast
+import ast
 import datetime
 import json
 import os
@@ -38,6 +38,7 @@ from universe_contract import EXPECTED_FNO_UNIVERSE_COUNT, select_verified_unive
 # MUST equal universe_contract.EXPECTED_FNO_UNIVERSE_COUNT.
 EXPECTED_FNO_UNIVERSE_COUNT = 219
 DAEMON_FRESH_SECONDS = 90
+PREDICTION_INTERVAL_SECONDS = max(300, int(os.getenv("PREDICTION_INTERVAL_SECONDS", "900")))
 FORENSIC_HEADER = [
     "Timestamp (IST)", "Symbol", "Nearest Expiry", "Fut LTP", "Fut Chg %", "Fut OBI",
     "ATM Strike", "ATM CE Contract", "CE LTP", "CE Chg %", "CE OI", "CE OBI",
@@ -302,11 +303,31 @@ def build_chain_quotes(universe, future_quotes, option_quotes, each_side):
     return quotes
 
 
+def run_prediction_with_retry(attempts=3):
+    from angel_prediction_engine import run_prediction_pipeline
+
+    last_error = None
+    for attempt in range(1, attempts + 1):
+        try:
+            print(f"[INFO] Prediction cycle attempt {attempt}/{attempts}...")
+            return run_prediction_pipeline(bypass_market_check=True)
+        except Exception as exc:
+            last_error = exc
+            if attempt >= attempts:
+                raise
+            delay = min(30 * attempt, 90)
+            print(f"[WARN] Prediction cycle failed: {exc}. Retrying in {delay}s...")
+            time.sleep(delay)
+    raise last_error
+
+
 def run_angel_loop(book, api):
     universe = discover_universe(api)
     each_side = 1 if MAX_RUNTIME_SECONDS <= 120 else int(os.getenv("STRIKE_WINDOW", "6"))
     started = time.time()
     loop = 0
+    prediction_ran = False
+    last_prediction_epoch = 0.0
     while time.time() - started < MAX_RUNTIME_SECONDS:
         now = now_ist()
         stamped = now.strftime("%Y-%m-%d %H:%M:%S")
@@ -448,6 +469,11 @@ def run_angel_loop(book, api):
                 f"[{stamped}] Forensic {len(forensic_rows)} | Chain quotes {len(chain_quotes)} | "
                 f"Quote chunk failures {future_failures + option_failures} | Loop #{loop}"
             )
+            if market_is_open(now) and (time.time() - last_prediction_epoch >= PREDICTION_INTERVAL_SECONDS):
+                print("[INFO] Running scheduled intraday prediction/readback cycle...")
+                run_prediction_with_retry()
+                prediction_ran = True
+                last_prediction_epoch = time.time()
         except Exception as exc:
             raise RuntimeError("Scanner publication failed; cycle is unverified") from exc
         loop += 1
@@ -456,6 +482,7 @@ def run_angel_loop(book, api):
             break
         remaining = MAX_RUNTIME_SECONDS - (time.time() - started)
         time.sleep(min(30, max(0, remaining)))
+    return prediction_ran
 
 
 def refresh_from_forensic(book, now):
@@ -498,15 +525,16 @@ def main():
     book = gspread.service_account_from_dict(load_service_account()).open_by_key(sheet_id)
     now = now_ist()
     age = heartbeat_age_seconds(book, now)
+    prediction_ran = False
     if age is not None and age <= DAEMON_FRESH_SECONDS:
         print(f"[INFO] HEARTBEAT is {int(age)}s old. Skipping a second Angel login.")
         refresh_from_forensic(book, now)
     else:
         print(f"[INFO] HEARTBEAT age={age}. Opening Angel for a real quote pass.")
-        run_angel_loop(book, angel_login())
-    from angel_prediction_engine import run_prediction_pipeline
-    print("[INFO] Invoking Option CE/PE Prediction & Rating Pipeline...")
-    run_prediction_pipeline(bypass_market_check=True)
+        prediction_ran = bool(run_angel_loop(book, angel_login()))
+    if not prediction_ran:
+        print("[INFO] Invoking Option CE/PE Prediction & Rating Pipeline...")
+        run_prediction_with_retry()
 
 
 if __name__ == "__main__":

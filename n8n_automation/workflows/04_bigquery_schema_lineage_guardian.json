@@ -1,6 +1,6 @@
 {
   "id": "angel-fno-bigquery-schema-lineage-guardian",
-  "name": "Angel FNO BigQuery Schema & Lineage Guardian",
+  "name": "Angel FNO BigQuery Schema, Lineage & Freshness Guardian",
   "nodes": [
     {
       "parameters": {
@@ -8,13 +8,13 @@
           "interval": [
             {
               "field": "cronExpression",
-              "expression": "*/30 * * * *"
+              "expression": "*/15 * * * *"
             }
           ]
         }
       },
-      "id": "wf4-node-sched",
-      "name": "Every 30m BQ Audit",
+      "id": "bq-sched",
+      "name": "Every 15m BQ Audit",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
@@ -29,7 +29,7 @@
         "responseMode": "lastNode",
         "options": {}
       },
-      "id": "wf4-node-webhook",
+      "id": "bq-webhook",
       "name": "Webhook: BQ Audit",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -41,13 +41,14 @@
     },
     {
       "parameters": {
+        "method": "GET",
         "url": "http://127.0.0.1:5680/bigquery",
         "options": {
           "timeout": 45000
         }
       },
-      "id": "wf4-node-inspect-bq",
-      "name": "Inspect BigQuery Tables",
+      "id": "bq-http",
+      "name": "Inspect BigQuery",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -58,9 +59,9 @@
     {
       "parameters": {
         "language": "javaScript",
-        "jsCode": "// Assert 219 universe rows, 54 columns, zero null run_id/git_sha\nconst data = $input.first().json;\nconst total = data.total_rows || 219;\nconst withRunId = data.with_runid || 219;\nconst withSha = data.with_sha || 219;\nconst isConsistent = total === 219 && withRunId === 219 && withSha === 219;\n\nreturn [{\n  json: {\n    status: isConsistent ? \"PASS\" : \"FAIL\",\n    timestamp_ist: new Date().toLocaleString(\"en-IN\", {timeZone: \"Asia/Kolkata\"}),\n    dataset: \"fno-angel-prod-1790444589.fno_predictions\",\n    total_symbols: total,\n    provenance_complete_pct: ((withRunId / total) * 100).toFixed(1) + \"%\",\n    schema_version: \"54-column partitioned & clustered\",\n    verdict: isConsistent ? \"SCHEMA_AND_LINEAGE_PERFECT\" : \"LINEAGE_DRIFT_DETECTED\"\n  }\n}];"
+        "jsCode": "const d=$input.first().json;\nconst now=new Date(); const ist=new Date(now.toLocaleString(\"en-US\",{timeZone:\"Asia/Kolkata\"}));\nconst wd=ist.getDay(); const mins=ist.getHours()*60+ist.getMinutes(); const market=wd>=1&&wd<=5&&mins>=555&&mins<=930;\nconst lineage=[\"with_runid\",\"with_sha\",\"with_writer\",\"with_cycle\",\"with_source_ts\"].every(k=>Number(d[k])===219)\n && [\"run_ids\",\"git_shas\",\"writer_ids\",\"cycle_ids\"].every(k=>Number(d[k])===1);\nconst universe=Number(d.total_rows)===219 && Number(d.unique_symbols)===219;\nconst fresh=!market || (typeof d.source_age_seconds===\"number\" && d.source_age_seconds<=1200);\nconst ok=universe&&lineage&&fresh;\nreturn [{json:{status:ok?\"PASS\":\"FAIL\",total_rows:d.total_rows,unique_symbols:d.unique_symbols,\nsource_age_seconds:d.source_age_seconds,lineage_complete:lineage,fresh_during_market:fresh,\nverdict:ok?\"SCHEMA_LINEAGE_FRESHNESS_PASS\":\"BQ_GATE_FAILED\",read_only:true}}];"
       },
-      "id": "wf4-node-eval-bq",
+      "id": "bq-eval",
       "name": "Validate BigQuery Lineage",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -71,11 +72,11 @@
     }
   ],
   "connections": {
-    "Every 30m BQ Audit": {
+    "Every 15m BQ Audit": {
       "main": [
         [
           {
-            "node": "Inspect BigQuery Tables",
+            "node": "Inspect BigQuery",
             "type": "main",
             "index": 0
           }
@@ -86,14 +87,14 @@
       "main": [
         [
           {
-            "node": "Inspect BigQuery Tables",
+            "node": "Inspect BigQuery",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Inspect BigQuery Tables": {
+    "Inspect BigQuery": {
       "main": [
         [
           {

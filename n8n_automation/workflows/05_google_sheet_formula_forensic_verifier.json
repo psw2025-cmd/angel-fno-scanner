@@ -1,6 +1,6 @@
 {
   "id": "angel-fno-google-sheet-formula-verifier",
-  "name": "Angel FNO Google Sheets Formula & Provenance Verifier",
+  "name": "Angel FNO Google Sheets Formula, Publication & Freshness Verifier",
   "nodes": [
     {
       "parameters": {
@@ -8,13 +8,13 @@
           "interval": [
             {
               "field": "cronExpression",
-              "expression": "*/15 * * * *"
+              "expression": "*/10 * * * *"
             }
           ]
         }
       },
-      "id": "wf5-node-sched",
-      "name": "Every 15m Sheets Audit",
+      "id": "sheet-sched",
+      "name": "Every 10m Sheets Audit",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
@@ -29,7 +29,7 @@
         "responseMode": "lastNode",
         "options": {}
       },
-      "id": "wf5-node-webhook",
+      "id": "sheet-webhook",
       "name": "Webhook: Sheets Verify",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -41,13 +41,14 @@
     },
     {
       "parameters": {
+        "method": "GET",
         "url": "http://127.0.0.1:5680/sheets",
         "options": {
           "timeout": 45000
         }
       },
-      "id": "wf5-node-inspect-sheets",
-      "name": "Inspect OPTION_SHEET Tabs",
+      "id": "sheet-http",
+      "name": "Inspect OPTION_SHEET",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -58,9 +59,9 @@
     {
       "parameters": {
         "language": "javaScript",
-        "jsCode": "// Validate OPTION_SHEET Tabs, Formulas & Provenance\nconst data = $input.first().json;\nconst tabCount = data.tabs_count || 26;\nconst forensicRows = data.forensic_live_rows || 219;\nconst formulasHealthy = data.formula_errors === 0;\n\nreturn [{\n  json: {\n    status: (tabCount >= 26 && forensicRows === 219) ? \"HEALTHY\" : \"DEGRADED\",\n    timestamp_ist: new Date().toLocaleString(\"en-IN\", {timeZone: \"Asia/Kolkata\"}),\n    spreadsheet_id: \"1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs\",\n    tab_count: tabCount,\n    forensic_live_symbols: forensicRows,\n    formulas_valid: formulasHealthy,\n    provenance_aligned: true\n  }\n}];"
+        "jsCode": "const d=$input.first().json;\nconst now=new Date(); const ist=new Date(now.toLocaleString(\"en-US\",{timeZone:\"Asia/Kolkata\"}));\nconst wd=ist.getDay(); const mins=ist.getHours()*60+ist.getMinutes(); const market=wd>=1&&wd<=5&&mins>=555&&mins<=930;\nconst universe=Number(d.forensic_live_rows)===219 && Number(d.forensic_live_unique_symbols)===219;\nconst formulas=Number(d.formula_error_count)===0 && Number(d.failed_gate_count)===0;\nconst published=d.publication_state===\"VERIFIED\";\nconst fresh=!market || (typeof d.heartbeat_age_seconds===\"number\" && d.heartbeat_age_seconds<=1200);\nconst ok=universe&&formulas&&published&&fresh;\nreturn [{json:{status:ok?\"HEALTHY\":\"DEGRADED\",tab_count:d.total_tabs,\nforensic_live_rows:d.forensic_live_rows,forensic_live_unique_symbols:d.forensic_live_unique_symbols,\nformula_error_count:d.formula_error_count,failed_gate_count:d.failed_gate_count,\npublication_state:d.publication_state,heartbeat_age_seconds:d.heartbeat_age_seconds,\nfresh_during_market:fresh,read_only:true}}];"
       },
-      "id": "wf5-node-eval-sheets",
+      "id": "sheet-eval",
       "name": "Evaluate Sheets Forensic Integrity",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -71,11 +72,11 @@
     }
   ],
   "connections": {
-    "Every 15m Sheets Audit": {
+    "Every 10m Sheets Audit": {
       "main": [
         [
           {
-            "node": "Inspect OPTION_SHEET Tabs",
+            "node": "Inspect OPTION_SHEET",
             "type": "main",
             "index": 0
           }
@@ -86,14 +87,14 @@
       "main": [
         [
           {
-            "node": "Inspect OPTION_SHEET Tabs",
+            "node": "Inspect OPTION_SHEET",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Inspect OPTION_SHEET Tabs": {
+    "Inspect OPTION_SHEET": {
       "main": [
         [
           {

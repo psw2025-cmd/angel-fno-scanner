@@ -1,6 +1,6 @@
 {
   "id": "angel-fno-operator-snapshot-archiver",
-  "name": "Angel FNO Daily Operator Snapshot Archiver",
+  "name": "Angel FNO Daily Operator Evidence Snapshot",
   "nodes": [
     {
       "parameters": {
@@ -13,7 +13,7 @@
           ]
         }
       },
-      "id": "wf6-node-sched",
+      "id": "archive-sched",
       "name": "Daily Post-Market 16:15 IST",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -29,7 +29,7 @@
         "responseMode": "lastNode",
         "options": {}
       },
-      "id": "wf6-node-webhook",
+      "id": "archive-webhook",
       "name": "Webhook: Archive Snapshot",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -41,13 +41,14 @@
     },
     {
       "parameters": {
+        "method": "GET",
         "url": "http://127.0.0.1:5680/post-market",
         "options": {
           "timeout": 120000
         }
       },
-      "id": "wf6-node-postmarket",
-      "name": "Run Post-Market Aggregation",
+      "id": "archive-http",
+      "name": "Run Post-Market Evidence Snapshot",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -58,10 +59,10 @@
     {
       "parameters": {
         "language": "javaScript",
-        "jsCode": "// Format Daily Snapshot Bundle Evidence\nconst data = $input.first().json;\nconst todayStr = new Date().toISOString().slice(0, 10);\n\nreturn [{\n  json: {\n    status: \"ARCHIVED\",\n    target_date: todayStr,\n    timestamp_ist: new Date().toLocaleString(\"en-IN\", {timeZone: \"Asia/Kolkata\"}),\n    snapshot_path: `operator/snapshots/${todayStr}/`,\n    target_a_verdict: \"EVALUATED_AGAINST_OPEN\",\n    target_b_verdict: \"EVALUATED_AGAINST_DAY_HIGH\",\n    post_market_evidence: data.evidence || \"N/A\",\n    compliance: \"AGENTS.md Section 18-20 immutable forecast outcome ledger intact\"\n  }\n}];"
+        "jsCode": "const d=$input.first().json;\nconst ok=d.status===\"success\" && Number(d.returncode)===0;\nreturn [{json:{status:ok?\"EVIDENCE_CAPTURED\":\"SNAPSHOT_FAILED\",timestamp_ist:new Date().toLocaleString(\"en-IN\",{timeZone:\"Asia/Kolkata\"}),\nevidence:d.evidence||null,read_only:true,note:\"No performance or forecast-verification claim is made by this node.\"}}];"
       },
-      "id": "wf6-node-eval-archive",
-      "name": "Archive Snapshot Bundle",
+      "id": "archive-eval",
+      "name": "Record Snapshot Evidence",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -75,7 +76,7 @@
       "main": [
         [
           {
-            "node": "Run Post-Market Aggregation",
+            "node": "Run Post-Market Evidence Snapshot",
             "type": "main",
             "index": 0
           }
@@ -86,18 +87,18 @@
       "main": [
         [
           {
-            "node": "Run Post-Market Aggregation",
+            "node": "Run Post-Market Evidence Snapshot",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Run Post-Market Aggregation": {
+    "Run Post-Market Evidence Snapshot": {
       "main": [
         [
           {
-            "node": "Archive Snapshot Bundle",
+            "node": "Record Snapshot Evidence",
             "type": "main",
             "index": 0
           }

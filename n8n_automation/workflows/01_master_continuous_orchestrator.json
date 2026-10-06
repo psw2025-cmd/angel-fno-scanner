@@ -1,6 +1,6 @@
 {
   "id": "angel-fno-master-orchestrator",
-  "name": "Angel FNO Master Continuous Orchestrator",
+  "name": "Angel FNO Master Continuous Orchestrator \u2014 Fail Closed",
   "nodes": [
     {
       "parameters": {
@@ -17,7 +17,7 @@
           ]
         }
       },
-      "id": "wf1-node-sched",
+      "id": "master-sched",
       "name": "Every 5m Market / 15m Off-Peak",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -33,7 +33,7 @@
         "responseMode": "lastNode",
         "options": {}
       },
-      "id": "wf1-node-webhook",
+      "id": "master-webhook",
       "name": "Webhook: Orchestrator Run",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -45,7 +45,7 @@
     },
     {
       "parameters": {},
-      "id": "wf1-node-manual",
+      "id": "master-exec",
       "name": "Execute Workflow Trigger",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
@@ -56,20 +56,20 @@
     },
     {
       "parameters": {
+        "method": "GET",
         "url": "http://127.0.0.1:5680/orchestrator-status",
         "options": {
-          "timeout": 60000
+          "timeout": 120000
         }
       },
-      "id": "wf1-node-http-status",
-      "name": "Fetch Orchestrator Status",
+      "id": "master-status",
+      "name": "Fetch Verified Orchestrator Status",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         -300,
         300
-      ],
-      "onError": "continueRegularOutput"
+      ]
     },
     {
       "parameters": {
@@ -81,7 +81,7 @@
           },
           "conditions": [
             {
-              "id": "cond-verdict",
+              "id": "healthy",
               "leftValue": "={{ $json.orchestrator_verdict }}",
               "rightValue": "HEALTHY",
               "operator": {
@@ -93,8 +93,8 @@
           "combinator": "and"
         }
       },
-      "id": "wf1-node-if-healthy",
-      "name": "If Status HEALTHY",
+      "id": "master-if",
+      "name": "If Verified HEALTHY",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
@@ -105,26 +105,27 @@
     {
       "parameters": {
         "language": "javaScript",
-        "jsCode": "// Format Healthy Heartbeat Telemetry\nconst data = $input.first().json;\nreturn [{\n  json: {\n    status: \"HEALTHY\",\n    timestamp_ist: new Date().toLocaleString(\"en-IN\", {timeZone: \"Asia/Kolkata\"}),\n    powerbi_verdict: data.components?.powerbi?.verdict || \"UNKNOWN\",\n    bigquery_rows: data.components?.bigquery?.total || 0,\n    bigquery_with_runid: data.components?.bigquery?.with_runid || 0,\n    evidence_id: data.components?.runtime_evidence?.evidence_id || \"N/A\",\n    message: \"All 5 subsystems (Laptop, PowerBI, BigQuery, Sheets, GitHub) validated healthy.\"\n  }\n}];"
+        "jsCode": "const d=$input.first().json;\nreturn [{json:{status:\"HEALTHY\",timestamp_ist:d.timestamp_ist,market_open:d.market_open,\nchecks:d.checks,read_only:true,message:\"All required live checks passed.\"}}];"
       },
-      "id": "wf1-node-healthy-log",
-      "name": "Log Healthy Heartbeat",
+      "id": "master-ok",
+      "name": "Log Verified Heartbeat",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         300,
-        200
+        180
       ]
     },
     {
       "parameters": {
-        "url": "http://127.0.0.1:5680/auto-remediate",
+        "method": "GET",
+        "url": "http://127.0.0.1:5680/diagnose",
         "options": {
-          "timeout": 90000
+          "timeout": 120000
         }
       },
-      "id": "wf1-node-trigger-remediate",
-      "name": "Trigger Auto-Remediate",
+      "id": "master-diagnose",
+      "name": "Diagnose Failure \u2014 Read Only",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -134,17 +135,18 @@
     },
     {
       "parameters": {
+        "method": "GET",
         "url": "http://127.0.0.1:5680/verification-harness",
         "options": {
-          "timeout": 120000
+          "timeout": 180000
         }
       },
-      "id": "wf1-node-reverify",
-      "name": "Post-Remediation Re-Verify",
+      "id": "master-reverify",
+      "name": "Independent Re-Verify",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        550,
+        560,
         420
       ]
     }
@@ -154,7 +156,7 @@
       "main": [
         [
           {
-            "node": "Fetch Orchestrator Status",
+            "node": "Fetch Verified Orchestrator Status",
             "type": "main",
             "index": 0
           }
@@ -165,7 +167,7 @@
       "main": [
         [
           {
-            "node": "Fetch Orchestrator Status",
+            "node": "Fetch Verified Orchestrator Status",
             "type": "main",
             "index": 0
           }
@@ -176,47 +178,47 @@
       "main": [
         [
           {
-            "node": "Fetch Orchestrator Status",
+            "node": "Fetch Verified Orchestrator Status",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Fetch Orchestrator Status": {
+    "Fetch Verified Orchestrator Status": {
       "main": [
         [
           {
-            "node": "If Status HEALTHY",
+            "node": "If Verified HEALTHY",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If Status HEALTHY": {
+    "If Verified HEALTHY": {
       "main": [
         [
           {
-            "node": "Log Healthy Heartbeat",
+            "node": "Log Verified Heartbeat",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Trigger Auto-Remediate",
+            "node": "Diagnose Failure \u2014 Read Only",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Trigger Auto-Remediate": {
+    "Diagnose Failure \u2014 Read Only": {
       "main": [
         [
           {
-            "node": "Post-Remediation Re-Verify",
+            "node": "Independent Re-Verify",
             "type": "main",
             "index": 0
           }
