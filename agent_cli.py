@@ -133,7 +133,14 @@ def query_top_breakouts(limit=5):
 def query_news(symbol=None, limit=20):
     symbol, limit = validate_query_inputs(symbol, limit)
     client = get_bq()
-    where_clause = f"WHERE UPPER(symbol) = '{symbol.strip().upper()}'" if symbol else ""
+    conditions = [
+        "NOT (title = 'Markets maintain bullish momentum ahead of pre-close' "
+        "AND source = 'Moneycontrol' AND news_type = 'MARKET_PULSE' "
+        "AND canonical_url = 'https://www.moneycontrol.com')"
+    ]
+    if symbol:
+        conditions.append(f"UPPER(symbol) = '{symbol.strip().upper()}'")
+    where_clause = "WHERE " + " AND ".join(conditions)
     sql = f"""
     SELECT timestamp, symbol, title, news_type, sentiment, tone_score, impact_rating,
            severity_level, source_tier, positive_prob, negative_prob, already_priced_in_prob,

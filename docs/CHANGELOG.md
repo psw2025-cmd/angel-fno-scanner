@@ -1,5 +1,35 @@
 # Changelog
 
+## 2026-10-06 — Live Integrity Repair: Fail-Closed n8n, Provenance Safety, and Intraday Prediction Cadence
+
+**Commit:** Pending HEAD
+
+### What changed
+- Removed unsafe n8n auto-remediation writes. /auto-remediate is now disabled and all failure paths are read-only diagnosis plus independent verification.
+- Replaced scripts/sync_cycle_provenance_to_bq.py with a read-only provenance verifier; it no longer appends synthetic or hard-coded rows to BigQuery.
+- Added live fail-closed /bigquery, /sheets, /github, /orchestrator-status, and /diagnose evidence endpoints with real freshness, publication, lineage, and formula checks.
+- Removed false-green n8n defaults such as implicit 219 rows and unconditional provenance success.
+- Repaired missing n8n workflow_history rows for the four Agent tool workflows; SQLite foreign-key check now returns zero violations.
+- Regenerated six n8n workflows as read-only/fail-closed and corrected the sandbox tool description from Daytona to n8n Sandbox Service.
+- Restored one authoritative GitHub market session at 09:15 IST (03:45 UTC) with MAX_RUNTIME_SECONDS=24300; scanner now performs bounded-retry intraday prediction/readback cycles every 15 minutes while the quote loop remains the single market writer.
+- workflow_dispatch uses a short 90-second scanner pass for controlled live verification without a second long-running writer.
+- Fixed Nightly Verify dependency setup to install pytest.
+- Added a laptop-side GitHub Actions fallback guard: every 15 minutes it checks whether a recent/active market_bot run exists during the reviewed NSE session and dispatches main only when the GitHub schedule has been missed.
+- Filtered the exact known synthetic news signature from agent_cli.py runtime reads. Existing synthetic rows were exported to a backup evidence file before quarantine work.
+- Added tests/test_automation_integrity.py to prevent unsafe auto-remediation, fake n8n defaults, workflow cadence regression, and n8n DB-integrity regressions.
+
+### Evidence
+- Local test suite: **189 passed**.
+- n8n SQLite: quick_check = ok; foreign_key_check = zero rows.
+- n8n startup dependency index: 6 draft workflows and 10 published workflows processed with no missing-active-version warnings.
+- Live evidence gateway correctly reports current stale/FAILED_PARTIAL market truth as ATTENTION_REQUIRED instead of false-green HEALTHY.
+- Trading safety remains PAPER/ANALYZER only; no live broker order methods were introduced.
+
+### Rollback
+- Revert this commit and restore the timestamped n8n SQLite backup under C:/AngelFNO_Workstation/backups/.
+
+---
+
 ## 2026-10-06 — Production n8n Multi-Agent Orchestration Architecture & Resiliency Hardening
 
 **Commit:** Pending HEAD

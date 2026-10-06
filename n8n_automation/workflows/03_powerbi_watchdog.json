@@ -13,7 +13,7 @@
           ]
         }
       },
-      "id": "wf3-node-sched",
+      "id": "pbi-sched",
       "name": "Every 10m PowerBI Check",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -29,7 +29,7 @@
         "responseMode": "lastNode",
         "options": {}
       },
-      "id": "wf3-node-webhook",
+      "id": "pbi-webhook",
       "name": "Webhook: PowerBI Check",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -41,12 +41,13 @@
     },
     {
       "parameters": {
+        "method": "GET",
         "url": "http://127.0.0.1:5680/powerbi",
         "options": {
           "timeout": 30000
         }
       },
-      "id": "wf3-node-inspect-pbi",
+      "id": "pbi-http",
       "name": "Inspect PowerBI Desktop & AS",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -58,9 +59,9 @@
     {
       "parameters": {
         "language": "javaScript",
-        "jsCode": "// Validate PowerBI Process and Port Health\nconst data = $input.first().json;\nconst pbiHealthy = data.verdict === \"HEALTHY\";\nconst pbiProc = data.pbi_desktop?.running === true;\nconst asProc = data.analysis_services?.running === true;\nconst ports = (data.analysis_services?.listener_ports || []).map(p => p.LocalPort);\n\nreturn [{\n  json: {\n    status: pbiHealthy ? \"HEALTHY\" : \"DEGRADED\",\n    timestamp_ist: new Date().toLocaleString(\"en-IN\", {timeZone: \"Asia/Kolkata\"}),\n    pbi_desktop_running: pbiProc,\n    analysis_services_running: asProc,\n    listener_ports: ports,\n    verdict: data.verdict,\n    recommendation: data.recommendation || \"Maintain monitoring\"\n  }\n}];"
+        "jsCode": "const d=$input.first().json;\nconst ok=d.verdict===\"HEALTHY\" && d.pbi_desktop?.running===true && d.analysis_services?.running===true;\nreturn [{json:{status:ok?\"HEALTHY\":\"DEGRADED\",pbi_desktop_running:d.pbi_desktop?.running===true,\nanalysis_services_running:d.analysis_services?.running===true,listener_ports:(d.analysis_services?.listener_ports||[]).map(p=>p.LocalPort),\nverdict:d.verdict||\"UNKNOWN\",read_only:true}}];"
       },
-      "id": "wf3-node-eval-pbi",
+      "id": "pbi-eval",
       "name": "Evaluate PowerBI Telemetry",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,

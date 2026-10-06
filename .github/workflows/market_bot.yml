@@ -1,9 +1,8 @@
-﻿name: Angel One Daily Option Prediction & Forensic Bot
+name: Angel One Daily Option Prediction & Forensic Bot
 
 on:
   schedule:
-    - cron: '0 3 * * 1-5'
-    - cron: '40 3 * * 1-5'
+    - cron: '45 3 * * 1-5'
   workflow_dispatch:
   push:
     branches: [main]
@@ -20,7 +19,7 @@ permissions:
 
 concurrency:
   group: market-bot
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   run-scanner:
@@ -35,7 +34,7 @@ jobs:
       SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
       SHEET_ID: ${{ secrets.SHEET_ID }}
       BQ_PROJECT_ID: ${{ secrets.BQ_PROJECT_ID }}
-      MAX_RUNTIME_SECONDS: ${{ github.event_name == 'schedule' && '24300' || '3600' }}
+      MAX_RUNTIME_SECONDS: ${{ github.event_name == 'schedule' && '24300' || '90' }}
       ALLOW_PRODUCTION_WRITES: '1'
       WRITER_ID: market_bot
       RUN_ID: ${{ github.run_id }}

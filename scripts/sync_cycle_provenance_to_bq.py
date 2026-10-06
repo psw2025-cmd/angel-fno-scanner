@@ -1,16 +1,11 @@
+"""Read-only provenance verification across Angel F&O BigQuery tables.
+
+This module MUST NOT mutate BigQuery. It verifies that the current authoritative
+option_predictions_live cycle has complete lineage and checks auxiliary rows
+that reference the same cycle.
 """
-scripts/sync_cycle_provenance_to_bq.py
-
-Synchronizes provenance across auxiliary BigQuery tables (market_news_sentiment,
-next_day_gap_predictions, prediction_calibration_log) to match the authoritative
-provenance from option_predictions_live.
-
-Validates all rows through tools/schema_validator.py before insertion.
-"""
-
 from __future__ import annotations
 
-import datetime
 import json
 import sys
 from pathlib import Path
@@ -20,193 +15,119 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from google.cloud import bigquery
-from angel_prediction_engine import get_bigquery_client, BQ_DATASET_ID
-from tools.schema_validator import validate_rows
+
+from angel_prediction_engine import BQ_DATASET_ID, get_bigquery_client
 
 PROJECT_ID = "fno-angel-prod-1790444589"
-DATASET_ID = "fno_predictions"
+DATASET_ID = BQ_DATASET_ID
+PROVENANCE_FIELDS = ("run_id", "git_sha", "writer_id", "source_timestamp", "cycle_id")
 
 
-def sync_auxiliary_provenance():
-    bq = get_bigquery_client()
+def _quoted(table_name: str) -> str:
+    b = chr(96)
+    return f"{b}{PROJECT_ID}.{DATASET_ID}.{table_name}{b}"
 
-    # 1. Fetch authoritative provenance from option_predictions_live
-    ref_query = f"""
-    SELECT run_id, cycle_id, git_sha, writer_id, CAST(source_timestamp AS STRING) as source_ts
-    FROM `{PROJECT_ID}.{DATASET_ID}.option_predictions_live`
-    ORDER BY source_timestamp DESC NULLS LAST
-    LIMIT 1
+
+def _schema_names(client, table_name):
+    table = client.get_table(f"{PROJECT_ID}.{DATASET_ID}.{table_name}")
+    return {field.name for field in table.schema}
+
+
+def verify_cycle_provenance():
+    client = get_bigquery_client()
+    option_table = _quoted("option_predictions_live")
+    ref_sql = f"""
+    SELECT
+      COUNT(*) AS total_rows,
+      COUNT(DISTINCT symbol) AS unique_symbols,
+      ANY_VALUE(run_id) AS run_id,
+      ANY_VALUE(git_sha) AS git_sha,
+      ANY_VALUE(writer_id) AS writer_id,
+      CAST(MAX(source_timestamp) AS STRING) AS source_timestamp,
+      ANY_VALUE(cycle_id) AS cycle_id,
+      COUNT(DISTINCT run_id) AS run_ids,
+      COUNT(DISTINCT git_sha) AS git_shas,
+      COUNT(DISTINCT writer_id) AS writer_ids,
+      COUNT(DISTINCT cycle_id) AS cycle_ids,
+      COUNTIF(run_id IS NULL OR git_sha IS NULL OR writer_id IS NULL OR
+              source_timestamp IS NULL OR cycle_id IS NULL) AS missing_lineage
+    FROM {option_table}
     """
-    ref_rows = list(bq.query(ref_query).result())
-    if not ref_rows:
-        raise RuntimeError("No records found in option_predictions_live to synchronize from.")
-
-    ref = ref_rows[0]
-    run_id = ref.run_id
-    cycle_id = ref.cycle_id
-    git_sha = ref.git_sha
-    writer_id = ref.writer_id
-    source_ts = ref.source_ts
-
-    print(f"[INFO] Authoritative Reference Provenance:")
-    print(f"       run_id:           {run_id}")
-    print(f"       cycle_id:         {cycle_id}")
-    print(f"       git_sha:          {git_sha}")
-    print(f"       writer_id:        {writer_id}")
-    print(f"       source_timestamp: {source_ts}")
-
-    # 2. Build rows for each auxiliary table
-    # Table A: prediction_calibration_log
-    cal_row = {
-        "timestamp": source_ts,
-        "cycle_number": 14,
-        "top10_hit_rate_pct": 80.0,
-        "recall_at_10": 0.80,
-        "mean_rank_of_top10": 2.5,
-        "predicted_top10": json.dumps(["NIFTY26OCT25000CE", "BANKNIFTY26OCT52000CE"]),
-        "actual_top10": json.dumps(["NIFTY26OCT25000CE"]),
-        "hits": json.dumps(["NIFTY26OCT25000CE"]),
-        "misses": json.dumps(["BANKNIFTY26OCT52000CE"]),
-        "miss_root_causes": json.dumps({"causes": "Attributed via online multi-factor model"}),
-        "updated_weights_json": json.dumps({"momentum": 0.35, "oi": 0.35, "news": 0.30}),
-        "run_id": run_id,
-        "git_sha": git_sha,
-        "writer_id": writer_id,
-        "source_timestamp": source_ts,
-        "cycle_id": cycle_id,
+    ref = list(client.query(ref_sql).result())[0]
+    identity = {
+        "run_id": ref.run_id,
+        "git_sha": ref.git_sha,
+        "writer_id": ref.writer_id,
+        "cycle_id": ref.cycle_id,
+        "source_timestamp": ref.source_timestamp,
     }
-
-    # Table B: market_news_sentiment
-    news_row = {
-        "symbol": "NIFTY",
-        "title": "Markets maintain bullish momentum ahead of pre-close",
-        "source_count": 2,
-        "source_agreement_pct": 100.0,
-        "impact_rating": "HIGH",
-        "tone_score": 0.75,
-        "sentiment": "BULLISH",
-        "source": "Moneycontrol",
-        "news_type": "MARKET_PULSE",
-        "filing_type": "",
-        "timestamp": source_ts,
-        "severity_level": 2,
-        "source_tier": "TIER_1",
-        "positive_prob": 0.75,
-        "negative_prob": 0.15,
-        "already_priced_in_prob": 0.10,
-        "market_confirmation": "CONFIRMED",
-        "expected_move_band": "+0.5% to +1.0%",
-        "source_url": "https://www.moneycontrol.com",
-        "canonical_url": "https://www.moneycontrol.com",
-        "verified_catalyst": False,
-        "run_id": run_id,
-        "git_sha": git_sha,
-        "writer_id": writer_id,
-        "source_timestamp": source_ts,
-        "cycle_id": cycle_id,
-    }
-
-    # Table C: next_day_gap_predictions (Real JSON Ingestion)
-    gap_json_path = Path("data/next_day_gap_predictions.json")
-    gap_rows = []
-    
-    if gap_json_path.exists():
-        try:
-            gap_data = json.loads(gap_json_path.read_text(encoding="utf-8"))
-            ts_ist = gap_data.get("timestamp_ist", source_ts)
-            pred_time_ist = ts_ist.split(" ")[1] if " " in ts_ist else "15:30:00"
-            pred_date = ts_ist.split(" ")[0] if " " in ts_ist else source_ts[:10]
-            
-            raw_picks = gap_data.get("top_ce_picks", []) + gap_data.get("top_pe_picks", [])
-            for pick in raw_picks:
-                row = {
-                    "prediction_date": pred_date,
-                    "predicted_at_ist": pred_time_ist,
-                    "symbol": pick.get("symbol", ""),
-                    "target_date": (datetime.datetime.strptime(pred_date, "%Y-%m-%d") + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
-                    "side": pick.get("side", "CE"),
-                    "spot_ltp": float(pick.get("spot_ltp", 0.0)),
-                    "target_strike": pick.get("target_strike", ""),
-                    "contract_symbol": pick.get("contract_symbol", ""),
-                    "entry_ltp": float(pick.get("entry_ltp", 0.0)),
-                    "expected_gap_pct": float(pick.get("expected_gap_pct", 0.0)),
-                    "conviction_pct": float(pick.get("conviction_pct", 0.0)),
-                    "stop_loss_ltp": float(pick.get("stop_loss_ltp", 0.0)),
-                    "target_ltp": float(pick.get("target_ltp", 0.0)),
-                    "rationale": pick.get("why_rationale") or pick.get("action_rating") or "Automated gap prediction",
-                    "news_catalyst": pick.get("news_catalyst", "No fresh material catalyst"),
-                    "dollar_gamma": float(pick.get("dollar_gamma", 0.0)),
-                    "actual_open_ltp": None,
-                    "actual_return_pct": None,
-                    "outcome": "PENDING_OPEN",
-                    "reconciled_at_ist": None,
-                    "run_id": run_id,
-                    "git_sha": git_sha,
-                    "writer_id": writer_id,
-                    "source_timestamp": source_ts,
-                    "cycle_id": cycle_id,
-                }
-                gap_rows.append(row)
-        except Exception as e:
-            print(f"[WARN] Failed to parse data/next_day_gap_predictions.json: {e}")
-
-    if not gap_rows:
-        print("[INFO] Fallback: creating single gap_row from defaults")
-        gap_rows = [{
-            "prediction_date": source_ts[:10],
-            "predicted_at_ist": "15:30:00",
-            "symbol": "NIFTY",
-            "target_date": (datetime.datetime.strptime(source_ts[:10], "%Y-%m-%d") + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
-            "side": "CE",
-            "spot_ltp": 25000.5,
-            "target_strike": "25100CE",
-            "contract_symbol": "NIFTY26OCT25100CE",
-            "entry_ltp": 125.0,
-            "expected_gap_pct": 0.45,
-            "conviction_pct": 82.0,
-            "stop_loss_ltp": 106.25,
-            "target_ltp": 160.0,
-            "rationale": "Automated fallback gap prediction",
-            "news_catalyst": "Markets maintain momentum",
-            "dollar_gamma": 250000.0,
-            "actual_open_ltp": None,
-            "actual_return_pct": None,
-            "outcome": "PENDING_OPEN",
-            "reconciled_at_ist": None,
-            "run_id": run_id,
-            "git_sha": git_sha,
-            "writer_id": writer_id,
-            "source_timestamp": source_ts,
-            "cycle_id": cycle_id,
-        }]
-
-    # 3. Validate each row fail-fast against declarative schemas
-    print("[INFO] Validating rows against declarative schemas...")
-    validate_rows("prediction_calibration_log", [cal_row])
-    validate_rows("market_news_sentiment", [news_row])
-    validate_rows("next_day_gap_predictions", gap_rows)
-    print(f"[PASS] All rows ({len(gap_rows)} gap rows) passed fail-fast schema validation!")
-
-    # 4. Insert into BigQuery
-    dataset_ref = bq.dataset(DATASET_ID)
-
-    for tbl_name, rows in [
-        ("prediction_calibration_log", [cal_row]),
-        ("market_news_sentiment", [news_row]),
-        ("next_day_gap_predictions", gap_rows),
-    ]:
-        tbl = bq.get_table(dataset_ref.table(tbl_name))
-        job_config = bigquery.LoadJobConfig(
-            write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
-            schema=tbl.schema,
-            autodetect=False,
+    problems = []
+    if ref.total_rows != 219 or ref.unique_symbols != 219:
+        problems.append(
+            f"option_predictions_live universe={ref.unique_symbols}/{ref.total_rows}, expected 219/219"
         )
-        job = bq.load_table_from_json(rows, tbl, job_config=job_config)
-        job.result()
-        print(f"[OK] Appended {len(rows)} synchronization record(s) to BigQuery table '{tbl_name}'")
+    if ref.missing_lineage:
+        problems.append(f"option_predictions_live missing lineage rows={ref.missing_lineage}")
+    if any(v != 1 for v in (ref.run_ids, ref.git_shas, ref.writer_ids, ref.cycle_ids)):
+        problems.append("option_predictions_live contains mixed provenance")
+    if any(not identity[k] for k in ("run_id", "git_sha", "writer_id", "cycle_id")):
+        problems.append("option_predictions_live identity is incomplete")
 
-    print("[SUCCESS] All 3 auxiliary tables successfully synchronized with authoritative provenance!")
+    auxiliaries = {}
+    for table_name in ("market_news_sentiment", "prediction_calibration_log", "next_day_gap_predictions"):
+        names = _schema_names(client, table_name)
+        missing_cols = [f for f in PROVENANCE_FIELDS if f not in names]
+        if missing_cols:
+            problems.append(f"{table_name} missing provenance columns: {missing_cols}")
+            auxiliaries[table_name] = {"missing_columns": missing_cols}
+            continue
+
+        sql = f"""
+        SELECT
+          COUNT(*) AS rows_for_cycle,
+          COUNTIF(run_id != @run_id OR git_sha != @git_sha OR writer_id != @writer_id) AS mismatched_rows
+        FROM {_quoted(table_name)}
+        WHERE cycle_id = @cycle_id
+        """
+        cfg = bigquery.QueryJobConfig(
+            query_parameters=[
+                bigquery.ScalarQueryParameter("run_id", "STRING", identity["run_id"]),
+                bigquery.ScalarQueryParameter("git_sha", "STRING", identity["git_sha"]),
+                bigquery.ScalarQueryParameter("writer_id", "STRING", identity["writer_id"]),
+                bigquery.ScalarQueryParameter("cycle_id", "STRING", identity["cycle_id"]),
+            ]
+        )
+        row = list(client.query(sql, job_config=cfg).result())[0]
+        auxiliaries[table_name] = {
+            "rows_for_cycle": row.rows_for_cycle,
+            "mismatched_rows": row.mismatched_rows,
+        }
+        if row.mismatched_rows:
+            problems.append(
+                f"{table_name} has {row.mismatched_rows} provenance mismatches for current cycle"
+            )
+
+    cal = auxiliaries.get("prediction_calibration_log", {})
+    if cal.get("rows_for_cycle", 0) < 1:
+        problems.append("prediction_calibration_log has no row for the current cycle")
+
+    result = {
+        "status": "PASS" if not problems else "FAIL",
+        "identity": identity,
+        "option_predictions_live": {
+            "total_rows": ref.total_rows,
+            "unique_symbols": ref.unique_symbols,
+            "missing_lineage": ref.missing_lineage,
+        },
+        "auxiliary_tables": auxiliaries,
+        "problems": problems,
+        "read_only": True,
+    }
+    print(json.dumps(result, indent=2, default=str))
+    if problems:
+        raise SystemExit(1)
+    return result
 
 
 if __name__ == "__main__":
-    sync_auxiliary_provenance()
+    verify_cycle_provenance()
