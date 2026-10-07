@@ -1,6 +1,6 @@
 {
   "status": "FAIL",
-  "timestamp": "2026-10-06T07:40:14.314891+00:00",
+  "timestamp": "2026-10-07T03:58:48.880098+00:00",
   "sheets_audit": {
     "passed": false,
     "summary": {
@@ -43,7 +43,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 774,
+        "row_count": 821,
         "col_count": 8
       },
       "Cloud_Automation_Setup": {
@@ -78,14 +78,14 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 91,
+        "row_count": 142,
         "col_count": 5
       },
       "PAPER_ALERT_LOG": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 811,
+        "row_count": 855,
         "col_count": 11
       },
       "NEWS_LIVE": {
@@ -99,7 +99,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 556,
+        "row_count": 638,
         "col_count": 16
       },
       "NEWS_TYPE_TALLY": {
@@ -131,18 +131,18 @@
       "option_predictions_live": {
         "exists": true,
         "rows": 219,
-        "size_mb": 0.13,
+        "size_mb": 0.14,
         "columns": 54
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 8865,
-        "size_mb": 7.98,
+        "rows": 9365,
+        "size_mb": 8.45,
         "columns": 26
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 270,
+        "rows": 273,
         "size_mb": 0.18,
         "columns": 16
       }
@@ -151,9 +151,9 @@
   "publication": {
     "passed": true,
     "summary": {
-      "cycle_id": "37430241808:935dd7ac5b7449d89a6fd0534e2456c6",
-      "run_id": "37430241808",
-      "git_sha": "e8ad9ffce828fa880a599f5ffd3f43e42c64071d",
+      "cycle_id": "37568363820:82207e88c9ec47939a392aa89ec1c6d1",
+      "run_id": "37568363820",
+      "git_sha": "6c3274eaef2797cdc59d1ce4e6170f0b4c051751",
       "writer_id": "market_bot"
     }
   },
