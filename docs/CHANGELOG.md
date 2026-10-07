@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-07 — Council v1 boot: 4 BQ tables + 6 council workflows
+
+**Commit:** Pending HEAD
+
+### What changed
+- BQ: created agent_memory, agent_decisions, agent_authority, agent_scoreboard (DDL only — DML blocked by free-tier billing)
+- Repo: added n8n_automation/workflows/07-12_*.json (six council agent templates)
+- Code: fixed one 216?219 instance in tools/update_tracker.py
+
+### Not yet done
+- BQ authority seed (blocked by free-tier DML)
+- 216?219 cleanup pass 2 (regex miss — see follow-up)
+
+---
+
 ## 2026-10-07 — n8n sync safety: default activate=False to prevent auto-activation
 
 **Commit:** Pending HEAD
