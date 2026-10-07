@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-10-07 — n8n_sync.py circular FK fix (was uncommitted)
+
+**Commit:** Pending HEAD
+
+### What changed
+- tools/n8n_sync.py: reordered INSERT sequence — workflow_entity first with activeVersionId=NULL, then workflow_history, then UPDATE to link
+- Breaks circular FK on new workflow insert
+
+### Why this was uncommitted
+- Applied at 17:xx today; DB-level sync succeeded (17 workflows) but the code fix was never staged
+- This commit preserves the fix into git so it survives future checkouts
+
+---
+
 ## 2026-10-07 — Update automation integrity test for council workflows
 
 **Commit:** Pending HEAD
