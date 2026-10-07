@@ -26,3 +26,6 @@ audit/verify_harness_*.json
 
 # One-off folder tree dump
 structure.txt
+
+# Local backups
+backups/
