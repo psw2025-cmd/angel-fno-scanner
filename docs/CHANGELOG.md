@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-10-07 — Fix gap prediction EOD catch-up
+
+**Commit:** Pending HEAD
+
+### What changed
+- scanner.py: run_prediction_with_retry accepts force_pre_close; main() detects EOD catch-up (trading day + market closed + hour >= 15) and forces pre-close journaling
+- market_bot.yml: added second cron at 16:15 IST for EOD catch-up
+- market_bot.yml: increased workflow_dispatch MAX_RUNTIME_SECONDS from 90 to 300
+
+### Root cause
+- GitHub Actions cron for 09:15 IST ran at 16:04 IST (7h delay)
+- workflow_dispatch capped at 90s -> exits before pre-close
+- No fallback to write next_day_gap_predictions when window missed
+
+### Evidence
+- Forensic source: C:\Temp\agy_decision_brief_20261007_185500.txt
+
+---
+
 ## 2026-10-07 — Council v1 boot: 4 BQ tables + 6 council workflows
 
 **Commit:** Pending HEAD

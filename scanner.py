@@ -314,14 +314,14 @@ def build_chain_quotes(universe, future_quotes, option_quotes, each_side):
     return quotes
 
 
-def run_prediction_with_retry(attempts=3):
+def run_prediction_with_retry(attempts=3, force_pre_close=False):
     from angel_prediction_engine import run_prediction_pipeline
 
     last_error = None
     for attempt in range(1, attempts + 1):
         try:
             print(f"[INFO] Prediction cycle attempt {attempt}/{attempts}...")
-            return run_prediction_pipeline(bypass_market_check=True)
+            return run_prediction_pipeline(bypass_market_check=True, force_pre_close=force_pre_close)
         except Exception as exc:
             last_error = exc
             if attempt >= attempts:
@@ -545,7 +545,12 @@ def main():
         prediction_ran = bool(run_angel_loop(book, angel_login()))
     if not prediction_ran:
         print("[INFO] Invoking Option CE/PE Prediction & Rating Pipeline...")
-        run_prediction_with_retry()
+        from market_calendar import is_trading_day
+        _now = now_ist()
+        _catchup = is_trading_day(_now) and not market_is_open(_now) and _now.hour >= 15
+        if _catchup:
+            print(f"[INFO] EOD catch-up mode: forcing pre-close journaling at {_now.strftime('%H:%M IST')}")
+        run_prediction_with_retry(force_pre_close=_catchup)
 
 
 if __name__ == "__main__":
