@@ -23,3 +23,6 @@ tools/system_live_telemetry.json
 operator/monitor/system_live_telemetry.json
 tools/SYSTEM_LIVE_DNA_AUDIT.csv
 audit/verify_harness_*.json
+
+# One-off folder tree dump
+structure.txt
