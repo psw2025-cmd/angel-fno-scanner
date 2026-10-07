@@ -1,17 +1,19 @@
 {
+  "id": "angel-fno-learner-nightly",
   "name": "Angel FNO Agent-3 Learner \u2014 Nightly Weights",
   "nodes": [
     {
       "parameters": {
         "path": "learner-run",
-        "responseMode": "lastNode"
+        "responseMode": "lastNode",
+        "httpMethod": "POST"
       },
-      "id": "webhook",
+      "id": "webhook-09",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        50,
+        40,
         300
       ],
       "webhookId": "learner-run"
@@ -27,12 +29,12 @@
           ]
         }
       },
-      "id": "trigger",
-      "name": "Schedule",
+      "id": "trigger-09",
+      "name": "Schedule Trigger",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.1,
       "position": [
-        250,
+        240,
         300
       ]
     },
@@ -41,42 +43,132 @@
         "url": "http://127.0.0.1:5680/runtime-evidence",
         "method": "GET",
         "options": {
-          "timeout": 60000
+          "timeout": 60000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          }
         }
       },
-      "id": "http",
+      "id": "http-09",
       "name": "Call runtime-evidence",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        500,
+        480,
         300
       ]
     },
     {
       "parameters": {
         "conditions": {
-          "string": [
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
             {
-              "value1": "={{$json.status}}",
-              "operation": "notEqual",
-              "value2": "ok"
+              "id": "c1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
             }
           ]
-        }
+        },
+        "options": {}
       },
-      "id": "check",
+      "id": "check-09",
       "name": "Check Status",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        750,
+        720,
         300
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "noop-ok-09",
+      "name": "Log OK",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        960,
+        220
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "noop-fail-09",
+      "name": "Alert",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        960,
+        380
       ]
     }
   ],
-  "connections": {},
-  "active": false,
-  "settings": {},
-  "versionId": "09_learner_nightly"
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Call runtime-evidence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Call runtime-evidence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call runtime-evidence": {
+      "main": [
+        [
+          {
+            "node": "Check Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Status": {
+      "main": [
+        [
+          {
+            "node": "Log OK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
 }
