@@ -1,6 +1,6 @@
 {
   "status": "FAIL",
-  "timestamp": "2026-10-07T03:58:48.880098+00:00",
+  "timestamp": "2026-10-07T10:43:26.263514+00:00",
   "sheets_audit": {
     "passed": false,
     "summary": {
@@ -22,7 +22,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 57,
+        "row_count": 89,
         "col_count": 18
       },
       "LEGACY_F&O_DASHBOARD_OBJECT": {
@@ -131,18 +131,18 @@
       "option_predictions_live": {
         "exists": true,
         "rows": 219,
-        "size_mb": 0.14,
+        "size_mb": 0.13,
         "columns": 54
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 9365,
-        "size_mb": 8.45,
+        "rows": 9698,
+        "size_mb": 8.76,
         "columns": 26
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 273,
+        "rows": 274,
         "size_mb": 0.18,
         "columns": 16
       }
@@ -151,9 +151,9 @@
   "publication": {
     "passed": true,
     "summary": {
-      "cycle_id": "37568363820:82207e88c9ec47939a392aa89ec1c6d1",
-      "run_id": "37568363820",
-      "git_sha": "6c3274eaef2797cdc59d1ce4e6170f0b4c051751",
+      "cycle_id": "37608355456:daa60d95a66d43adb42e46ddb4aefac0",
+      "run_id": "37608355456",
+      "git_sha": "1dd4fff8a73426b76045e5bf78a05143fe55ee5d",
       "writer_id": "market_bot"
     }
   },
