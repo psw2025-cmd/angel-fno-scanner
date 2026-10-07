@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-10-07 — n8n sync safety: default activate=False to prevent auto-activation
+
+**Commit:** Pending HEAD
+
+### What changed
+- tools/n8n_sync.py: sync_workflows() default parameter changed from activate=True to activate=False.
+- tools/n8n_sync.py: main() --sync path now calls sync_workflows(conn, activate=False).
+- All 6 designed n8n workflows now import in an inactive state. Activation is manual via the n8n UI after review.
+- Root cause: prior default caused workflows 01, 02, 06 to auto-fire the moment they hit the SQLite DB, including dangerous endpoints /verification-harness and /post-market.
+- Reference: docs/N8N_ORCHESTRATION_ARCHITECTURE.md §6.
+- Trading safety: PAPER/ANALYZER only; no live broker paths changed.
+
+### Evidence
+- git diff --stat: 1 file changed, 2 insertions(+), 2 deletions(-)
+- All 6 workflow JSON files still present under n8n_automation/workflows/.
+- No other files modified.
+
+### Rollback
+- git revert this commit; sync reverts to activate=True (unsafe, retain only for emergency).
+
+---
+
 ## 2026-10-07 — PAPER_ALERT_LOG write safety: replace destructive write_grid with in-place column update
 
 **Commit:** Pending HEAD

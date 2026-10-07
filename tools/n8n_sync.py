@@ -72,7 +72,7 @@ def repair_missing_history(conn):
     return repaired
 
 
-def sync_workflows(conn, activate=True):
+def sync_workflows(conn, activate=False):
     cur = conn.cursor()
     now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
     synced = []
@@ -155,7 +155,7 @@ def main():
     if args.repair_history or args.sync:
         repair_missing_history(conn)
     if args.sync:
-        sync_workflows(conn, activate=True)
+        sync_workflows(conn, activate=False)
 
     assert_integrity(conn)
 
