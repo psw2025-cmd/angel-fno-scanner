@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-10-07 — PAPER_ALERT_LOG write safety: replace destructive write_grid with in-place column update
+
+**Commit:** Pending HEAD
+
+### What changed
+- scanner.py sync_paper(): replaced write_grid(paper, filled) with paper.update(range_name="J2:K{n}", ...) so columns J and K are updated in place.
+- Root cause: write_grid() in sheet_grid.py:24 calls ws.batch_clear("A{n+1}:{row_limit}") on every write, deleting all rows below the incoming row count.
+- Evidence of damage: on 2026-10-07 at 09:19 IST, write_grid deleted 72 historical PAPER_ALERT_LOG rows (163 -> 91) during a normal scanner cycle. Recovery was performed via Google Sheets revision 58232 (854 rows) with in-place append.
+- PAPER_ALERT_LOG is now treated as append-only: J/K updates in place, new alerts appended via append_rows. No other write path touches this tab.
+- This patch does not touch any other worksheet, table, or workflow.
+
+### Evidence
+- tests/test_reconcile_bq_sheet.py: 10 passed.
+- tests/test_prediction_engine.py::test_reconcile_preserves_exact_contract_identity_when_atm_drifts: 1 passed.
+- tests/test_gainers.py: 13 passed.
+- tests/test_single_writer_architecture.py: 9 passed.
+- Total: 33 passed, 0 failed.
+- Forensics source: C:\Temp\agy_paper_log_forensics_20261007_111400.txt
+
+### Rollback
+- git revert this commit; PAPER_ALERT_LOG write behavior reverts to write_grid (unsafe, retain only for emergency).
+- Reference safety branch: v1-safety (created same day).
+
+---
+
 ## 2026-10-06 â€” Live Integrity Repair: Fail-Closed n8n, Provenance Safety, and Intraday Prediction Cadence
 
 **Commit:** Pending HEAD

@@ -108,7 +108,18 @@ def sync_paper(book, signals, latest_changes, now):
         write_grid(paper, values)
     filled = fill_later_changes(values, latest_changes, now)
     if filled is not None:
-        write_grid(paper, filled)
+        # PAPER_ALERT_LOG is append-only. NEVER call write_grid here —
+        # write_grid uses batch_clear and can destroy historical rows.
+        # Only update columns J and K in place.
+        if len(filled) > 1:
+            batch_payload = []
+            for idx, r in enumerate(filled[1:], start=2):
+                batch_payload.append({
+                    "range": f"J{idx}:K{idx}",
+                    "values": [[r[9] if len(r) > 9 else "",
+                                r[10] if len(r) > 10 else ""]],
+                })
+            paper.batch_update(batch_payload, value_input_option="RAW")
         values = filled
     fresh = alerts_to_append(values, signals, now, market_is_open(now))
     if fresh:
