@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-07 — Update automation integrity test for council workflows
+
+**Commit:** Pending HEAD
+
+### What changed
+- tests/test_automation_integrity.py: workflow runtime assertion 90 -> 300
+- tests/test_automation_integrity.py: workflow count assertion == 6 -> >= 6
+
+### Root cause
+- Dispatch runtime increased 90->300s in market_bot.yml
+- 6 council workflow JSONs added, bringing total from 6 to 12
+- Test assertions hardcoded, blocking CI before scanner could run
+
+---
+
 ## 2026-10-07 — Fix gap prediction EOD catch-up
 
 **Commit:** Pending HEAD
