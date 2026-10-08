@@ -1,6 +1,6 @@
 {
   "status": "FAIL",
-  "timestamp": "2026-10-08T10:05:58.742899+00:00",
+  "timestamp": "2026-10-08T11:05:03.024648+00:00",
   "sheets_audit": {
     "passed": false,
     "summary": {
@@ -22,7 +22,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 81,
+        "row_count": 92,
         "col_count": 18
       },
       "LEGACY_F&O_DASHBOARD_OBJECT": {
@@ -85,7 +85,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 1045,
+        "row_count": 1047,
         "col_count": 11
       },
       "NEWS_LIVE": {
@@ -131,28 +131,30 @@
       "option_predictions_live": {
         "exists": true,
         "rows": 219,
-        "size_mb": 0.14,
+        "size_mb": 0.13,
         "columns": 54
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 11386,
-        "size_mb": 10.44,
+        "rows": 11727,
+        "size_mb": 10.79,
         "columns": 26
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 279,
+        "rows": 280,
         "size_mb": 0.18,
         "columns": 16
       }
     }
   },
   "publication": {
-    "passed": false,
+    "passed": true,
     "summary": {
-      "status": "UNVERIFIED",
-      "error_type": "APIError"
+      "cycle_id": "37766753393:df9dff69e6b04b5593f8bbb865980395",
+      "run_id": "37766753393",
+      "git_sha": "6c509d190356a33cf9bff776a472d2d29f3957df",
+      "writer_id": "market_bot"
     }
   },
   "engine_state": {
