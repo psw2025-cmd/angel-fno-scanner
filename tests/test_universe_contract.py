@@ -43,6 +43,7 @@ def test_scanner_prediction_failure_is_not_false_green(monkeypatch):
 
     monkeypatch.setattr(scanner, "load_env", lambda: None)
     monkeypatch.setattr(scanner, "require_authorized_writer", lambda: None)
+    monkeypatch.setattr(scanner, "require_authoritative_sheet_id", lambda sheet_id: sheet_id)
     monkeypatch.setenv("SHEET_ID", "test-only")
     monkeypatch.setattr(scanner, "load_service_account", lambda: {})
     monkeypatch.setattr(scanner.gspread, "service_account_from_dict",
@@ -103,6 +104,7 @@ def test_fresh_heartbeat_still_runs_one_prediction(monkeypatch):
     calls = []
     monkeypatch.setattr(scanner, "load_env", lambda: None)
     monkeypatch.setattr(scanner, "require_authorized_writer", lambda: None)
+    monkeypatch.setattr(scanner, "require_authoritative_sheet_id", lambda sheet_id: sheet_id)
     monkeypatch.setenv("SHEET_ID", "test-only")
     monkeypatch.setattr(scanner, "load_service_account", lambda: {})
     monkeypatch.setattr(scanner.gspread, "service_account_from_dict",
@@ -113,3 +115,17 @@ def test_fresh_heartbeat_still_runs_one_prediction(monkeypatch):
     monkeypatch.setattr(engine, "run_prediction_pipeline", lambda **_: calls.append("predict"))
     scanner.main()
     assert calls == ["refresh", "predict"]
+
+
+def test_authoritative_sheet_guard_accepts_manifest():
+    from credentials import get_canonical_sheet_id, require_authoritative_sheet_id
+
+    canonical = get_canonical_sheet_id()
+    assert require_authoritative_sheet_id(canonical) == canonical
+
+
+def test_authoritative_sheet_guard_rejects_noncanonical():
+    from credentials import require_authoritative_sheet_id
+
+    with pytest.raises(RuntimeError, match="SHEET_ID authority mismatch"):
+        require_authoritative_sheet_id("test-only")
