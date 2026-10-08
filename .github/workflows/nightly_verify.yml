@@ -8,6 +8,10 @@ on:
 jobs:
   verify:
     runs-on: windows-latest
+    env:
+      BQ_PROJECT_ID: ${{ secrets.BQ_PROJECT_ID }}
+      SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
+      SHEET_ID: ${{ secrets.SHEET_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -23,3 +27,4 @@ jobs:
         with:
           name: verify-report
           path: audit/verify_report.json
+

@@ -72,7 +72,7 @@ def repair_missing_history(conn):
     return repaired
 
 
-def sync_workflows(conn, activate=True):
+def sync_workflows(conn, activate=False):
     cur = conn.cursor()
     now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
     synced = []
@@ -90,13 +90,7 @@ def sync_workflows(conn, activate=True):
         created_at = current[0] if current else now
         version_counter = int(current[1] or 0) + 1 if current else 1
 
-        cur.execute(
-            """INSERT INTO workflow_history
-               (versionId,workflowId,authors,createdAt,updatedAt,nodes,connections,name,autosaved,description,nodeGroups)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
-            (version_id, wf_id, "[]", now, now, nodes, connections, wf_name, 0,
-             "Fail-closed read-only Angel F&O automation", "[]"),
-        )
+        # Step 1 - workflow_entity first with activeVersionId=NULL (breaks circular FK)
         cur.execute(
             """INSERT INTO workflow_entity
                (id,name,active,nodes,connections,settings,staticData,pinData,versionId,triggerCount,meta,parentFolderId,
@@ -105,13 +99,26 @@ def sync_workflows(conn, activate=True):
                ON CONFLICT(id) DO UPDATE SET
                  name=excluded.name, active=excluded.active, nodes=excluded.nodes,
                  connections=excluded.connections, settings=excluded.settings,
-                 versionId=excluded.versionId, activeVersionId=excluded.activeVersionId,
+                 versionId=excluded.versionId,
                  updatedAt=excluded.updatedAt, versionCounter=excluded.versionCounter,
                  description=excluded.description""",
             (wf_id, wf_name, 1 if activate else 0, nodes, connections, settings,
              None, None, version_id, len(wf.get("nodes", [])), None, None,
              created_at, now, 0, version_counter,
-             "Fail-closed read-only Angel F&O automation", version_id, "[]", None),
+             "Fail-closed read-only Angel F&O automation", None, "[]", None),
+        )
+        # Step 2 - workflow_history now safe (workflow_entity.id exists)
+        cur.execute(
+            """INSERT INTO workflow_history
+               (versionId,workflowId,authors,createdAt,updatedAt,nodes,connections,name,autosaved,description,nodeGroups)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+            (version_id, wf_id, "[]", now, now, nodes, connections, wf_name, 0,
+             "Fail-closed read-only Angel F&O automation", "[]"),
+        )
+        # Step 3 - link activeVersionId now that workflow_history.versionId exists
+        cur.execute(
+            "UPDATE workflow_entity SET activeVersionId=? WHERE id=?",
+            (version_id, wf_id),
         )
         cur.execute(
             """INSERT INTO shared_workflow (workflowId,projectId,role,createdAt,updatedAt)
@@ -155,7 +162,7 @@ def main():
     if args.repair_history or args.sync:
         repair_missing_history(conn)
     if args.sync:
-        sync_workflows(conn, activate=True)
+        sync_workflows(conn, activate=False)
 
     assert_integrity(conn)
 

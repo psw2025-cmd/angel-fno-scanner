@@ -404,7 +404,7 @@ MASTER_ISSUES = [
         "TITLE": "Google Sheets 'CE_PE_RANK' Tab Out of Parity (216 vs 219 Canonical Symbols)",
         "SEVERITY": "HIGH",
         "OBSERVED_ISSUE_DESCRIPTION": "'CE_PE_RANK' tab contains only 216 unique symbols (missing SAIL, SUPREMEIND, and VMM) and uses a legacy per-underlying rank format rather than the full top-200 contract view.",
-        "ROOT_CAUSE_ANALYSIS": "Legacy publisher wrote to CE_PE_RANK with an old hardcoded 216-symbol filter list prior to the 219-symbol universe expansion.",
+        "ROOT_CAUSE_ANALYSIS": "Legacy publisher wrote to CE_PE_RANK with an old hardcoded 219-symbol filter list prior to the 219-symbol universe expansion.",
         "TECHNICAL_SOLUTION_RECOMMENDATION": "Deploy PR #15 scanner publisher to synchronize the full 219-symbol universe to all tabs simultaneously.",
         "AGENT_AUTONOMOUS_CAPABILITY": "Can run reconcile_bq_sheet.py to detect exact missing symbols and contract differences.",
         "AGENT_HARD_LIMITATION": "Cannot destructively overwrite production Google Sheets tabs outside of an authorized workflow run.",

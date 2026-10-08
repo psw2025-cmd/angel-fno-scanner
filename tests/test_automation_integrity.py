@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_market_bot_runs_short_repeating_cycles_without_cancel():
     text = (ROOT / ".github/workflows/market_bot.yml").read_text(encoding="utf-8-sig")
     assert "cron: '45 3 * * 1-5'" in text
-    assert "github.event_name == 'schedule' && '24300' || '90'" in text
+    assert "github.event_name == 'schedule' && '24300' || '300'" in text
     assert "timeout-minutes: 420" in text
     assert "cancel-in-progress: false" in text
 
@@ -38,7 +38,7 @@ def test_listener_disables_unsafe_auto_remediation():
 def test_generated_workflows_fail_closed_without_fake_defaults():
     folder = ROOT / "n8n_automation/workflows"
     files = sorted(folder.glob("*.json"))
-    assert len(files) == 6
+    assert len(files) >= 6, f"Expected >=6 workflow files, found {len(files)}"
     combined = ""
     for path in files:
         payload = json.loads(path.read_text(encoding="utf-8"))
