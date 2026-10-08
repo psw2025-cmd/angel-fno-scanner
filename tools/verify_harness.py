@@ -28,6 +28,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from angel_prediction_engine import get_bigquery_client, get_gspread_client, SHEET_ID
+from credentials import require_authoritative_sheet_id
 
 PROJECT_ID = "fno-angel-prod-1790444589"
 DATASET_ID = "fno_predictions"
@@ -116,12 +117,13 @@ def get_git_info():
 
 
 def pull_google_sheets():
-    """Pull all specified sheet tabs and ranges with retry logic."""
+    """Pull the single authoritative Sheet and fail closed on authority drift."""
+    authoritative_sheet_id = require_authoritative_sheet_id(SHEET_ID)
     sh = None
     for attempt in range(4):
         try:
             gc = get_gspread_client()
-            sh = gc.open_by_key(SHEET_ID)
+            sh = gc.open_by_key(authoritative_sheet_id)
             break
         except Exception as e:
             if attempt == 3:
