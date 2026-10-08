@@ -1,4 +1,64 @@
 import ast
+
+# ====================================================================
+# DYNAMIC TELEMETRY GUARDS & LOCAL BACKUP FALLBACKS (SDLC PROTECTION)
+# ====================================================================
+import json
+import uuid
+import tempfile
+import datetime
+from pathlib import Path
+
+def enforce_run_id_string_contract(payload_row):
+    """
+    Enforces that 'run_id' is strictly a STRING to prevent mismatch with
+    the fno_predictions.market_news_sentiment BigQuery schema.
+    """
+    if not isinstance(payload_row, dict):
+        return payload_row
+
+    # Enforce run_id is a STRING if present
+    if 'run_id' in payload_row:
+        if payload_row['run_id'] is None:
+            payload_row['run_id'] = str(uuid.uuid4())
+        else:
+            payload_row['run_id'] = str(payload_row['run_id'])
+    else:
+        payload_row['run_id'] = str(uuid.uuid4())
+
+    # Enforce other critical metadata strings
+    for key in ['git_sha', 'writer_id', 'cycle_id']:
+        if key in payload_row and payload_row[key] is not None:
+            payload_row[key] = str(payload_row[key])
+
+    return payload_row
+
+def write_local_backup_buffer(dataset_name, table_name, failed_rows):
+    """
+    Saves failed transaction records to a local JSON buffer in /tmp/angel_telemetry_backup
+    to completely prevent data loss in case of a BQ/Sheets sink crash.
+    """
+    backup_dir = Path("/tmp/angel_telemetry_backup")
+    backup_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp_str = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d_%H%M%S")
+    unique_id = uuid.uuid4().hex[:8]
+    backup_file = backup_dir / f"{dataset_name}_{table_name}_fallback_{timestamp_str}_{unique_id}.json"
+
+    try:
+        with open(backup_file, "w", encoding="utf-8") as f:
+            json.dump({
+                "dataset": dataset_name,
+                "table": table_name,
+                "timestamp_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                "rows": failed_rows
+            }, f, indent=2, default=str)
+        print(f"[BACKUP] Safely buffered {len(failed_rows)} rows to local backup: {backup_file}")
+    except Exception as e:
+        print(f"[CRITICAL ERROR] Failed to write local backup buffer: {e}")
+
+# ====================================================================
+
 import datetime
 import json
 import os
