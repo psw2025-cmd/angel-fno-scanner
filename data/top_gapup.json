@@ -149,7 +149,7 @@
     "symbol": "PNB",
     "gap_direction": "GAP-UP (CE EXPLOSION)",
     "expected_gap_pct": 0.56,
-    "pre_open_conviction_pct": 60.2,
+    "pre_open_conviction_pct": 63.2,
     "target_open_strike": "116 CE",
     "spot_ltp": 115.96,
     "atm_strike": 116.0,
@@ -170,7 +170,7 @@
     "news_source_tier": "TIER_3_FINANCIAL_MEDIA",
     "market_confirmation": "NEUTRAL_FLOW",
     "expected_move_band": "< 2.0%",
-    "news_sentiment_score": -0.026,
+    "news_sentiment_score": -0.024,
     "top_news_headline": "RBI says NBFC ban on revolving credit is a clarification, not a new rule - Livemint"
   },
   {

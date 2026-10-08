@@ -295,7 +295,7 @@
       "symbol": "PAYTM",
       "action_rating": "\ud83d\udca5 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT]",
       "directional_bias": "PUT (PE) BEARISH",
-      "pe_win_prob": 96.1,
+      "pe_win_prob": 95.9,
       "intensity_score": 89,
       "spot_ltp": 1640.5,
       "atm_strike": 1640.0,
@@ -303,8 +303,8 @@
       "pe_chg_pct": 185.1,
       "pe_iv": 40.02,
       "target_open_strike": "1640 PE",
-      "expected_gap_pct": -2.83,
-      "top_news_headline": "Paytm, Mobikwik, Pine Labs shares crash up to 10%. What\u2019s behind the sharp plunge?"
+      "expected_gap_pct": -2.69,
+      "top_news_headline": "Exclusion of \u201cPaytm Payments Bank Limited\u201d from the Second Schedule to the Reserve Bank of India Act, 1934"
     }
   ]
 }
