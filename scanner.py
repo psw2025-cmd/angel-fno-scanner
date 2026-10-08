@@ -76,6 +76,7 @@ from credentials import (
     get_angel_credentials,
     load_env,
     load_service_account as load_sa_credentials,
+    require_authoritative_sheet_id,
     validate_angel_credentials,
 )
 from gainers import (
@@ -590,9 +591,9 @@ def refresh_from_forensic(book, now):
 def main():
     load_env()
     require_authorized_writer()
-    sheet_id = os.getenv("SHEET_ID", "").strip() or SHEET_ID
-    if not sheet_id:
-        raise RuntimeError("SHEET_ID is required for scanner execution.")
+    sheet_id = require_authoritative_sheet_id(
+        os.getenv("SHEET_ID", "").strip() or SHEET_ID
+    )
     book = gspread.service_account_from_dict(load_service_account()).open_by_key(sheet_id)
     now = now_ist()
     age = heartbeat_age_seconds(book, now)
