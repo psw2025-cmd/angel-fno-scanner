@@ -14,6 +14,8 @@ import os
 import re
 import sys
 
+from credentials import require_authoritative_sheet_id
+
 # Ensure repository root is on sys.path
 REPO_DIR = os.path.dirname(os.path.abspath(__file__))
 if REPO_DIR not in sys.path:
@@ -391,7 +393,7 @@ def main():
     elif args.reconcile_gap:
         print("[INFO] Executing overnight gap paper trade reconciliation...")
         gc = get_gspread_client()
-        sh = gc.open_by_key(SHEET_ID)
+        sh = gc.open_by_key(require_authoritative_sheet_id(SHEET_ID))
         bq_client = get_bigquery_client()
         smartApi = get_angel_client()
         preds = query_predictions(limit=250)
