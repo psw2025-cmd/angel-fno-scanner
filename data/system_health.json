@@ -1,6 +1,6 @@
 {
   "status": "FAIL",
-  "timestamp": "2026-10-08T11:05:03.024648+00:00",
+  "timestamp": "2026-10-08T13:05:46.844923+00:00",
   "sheets_audit": {
     "passed": false,
     "summary": {
@@ -136,14 +136,14 @@
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 11727,
-        "size_mb": 10.79,
+        "rows": 12088,
+        "size_mb": 11.14,
         "columns": 26
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 280,
-        "size_mb": 0.18,
+        "rows": 281,
+        "size_mb": 0.19,
         "columns": 16
       }
     }
@@ -151,9 +151,9 @@
   "publication": {
     "passed": true,
     "summary": {
-      "cycle_id": "37766753393:df9dff69e6b04b5593f8bbb865980395",
-      "run_id": "37766753393",
-      "git_sha": "6c509d190356a33cf9bff776a472d2d29f3957df",
+      "cycle_id": "37780673832:ce3631edf08444a5821a99e98067b1c5",
+      "run_id": "37780673832",
+      "git_sha": "82797c6aad256df1f7eba38ddaad9539b0b8eb13",
       "writer_id": "market_bot"
     }
   },

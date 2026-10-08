@@ -94,7 +94,7 @@
       "ce_iv": 39.26,
       "target_open_strike": "3900 CE",
       "expected_gap_pct": 0.21,
-      "top_news_headline": "No fresh material catalyst"
+      "top_news_headline": "LTM Limited"
     },
     {
       "rank": 176,
@@ -113,7 +113,7 @@
       "top_news_headline": "RBI says NBFC ban on revolving credit is a clarification, not a new rule - Livemint"
     },
     {
-      "rank": 178,
+      "rank": 179,
       "symbol": "TECHM",
       "action_rating": "\ud83d\udea8 GAMMA SQUEEZE ALERT (ACCELERATING CE)",
       "directional_bias": "CALL (CE) BULLISH",
@@ -160,7 +160,7 @@
       "pe_iv": 35.4,
       "target_open_strike": "2360 PE",
       "expected_gap_pct": -1.64,
-      "top_news_headline": "Pharma stocks to buy ahead of Q2 results: Acutaas Chemicals, Mankind Pharma, Ipca Labs - Max upside? Target price"
+      "top_news_headline": "Mankind Pharma Limited"
     },
     {
       "rank": 2,
@@ -247,7 +247,7 @@
       "symbol": "SIEMENS",
       "action_rating": "\ud83d\udca5 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT]",
       "directional_bias": "PUT (PE) BEARISH",
-      "pe_win_prob": 92.7,
+      "pe_win_prob": 89.4,
       "intensity_score": 87,
       "spot_ltp": 3611.0,
       "atm_strike": 3600.0,
@@ -255,8 +255,8 @@
       "pe_chg_pct": 192.07,
       "pe_iv": 34.29,
       "target_open_strike": "3600 PE",
-      "expected_gap_pct": -1.82,
-      "top_news_headline": "No fresh material catalyst"
+      "expected_gap_pct": -1.11,
+      "top_news_headline": "AMFI Rejig: Lenskart, LG Electronics, Siemens Energy among 6 stocks set for largecap upgrade"
     },
     {
       "rank": 8,
@@ -292,19 +292,19 @@
     },
     {
       "rank": 10,
-      "symbol": "ITC",
+      "symbol": "PAYTM",
       "action_rating": "\ud83d\udca5 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT]",
       "directional_bias": "PUT (PE) BEARISH",
-      "pe_win_prob": 96.9,
+      "pe_win_prob": 96.1,
       "intensity_score": 89,
-      "spot_ltp": 255.85,
-      "atm_strike": 255.0,
-      "pe_ltp": 4.35,
-      "pe_chg_pct": 200.0,
-      "pe_iv": 20.6,
-      "target_open_strike": "255 PE",
-      "expected_gap_pct": -1.79,
-      "top_news_headline": "Dividend powerhouse: Coal India, ITC, REC, NMDC, Aptech, Radiant Cash - Which stock is real dividend multiplier? Details"
+      "spot_ltp": 1640.5,
+      "atm_strike": 1640.0,
+      "pe_ltp": 59.3,
+      "pe_chg_pct": 185.1,
+      "pe_iv": 40.02,
+      "target_open_strike": "1640 PE",
+      "expected_gap_pct": -2.83,
+      "top_news_headline": "Paytm, Mobikwik, Pine Labs shares crash up to 10%. What\u2019s behind the sharp plunge?"
     }
   ]
 }
