@@ -236,7 +236,7 @@ def check_gate_formulas(formula_rows, sheet_data, sh_obj):
     Returns (status, detail, issues).
     """
     ref_pattern = re.compile(
-        r'(?:([A-Za-z0-9_]+)!)?\\$?([A-Z]+)\\$?(\\d+)(?::\\$?([A-Z]+)\\$?(\\d+))?'
+        r'(?:([A-Za-z0-9_]+)!)?\$?([A-Z]+)\$?(\d+)(?::\$?([A-Z]+)\$?(\d+))?'
     )
 
     extra_sheet_cache = {}
