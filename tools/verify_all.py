@@ -8,7 +8,8 @@ Checks:
 2. Git synchronization with origin/main
 3. Full pytest regression suite
 4. BigQuery run_id types across all four tables (must be STRING)
-5. Infrastructure readiness probe (must have 0 FAILs)
+5. Google Sheet Formula Checks contract (219 universe / 200 rank board)
+6. Infrastructure readiness probe (must have 0 FAILs)
 Writes report to audit/verify_report.json.
 Exits 0 if all checks pass, non-zero otherwise.
 """
@@ -38,7 +39,7 @@ IST = ZoneInfo("Asia/Kolkata")
 
 
 def check_git():
-    print("[1/5] Checking Git repository status...")
+    print("[1/6] Checking Git repository status...")
     porcelain = subprocess.check_output(["git", "status", "--porcelain"], cwd=REPO_ROOT, text=True).strip()
     is_clean = len(porcelain) == 0
 
@@ -65,7 +66,7 @@ def check_git():
 
 
 def check_pytest():
-    print("\n[2/5] Running pytest test suite...")
+    print("\n[2/6] Running pytest test suite...")
     proc = subprocess.run([sys.executable, "-m", "pytest", "-q"], cwd=REPO_ROOT, text=True, capture_output=True)
     out = proc.stdout + proc.stderr
     passed = proc.returncode == 0
@@ -82,7 +83,7 @@ def check_pytest():
 
 
 def check_bigquery_types():
-    print("\n[3/5] Checking BigQuery run_id types across all four tables...")
+    print("\n[3/6] Checking BigQuery run_id types across all four tables...")
     client = get_bigquery_client()
     table_statuses = {}
     all_ok = True
@@ -108,8 +109,35 @@ def check_bigquery_types():
     }
 
 
+def check_formula_contract():
+    """Fail closed if the live Formula Checks sheet drifts from the canonical contract."""
+    print("\n[4/6] Checking Google Sheet Formula Checks contract...")
+    try:
+        from tools.verify_harness import check_gate_formulas, pull_google_sheets
+
+        sheet_data, sh_obj = pull_google_sheets()
+        rows = sheet_data.get("Formula Checks", [])
+        status, detail, issues = check_gate_formulas(rows, sheet_data, sh_obj)
+        print(f"      Result    : {status} ({detail})")
+        if issues:
+            for issue in issues[:5]:
+                print(f"        * {issue}")
+        return {
+            "status": status,
+            "detail": detail,
+            "issues": issues,
+        }
+    except Exception as exc:
+        print(f"      Result    : FAIL ({exc})")
+        return {
+            "status": "FAIL",
+            "detail": str(exc),
+            "issues": [str(exc)],
+        }
+
+
 def run_readiness_probe():
-    print("\n[4/5] Running infrastructure readiness probe...")
+    print("\n[5/6] Running infrastructure readiness probe...")
     out_root = Path(r"C:\temp\verify")
     out_root.mkdir(parents=True, exist_ok=True)
 
@@ -172,6 +200,7 @@ def main():
     git_res = check_git()
     pytest_res = check_pytest()
     bq_res = check_bigquery_types()
+    formula_res = check_formula_contract()
     readiness_res = run_readiness_probe()
 
     # Determine overall status
@@ -181,6 +210,8 @@ def main():
         critical_failures.append("Pytest regression suite failed")
     if bq_res["status"] != "PASS":
         critical_failures.append("BigQuery run_id types are not STRING")
+    if formula_res["status"] != "PASS":
+        critical_failures.append("Google Sheet Formula Checks contract drifted from canonical 219/200 rules")
     if readiness_res["fail_count"] > 0:
         # Note: If git is dirty/unpushed, readiness probe working_tree / current_main might show FAIL
         # We separate working_tree from other functional failures
@@ -197,13 +228,14 @@ def main():
         "git": git_res,
         "pytest": pytest_res,
         "bigquery": bq_res,
+        "formula_checks": formula_res,
         "readiness_probe": readiness_res,
     }
 
     report_path = REPO_ROOT / "audit" / "verify_report.json"
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2, default=str), encoding="utf-8")
-    print(f"\n[5/5] Verification report written to: {report_path}")
+    print(f"\n[6/6] Verification report written to: {report_path}")
 
     print("\n" + ("=" * 80))
     print(f" FINAL VERDICT: {'ALL GREEN (PASS)' if overall_pass else 'FAIL'}")
