@@ -58,6 +58,40 @@ def load_env(env_path=None):
     return loaded
 
 
+def get_canonical_sheet_id():
+    """Return the single authoritative Google Sheet ID declared in agent_manifest.json."""
+    manifest_path = REPO_ROOT / "agent_manifest.json"
+    if not manifest_path.exists():
+        raise RuntimeError("agent_manifest.json is required to resolve the authoritative Google Sheet.")
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise RuntimeError(f"Cannot read authoritative agent_manifest.json: {exc}") from exc
+    canonical = str(
+        manifest.get("cloud_resources", {}).get("google_sheet_id", "")
+    ).strip()
+    if not canonical:
+        raise RuntimeError("agent_manifest.json does not define cloud_resources.google_sheet_id.")
+    return canonical
+
+
+def require_authoritative_sheet_id(configured_id=None):
+    """
+    Fail closed when runtime configuration points at a Sheet other than the
+    repository's canonical production Sheet. Returns the canonical ID on success.
+    """
+    configured = str(configured_id or os.getenv("SHEET_ID", "")).strip()
+    canonical = get_canonical_sheet_id()
+    if not configured:
+        raise RuntimeError("SHEET_ID is required and must match agent_manifest.json.")
+    if configured != canonical:
+        raise RuntimeError(
+            "SHEET_ID authority mismatch: runtime configuration does not match "
+            "agent_manifest.json. Refusing to read or write a non-authoritative Sheet."
+        )
+    return canonical
+
+
 def resolve_service_account_info(custom_key_path=None):
     """
     Load service-account JSON dictionary from:
