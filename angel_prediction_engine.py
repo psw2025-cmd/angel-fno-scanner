@@ -33,6 +33,7 @@ from google.oauth2 import service_account
 from credentials import (
     get_angel_credentials,
     load_env,
+    require_authoritative_sheet_id,
     resolve_service_account_info,
     validate_angel_credentials,
 )
@@ -2280,7 +2281,7 @@ def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, re
     next_day_picks = generate_next_day_gap_picks(predictions, ist_now)
 
     gc = get_gspread_client()
-    sh = gc.open_by_key(SHEET_ID)
+    sh = gc.open_by_key(require_authoritative_sheet_id(SHEET_ID))
     bq_client = get_bigquery_client()
 
     # Pre-Close Journaling Window (15:00 - 15:30 IST) or forced
@@ -2316,7 +2317,7 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
     try:
         if sh is None:
             gc = get_gspread_client()
-            sh = gc.open_by_key(SHEET_ID)
+            sh = gc.open_by_key(require_authoritative_sheet_id(SHEET_ID))
 
         # 1. Update FORENSIC_LIVE with exact schema (18 columns, strict validator)
         ws_fl = sh.worksheet("FORENSIC_LIVE")
