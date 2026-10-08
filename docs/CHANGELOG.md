@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-10-08 — Fix nightly_verify.yml missing BQ credentials
+
+**Commit:** Pending HEAD
+
+### What changed
+- .github/workflows/nightly_verify.yml: added env block with BQ_PROJECT_ID, SHEETS_KEY_JSON, SHEET_ID
+
+### Root cause
+- Nightly Verify (Windows runner) called tools/verify_all.py which needs BigQuery client
+- No BQ_PROJECT_ID in workflow ? get_bigquery_client() raised RuntimeError
+- 3 consecutive nightly failures (Oct 5, 6, 7) — all same root cause
+
+### Evidence
+- Traceback: RuntimeError "BQ_PROJECT_ID is unset ... blocked by billing guardrail"
+- Run IDs: 37384688267, 37531230258, 37689136220
+
+---
+
 ## 2026-10-07 — n8n_sync.py circular FK fix (was uncommitted)
 
 **Commit:** Pending HEAD
