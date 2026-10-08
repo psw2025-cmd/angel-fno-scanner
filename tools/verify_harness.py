@@ -228,33 +228,30 @@ def pull_bigquery():
 
 def check_gate_formulas(formula_rows, sheet_data, sh_obj):
     """
-    Check if all gate formulas in Formula Checks reference cells that actually contain data.
-    Returns (status, detail, unpopulated_refs).
+    Validate Formula Checks in two ways:
+    1. every referenced range resolves to populated data;
+    2. critical gate formulas exactly match the canonical 219-universe /
+       200-ranked-contract contract documented in docs/formula-checks-contract.md.
+
+    Returns (status, detail, issues).
     """
-    # Regex to capture Sheet!ColRow or Sheet!ColRow:ColRow, or local ColRow
-    # Example: FORENSIC_LIVE!B2:B217, HEARTBEAT!A2, PRE_BREAKOUT_SCANNER!A1:M40, E2:E6
     ref_pattern = re.compile(
-        r'(?:([A-Za-z0-9_]+)!)?\$?([A-Z]+)\$?(\d+)(?::\$?([A-Z]+)\$?(\d+))?'
+        r'(?:([A-Za-z0-9_]+)!)?\\$?([A-Z]+)\\$?(\\d+)(?::\\$?([A-Z]+)\\$?(\\d+))?'
     )
 
-    # Cache for sheets not pre-fetched in sheet_data
     extra_sheet_cache = {}
+    issues = []
 
-    unpopulated = []
-    total_refs = 0
-
-    for r_idx, row in enumerate(formula_rows):
-        for c_idx, cell in enumerate(row):
+    for row in formula_rows:
+        for cell in row:
             text = str(cell).strip()
             if not text.startswith("="):
                 continue
 
             for match in ref_pattern.finditer(text):
-                total_refs += 1
                 sheet_name, col1, r1, col2, r2 = match.groups()
                 target_sheet = sheet_name if sheet_name else "Formula Checks"
 
-                # Check if target sheet exists
                 if target_sheet in sheet_data:
                     data = sheet_data[target_sheet]
                 elif target_sheet in extra_sheet_cache:
@@ -262,17 +259,14 @@ def check_gate_formulas(formula_rows, sheet_data, sh_obj):
                 else:
                     try:
                         ws = sh_obj.worksheet(target_sheet)
-                        data = ws.get_values("A1:Z100")
+                        data = ws.get_values("A1:Z300")
                         extra_sheet_cache[target_sheet] = data
                     except Exception:
-                        unpopulated.append(f"{target_sheet}!{col1}{r1} (missing sheet)")
+                        issues.append(f"{target_sheet}!{col1}{r1} (missing sheet)")
                         continue
 
-                # Check if target cell / range has data
-                # Convert 1-based row index
                 row_start = int(r1) - 1
                 row_end = int(r2) - 1 if r2 else row_start
-
                 has_data = False
                 for ri in range(row_start, min(len(data), row_end + 1)):
                     row_vals = data[ri]
@@ -282,12 +276,42 @@ def check_gate_formulas(formula_rows, sheet_data, sh_obj):
 
                 if not has_data:
                     ref_str = f"{target_sheet}!{col1}{r1}" + (f":{col2}{r2}" if col2 else "")
-                    unpopulated.append(ref_str)
+                    issues.append(ref_str)
 
-    if not unpopulated:
+    # Fail closed if the live sheet drifts back to the retired 216-symbol
+    # formulas or compares the 200-contract rank board to the underlying universe.
+    rows_by_gate = {
+        str(row[0]).strip(): row
+        for row in formula_rows
+        if row and str(row[0]).strip()
+    }
+    required_formulas = {
+        ("GATE-01", 2): '=COUNTA(FORENSIC_LIVE!B2:B220)&" / 219"',
+        ("GATE-01", 4): '=IF(COUNTA(FORENSIC_LIVE!B2:B220)=219,"PASS","FAIL")',
+        ("GATE-03", 2): '=COUNTIF(FORENSIC_LIVE!D2:D220,">0")&" / "&COUNTA(FORENSIC_LIVE!B2:B220)',
+        ("GATE-03", 4): '=IF(COUNTIF(FORENSIC_LIVE!D2:D220,">0")=COUNTA(FORENSIC_LIVE!B2:B220),"PASS","FAIL")',
+        ("GATE-04", 2): '=COUNTIFS(FORENSIC_LIVE!Q2:Q220,">=0",FORENSIC_LIVE!Q2:Q220,"<=10")&" in range; "&COUNTIFS(FORENSIC_LIVE!B2:B220,"<>",FORENSIC_LIVE!Q2:Q220,"")&" blank"',
+        ("GATE-04", 4): '=IF(COUNTIFS(FORENSIC_LIVE!Q2:Q220,">10")+COUNTIFS(FORENSIC_LIVE!Q2:Q220,"<0")>0,"FAIL","PASS")',
+        ("OVERALL", 2): '=(COUNTIF(E2:E6,"FAIL")+COUNTIF(E10:E11,"FAIL"))&" failed gates"',
+        ("OVERALL", 4): '=IF(COUNTIF(E2:E6,"FAIL")+COUNTIF(E10:E11,"FAIL")>0,"BLOCKED",IF(C3="MARKET CLOSED","MARKET CLOSED — alerts are not live","PASS — session open and gates clear"))',
+        ("GATE-06", 2): '=COUNTA(CE_PE_RANK!A5:A204)&" / 200"',
+        ("GATE-06", 4): '=IF(COUNTA(CE_PE_RANK!A5:A204)=200,"PASS","FAIL")',
+        ("GATE-07", 2): '=COUNTIF(CE_PE_RANK!U5:U204,"HIGH MOMENTUM")',
+        ("GATE-07", 4): '=IF(C3="MARKET CLOSED",IF(N(C11)=0,"PASS","FAIL"),"SESSION OPEN")',
+    }
+
+    for (gate_id, col_idx), expected in required_formulas.items():
+        row = rows_by_gate.get(gate_id, [])
+        actual = str(row[col_idx]).strip() if len(row) > col_idx else "MISSING"
+        if actual != expected:
+            issues.append(
+                f"{gate_id} formula contract mismatch at column {col_idx + 1}: "
+                f"expected={expected!r} actual={actual!r}"
+            )
+
+    if not issues:
         return "PASS", "0 unpopulated refs", []
-    else:
-        return "FAIL", f"{len(unpopulated)} unpopulated refs ({', '.join(unpopulated[:3])})", unpopulated
+    return "FAIL", f"{len(issues)} formula/reference issues ({'; '.join(issues[:2])})", issues
 
 
 def run_unit_tests():
