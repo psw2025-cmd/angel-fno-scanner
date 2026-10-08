@@ -1,6 +1,6 @@
 {
   "status": "FAIL",
-  "timestamp": "2026-10-07T10:43:26.263514+00:00",
+  "timestamp": "2026-10-08T10:05:58.742899+00:00",
   "sheets_audit": {
     "passed": false,
     "summary": {
@@ -22,7 +22,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 89,
+        "row_count": 81,
         "col_count": 18
       },
       "LEGACY_F&O_DASHBOARD_OBJECT": {
@@ -43,7 +43,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 821,
+        "row_count": 875,
         "col_count": 8
       },
       "Cloud_Automation_Setup": {
@@ -85,7 +85,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 855,
+        "row_count": 1045,
         "col_count": 11
       },
       "NEWS_LIVE": {
@@ -131,30 +131,28 @@
       "option_predictions_live": {
         "exists": true,
         "rows": 219,
-        "size_mb": 0.13,
+        "size_mb": 0.14,
         "columns": 54
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 9698,
-        "size_mb": 8.76,
+        "rows": 11386,
+        "size_mb": 10.44,
         "columns": 26
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 274,
+        "rows": 279,
         "size_mb": 0.18,
         "columns": 16
       }
     }
   },
   "publication": {
-    "passed": true,
+    "passed": false,
     "summary": {
-      "cycle_id": "37608355456:daa60d95a66d43adb42e46ddb4aefac0",
-      "run_id": "37608355456",
-      "git_sha": "1dd4fff8a73426b76045e5bf78a05143fe55ee5d",
-      "writer_id": "market_bot"
+      "status": "UNVERIFIED",
+      "error_type": "APIError"
     }
   },
   "engine_state": {
