@@ -272,6 +272,9 @@ def fetch_chunked(api, tokens, size=45):
                 if not response or not response.get("status"):
                     raise RuntimeError(f"market data status failed for {len(chunk)} tokens")
                 for item in response.get("data", {}).get("fetched", []) or []:
+                    if os.getenv("ANGEL_REQUIRE_EXCHANGE_TIME") == "1":
+                        from tools.exchange_timestamp import get_exchange_timestamp
+                        get_exchange_timestamp(item)
                     quotes[str(item.get("symbolToken"))] = item
                 break
             except Exception as exc:
@@ -412,6 +415,33 @@ def run_angel_loop(book, api):
                 continue
             tokens.extend(token for token, _meta in strike_window_tokens(meta["strikes"], future_ltp, each_side))
         option_quotes, option_failures = fetch_chunked(api, tokens)
+        if os.getenv("ANGEL_REQUIRE_EXCHANGE_TIME") == "1":
+            from tools.cycle_metadata import generate_cycle_metadata
+            import json
+            import subprocess
+            from pathlib import Path
+            if len(universe) != 219:
+                raise RuntimeError(f"Expected 219 verified futures, got {len(universe)}")
+            quote_list = []
+            for item in universe.values():
+                quote = future_quotes.get(item["token"])
+                if not quote:
+                    raise RuntimeError("Missing futures quote: exchange freshness unverifiable")
+                quote_list.append(quote)
+            run_id = os.getenv("GITHUB_RUN_ID") or os.getenv("RUN_ID")
+            if not run_id:
+                raise RuntimeError("Missing run ID for authoritative provenance")
+            git_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+            session = os.getenv("ANGEL_MARKET_SESSION", "EOD")
+            meta = generate_cycle_metadata(quote_list, run_id, git_sha, session)
+            meta_path = Path(os.getenv("ANGEL_CYCLE_METADATA_FILE", "/tmp/cycle_metadata.json"))
+            meta_path.parent.mkdir(parents=True, exist_ok=True)
+            temp_path = meta_path.with_suffix(".tmp")
+            temp_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
+            os.replace(temp_path, meta_path)
+            prov_path = Path("scratch") / "provenance" / f"{run_id}.json"
+            prov_path.parent.mkdir(parents=True, exist_ok=True)
+            prov_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
         is_api_failure = (tokens and not option_quotes) or (not future_quotes and len(universe) > 0)
         if is_api_failure:
             print("[WARN] Option quote feed returned nothing. Existing sheets were left unchanged.")

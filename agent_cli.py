@@ -202,6 +202,42 @@ def query_next_day_gap(limit=5):
 
 
 def export_snapshots(output_dir="data"):
+    """Fail closed on metadata; stage all exports and restore old bundle on errors."""
+    import subprocess
+    import shutil
+    from pathlib import Path
+    from tools.atomic_snapshots import publish_bundle
+    meta_path = os.environ.get("ANGEL_CYCLE_METADATA_FILE")
+    if not meta_path:
+        raise RuntimeError("ANGEL_CYCLE_METADATA_FILE missing; snapshot export blocked")
+    with open(meta_path, encoding="utf-8") as f:
+        meta = json.load(f)
+    fields = ("source_timestamp", "run_id", "git_sha", "cycle_id", "market_session")
+    if any(not meta.get(k) for k in fields):
+        raise RuntimeError("cycle metadata incomplete; snapshot export blocked")
+    subprocess.check_call([sys.executable, str(Path(REPO_DIR) / "tools" / "check_freshness.py"),
+        "--source-timestamp", str(meta["source_timestamp"]), "--run-id", str(meta["run_id"]),
+        "--git-sha", str(meta["git_sha"]), "--cycle-id", str(meta["cycle_id"]),
+        "--market-session", str(meta["market_session"]), "--expected-metadata", meta_path])
+    safe_run_id = re.sub(r"[^A-Za-z0-9_-]", "_", str(meta["run_id"]))
+    stage = Path(REPO_DIR) / "scratch" / "staging" / safe_run_id
+    if stage.exists():
+        raise RuntimeError("staging directory already exists; refusing concurrent export")
+    stage.mkdir(parents=True)
+    try:
+        rel_stage = str(stage.relative_to(REPO_DIR))
+        result = _export_snapshots_unstaged(output_dir=rel_stage)
+        names = ("latest_predictions.json", "top_gapup.json", "breakouts.json",
+                 "market_news.json", "system_health.json", "next_day_gap_predictions.json", "summary.md")
+        publish_bundle(stage, Path(REPO_DIR) / output_dir, names)
+        result["directory"] = str(Path(REPO_DIR) / output_dir)
+        return result
+    except Exception:
+        shutil.rmtree(stage, ignore_errors=True)
+        raise
+
+
+def _export_snapshots_unstaged(output_dir="data"):
     target_dir = os.path.join(REPO_DIR, output_dir)
     os.makedirs(target_dir, exist_ok=True)
 

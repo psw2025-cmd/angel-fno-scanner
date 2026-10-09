@@ -593,3 +593,7 @@ Heartbeat cell conflated row count with sync timestamp, corrupting health status
 
 ### What changed
 - Enforced canonical `ZoneInfo("Asia/Kolkata")` in `get_ist_time()`, replacing naive UTC+5:30 arithmetic.
+
+## 2026-10-09 - Exchange tick provenance hardening (draft)
+- Strict exchFeedTime and 219 distinct futures coverage; fail closed on missing metadata.
+- Local staged snapshot rollback; full live Sheets/BQ/Git reconciliation remains unverified.

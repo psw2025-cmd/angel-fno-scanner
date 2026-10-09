@@ -40,6 +40,9 @@ jobs:
       WRITER_ID: market_bot
       RUN_ID: ${{ github.run_id }}
       GIT_SHA: ${{ github.sha }}
+      ANGEL_CYCLE_METADATA_FILE: /tmp/cycle_metadata.json
+      ANGEL_REQUIRE_EXCHANGE_TIME: '1'
+      ANGEL_MARKET_SESSION: EOD
 
     steps:
       - name: Checkout Code
@@ -70,6 +73,7 @@ jobs:
         run: |
           set -eo pipefail
           python scanner.py
+          python tools/check_freshness.py --metadata /tmp/cycle_metadata.json --market-session EOD
           python3 agent_cli.py --export-snapshots
           python scripts/sync_cycle_provenance_to_bq.py
 
