@@ -215,6 +215,8 @@ def export_snapshots(output_dir="data"):
     fields = ("source_timestamp", "run_id", "git_sha", "cycle_id", "market_session")
     if any(not meta.get(k) for k in fields):
         raise RuntimeError("cycle metadata incomplete; snapshot export blocked")
+    if meta.get("data_freshness_status") != "EXCHANGE_VERIFIED":
+        raise RuntimeError("cycle metadata not exchange verified; snapshot export blocked")
     subprocess.check_call([sys.executable, str(Path(REPO_DIR) / "tools" / "check_freshness.py"),
         "--source-timestamp", str(meta["source_timestamp"]), "--run-id", str(meta["run_id"]),
         "--git-sha", str(meta["git_sha"]), "--cycle-id", str(meta["cycle_id"]),
@@ -226,7 +228,7 @@ def export_snapshots(output_dir="data"):
     stage.mkdir(parents=True)
     try:
         rel_stage = str(stage.relative_to(REPO_DIR))
-        result = _export_snapshots_unstaged(output_dir=rel_stage)
+        result = _export_snapshots_unstaged(output_dir=rel_stage, verified_source_timestamp=str(meta["source_timestamp"]))
         names = ("latest_predictions.json", "top_gapup.json", "breakouts.json",
                  "market_news.json", "system_health.json", "next_day_gap_predictions.json", "summary.md")
         publish_bundle(stage, Path(REPO_DIR) / output_dir, names)
@@ -237,7 +239,7 @@ def export_snapshots(output_dir="data"):
         raise
 
 
-def _export_snapshots_unstaged(output_dir="data"):
+def _export_snapshots_unstaged(output_dir="data", verified_source_timestamp=None):
     target_dir = os.path.join(REPO_DIR, output_dir)
     os.makedirs(target_dir, exist_ok=True)
 
@@ -287,10 +289,11 @@ def _export_snapshots_unstaged(output_dir="data"):
             for p in all_recs
             if p.get("exchFeedTime") or p.get("timestamp")
         ]
-    if not feed_candidates and health.get("timestamp_utc"):
-        feed_candidates = [health.get("timestamp_utc")]
+    if not feed_candidates and verified_source_timestamp:
+        # Cycle metadata is validated by check_freshness before export; never use writer clock.
+        feed_candidates = [verified_source_timestamp]
     if not feed_candidates:
-        raise ValueError("Missing exchange timestamp in predictions snapshot; fail-closed")
+        raise ValueError("Missing exchange timestamp and verified cycle provenance; fail-closed")
     now_str = str(min(feed_candidates))
     md = f"""# Angel One F&O Prediction & Market Intelligence Snapshot
 **Generated**: `{now_str}` | **System Status**: `🟢 {health['status']}`
