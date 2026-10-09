@@ -1036,3 +1036,6 @@ If any critical category is unknown or contradictory, status is not fully produc
 This file is the permanent starting point. Read it first. Use Issue #3 for living state. Preserve evidence. Resolve disagreements through independent verification. Leave the project more truthful, safer, and more measurable than you found it.
 
 Agents: read FRONT.md first. Autonomous for paper-only work, no approval needed for paper tasks. Paper-only lock is permanent: no live orders, no force-push to main, no secrets in files.
+
+## Mandatory forensic verification before every agent change
+All agents MUST read `docs/AGENT_FORENSIC_GATES.md` and execute the applicable layered tests, source/encoding checks, non-destructive Git preflight and evidence recording before claiming PASS. Never confuse external verification failure with CLI parser failure. No unverified production activation or live trading.

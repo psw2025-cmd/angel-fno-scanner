@@ -49,3 +49,6 @@ Before editing any file, read `docs/AGENT_LOCK.md`. If another agent holds the l
 
 ## Rule 16 — Never delete history
 Append to `CHANGELOG.md` and `DEFECT_REGISTER.md`. Do not remove entries, even for closed defects. History is the audit trail.
+
+## Rules 17–30 — Mandatory forensic verification
+The complete, enforceable definitions and regression matrix are in [AGENT_FORENSIC_GATES.md](AGENT_FORENSIC_GATES.md). These rules cover structural source edits, AST+CLI+JSON tests, one logical commit, clean Git preflight, evidence before commit, no force push, pinned interpreter, mock/live isolation, stderr/encoding, error classification, impact search, independent cross-agent review, durable proof, and fail-closed blockers.
