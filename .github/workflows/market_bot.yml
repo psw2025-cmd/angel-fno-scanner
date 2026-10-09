@@ -81,9 +81,19 @@ jobs:
           git add data/
           if ! git diff-index --quiet HEAD --; then
             git commit -m "chore(data): auto-update daily prediction snapshots [skip ci]"
+            pushed=0
             for i in 1 2 3 4 5; do
-              git pull --rebase origin main && git push origin main && break || sleep 15
+              echo "Snapshot push attempt $i/5"
+              if git push origin HEAD:main; then
+                pushed=1
+                break
+              fi
+              if [ "$i" -lt 5 ]; then sleep 15; fi
             done
+            if [ "$pushed" -ne 1 ]; then
+              echo "::error::Snapshot push failed after 5 attempts; publication is NOT complete"
+              exit 1
+            fi
           else
             echo "No data changes to commit."
           fi
