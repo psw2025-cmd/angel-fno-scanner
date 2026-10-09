@@ -78,8 +78,8 @@ def main():
                               "bigquery":"NOT_VERIFIED_OR_PARTIAL"}
     report=Path(a.report)
     report.parent.mkdir(parents=True,exist_ok=True)
-    report.write_text("# Sheets / BigQuery independent reconciliation\n\n"+ 
-                      "Read-only audit. No inferred production success.\n\n"+ 
+    report.write_text("# Sheets / BigQuery independent reconciliation\n\n"+
+                      "Read-only audit. No inferred production success.\n\n"+
                       "```json\n"+json.dumps(r,indent=2,default=str)+"\n```\n",encoding="utf-8")
     print(json.dumps(r,default=str))
     return 0 if r["status"]=="PASS" else 1
