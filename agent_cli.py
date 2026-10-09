@@ -458,10 +458,18 @@ def main():
         reconcile_next_day_gap_trades(smartApi, sh, bq_client, preds, now_str, now_dt)
         print("[SUCCESS] Overnight gap trade reconciliation complete!")
     elif args.verify:
-        res = run_full_verification()
-        format_output(res, args.format, title="Forensic System Verification Audit")
-        if res["status"] != "PASS":
-            sys.exit(1)
+    elif args.verify:
+        if getattr(args, 'json_only', False):
+            import io, contextlib
+            _buf = io.StringIO()
+            with contextlib.redirect_stdout(_buf):
+                res = run_full_verification()
+            format_output(res, "json", title="")
+        else:
+            res = run_full_verification()
+            format_output(res, args.format, title="Forensic System Verification Audit")
+            if res["status"] != "PASS":
+                sys.exit(1)
     elif args.export_snapshots:
         res = export_snapshots()
         format_output(res, args.format, title="Snapshot Export Status")
