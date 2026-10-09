@@ -47,10 +47,21 @@ def query_pbi_telemetry():
             msm = raw.get("msm")
             ports = raw.get("ports")
 
-            pbi_list = [pbi] if isinstance(pbi, dict) else (pbi if isinstance(pbi, list) else [])
-            msm_list = [msm] if isinstance(msm, dict) else (msm if isinstance(msm, list) else [])
-            ports_list = [ports] if isinstance(ports, dict) else (ports if isinstance(ports, list) else [])
-            return pbi_list, msm_list, ports_list
+            def _filter_procs(v):
+                if isinstance(v, dict):
+                    return [v] if v.get("Id") else []
+                if isinstance(v, list):
+                    return [x for x in v if isinstance(x, dict) and x.get("Id")]
+                return []
+
+            def _filter_ports(v):
+                if isinstance(v, dict):
+                    return [v] if v.get("LocalPort") else []
+                if isinstance(v, list):
+                    return [x for x in v if isinstance(x, dict) and x.get("LocalPort")]
+                return []
+
+            return _filter_procs(pbi), _filter_procs(msm), _filter_ports(ports)
     except Exception:
         pass
     return [], [], []
