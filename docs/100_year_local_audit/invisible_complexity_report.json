@@ -1,0 +1,453 @@
+{
+  "audit_version": "100_YEAR_AUTONOMY_V1",
+  "generated_at_utc": "2026-10-09T08:01:54.283470+00:00",
+  "summary": {
+    "timestamp_bypasses_count": 22,
+    "hardcoded_flags_count": 7,
+    "analyzed_workflow_runs_count": 25
+  },
+  "invisible_timestamp_bypasses": [
+    {
+      "file": "agent_cli.py",
+      "line": 277,
+      "snippet": "now_str = datetime.datetime.now(datetime.timezone.utc).strftime(\"%Y-%m-%d %H:%M:%S UTC\")",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "System clock used as data timestamp instead of exchFeedTime",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "angel_prediction_engine.py",
+      "line": 1585,
+      "snippet": "now_ts = time.time()",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "Epoch wall clock comparison without exchange time alignment",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "gainers.py",
+      "line": 244,
+      "snippet": "feed = str(raw.get(\"exchFeedTime\") or raw.get(\"exchTradeTime\") or \"\")",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "Fallback to empty string on missing exchange feed time",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "paper_log.py",
+      "line": 181,
+      "snippet": "stamped = now.strftime(\"%Y-%m-%d %H:%M:%S\")",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "Scanner stamped with host wall-clock rather than earliest tick",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "paper_log.py",
+      "line": 223,
+      "snippet": "stamped = now.strftime(\"%Y-%m-%d %H:%M:%S\")",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "Scanner stamped with host wall-clock rather than earliest tick",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "scanner.py",
+      "line": 44,
+      "snippet": "timestamp_str = datetime.datetime.now(datetime.timezone.utc).strftime(\"%Y%m%d_%H%M%S\")",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "System clock used as data timestamp instead of exchFeedTime",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "scanner.py",
+      "line": 402,
+      "snippet": "started = time.time()",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "Epoch wall clock comparison without exchange time alignment",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "scanner.py",
+      "line": 406,
+      "snippet": "while time.time() - started < MAX_RUNTIME_SECONDS:",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "Epoch wall clock comparison without exchange time alignment",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "scanner.py",
+      "line": 408,
+      "snippet": "stamped = now.strftime(\"%Y-%m-%d %H:%M:%S\")",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "Scanner stamped with host wall-clock rather than earliest tick",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "scanner.py",
+      "line": 574,
+      "snippet": "if market_is_open(now) and (time.time() - last_prediction_epoch >= PREDICTION_INTERVAL_SECONDS):",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "Epoch wall clock comparison without exchange time alignment",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "scanner.py",
+      "line": 578,
+      "snippet": "last_prediction_epoch = time.time()",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "Epoch wall clock comparison without exchange time alignment",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "scanner.py",
+      "line": 585,
+      "snippet": "remaining = MAX_RUNTIME_SECONDS - (time.time() - started)",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "Epoch wall clock comparison without exchange time alignment",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "scripts/forward_validation.py",
+      "line": 551,
+      "snippet": "if time.time() - lock_file.stat().st_mtime > 120:",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "Epoch wall clock comparison without exchange time alignment",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "scripts/infra_readiness.py",
+      "line": 281,
+      "snippet": "stamp = dt.datetime.now(ZoneInfo('Asia/Kolkata')).strftime('%Y%m%d_%H%M%S_%f')",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "System clock used as data timestamp instead of exchFeedTime",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "staging_review/angel_prediction_engine_patch.py",
+      "line": 26,
+      "snippet": "ts = datetime.datetime.now().strftime(\"%Y%m%d_%H%M%S\")",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "System clock used as data timestamp instead of exchFeedTime",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "tools/n8n_sync.py",
+      "line": 32,
+      "snippet": "stamp = dt.datetime.now().strftime(\"%Y%m%d_%H%M%S\")",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "System clock used as data timestamp instead of exchFeedTime",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "tools/n8n_sync.py",
+      "line": 53,
+      "snippet": "now = dt.datetime.now(dt.timezone.utc).strftime(\"%Y-%m-%d %H:%M:%S.%f\")[:-3]",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "System clock used as data timestamp instead of exchFeedTime",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "tools/n8n_sync.py",
+      "line": 77,
+      "snippet": "now = dt.datetime.now(dt.timezone.utc).strftime(\"%Y-%m-%d %H:%M:%S.%f\")[:-3]",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "System clock used as data timestamp instead of exchFeedTime",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "tools/sync_colab_notebook.py",
+      "line": 75,
+      "snippet": "\"    'colab_timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),\\n\",",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "System clock used as data timestamp instead of exchFeedTime",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "tools/update_tracker.py",
+      "line": 36,
+      "snippet": "return datetime.now(IST).strftime(\"%Y-%m-%d %H:%M:%S IST\")",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "System clock used as data timestamp instead of exchFeedTime",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "tools/verify_harness.py",
+      "line": 739,
+      "snippet": "ts_str = datetime.datetime.now().strftime(\"%Y%m%d_%H%M%S\")",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "System clock used as data timestamp instead of exchFeedTime",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    },
+    {
+      "file": "tools/runtime/n8n_watchdog.py",
+      "line": 69,
+      "snippet": "now = time.time()",
+      "issue_type": "TIMESTAMP_BYPASS",
+      "description": "Epoch wall clock comparison without exchange time alignment",
+      "risk": "HIGH: Allows stale data to be published as fresh if exchange data freezes"
+    }
+  ],
+  "hardcoded_safety_flags": [
+    {
+      "file": "scripts/make_evidence_bundle.py",
+      "line": 151,
+      "snippet": "| workflow overlap/concurrency | VERIFIED_LOCAL | Overlapping workflow runs could collide | `concurrency: group: market-bot, cancel-in-progr",
+      "issue_type": "HARDCODED_SAFETY_FLAG",
+      "description": "Concurrent workflow run cancellation disabled",
+      "risk": "MEDIUM: May bypass dry-run isolation or execute unauthorized writes"
+    },
+    {
+      "file": "tests/test_automation_integrity.py",
+      "line": 12,
+      "snippet": "assert \"cancel-in-progress: false\" in text",
+      "issue_type": "HARDCODED_SAFETY_FLAG",
+      "description": "Concurrent workflow run cancellation disabled",
+      "risk": "MEDIUM: May bypass dry-run isolation or execute unauthorized writes"
+    },
+    {
+      "file": "tests/test_prediction_engine.py",
+      "line": 656,
+      "snippet": "monkeypatch.setenv(\"ALLOW_PRODUCTION_WRITES\", \"1\")",
+      "issue_type": "HARDCODED_SAFETY_FLAG",
+      "description": "ALLOW_PRODUCTION_WRITES hardcoded to 1",
+      "risk": "MEDIUM: May bypass dry-run isolation or execute unauthorized writes"
+    },
+    {
+      "file": "tests/test_publication_integrity.py",
+      "line": 94,
+      "snippet": "for k,v in {'ALLOW_PRODUCTION_WRITES':'1','WRITER_ID':'market_bot','RUN_ID':'12345','GIT_SHA':'abc123'}.items():",
+      "issue_type": "HARDCODED_SAFETY_FLAG",
+      "description": "ALLOW_PRODUCTION_WRITES hardcoded to 1",
+      "risk": "MEDIUM: May bypass dry-run isolation or execute unauthorized writes"
+    },
+    {
+      "file": "tests/test_single_writer_architecture.py",
+      "line": 21,
+      "snippet": "monkeypatch.setenv(\"ALLOW_PRODUCTION_WRITES\", \"1\")",
+      "issue_type": "HARDCODED_SAFETY_FLAG",
+      "description": "ALLOW_PRODUCTION_WRITES hardcoded to 1",
+      "risk": "MEDIUM: May bypass dry-run isolation or execute unauthorized writes"
+    },
+    {
+      "file": "tests/test_universe_contract.py",
+      "line": 65,
+      "snippet": "monkeypatch.setenv(\"ALLOW_PRODUCTION_WRITES\", \"1\")",
+      "issue_type": "HARDCODED_SAFETY_FLAG",
+      "description": "ALLOW_PRODUCTION_WRITES hardcoded to 1",
+      "risk": "MEDIUM: May bypass dry-run isolation or execute unauthorized writes"
+    },
+    {
+      "file": "tests/test_universe_contract.py",
+      "line": 88,
+      "snippet": "monkeypatch.setenv(\"ALLOW_PRODUCTION_WRITES\", \"1\")",
+      "issue_type": "HARDCODED_SAFETY_FLAG",
+      "description": "ALLOW_PRODUCTION_WRITES hardcoded to 1",
+      "risk": "MEDIUM: May bypass dry-run isolation or execute unauthorized writes"
+    }
+  ],
+  "recent_workflow_runs": [
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-09T07:42:26Z",
+      "databaseId": 37900561389,
+      "event": "push",
+      "headSha": "73ad18df4e1924e1cf3dc97053cd05e36799bb53",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-09T07:39:09Z",
+      "databaseId": 37900246333,
+      "event": "workflow_dispatch",
+      "headSha": "bb128516ceb28d938689d1f0212aa8037a942d99",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "createdAt": "2026-10-09T07:33:48Z",
+      "databaseId": 37899733397,
+      "event": "workflow_dispatch",
+      "headSha": "a8ab62feb17481337363802064a95884fc4d605e",
+      "status": "completed"
+    },
+    {
+      "conclusion": "cancelled",
+      "createdAt": "2026-10-09T06:04:17Z",
+      "databaseId": 37891631882,
+      "event": "workflow_dispatch",
+      "headSha": "eacbf2281fc9c6ad0234eb3f5ffa7fde6766e226",
+      "status": "completed"
+    },
+    {
+      "conclusion": "cancelled",
+      "createdAt": "2026-10-09T06:02:28Z",
+      "databaseId": 37891477985,
+      "event": "workflow_dispatch",
+      "headSha": "eacbf2281fc9c6ad0234eb3f5ffa7fde6766e226",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-09T05:59:40Z",
+      "databaseId": 37891229917,
+      "event": "workflow_dispatch",
+      "headSha": "eacbf2281fc9c6ad0234eb3f5ffa7fde6766e226",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-08T17:36:12Z",
+      "databaseId": 37817842612,
+      "event": "schedule",
+      "headSha": "20948dfb02cb3d85226520f09109da04cad2d224",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "createdAt": "2026-10-08T16:29:12Z",
+      "databaseId": 37809155384,
+      "event": "push",
+      "headSha": "8c8392f927fe761b1896e18df9f080ec01ac2c7f",
+      "status": "completed"
+    },
+    {
+      "conclusion": "cancelled",
+      "createdAt": "2026-10-08T16:29:09Z",
+      "databaseId": 37809148186,
+      "event": "push",
+      "headSha": "3ea322da66067fcf3af24a9f872adfbb84b2bbd6",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "createdAt": "2026-10-08T16:29:04Z",
+      "databaseId": 37809138789,
+      "event": "push",
+      "headSha": "cc998f2c5d32e9a411c445a69853dbe278ce5ba0",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-08T12:57:50Z",
+      "databaseId": 37780673832,
+      "event": "push",
+      "headSha": "82797c6aad256df1f7eba38ddaad9539b0b8eb13",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-08T10:56:13Z",
+      "databaseId": 37766753393,
+      "event": "schedule",
+      "headSha": "6c509d190356a33cf9bff776a472d2d29f3957df",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-08T09:57:22Z",
+      "databaseId": 37760217482,
+      "event": "workflow_dispatch",
+      "headSha": "104ea476a1371908914eddcf72e77d0a8a892f27",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "createdAt": "2026-10-08T08:09:06Z",
+      "databaseId": 37747940360,
+      "event": "push",
+      "headSha": "02849085cba90c650b402addeb03cc0cf2771581",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-08T07:19:51Z",
+      "databaseId": 37742760310,
+      "event": "workflow_dispatch",
+      "headSha": "a0c2390e2d8d2e82412e91c363a26757593b1fe8",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-07T14:15:44Z",
+      "databaseId": 37635217903,
+      "event": "workflow_dispatch",
+      "headSha": "fb1ba4c6be41712595236aac86c09b18bd3a63b5",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "createdAt": "2026-10-07T14:08:16Z",
+      "databaseId": 37634189736,
+      "event": "workflow_dispatch",
+      "headSha": "5dd9b774a87fe979a54652d6b7c00621ac66e5fd",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "createdAt": "2026-10-07T14:00:01Z",
+      "databaseId": 37633028948,
+      "event": "workflow_dispatch",
+      "headSha": "8402bfdc75952813c8d02b5fb75e31bc9407f56a",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-07T10:34:59Z",
+      "databaseId": 37608355456,
+      "event": "schedule",
+      "headSha": "1dd4fff8a73426b76045e5bf78a05143fe55ee5d",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-07T03:47:11Z",
+      "databaseId": 37568363820,
+      "event": "workflow_dispatch",
+      "headSha": "6c3274eaef2797cdc59d1ce4e6170f0b4c051751",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-06T07:31:56Z",
+      "databaseId": 37430241808,
+      "event": "push",
+      "headSha": "e8ad9ffce828fa880a599f5ffd3f43e42c64071d",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "createdAt": "2026-10-05T20:26:12Z",
+      "databaseId": 37369717990,
+      "event": "push",
+      "headSha": "4d7e373f574ef6d77923c4b86a1f38041688fcab",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "createdAt": "2026-10-05T19:13:57Z",
+      "databaseId": 37361909428,
+      "event": "workflow_dispatch",
+      "headSha": "04c314c7f51bc5cbda49eef904675a733409be92",
+      "status": "completed"
+    },
+    {
+      "conclusion": "cancelled",
+      "createdAt": "2026-10-05T19:13:32Z",
+      "databaseId": 37361857190,
+      "event": "push",
+      "headSha": "04c314c7f51bc5cbda49eef904675a733409be92",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-05T11:33:22Z",
+      "databaseId": 37303685472,
+      "event": "push",
+      "headSha": "163884a3302a4060c523c1931ddb192e83c3991d",
+      "status": "completed"
+    }
+  ],
+  "architectural_recommendations": [
+    "1. Enforce strict EXCHANGE_VERIFIED requirement on every quote before acceptance (no wall-clock fallbacks).",
+    "2. Make ALLOW_PRODUCTION_WRITES strictly conditional on valid exchange timestamp freshness within 90 seconds.",
+    "3. Enforce pre-push git rebase lock to prevent snapshot push race collisions.",
+    "4. Separate fetch, validate, and publish into 3 isolated pure layers with circuit breakers."
+  ]
+}

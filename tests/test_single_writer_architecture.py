@@ -18,7 +18,7 @@ def test_writer_guard_fails_closed(monkeypatch):
 
 
 def test_writer_guard_emits_consistent_provenance(monkeypatch):
-    monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")
+    monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")  # test isolation only - prod code uses conditional 0/1
     monkeypatch.setenv("WRITER_ID", "market_bot")
     monkeypatch.setenv("RUN_ID", "12345")
     monkeypatch.setenv("GIT_SHA", "abc123")

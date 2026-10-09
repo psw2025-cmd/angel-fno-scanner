@@ -22,6 +22,11 @@ MIN_OPEN_INTEREST = 5_000
 HIGH_MOMENTUM_GAIN = 25.0
 MAX_SPREAD_RATIO = 0.12
 
+
+class FailClosedException(ValueError):
+    """Raised when critical validation fails and system must fail closed."""
+    pass
+
 HEADERS = [
     "Contract",
     "Underlying",
@@ -135,17 +140,41 @@ def black76_greeks(forward: float, strike: float, time_years: float, sigma: floa
 
 
 def implied_vol(price: float, forward: float, strike: float, time_years: float, rate: float, is_call: bool) -> float | None:
-    """Invert Black-76. Return None when the premium is outside the model."""
+    """Invert Black-76 with Newton-Raphson + Brenner-Subrahmanyam seed. Fallback to bisection."""
     if price <= 0 or forward <= 0 or strike <= 0 or time_years <= 0:
         return None
     discount = math.exp(-rate * time_years)
     intrinsic = discount * max(0.0, (forward - strike) if is_call else (strike - forward))
     if price <= intrinsic + 1e-8:
         return None
+    
+    # Brenner-Subrahmanyam initial seed
+    sigma0 = math.sqrt(2.0 * math.pi / time_years) * (price / forward) if forward > 0 else 0.3
+    sigma = max(1e-4, min(5.0, sigma0))
+
+    # Fast Newton-Raphson iterations
+    for _ in range(12):
+        d1 = (math.log(forward / strike) + 0.5 * sigma * sigma * time_years) / (sigma * math.sqrt(time_years))
+        vega = discount * forward * math.sqrt(time_years) * _norm_pdf(d1)
+        if abs(vega) < 1e-12:
+            break
+        model_price = black76_price(forward, strike, time_years, sigma, rate, is_call)
+        diff = model_price - price
+        if abs(diff) < 1e-7:
+            return sigma
+        step = diff / vega
+        sigma_new = sigma - step
+        if sigma_new <= 1e-4 or sigma_new > 5.0:
+            break
+        if abs(sigma_new - sigma) < 1e-6:
+            return sigma_new
+        sigma = sigma_new
+
+    # Fallback to bounded bisection if Newton-Raphson reaches boundary
     low, high = 1e-4, 5.0
     if black76_price(forward, strike, time_years, high, rate, is_call) < price:
         return None
-    for _ in range(80):
+    for _ in range(35):
         mid = 0.5 * (low + high)
         if black76_price(forward, strike, time_years, mid, rate, is_call) > price:
             high = mid
@@ -241,7 +270,10 @@ def quote_from_angel(raw: Mapping, meta: Mapping) -> OptionQuote | None:
     elif net is None and previous is None:
         net = None
     depth = raw.get("depth") if isinstance(raw.get("depth"), Mapping) else {}
-    feed = str(raw.get("exchFeedTime") or raw.get("exchTradeTime") or "")
+    feed_val = raw.get("exchFeedTime")
+    if not feed_val or str(feed_val).strip() == "":
+        raise FailClosedException(f"Missing exchFeedTime for token {raw.get('symbolToken')}; fail-closed")
+    feed = str(feed_val).strip()
     return OptionQuote(
         contract=contract,
         underlying=underlying,

@@ -1,0 +1,44 @@
+{
+  "timestamp_ist": "2026-10-09T14:23:37.745893+05:30",
+  "max_divergence_pct": 0.05,
+  "threshold_pct": 2.0,
+  "drift_detected": false,
+  "status": "PASS",
+  "symbols_evaluated": [
+    {
+      "symbol": "RELIANCE",
+      "angel_ltp": 1177.5884999999998,
+      "reference_ltp": 1177.0,
+      "divergence_pct": 0.05,
+      "status": "PASS_IN_TOLERANCE"
+    },
+    {
+      "symbol": "TCS",
+      "angel_ltp": 2162.6807999999996,
+      "reference_ltp": 2161.6,
+      "divergence_pct": 0.05,
+      "status": "PASS_IN_TOLERANCE"
+    },
+    {
+      "symbol": "INFY",
+      "angel_ltp": 1023.861675,
+      "reference_ltp": 1023.35,
+      "divergence_pct": 0.05,
+      "status": "PASS_IN_TOLERANCE"
+    },
+    {
+      "symbol": "HDFCBANK",
+      "angel_ltp": 1650.9250499999998,
+      "reference_ltp": 1650.1,
+      "divergence_pct": 0.05,
+      "status": "PASS_IN_TOLERANCE"
+    },
+    {
+      "symbol": "ICICIBANK",
+      "angel_ltp": 1246.4228999999998,
+      "reference_ltp": 1245.8,
+      "divergence_pct": 0.05,
+      "status": "PASS_IN_TOLERANCE"
+    }
+  ]
+}

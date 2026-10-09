@@ -91,6 +91,7 @@ class BQ:
 
 @pytest.fixture
 def authorized(monkeypatch):
+    # test isolation only - prod code uses conditional 0/1
     for k,v in {'ALLOW_PRODUCTION_WRITES':'1','WRITER_ID':'market_bot','RUN_ID':'12345','GIT_SHA':'abc123'}.items():
         monkeypatch.setenv(k,v)
 
