@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "timestamp": "2026-10-08T17:45:09.732911+00:00",
+  "timestamp": "2026-10-09T06:10:15.654065+00:00",
   "sheets_audit": {
     "passed": true,
     "summary": {
@@ -22,7 +22,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 92,
+        "row_count": 57,
         "col_count": 18
       },
       "LEGACY_F&O_DASHBOARD_OBJECT": {
@@ -43,7 +43,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 875,
+        "row_count": 1057,
         "col_count": 8
       },
       "Cloud_Automation_Setup": {
@@ -85,7 +85,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 1047,
+        "row_count": 1068,
         "col_count": 11
       },
       "NEWS_LIVE": {
@@ -131,18 +131,18 @@
       "option_predictions_live": {
         "exists": true,
         "rows": 219,
-        "size_mb": 0.13,
+        "size_mb": 0.14,
         "columns": 54
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 12466,
-        "size_mb": 11.5,
+        "rows": 12809,
+        "size_mb": 11.86,
         "columns": 26
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 282,
+        "rows": 283,
         "size_mb": 0.19,
         "columns": 16
       }
@@ -151,9 +151,9 @@
   "publication": {
     "passed": true,
     "summary": {
-      "cycle_id": "37817842612:087956f3368f46eb836d770768181828",
-      "run_id": "37817842612",
-      "git_sha": "20948dfb02cb3d85226520f09109da04cad2d224",
+      "cycle_id": "37891229917:1583f7c966524e999f03f2d1485f6ab2",
+      "run_id": "37891229917",
+      "git_sha": "eacbf2281fc9c6ad0234eb3f5ffa7fde6766e226",
       "writer_id": "market_bot"
     }
   },
