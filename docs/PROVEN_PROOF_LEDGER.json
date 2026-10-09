@@ -1,157 +1,188 @@
 {
-  "schema_version": "1.0",
-  "purpose": "Evidence ledger, not certification",
-  "mode": "PAPER_ONLY",
+  "schema_version": "2.0",
+  "kind": "baseline",
+  "source": "Phase 3 PR #45",
+  "policy": "No PASS without executed command and evidence; BLOCKED for unavailable environment",
   "checks": [
     {
-      "id": 1,
-      "check": "Laptop trap zero?",
-      "requested_cmd": "grep -r C:/AngelFNO_Workstation n8n-workflows/ | wc -l == 0",
+      "id": "P-01",
+      "check": "No emoji in print",
+      "cmd": "python -m py_compile verify_all_sheets_and_engine.py; scan stdout for emoji",
       "status": "NOT_RUN",
-      "observed_at_utc": null,
+      "timestamp": null,
       "source_sha": null,
-      "evidence": null,
-      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+      "evidence": null
     },
     {
-      "id": 2,
-      "check": "17 workflows in git?",
-      "requested_cmd": "ls n8n-workflows/*.json | wc -l",
+      "id": "P-02",
+      "check": "Orphans <10",
+      "cmd": "git status --porcelain --untracked-files=normal",
       "status": "NOT_RUN",
-      "observed_at_utc": null,
+      "timestamp": null,
       "source_sha": null,
-      "evidence": null,
-      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+      "evidence": null
     },
     {
-      "id": 3,
-      "check": "Sheets 219 == BQ 219?",
-      "requested_cmd": "python tools/verify_sheets_bq_reconciliation.py",
+      "id": "P-03",
+      "check": "Harness <20",
+      "cmd": "glob audit/verify_harness_*.json",
       "status": "NOT_RUN",
-      "observed_at_utc": null,
+      "timestamp": null,
       "source_sha": null,
-      "evidence": null,
-      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+      "evidence": null
     },
     {
-      "id": 4,
-      "check": "Checksum 3f6153d1e221ae43 full SHA verified?",
-      "requested_cmd": "python tools/checksum_full.py",
+      "id": "P-04",
+      "check": "desktop.ini zero",
+      "cmd": "git ls-files '**/desktop.ini'; inspect filesystem",
       "status": "NOT_RUN",
-      "observed_at_utc": null,
+      "timestamp": null,
       "source_sha": null,
-      "evidence": null,
-      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+      "evidence": null
     },
     {
-      "id": 5,
-      "check": "memory_guard 6 PASS?",
-      "requested_cmd": "python tools/memory_guard.py",
+      "id": "P-05",
+      "check": "Sheets 219 == BQ 219",
+      "cmd": "python tools/verify_sheets_bq_reconciliation.py",
       "status": "NOT_RUN",
-      "observed_at_utc": null,
+      "timestamp": null,
       "source_sha": null,
-      "evidence": null,
-      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+      "evidence": null
     },
     {
-      "id": 6,
-      "check": "pytest 221 PASS?",
-      "requested_cmd": "pytest -q",
+      "id": "P-06",
+      "check": "Checksum 3f6153d1e221ae43 verified full SHA",
+      "cmd": "python tools/checksum_full.py (full SHA + canonical input)",
       "status": "NOT_RUN",
-      "observed_at_utc": null,
+      "timestamp": null,
       "source_sha": null,
-      "evidence": null,
-      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+      "evidence": null
     },
     {
-      "id": 7,
-      "check": "n8n health 200?",
-      "requested_cmd": "curl localhost:5678/healthz",
+      "id": "P-07",
+      "check": "pytest 221",
+      "cmd": "python -m pytest -q",
       "status": "NOT_RUN",
-      "observed_at_utc": null,
+      "timestamp": null,
       "source_sha": null,
-      "evidence": null,
-      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+      "evidence": null
     },
     {
-      "id": 8,
-      "check": "N8N_USER_FOLDER canonical?",
-      "requested_cmd": "env | grep N8N_USER_FOLDER",
+      "id": "P-08",
+      "check": "memory_guard 6",
+      "cmd": "python tools/memory_guard.py",
       "status": "NOT_RUN",
-      "observed_at_utc": null,
+      "timestamp": null,
       "source_sha": null,
-      "evidence": null,
-      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+      "evidence": null
     },
     {
-      "id": 9,
-      "check": "No plaintext secrets?",
-      "requested_cmd": "grep -r gcp-service-account.json --exclude-dir=.git",
+      "id": "P-09",
+      "check": "healthz 200",
+      "cmd": "HTTP GET configured N8N_HEALTH_URL",
       "status": "NOT_RUN",
-      "observed_at_utc": null,
+      "timestamp": null,
       "source_sha": null,
-      "evidence": null,
-      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+      "evidence": null
     },
     {
-      "id": 10,
-      "check": "Deployment attestation?",
-      "requested_cmd": "curl cloud-api/version returns SHA",
+      "id": "P-10",
+      "check": "N8N_USER_FOLDER canonical",
+      "cmd": "read n8n service environment N8N_USER_FOLDER",
       "status": "NOT_RUN",
-      "observed_at_utc": null,
+      "timestamp": null,
       "source_sha": null,
-      "evidence": null,
-      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+      "evidence": null
     },
     {
-      "id": 11,
-      "check": "Single-writer lease?",
-      "requested_cmd": "check BQ commit marker",
+      "id": "P-11",
+      "check": "No plaintext secrets",
+      "cmd": "secret scan tracked content and history",
       "status": "NOT_RUN",
-      "observed_at_utc": null,
+      "timestamp": null,
       "source_sha": null,
-      "evidence": null,
-      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+      "evidence": null
     },
     {
-      "id": 12,
-      "check": "Restore drill?",
-      "requested_cmd": "ls backups/*.tar.gz",
+      "id": "P-12",
+      "check": "Deployment attestation",
+      "cmd": "GET authenticated cloud /version compare SHA",
       "status": "NOT_RUN",
-      "observed_at_utc": null,
+      "timestamp": null,
       "source_sha": null,
-      "evidence": null,
-      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+      "evidence": null
     },
     {
-      "id": 13,
-      "check": "Activation attestation?",
-      "requested_cmd": "desired_active == observed_active",
+      "id": "P-13",
+      "check": "Single-writer lease",
+      "cmd": "query fenced lease and BQ commit marker",
       "status": "NOT_RUN",
-      "observed_at_utc": null,
+      "timestamp": null,
       "source_sha": null,
-      "evidence": null,
-      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+      "evidence": null
     },
     {
-      "id": 14,
-      "check": "Negative IAM tests?",
-      "requested_cmd": "pytest tests/test_iam_deny.py",
+      "id": "P-14",
+      "check": "Restore drill exists",
+      "cmd": "execute cold restore drill with key recovery",
       "status": "NOT_RUN",
-      "observed_at_utc": null,
+      "timestamp": null,
       "source_sha": null,
-      "evidence": null,
-      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+      "evidence": null
     },
     {
-      "id": 15,
-      "check": "Cost cap?",
-      "requested_cmd": "gcloud billing budgets list",
+      "id": "P-15",
+      "check": "Activation attestation desired==observed",
+      "cmd": "compare signed desired and live observed workflow active state",
       "status": "NOT_RUN",
-      "observed_at_utc": null,
+      "timestamp": null,
       "source_sha": null,
-      "evidence": null,
-      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+      "evidence": null
+    },
+    {
+      "id": "P-16",
+      "check": "Negative IAM tests",
+      "cmd": "pytest tests/test_iam_deny.py against deployed IAM",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-17",
+      "check": "Cost cap",
+      "cmd": "gcloud billing budgets list plus quota alerts",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-18",
+      "check": "Verify 3x deterministic",
+      "cmd": "python agent_cli.py --verify --format json (three times)",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-19",
+      "check": "Git worktree <=1",
+      "cmd": "git worktree list --porcelain",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-20",
+      "check": "Branch count <=5",
+      "cmd": "git branch -r",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
     }
   ]
 }

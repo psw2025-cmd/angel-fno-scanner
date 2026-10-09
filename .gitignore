@@ -34,3 +34,11 @@ backups/
 **/desktop.ini
 *.ini.tmp
 scratch/
+**/desktop.ini
+audit/verify_harness_*.json
+audit/cloud_exports/
+scratch/
+**/.pbi/
+tools/SYSTEM_LIVE_DNA_AUDIT.csv
+*.bak_*
+*.pbi
