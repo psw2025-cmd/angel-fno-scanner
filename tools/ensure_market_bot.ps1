@@ -30,17 +30,30 @@ try {
         exit 0
     }
 
-    $raw = gh run list --repo $Repo --workflow $Workflow --limit 20 --json databaseId,status,conclusion,createdAt,event,headSha,url
+    $raw = (gh run list --repo $Repo --workflow $Workflow --limit 20 --json databaseId,status,conclusion,createdAt,event,headSha,url) -join "`n"
     if ($LASTEXITCODE -ne 0) {
         throw 'gh run list failed'
     }
-    $runs = @($raw | ConvertFrom-Json)
+    $parsedJson = ConvertFrom-Json $raw
+    $runs = @()
+    foreach ($item in $parsedJson) {
+        $runs += $item
+    }
     $cutoff = [DateTime]::UtcNow.AddMinutes(-20)
 
-    $recent = @($runs | Where-Object {
-        $_.status -in @('queued','in_progress','waiting','pending') -or
-        ([DateTime]::Parse($_.createdAt).ToUniversalTime() -ge $cutoff)
-    })
+    $recent = @()
+    foreach ($r in $runs) {
+        if ($r.status -in @('queued','in_progress','waiting','pending')) {
+            $recent += $r
+        } else {
+            try {
+                $parsed = [DateTimeOffset]::Parse($r.createdAt).UtcDateTime
+                if ($parsed -ge $cutoff) {
+                    $recent += $r
+                }
+            } catch {}
+        }
+    }
 
     if ($recent.Count -gt 0) {
         $r = $recent | Select-Object -First 1
