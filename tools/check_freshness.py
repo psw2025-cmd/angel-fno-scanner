@@ -24,7 +24,7 @@ def validate(source_timestamp, run_id, git_sha, cycle_id, market_session, *, exp
         raise ValueError("source timestamp must include timezone")
     current = now or dt.datetime.now(dt.timezone.utc)
     age = (current - stamp).total_seconds()
-    maximum = 120 if market_session == "OPEN" else 3600
+    maximum = 120 if market_session == "OPEN" else 86400  # EOD: reject only yesterday-old data
     if age < -30 or age > maximum:
         raise ValueError(f"source timestamp out of range: {age:.0f}s (max {maximum}s)")
     return {"status": "PASS", "age_seconds": round(age), "max_age_seconds": maximum, **identity}
