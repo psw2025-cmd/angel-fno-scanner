@@ -607,3 +607,5 @@ Heartbeat cell conflated row count with sync timestamp, corrupting health status
 - Add dry_run workflow dispatch path with no scanner, snapshot export, BigQuery sync or git push.
 - Add real Angel FULL read-only timestamp coverage probe and runner artifact; support Angel IST exchange format.
 - Update single-writer architecture test to verify dispatch isolation.
+
+- Read-only probe explicitly disables chunk-level timestamp rejection so partial exchange timestamp coverage remains measurable.
