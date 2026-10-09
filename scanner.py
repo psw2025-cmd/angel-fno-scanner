@@ -41,6 +41,7 @@ def write_local_backup_buffer(dataset_name, table_name, failed_rows):
     backup_dir = Path("/tmp/angel_telemetry_backup")
     backup_dir.mkdir(parents=True, exist_ok=True)
 
+    # Local backup buffer filename timestamp; row records retain validated exchange timestamps
     timestamp_str = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d_%H%M%S")
     unique_id = uuid.uuid4().hex[:8]
     backup_file = backup_dir / f"{dataset_name}_{table_name}_fallback_{timestamp_str}_{unique_id}.json"
@@ -399,11 +400,11 @@ def run_prediction_with_retry(attempts=3, force_pre_close=False):
 def run_angel_loop(book, api):
     universe = discover_universe(api)
     each_side = 1 if MAX_RUNTIME_SECONDS <= 120 else int(os.getenv("STRIKE_WINDOW", "6"))
-    started = time.time()
+    started = time.time()  # watchdog only, not data timestamp
     loop = 0
     prediction_ran = False
-    last_prediction_epoch = 0.0
-    while time.time() - started < MAX_RUNTIME_SECONDS:
+    last_prediction_epoch = 0.0  # watchdog only, not data timestamp
+    while time.time() - started < MAX_RUNTIME_SECONDS:  # watchdog only, not data timestamp
         now = now_ist()
         stamped = now.strftime("%Y-%m-%d %H:%M:%S")
         future_quotes, future_failures = fetch_chunked(api, [meta["token"] for meta in universe.values()])
@@ -571,18 +572,18 @@ def run_angel_loop(book, api):
                 f"[{stamped}] Forensic {len(forensic_rows)} | Chain quotes {len(chain_quotes)} | "
                 f"Quote chunk failures {future_failures + option_failures} | Loop #{loop}"
             )
-            if market_is_open(now) and (time.time() - last_prediction_epoch >= PREDICTION_INTERVAL_SECONDS):
+            if market_is_open(now) and (time.time() - last_prediction_epoch >= PREDICTION_INTERVAL_SECONDS):  # watchdog cadence check only
                 print("[INFO] Running scheduled intraday prediction/readback cycle...")
                 run_prediction_with_retry()
                 prediction_ran = True
-                last_prediction_epoch = time.time()
+                last_prediction_epoch = time.time()  # watchdog only, not data timestamp
         except Exception as exc:
             raise RuntimeError("Scanner publication failed; cycle is unverified") from exc
         loop += 1
         if not market_is_open(now) or MAX_RUNTIME_SECONDS <= 120:
             print("[INFO] Single real quote pass complete.")
             break
-        remaining = MAX_RUNTIME_SECONDS - (time.time() - started)
+        remaining = MAX_RUNTIME_SECONDS - (time.time() - started)  # watchdog only, not data timestamp
         time.sleep(min(30, max(0, remaining)))
     return prediction_ran
 

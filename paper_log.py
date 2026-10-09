@@ -178,7 +178,11 @@ def alerts_to_append(existing: Sequence[Sequence], signals: Sequence[dict], now:
                 str(_cell(row, columns["side"])).strip().upper(),
             ))
     session_date = now.strftime("%Y-%m-%d")
-    stamped = now.strftime("%Y-%m-%d %H:%M:%S")
+    if hasattr(now, "tzinfo") and now.tzinfo is not None:
+        from zoneinfo import ZoneInfo
+        stamped = now.astimezone(ZoneInfo("Asia/Kolkata")).strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        stamped = now.strftime("%Y-%m-%d %H:%M:%S")
     fresh = []
     for signal in signals:
         symbol = str(signal.get("symbol") or "").strip().upper()
@@ -220,7 +224,11 @@ def fill_later_changes(existing: Sequence[Sequence], latest: dict[str, float], n
     if None in columns.values():
         return None
     today = now.strftime("%Y-%m-%d")
-    stamped = now.strftime("%Y-%m-%d %H:%M:%S")
+    if hasattr(now, "tzinfo") and now.tzinfo is not None:
+        from zoneinfo import ZoneInfo
+        stamped = now.astimezone(ZoneInfo("Asia/Kolkata")).strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        stamped = now.strftime("%Y-%m-%d %H:%M:%S")
     changed = False
     output = [list(header)]
     for row in existing[1:]:

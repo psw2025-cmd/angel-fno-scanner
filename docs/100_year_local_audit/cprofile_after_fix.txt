@@ -1,0 +1,19 @@
+         251934 function calls in 0.271 seconds
+
+   Ordered by: cumulative time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     1000    0.040    0.000    0.271    0.000 C:\AngelFNO_Workstation\repos\angel-fno-scanner\gainers.py:142(implied_vol)
+    17562    0.086    0.000    0.208    0.000 C:\AngelFNO_Workstation\repos\angel-fno-scanner\gainers.py:106(black76_price)
+    35124    0.037    0.000    0.075    0.000 C:\AngelFNO_Workstation\repos\angel-fno-scanner\gainers.py:89(_norm_cdf)
+    65713    0.031    0.000    0.031    0.000 {built-in method math.sqrt}
+    37077    0.024    0.000    0.024    0.000 {built-in method builtins.max}
+    35124    0.021    0.000    0.021    0.000 {built-in method math.erf}
+    21584    0.011    0.000    0.011    0.000 {built-in method math.log}
+    22576    0.011    0.000    0.011    0.000 {built-in method math.exp}
+     4022    0.005    0.000    0.009    0.000 C:\AngelFNO_Workstation\repos\angel-fno-scanner\gainers.py:93(_norm_pdf)
+    11190    0.004    0.000    0.004    0.000 {built-in method builtins.abs}
+      961    0.001    0.000    0.001    0.000 {built-in method builtins.min}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+
+

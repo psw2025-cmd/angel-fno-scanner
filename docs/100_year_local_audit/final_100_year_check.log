@@ -1,0 +1,119 @@
+Running 100-Year Autonomy Architecture Verification Suite...
+{"status": "PASS", "guarded_files": 6}
+[OK] Saved reconciliation report to C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\sheets_bq_reconciliation_report.md
+[OK] Saved real reconciliation JSON to C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\100_year_local_audit\final_reconciliation_real.json
+{
+  "audit_timestamp_ist": "2026-10-09T14:27:56.726424+05:30",
+  "status": "PASS",
+  "canonical_sheet_id": "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs",
+  "bigquery_table": "fno-angel-prod-1790444589.fno_predictions.option_predictions_live",
+  "target_run_id": "37900561389",
+  "sheets": {
+    "status": "PASS",
+    "spreadsheet_title": "OPTION_SHEET",
+    "forensic_live_rows": 219,
+    "forensic_distinct_symbols": 219,
+    "ce_pe_rank_data_rows": 202,
+    "sample_symbol": "GLENMARK",
+    "sample_timestamp": "2026-10-09 13:21:47"
+  },
+  "bigquery": {
+    "status": "PASS",
+    "table_num_rows": 219,
+    "query_total_rows": 219,
+    "distinct_symbols": 219,
+    "oldest_timestamp": "2026-10-09 07:51:47.904794+00:00",
+    "newest_timestamp": "2026-10-09 07:51:47.904794+00:00"
+  },
+  "reconciliation": {
+    "universe_parity": true,
+    "sheets_symbols_count": 219,
+    "bigquery_symbols_count": 219,
+    "row_count_match": true,
+    "live_universe_qualified": true
+  }
+}
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\AngelFNO_Workstation\repos\angel-fno-scanner
+configfile: pytest.ini
+collected 214 items
+
+tests\test_atomic_provenance.py ..                                       [  0%]
+tests\test_automation_integrity.py ......                                [  3%]
+tests\test_bq_project_resolution.py ...                                  [  5%]
+tests\test_colab_contract.py .....                                       [  7%]
+tests\test_credentials_architecture.py .......                           [ 10%]
+tests\test_cross_agent_coordination.py ....                              [ 12%]
+tests\test_cycle_metadata.py ...                                         [ 14%]
+tests\test_exchange_timestamp.py ....                                    [ 15%]
+tests\test_export_cloud_database.py ....                                 [ 17%]
+tests\test_forensic_paper_sheet_audit.py ...                             [ 19%]
+tests\test_forward_validation_target_b.py ....                           [ 21%]
+tests\test_gainers.py .............                                      [ 27%]
+tests\test_heartbeat_bq_sync_column.py ..                                [ 28%]
+tests\test_infra_readiness.py .........                                  [ 32%]
+tests\test_news_provenance.py .....                                      [ 34%]
+tests\test_partial_publication.py ..                                     [ 35%]
+tests\test_prediction_engine.py ................................         [ 50%]
+tests\test_publication_integrity.py .............                        [ 56%]
+tests\test_readonly_query_inputs.py .......                              [ 59%]
+tests\test_reconcile_bq_sheet.py ..........                              [ 64%]
+tests\test_runtime_provenance_fixes.py ....                              [ 66%]
+tests\test_runtime_safety.py .....                                       [ 68%]
+tests\test_schema_validator.py .......................                   [ 79%]
+tests\test_single_writer_architecture.py .........                       [ 83%]
+tests\test_sinks.py ....                                                 [ 85%]
+tests\test_slo_monitor.py ...                                            [ 86%]
+tests\test_snapshot_push_failure.py ..                                   [ 87%]
+tests\test_staging_atomic.py ..                                          [ 88%]
+tests\test_stale_protection.py ....                                      [ 90%]
+tests\test_target_session_mapping.py ...                                 [ 92%]
+tests\test_timestamp_contract.py ......                                  [ 94%]
+tests\test_universe_contract.py ...........                              [100%]
+
+============================= 214 passed in 8.80s =============================
+[100-YEAR AUDIT] Executing Pre-Check / Post-Check Edge Case Matrix...
+  [PASS] PRE_01_EMPTY_LIST: Angel API returns 200 HTTP OK but payload is []
+  [PASS] PRE_02_MISSING_EXCH_FEED_TIME: 219 quotes returned, but 1 token has null/empty exchFeedTime
+  [PASS] PRE_03_TIMEZONE_MISMATCH: Timestamp format mismatch between Asia/Kolkata and UTC
+  [PASS] PRE_04_DUPLICATE_TOKENS: 219 tokens returned with duplicate symbolToken
+  [PASS] PRE_05_YESTERDAY_CACHED_DATA: Market open, but feed timestamp belongs to previous date (age > 18 hours)
+  [PASS] PRE_06_NETWORK_PARTITION: Connection dropped after fetching 100 of 219 symbols
+  [PASS] POST_07_SHEETS_RACE: Concurrent write attempts racing on Google Sheets cell ranges
+  [PASS] POST_08_BQ_STREAMING_CONFLICT: BigQuery streaming buffer locks table from concurrent DDL/DML
+  [PASS] POST_09_PUSH_FAILURE_ROLLBACK: Git push fails due to remote lock or network drop after 3 retries
+  [PASS] POST_10_DISK_FULL: OS raises ENOSPC (No space left on device) during snapshot save
+  [PASS] POST_11_RUNAWAY_BUFFER: Market loop streaming 5,000 continuous quotes into memory buffer
+
+[OK] Matrix evaluation complete: 11/11 PASS.
+     Saved report to C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\100_year_local_audit\pre_post_matrix_results.json
+======================================================================
+RUNNING CRASH SAFETY TESTS
+======================================================================
+[PASS] test_atomic_isolation: System successfully failed closed on unauthorized writer
+[PASS] test_crash_buffer_safety: Atomic buffer created and cleaned safely
+======================================================================
+ALL CRASH SAFETY TESTS PASSED
+======================================================================
+Attempt 1/3 failed for flaky_service: Simulated network drop on attempt 1
+Attempt 2/3 failed for flaky_service: Simulated network drop on attempt 2
+Attempt 1/3 failed for broken_sink: Simulated upstream broker timeout
+Attempt 2/3 failed for broken_sink: Simulated upstream broker timeout
+Attempt 3/3 failed for broken_sink: Simulated upstream broker timeout
+Circuit breaker 'test_breaker' tripped to OPEN (15min timeout)
+======================================================================
+RUNNING RECOVERY ENGINE FAULT-INJECTION TESTS
+======================================================================
+[PASS] test_transient_failure_recovery: Recovered after 2 transient failures
+[PASS] test_permanent_failure_and_dlq: Permanent failure captured into DLQ with SHA-256 hash
+[PASS] test_circuit_breaker_trip_and_block: Breaker correctly tripped to OPEN after 3 failures
+======================================================================
+ALL 3 RECOVERY ENGINE TESTS PASSED
+======================================================================
+[100-YEAR AUDIT] Running Self-Learning & Auto-Tuning Agent...
+[OK] Self-learning evaluation complete across 12 runs.
+     Average Latency: 4.82s | Average Coverage: 100.0%
+     NSE Divergence (RELIANCE): 0.0170% (CONVERGED)
+     Saved report to C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\100_year_local_audit\self_learning_report.json
+[OK] 100-YEAR CHECK COMPLETED SUCCESSFULLY.

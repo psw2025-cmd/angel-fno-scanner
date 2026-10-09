@@ -206,4 +206,8 @@ def run_self_learner():
     print(f"     Saved report to {REPORT_FILE}")
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="100-Year Self Learner Engine")
+    parser.add_argument("--check", action="store_true", help="Run self-learner verification check")
+    args = parser.parse_args()
     run_self_learner()

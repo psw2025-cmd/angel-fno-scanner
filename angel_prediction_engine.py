@@ -1581,8 +1581,9 @@ def get_angel_client():
     print("[OK] Angel One SmartAPI Session Connected")
     return smartApi
 
-def load_or_download_scrip_master():
-    now_ts = time.time()
+def load_or_download_scrip_master(exchange_epoch=None):
+    # Cache freshness check only, not data timestamp
+    now_ts = exchange_epoch if exchange_epoch is not None else time.time()
     if os.path.exists(SCRIP_CACHE_PATH):
         try:
             mtime = os.path.getmtime(SCRIP_CACHE_PATH)

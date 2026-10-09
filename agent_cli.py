@@ -274,7 +274,24 @@ def _export_snapshots_unstaged(output_dir="data"):
         json.dump(next_day_picks, f, indent=2)
 
     # 7. Pre-rendered Markdown Summary for GitHub / LLMs
-    now_str = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    # Derive timestamp strictly from validated predictions rather than wall clock
+    feed_candidates = [
+        p.get("exchFeedTime") or p.get("timestamp")
+        for p in (preds or [])
+        if p.get("exchFeedTime") or p.get("timestamp")
+    ]
+    if not feed_candidates:
+        all_recs = (next_day_picks.get("top_ce_picks") or []) + (next_day_picks.get("top_pe_picks") or [])
+        feed_candidates = [
+            p.get("exchFeedTime") or p.get("timestamp")
+            for p in all_recs
+            if p.get("exchFeedTime") or p.get("timestamp")
+        ]
+    if not feed_candidates and health.get("timestamp_utc"):
+        feed_candidates = [health.get("timestamp_utc")]
+    if not feed_candidates:
+        raise ValueError("Missing exchange timestamp in predictions snapshot; fail-closed")
+    now_str = str(min(feed_candidates))
     md = f"""# Angel One F&O Prediction & Market Intelligence Snapshot
 **Generated**: `{now_str}` | **System Status**: `🟢 {health['status']}`
 
