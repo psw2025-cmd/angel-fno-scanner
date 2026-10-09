@@ -1,5 +1,5 @@
 {
-  "audit_timestamp_ist": "2026-10-09T16:26:26.686638+05:30",
+  "audit_timestamp_ist": "2026-10-09T16:36:16.253098+05:30",
   "status": "PASS",
   "canonical_sheet_id": "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs",
   "bigquery_table": "fno-angel-prod-1790444589.fno_predictions.option_predictions_live",
@@ -11,15 +11,15 @@
     "forensic_distinct_symbols": 219,
     "ce_pe_rank_data_rows": 200,
     "sample_symbol": "PERSISTENT",
-    "sample_timestamp": "2026-10-09 16:22:12"
+    "sample_timestamp": "2026-10-09 16:29:27"
   },
   "bigquery": {
     "status": "PASS",
     "table_num_rows": 219,
     "query_total_rows": 219,
     "distinct_symbols": 219,
-    "oldest_timestamp": "2026-10-09 10:52:12.538301+00:00",
-    "newest_timestamp": "2026-10-09 10:52:12.538301+00:00"
+    "oldest_timestamp": "2026-10-09 10:59:27.308611+00:00",
+    "newest_timestamp": "2026-10-09 10:59:27.308611+00:00"
   },
   "reconciliation": {
     "universe_parity": true,

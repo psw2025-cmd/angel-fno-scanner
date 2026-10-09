@@ -1,6 +1,6 @@
 {
   "agent": "100_YEAR_SELF_LEARNER",
-  "evaluated_at_utc": "2026-10-09T10:56:56.249935+00:00",
+  "evaluated_at_utc": "2026-10-09T11:06:35.062858+00:00",
   "database": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\data\\learning_history.db",
   "sample_size": 12,
   "metrics": {
@@ -28,9 +28,9 @@
   ],
   "dual_source_divergence_audit": {
     "benchmark_symbol": "RELIANCE",
-    "angel_ltp": 1177.0,
+    "angel_ltp": 1178.3,
     "reference_nse_ltp": 1176.8,
-    "divergence_pct": 0.017,
+    "divergence_pct": 0.1275,
     "divergence_threshold_pct": 2.0,
     "status": "CONVERGED",
     "action": "PROCEED_NORMAL"

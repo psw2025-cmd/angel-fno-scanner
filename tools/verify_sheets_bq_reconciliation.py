@@ -74,6 +74,7 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
         return result
 
     # 1. Inspect Google Sheets
+    forensic_symbols = set()
     try:
         sh = gc.open_by_key(canonical_sheet_id)
         # FORENSIC_LIVE tab
@@ -147,14 +148,19 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
 
     # Compute symbol checksum parity
     sheets_sym_list = sorted(list(forensic_symbols))
-    sheets_hash = hashlib.sha256(",".join(sheets_sym_list).encode("utf-8")).hexdigest()[:16]
+    sheets_hash = hashlib.sha256(",".join(sheets_sym_list).encode("utf-8")).hexdigest()[:16] if sheets_sym_list else "NONE_SHEETS"
 
     # Query distinct symbols from BigQuery table
-    bq_sym_query = f"SELECT DISTINCT symbol FROM `{full_table_id}` ORDER BY symbol"
-    bq_sym_list = [r.symbol for r in bq.query(bq_sym_query).result()]
-    bq_hash = hashlib.sha256(",".join(bq_sym_list).encode("utf-8")).hexdigest()[:16]
+    bq_hash = "NONE_BQ"
+    if bq_ok:
+        try:
+            bq_sym_query = f"SELECT DISTINCT symbol FROM `{full_table_id}` ORDER BY symbol"
+            bq_sym_list = [r.symbol for r in bq.query(bq_sym_query).result()]
+            bq_hash = hashlib.sha256(",".join(bq_sym_list).encode("utf-8")).hexdigest()[:16]
+        except Exception:
+            bq_hash = "ERROR_BQ"
 
-    hash_matches = (sheets_hash == bq_hash)
+    hash_matches = (sheets_hash == bq_hash) and (sheets_hash not in ("NONE_SHEETS", "NONE_BQ"))
     result["checksum_sha256_16"] = sheets_hash
 
     result["reconciliation"] = {
