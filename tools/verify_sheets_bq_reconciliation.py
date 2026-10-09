@@ -90,7 +90,7 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
         rank_count = len(rank_data_rows)
 
         result["sheets"] = {
-            "status": "PASS" if forensic_count >= 216 else "DEGRADED",
+            "status": "PASS" if forensic_count == 219 and len(forensic_symbols) == 219 and rank_count == 200 else "FAIL",
             "spreadsheet_title": sh.title,
             "forensic_live_rows": forensic_count,
             "forensic_distinct_symbols": len(forensic_symbols),
@@ -118,7 +118,7 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
         q_res = list(query_job.result())[0]
 
         result["bigquery"] = {
-            "status": "PASS" if q_res.distinct_symbols >= 216 else "DEGRADED",
+            "status": "PASS" if q_res.distinct_symbols == 219 and q_res.total_rows == 219 else "FAIL",
             "table_num_rows": bq_total_rows,
             "query_total_rows": q_res.total_rows,
             "distinct_symbols": q_res.distinct_symbols,
@@ -129,12 +129,12 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
         result["bigquery"] = {"status": "FAIL", "error": str(exc)}
 
     # 3. Cross-Sink Reconciliation
-    sheets_ok = result["sheets"].get("status") in ("PASS", "DEGRADED")
-    bq_ok = result["bigquery"].get("status") in ("PASS", "DEGRADED")
+    sheets_ok = result["sheets"].get("status") == "PASS"
+    bq_ok = result["bigquery"].get("status") == "PASS"
     sheets_syms = result["sheets"].get("forensic_distinct_symbols", 0)
     bq_syms = result["bigquery"].get("distinct_symbols", 0)
 
-    universe_matches = (sheets_syms == bq_syms) and (sheets_syms >= 216)
+    universe_matches = (sheets_syms == bq_syms) and (sheets_syms == 219)
     row_count_matches = (result["sheets"].get("forensic_live_rows") == result["bigquery"].get("query_total_rows"))
 
     result["reconciliation"] = {
@@ -142,10 +142,13 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
         "sheets_symbols_count": sheets_syms,
         "bigquery_symbols_count": bq_syms,
         "row_count_match": row_count_matches,
-        "live_universe_qualified": universe_matches and (sheets_syms == 219)
+        "live_universe_qualified": universe_matches and (sheets_syms == 219),
+        "run_id_parity_verified": False,
+        "symbol_hash_parity_verified": False,
+        "exchange_timestamp_parity_verified": False
     }
 
-    if sheets_ok and bq_ok and universe_matches:
+    if (sheets_ok and bq_ok and universe_matches and row_count_matches and result["sheets"].get("ce_pe_rank_data_rows") == 200 and result["reconciliation"].get("run_id_parity_verified") is True and result["reconciliation"].get("symbol_hash_parity_verified") is True and result["reconciliation"].get("exchange_timestamp_parity_verified") is True):
         result["status"] = "PASS"
     else:
         result["status"] = "FAIL_CLOSED"

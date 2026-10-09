@@ -1,7 +1,7 @@
 # Google Sheets & BigQuery Cross-Sink Reconciliation Report
 
-**Audit Time (IST)**: `2026-10-09T14:27:56.726424+05:30`  
-**Reconciliation Status**: `🟢 PASS`  
+**Audit Time (IST)**: `2026-10-09T14:56:44.802205+05:30`  
+**Reconciliation Status**: `🔴 FAIL_CLOSED`  
 **Canonical Google Sheet**: `1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs`  
 **BigQuery Destination**: `fno-angel-prod-1790444589.fno_predictions.option_predictions_live`  
 **Target Run ID**: `37900561389`  
@@ -14,7 +14,7 @@
 - **FORENSIC_LIVE Unique Symbols**: `219`
 - **CE_PE_RANK Data Rows**: `202`
 - **Sample Timestamp**: `2026-10-09 13:21:47`
-- **Tab Inspection Status**: `PASS`
+- **Tab Inspection Status**: `FAIL`
 
 ---
 
@@ -39,13 +39,13 @@
 ## 4. Machine-Readable Raw Audit Payload
 ```json
 {
-  "audit_timestamp_ist": "2026-10-09T14:27:56.726424+05:30",
-  "status": "PASS",
+  "audit_timestamp_ist": "2026-10-09T14:56:44.802205+05:30",
+  "status": "FAIL_CLOSED",
   "canonical_sheet_id": "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs",
   "bigquery_table": "fno-angel-prod-1790444589.fno_predictions.option_predictions_live",
   "target_run_id": "37900561389",
   "sheets": {
-    "status": "PASS",
+    "status": "FAIL",
     "spreadsheet_title": "OPTION_SHEET",
     "forensic_live_rows": 219,
     "forensic_distinct_symbols": 219,
