@@ -611,3 +611,5 @@ Heartbeat cell conflated row count with sync timestamp, corrupting health status
 - Read-only probe explicitly disables chunk-level timestamp rejection so partial exchange timestamp coverage remains measurable.
 
 - Fix direct-script import root for live read-only Angel FULL probe after run 37899733397 exposed ModuleNotFoundError.
+
+- Add long-horizon autonomy design, preflight fail-closed contract, six offline chaos cases, PR CI guard, and real ten-run workflow ledger. Postflight external parity remains blocked until independent sink readback is implemented.

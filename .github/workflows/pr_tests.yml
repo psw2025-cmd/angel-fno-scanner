@@ -17,4 +17,6 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -r requirements.txt pytest
+      - run: python tools/memory_guard.py
+      - run: python tools/chaos_inject.py
       - run: python -m pytest -q
