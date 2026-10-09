@@ -211,7 +211,7 @@ def main():
     report_path = REPO_ROOT / args.report
     report_path.parent.mkdir(parents=True, exist_ok=True)
 
-    status_icon = "🟢 PASS" if recon_res["status"] == "PASS" else "🔴 FAIL_CLOSED"
+    status_icon = "[PASS]" if recon_res["status"] == "PASS" else "[FAIL]_CLOSED"
     md_content = f"""# Google Sheets & BigQuery Cross-Sink Reconciliation Report
 
 **Audit Time (IST)**: `{recon_res['audit_timestamp_ist']}`  
