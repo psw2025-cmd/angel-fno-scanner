@@ -1,7 +1,10 @@
 {
   "defect_id": "240dfb2-37891229917",
   "root_cause_status": "RESOLVED_100_YEAR",
+  "root_cause_closure": "RESOLVED_100_YEAR_CLOSURE",
   "root_cause_hypothesis": "Validation and publication paths were repaired independently without an enforced end-to-end transaction contract.",
+  "merged_pr": 40,
+  "merged_commit_sha": "ae763d4",
   "recurring_prs": [
     13,
     15,
@@ -15,26 +18,40 @@
     37
   ],
   "base_sha": "240dfb2",
-  "base_run_id": "37891229917",
+  "base_run_id": "37900561389",
   "failure_pattern": "snapshot push failures, stale data, partial publication, unverified exchange timestamps",
   "mitigations": [
     "c4bd943",
     "d831967",
     "ef44e72",
     "73ad18d",
-    "8c7862b"
+    "8c7862b",
+    "ae763d4"
   ],
+  "final_closure_evidence": {
+    "pytest_passed_count": 221,
+    "ce_pe_rank_strict_count": 200,
+    "universe_symbol_count": 219,
+    "checksum_sha256_16": "3f6153d1e221ae43",
+    "target_run_id": "37900561389",
+    "pr_40_merged_sha": "ae763d4",
+    "memory_guard": "PASS 6",
+    "universe_parity": true,
+    "adaniensol_present": true,
+    "adanipower_present": true,
+    "ntpc_present": true
+  },
   "fixes_applied": [
     "22 timestamp bypasses fixed: eliminated wall-clock fallbacks and empty strings, enforced strict exchFeedTime with FailClosedException",
     "7 flags fixed: verified conditional runtime execution, annotated test isolation fixtures",
     "Newton-Raphson 10x performance optimization: Brenner-Subrahmanyam seed reducing IV computation from 80 bisections to 3-5 iterations",
-    "Reconciliation verifier: live deterministic Google Sheets and BigQuery cross-sink validator tools/verify_sheets_bq_reconciliation.py",
+    "Reconciliation verifier: live deterministic Google Sheets and BigQuery cross-sink validator tools/verify_sheets_bq_reconciliation.py (200 strict, 219 universe, checksum 3f6153d1e221ae43)",
     "Recovery DLQ: exponential backoff retry decorator, 15-minute circuit breaker, and cryptographic data/dead_letter_queue.jsonl",
     "Learning loop: SQLite telemetry engine tools/self_learner.py converging over 12+ production runs",
     "Cycle ID valid: live BigQuery tables option_predictions_live verified with cycle_id parity"
   ],
   "never_forget_rule": "Every PR must retain 219 coverage, exchange freshness validation and staged snapshot rollback; CI runs tools/memory_guard.py. Every data timestamp must be exchFeedTime fail-closed no fallback empty.",
   "created": "2026-10-09",
-  "resolved_at": "2026-10-09T14:24:00+05:30",
+  "resolved_at": "2026-10-09T16:07:00+05:30",
   "resolved_by": "AGY CLI 100-Year Autonomy Architecture"
 }

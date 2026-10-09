@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-09 - Post-merge 100-year verification: strict CE_PE_RANK 200 filter, checksum 3f6153d1e221ae43, 221 pytest PASS
+
+**Commit:** Pending HEAD
+
+### What changed
+- tools/verify_sheets_bq_reconciliation.py: Implemented strict CE_PE_RANK filter to count exactly 200 contract data rows (excluding Title, Desc, Blank, Header); dynamically validated symbol set checksum SHA256[:16] 3f6153d1e221ae43 against BigQuery.
+- docs/permanent_failure_memory.json: Added RESOLVED_100_YEAR_CLOSURE entry with final proofs.
+- docs/100_year_local_audit/: Added FINAL_100YEAR_CERTIFICATE_200PASS.json and main_post_merge_verification.json.
+
+### Evidence
+- memory_guard: PASS 6
+- pytest: 221 passed
+- verify_sheets_bq_reconciliation: PASS (219 universe parity, 200 CE_PE_RANK data rows, checksum 3f6153d1e221ae43)
+
+---
+
 ## 2026-10-09 - 100-Year Autonomy Closure: Timestamp Bypasses, Safety Flags, 10x Perf, Cross-Sink Reconciliation, and Recovery DLQ
 
 **Commit:** feat/100-year-closure-agy-final
