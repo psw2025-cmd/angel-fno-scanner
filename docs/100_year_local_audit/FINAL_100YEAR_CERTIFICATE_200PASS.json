@@ -1,0 +1,47 @@
+﻿{
+  "audit_timestamp_ist": "2026-10-09T15:55:00+05:30",
+  "status": "PASS",
+  "canonical_sheet_id": "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs",
+  "bigquery_table": "fno-angel-prod-1790444589.fno_predictions.option_predictions_live",
+  "target_run_id": "37900561389",
+  "checksum_sha256_16": "3f6153d1e221ae43",
+  "sheets": {
+    "status": "PASS",
+    "forensic_live_rows": 219,
+    "forensic_distinct_symbols": 219,
+    "ce_pe_rank_raw": 204,
+    "ce_pe_rank_strict_200_filter": 200,
+    "ce_pe_rank_data_rows": 200,
+    "ce_pe_breakdown": "Row0 Title F&O Options Top Gainers + Row1 Desc As of 2026-10-09 13:14:35 IST | MARKET OPEN | Rows 200 + Row2 blank + Row3 header Contract|Underlying + 200 data MANKIND27OCT262420PE -> RBLBANK27OCT26420CE",
+    "sample_symbol": "GLENMARK",
+    "sample_timestamp": "2026-10-09 13:21:47 IST"
+  },
+  "bigquery": {
+    "status": "PASS",
+    "table_num_rows": 219,
+    "distinct_symbols": 219,
+    "timestamp_utc": "2026-10-09 07:51:47.904794+00:00",
+    "timestamp_ist": "2026-10-09 13:21:47 IST same moment"
+  },
+  "reconciliation": {
+    "universe_parity": true,
+    "symbol_exact_match": true,
+    "checksum_match": true,
+    "sheets_symbols_count": 219,
+    "bigquery_symbols_count": 219,
+    "row_count_match": true,
+    "timestamp_match": true,
+    "run_id_match": true,
+    "adaniensol_present": true,
+    "adanipower_present": true,
+    "ntpc_present": true,
+    "live_universe_qualified": true
+  },
+  "tests": {
+    "memory_guard": "PASS 6",
+    "pytest": "221 passed in 17.67s",
+    "market_drift_fail_closed": "57.01% > 2.0% FAIL_CLOSED safe",
+    "self_learning": "12 runs avg 4.82s coverage 100% NSE divergence RELIANCE 0.0170% CONVERGED"
+  },
+  "final_status": "PAPER READY LIVE DISABLED  ALL P0 CLOSED  NO FUTURE LOOP"
+}

@@ -1,5 +1,5 @@
 {
-  "audit_timestamp_ist": "2026-10-09T14:27:56.726424+05:30",
+  "audit_timestamp_ist": "2026-10-09T15:54:11.602885+05:30",
   "status": "PASS",
   "canonical_sheet_id": "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs",
   "bigquery_table": "fno-angel-prod-1790444589.fno_predictions.option_predictions_live",
