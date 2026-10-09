@@ -17,7 +17,12 @@ def get_exchange_timestamp(raw_data):
         if text.isdigit():
             value = datetime.fromtimestamp(int(text), timezone.utc)
         else:
-            value = datetime.fromisoformat(text.replace("Z", "+00:00"))
+            try:
+                value = datetime.fromisoformat(text.replace("Z", "+00:00"))
+            except ValueError:
+                # Angel SmartAPI FULL quote's documented exchange-local format.
+                from zoneinfo import ZoneInfo
+                value = datetime.strptime(text, "%d-%b-%Y %H:%M:%S").replace(tzinfo=ZoneInfo("Asia/Kolkata"))
             if value.tzinfo is None:
                 raise ValueError("exchange time missing timezone")
     return value.astimezone(timezone.utc).isoformat()

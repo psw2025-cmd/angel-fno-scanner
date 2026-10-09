@@ -5,6 +5,16 @@ on:
     - cron: '45 3 * * 1-5'      # 09:15 IST — main run
     - cron: '45 10 * * 1-5'     # 16:15 IST — EOD catch-up (writes gap predictions if main run missed)
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Read-only exchange timestamp probe (no publication)"
+        type: boolean
+        default: true
+      market_session:
+        description: "Market session"
+        type: choice
+        options: [OPEN, CLOSED, EOD]
+        default: EOD
   push:
     branches: [main]
     paths:
@@ -36,7 +46,7 @@ jobs:
       SHEET_ID: ${{ secrets.SHEET_ID }}
       BQ_PROJECT_ID: ${{ secrets.BQ_PROJECT_ID }}
       MAX_RUNTIME_SECONDS: ${{ github.event_name == 'schedule' && '24300' || '300' }}
-      ALLOW_PRODUCTION_WRITES: '1'
+      ALLOW_PRODUCTION_WRITES: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '0' || '1' }}
       WRITER_ID: market_bot
       RUN_ID: ${{ github.run_id }}
       GIT_SHA: ${{ github.sha }}
@@ -69,7 +79,20 @@ jobs:
       - name: Test quote & prediction engine math
         run: python -m pytest -v
 
+      - name: Enforce permanent regression contract
+        run: python tools/memory_guard.py
+      - name: Read-only Angel FULL timestamp probe
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: python tools/probe_angel_live.py --read-only --log-coverage
+      - name: Upload read-only probe evidence
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: exchange-timestamp-probe
+          path: ${{ runner.temp }}/probe_result.json
+          if-no-files-found: warn
       - name: Run Single Authoritative Scanner and Prediction Cycle
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.dry_run }}
         run: |
           set -eo pipefail
           python scanner.py
@@ -78,6 +101,7 @@ jobs:
           python scripts/sync_cycle_provenance_to_bq.py
 
       - name: Commit & Push Updated Snapshots
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.dry_run }}
         run: |
           set -eo pipefail
           git config --global user.name "github-actions[bot]"

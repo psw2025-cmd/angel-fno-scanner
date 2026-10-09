@@ -601,3 +601,9 @@ Heartbeat cell conflated row count with sync timestamp, corrupting health status
 ## 2026-10-09 - Read-only reliability analysis
 - Add SLO coverage monitor and historical failure-pattern analyzer; no automatic downgrade of freshness controls.
 - GitHub live dispatch not performed: workflow_dispatch lacks dry_run input and ALLOW_PRODUCTION_WRITES=1.
+
+## 2026-10-09 - Read-only Angel FULL probe and permanent CI guard
+- Add version-controlled historical defect contract and CI memory guard.
+- Add dry_run workflow dispatch path with no scanner, snapshot export, BigQuery sync or git push.
+- Add real Angel FULL read-only timestamp coverage probe and runner artifact; support Angel IST exchange format.
+- Update single-writer architecture test to verify dispatch isolation.

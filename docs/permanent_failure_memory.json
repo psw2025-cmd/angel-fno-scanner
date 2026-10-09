@@ -1,0 +1,27 @@
+{
+  "defect_id": "240dfb2-37891229917",
+  "root_cause_status": "HYPOTHESIS",
+  "root_cause_hypothesis": "Validation and publication paths were repaired independently without an enforced end-to-end transaction contract.",
+  "recurring_prs": [
+    13,
+    15,
+    31,
+    34
+  ],
+  "open_issues_at_audit": [
+    35,
+    36,
+    37
+  ],
+  "base_sha": "240dfb2",
+  "base_run_id": "37891229917",
+  "failure_pattern": "snapshot push failures, stale data, partial publication, unverified exchange timestamps",
+  "mitigations": [
+    "c4bd943",
+    "d831967",
+    "ef44e72"
+  ],
+  "never_forget_rule": "Every PR must retain 219 coverage, exchange freshness validation and staged snapshot rollback; CI runs tools/memory_guard.py",
+  "created": "2026-10-09",
+  "limitations": "Repository CI guard and tests reduce regression risk but cannot guarantee future availability or correctness."
+}
