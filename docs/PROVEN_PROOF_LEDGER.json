@@ -1,0 +1,157 @@
+{
+  "schema_version": "1.0",
+  "purpose": "Evidence ledger, not certification",
+  "mode": "PAPER_ONLY",
+  "checks": [
+    {
+      "id": 1,
+      "check": "Laptop trap zero?",
+      "requested_cmd": "grep -r C:/AngelFNO_Workstation n8n-workflows/ | wc -l == 0",
+      "status": "NOT_RUN",
+      "observed_at_utc": null,
+      "source_sha": null,
+      "evidence": null,
+      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+    },
+    {
+      "id": 2,
+      "check": "17 workflows in git?",
+      "requested_cmd": "ls n8n-workflows/*.json | wc -l",
+      "status": "NOT_RUN",
+      "observed_at_utc": null,
+      "source_sha": null,
+      "evidence": null,
+      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+    },
+    {
+      "id": 3,
+      "check": "Sheets 219 == BQ 219?",
+      "requested_cmd": "python tools/verify_sheets_bq_reconciliation.py",
+      "status": "NOT_RUN",
+      "observed_at_utc": null,
+      "source_sha": null,
+      "evidence": null,
+      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+    },
+    {
+      "id": 4,
+      "check": "Checksum 3f6153d1e221ae43 full SHA verified?",
+      "requested_cmd": "python tools/checksum_full.py",
+      "status": "NOT_RUN",
+      "observed_at_utc": null,
+      "source_sha": null,
+      "evidence": null,
+      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+    },
+    {
+      "id": 5,
+      "check": "memory_guard 6 PASS?",
+      "requested_cmd": "python tools/memory_guard.py",
+      "status": "NOT_RUN",
+      "observed_at_utc": null,
+      "source_sha": null,
+      "evidence": null,
+      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+    },
+    {
+      "id": 6,
+      "check": "pytest 221 PASS?",
+      "requested_cmd": "pytest -q",
+      "status": "NOT_RUN",
+      "observed_at_utc": null,
+      "source_sha": null,
+      "evidence": null,
+      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+    },
+    {
+      "id": 7,
+      "check": "n8n health 200?",
+      "requested_cmd": "curl localhost:5678/healthz",
+      "status": "NOT_RUN",
+      "observed_at_utc": null,
+      "source_sha": null,
+      "evidence": null,
+      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+    },
+    {
+      "id": 8,
+      "check": "N8N_USER_FOLDER canonical?",
+      "requested_cmd": "env | grep N8N_USER_FOLDER",
+      "status": "NOT_RUN",
+      "observed_at_utc": null,
+      "source_sha": null,
+      "evidence": null,
+      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+    },
+    {
+      "id": 9,
+      "check": "No plaintext secrets?",
+      "requested_cmd": "grep -r gcp-service-account.json --exclude-dir=.git",
+      "status": "NOT_RUN",
+      "observed_at_utc": null,
+      "source_sha": null,
+      "evidence": null,
+      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+    },
+    {
+      "id": 10,
+      "check": "Deployment attestation?",
+      "requested_cmd": "curl cloud-api/version returns SHA",
+      "status": "NOT_RUN",
+      "observed_at_utc": null,
+      "source_sha": null,
+      "evidence": null,
+      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+    },
+    {
+      "id": 11,
+      "check": "Single-writer lease?",
+      "requested_cmd": "check BQ commit marker",
+      "status": "NOT_RUN",
+      "observed_at_utc": null,
+      "source_sha": null,
+      "evidence": null,
+      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+    },
+    {
+      "id": 12,
+      "check": "Restore drill?",
+      "requested_cmd": "ls backups/*.tar.gz",
+      "status": "NOT_RUN",
+      "observed_at_utc": null,
+      "source_sha": null,
+      "evidence": null,
+      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+    },
+    {
+      "id": 13,
+      "check": "Activation attestation?",
+      "requested_cmd": "desired_active == observed_active",
+      "status": "NOT_RUN",
+      "observed_at_utc": null,
+      "source_sha": null,
+      "evidence": null,
+      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+    },
+    {
+      "id": 14,
+      "check": "Negative IAM tests?",
+      "requested_cmd": "pytest tests/test_iam_deny.py",
+      "status": "NOT_RUN",
+      "observed_at_utc": null,
+      "source_sha": null,
+      "evidence": null,
+      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+    },
+    {
+      "id": 15,
+      "check": "Cost cap?",
+      "requested_cmd": "gcloud billing budgets list",
+      "status": "NOT_RUN",
+      "observed_at_utc": null,
+      "source_sha": null,
+      "evidence": null,
+      "reason": "Awaiting executable, timestamped proof; command text alone is not proof"
+    }
+  ]
+}
