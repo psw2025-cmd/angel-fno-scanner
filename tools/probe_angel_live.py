@@ -7,6 +7,12 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+# Direct execution as tools/probe_angel_live.py sets sys.path[0] to tools/.
+# Add the checkout root explicitly before importing the scanner module.
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 def probe():
     if os.getenv("ALLOW_PRODUCTION_WRITES") != "0":
         raise RuntimeError("read-only probe requires ALLOW_PRODUCTION_WRITES=0")

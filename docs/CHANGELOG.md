@@ -609,3 +609,5 @@ Heartbeat cell conflated row count with sync timestamp, corrupting health status
 - Update single-writer architecture test to verify dispatch isolation.
 
 - Read-only probe explicitly disables chunk-level timestamp rejection so partial exchange timestamp coverage remains measurable.
+
+- Fix direct-script import root for live read-only Angel FULL probe after run 37899733397 exposed ModuleNotFoundError.
