@@ -1,47 +1,47 @@
 # Angel One F&O Prediction & Market Intelligence Snapshot
-**Generated**: `2026-10-09 07:54:27 UTC` | **System Status**: `🟢 PASS`
+**Generated**: `2026-10-09T10:09:46+00:00` | **System Status**: `🟢 PASS`
 
 ## 🌆 3:00 - 3:40 PM Pre-Close: Next-Day Gap-Up (CE) Picks
 | Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+50%) | Expected Gap % | Conviction % | Institutional Rationale |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| 1 | **INOXWIND** | `67 CE` | `INOXWIND27OCT2667CE` | ₹2.45 | ₹2.08 | ₹3.68 | **+1.96%** | 64.7% | [OVERNIGHT GAP-UP CE] Action: 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | ExpG |
-| 2 | **COLPAL** | `1840 CE` | `COLPAL27OCT261840CE` | ₹47.15 | ₹40.08 | ₹70.72 | **+1.98%** | 64.8% | [OVERNIGHT GAP-UP CE] Action: 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | ExpG |
-| 3 | **BLUESTARCO** | `1580 CE` | `BLUESTARCO27OCT261580CE` | ₹44.40 | ₹37.74 | ₹66.60 | **+2.09%** | 79.7% | [OVERNIGHT GAP-UP CE] Action: 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | ExpG |
-| 4 | **TCS** | `2160 CE` | `TCS27OCT262160CE` | ₹49.95 | ₹42.46 | ₹74.93 | **+1.40%** | 95.5% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
-| 5 | **ITC** | `267 CE` | `ITC27OCT26267.5CE` | ₹4.10 | ₹3.48 | ₹6.15 | **+1.11%** | 87.3% | [OVERNIGHT GAP-UP CE] Action: 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | ExpG |
+| 1 | **PERSISTENT** | `5800 CE` | `PERSISTENT27OCT265800CE` | ₹182.80 | ₹155.38 | ₹274.20 | **+3.44%** | 89.8% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
+| 2 | **GMRAIRPORT** | `93 CE` | `GMRAIRPORT27OCT2693CE` | ₹2.52 | ₹2.14 | ₹3.78 | **+2.73%** | 90.5% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
+| 3 | **LTM** | `4050 CE` | `LTM27OCT264050CE` | ₹142.05 | ₹120.74 | ₹213.08 | **+2.66%** | 84.0% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
+| 4 | **ICICIGI** | `1680 CE` | `ICICIGI27OCT261680CE` | ₹45.45 | ₹38.63 | ₹68.18 | **+2.32%** | 81.4% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
+| 5 | **GLENMARK** | `2300 CE` | `GLENMARK27OCT262300CE` | ₹54.30 | ₹46.15 | ₹81.45 | **+2.07%** | 82.5% | [OVERNIGHT GAP-UP CE] Action: 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | ExpGap:  |
 
 ## 🌆 3:00 - 3:40 PM Pre-Close: Next-Day Gap-Down (PE) Picks
 | Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+60%) | Expected Gap % | Conviction % | Institutional Rationale |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| 1 | **BSE** | `3300 PE` | `BSE27OCT263300PE` | ₹117.80 | ₹100.13 | ₹188.48 | **-2.69%** | 98.0% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
-| 2 | **ANANDRATHI** | `2060 PE` | `ANANDRATHI27OCT262060PE` | ₹76.30 | ₹64.85 | ₹122.08 | **-1.76%** | 83.2% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
-| 3 | **POWERINDIA** | `30500 PE` | `POWERINDIA27OCT2630500PE` | ₹843.80 | ₹717.23 | ₹1350.08 | **-0.59%** | 54.4% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
-| 4 | **DMART** | `3550 PE` | `DMART27OCT263550PE` | ₹100.20 | ₹85.17 | ₹160.32 | **-0.88%** | 76.6% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
-| 5 | **ANGELONE** | `290 PE` | `ANGELONE27OCT26290PE` | ₹9.85 | ₹8.37 | ₹15.76 | **-1.01%** | 77.6% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 1 | **BSE** | `3300 PE` | `BSE27OCT263300PE` | ₹101.65 | ₹86.40 | ₹162.64 | **-1.27%** | 88.5% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 2 | **TIINDIA** | `2250 PE` | `TIINDIA27OCT262250PE` | ₹80.75 | ₹68.64 | ₹129.20 | **-1.42%** | 80.7% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 3 | **ENRIN** | `3150 PE` | `ENRIN27OCT263150PE` | ₹113.00 | ₹96.05 | ₹180.80 | **-1.17%** | 78.8% | [OVERNIGHT GAP-DOWN PE] Action: ⚡ BEARISH PE SURGE [HIGH CONVICTION] | ExpGap: - |
+| 4 | **ANANDRATHI** | `2040 PE` | `ANANDRATHI27OCT262040PE` | ₹68.00 | ₹57.80 | ₹108.80 | **-0.86%** | 56.5% | [OVERNIGHT GAP-DOWN PE] Action: 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | ExpGa |
+| 5 | **DMART** | `3500 PE` | `DMART27OCT263500PE` | ₹89.05 | ₹75.69 | ₹142.48 | **-0.94%** | 71.0% | [OVERNIGHT GAP-DOWN PE] Action: ⚡ BEARISH PE SURGE [HIGH CONVICTION] | ExpGap: - |
 
 ## 🌅 Top 5 Pre-Market 9:15 AM Gap-Up Picks
 | Rank | Symbol | Target Strike | Expected Gap % | Conviction % | CE LTP | Live Velocity | Top Catalyst Headline |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
-| 24 | **VEDL** | `260 CE` | **+2.17%** | 83.3% | ₹6.50 | +52.9% | Vedanta dividend 2026 record date, payment timeline, dividen |
-| 11 | **BLUESTARCO** | `1580 CE` | **+2.09%** | 79.7% | ₹44.40 | +82.7% | No fresh material catalyst |
-| 14 | **TATAELXSI** | `3150 CE` | **+2.04%** | 79.3% | ₹99.80 | +69.0% | No fresh material catalyst |
-| 1 | **COLPAL** | `1840 CE` | **+1.98%** | 64.8% | ₹47.15 | +225.2% | No fresh material catalyst |
-| 18 | **LTM** | `4000 CE` | **+1.98%** | 84.8% | ₹139.20 | +40.1% | No fresh material catalyst |
+| 8 | **PERSISTENT** | `5800 CE` | **+3.44%** | 89.8% | ₹182.80 | +122.7% | No fresh material catalyst |
+| 4 | **GMRAIRPORT** | `93 CE` | **+2.73%** | 90.5% | ₹2.52 | +168.1% | No fresh material catalyst |
+| 14 | **LTM** | `4050 CE` | **+2.66%** | 84.0% | ₹142.05 | +71.6% | No fresh material catalyst |
+| 9 | **ICICIGI** | `1680 CE` | **+2.32%** | 81.4% | ₹45.45 | +126.1% | No fresh material catalyst |
+| 13 | **TATAELXSI** | `3150 CE` | **+2.08%** | 65.6% | ₹106.80 | +80.9% | No fresh material catalyst |
 
 ## 🏆 Top Conviction Call (CE) Breakouts
 | Rank | Symbol | Action Rating | Win Prob % | Spot LTP | CE LTP | Target Strike |
 | :---: | :--- | :--- | :---: | :---: | :---: | :---: |
-| 1 | **COLPAL** | 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | 95.9% | ₹1845.10 | ₹47.15 | `1840 CE` |
-| 2 | **ITC** | 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | 97.7% | ₹267.00 | ₹4.10 | `267 CE` |
-| 3 | **APOLLOHOSP** | 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | 86.8% | ₹7974.00 | ₹164.55 | `8000 CE` |
-| 4 | **NIFTY** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 75.4% | ₹22577.20 | ₹83.55 | `22600 CE` |
-| 5 | **ADANIPORTS** | 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | 91.4% | ₹1766.30 | ₹41.55 | `1760 CE` |
+| 1 | **APOLLOHOSP** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 97.7% | ₹8042.00 | ₹196.00 | `8000 CE` |
+| 2 | **ITC** | 🔥 STRONG CE BREAKOUT [EXPONENTIAL MOMENTUM] | 94.5% | ₹266.85 | ₹3.80 | `267 CE` |
+| 3 | **COLPAL** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 96.7% | ₹1830.80 | ₹36.70 | `1840 CE` |
+| 4 | **GMRAIRPORT** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 98.2% | ₹93.18 | ₹2.52 | `93 CE` |
+| 5 | **GLENMARK** | 🚨 GAMMA SQUEEZE ALERT (ACCELERATING CE) | 97.7% | ₹2303.00 | ₹54.30 | `2300 CE` |
 
 ## 💥 Top Conviction Put (PE) Breakdowns
 | Rank | Symbol | Action Rating | Win Prob % | Spot LTP | PE LTP | Target Strike |
 | :---: | :--- | :--- | :---: | :---: | :---: | :---: |
-| 25 | **ANANDRATHI** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 84.1% | ₹2051.10 | ₹76.30 | `2060 PE` |
-| 32 | **BSE** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 90.4% | ₹3279.50 | ₹117.80 | `3300 PE` |
-| 90 | **DMART** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 76.7% | ₹3538.90 | ₹100.20 | `3550 PE` |
-| 96 | **POWERINDIA** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 79.3% | ₹30670.00 | ₹843.80 | `30500 PE` |
-| 102 | **AMBER** | 📉 MODERATE PE BIAS | 58.7% | ₹6475.00 | ₹190.25 | `6500 PE` |
+| 25 | **ANANDRATHI** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 72.1% | ₹2045.00 | ₹68.00 | `2040 PE` |
+| 71 | **DMART** | ⚡ BEARISH PE SURGE [HIGH CONVICTION] | 68.9% | ₹3507.00 | ₹89.05 | `3500 PE` |
+| 88 | **TIINDIA** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 76.2% | ₹2227.60 | ₹80.75 | `2250 PE` |
+| 101 | **BSE** | 💥 SEVERE PE BREAKDOWN [AGGRESSIVE SHORT] | 79.8% | ₹3314.50 | ₹101.65 | `3300 PE` |
+| 105 | **ENRIN** | ⚡ BEARISH PE SURGE [HIGH CONVICTION] | 70.4% | ₹3139.00 | ₹113.00 | `3150 PE` |
