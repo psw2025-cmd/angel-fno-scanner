@@ -29,7 +29,7 @@
       "ce_chg_pct": 230.43,
       "ce_iv": 17.53,
       "target_open_strike": "267 CE",
-      "expected_gap_pct": 0.98,
+      "expected_gap_pct": 0.99,
       "top_news_headline": "ITC stock rallies 5%, sees sharpest intraday rally in 6 months; here's why"
     },
     {
@@ -69,7 +69,7 @@
       "symbol": "GLENMARK",
       "action_rating": "\ud83d\udea8 GAMMA SQUEEZE ALERT (ACCELERATING CE)",
       "directional_bias": "CALL (CE) BULLISH",
-      "ce_win_prob": 97.7,
+      "ce_win_prob": 97.8,
       "intensity_score": 84,
       "spot_ltp": 2303.0,
       "atm_strike": 2300.0,
@@ -77,7 +77,7 @@
       "ce_chg_pct": 135.57,
       "ce_iv": 25.99,
       "target_open_strike": "2300 CE",
-      "expected_gap_pct": 2.07,
+      "expected_gap_pct": 2.16,
       "top_news_headline": "Pharma sector stocks today, October 9: Glenmark Pharma jumps 1.68%, Lupin up 0.74%; Sudeep Pharma falls 3% - Business Upturn"
     },
     {
@@ -94,7 +94,7 @@
       "ce_iv": 20.85,
       "target_open_strike": "395 CE",
       "expected_gap_pct": 1.13,
-      "top_news_headline": "IRDAI commission caps may revive shadow payouts while hitting 70% of corporate broking revenue; broking jobs.. - bfsi.economictimes.indiatimes.com"
+      "top_news_headline": "IRDAI rules out glide path for commission caps; open to blended commissions; wants insurance to be bought,... - Moneycontrol.com"
     },
     {
       "rank": 7,
@@ -126,7 +126,7 @@
       "ce_iv": 38.46,
       "target_open_strike": "5800 CE",
       "expected_gap_pct": 3.44,
-      "top_news_headline": "No fresh material catalyst"
+      "top_news_headline": "Persistent Systems Limited"
     },
     {
       "rank": 9,
@@ -158,7 +158,7 @@
       "ce_iv": 22.9,
       "target_open_strike": "1760 CE",
       "expected_gap_pct": 1.25,
-      "top_news_headline": "Adani Ports SEZ Share Price Live Updates: Adani Ports SEZ Trading Insights"
+      "top_news_headline": "No fresh material catalyst"
     }
   ],
   "top_pe_breakdowns": [
@@ -192,7 +192,7 @@
       "pe_iv": 29.91,
       "target_open_strike": "3500 PE",
       "expected_gap_pct": -0.94,
-      "top_news_headline": "No fresh material catalyst"
+      "top_news_headline": "Avenue Supermarts Limited"
     },
     {
       "rank": 88,
@@ -243,7 +243,7 @@
       "top_news_headline": "No fresh material catalyst"
     },
     {
-      "rank": 143,
+      "rank": 142,
       "symbol": "POWERINDIA",
       "action_rating": "\u26a1 BEARISH PE SURGE [HIGH CONVICTION]",
       "directional_bias": "PUT (PE) BEARISH",
@@ -263,7 +263,7 @@
       "symbol": "RELIANCE",
       "action_rating": "\u26a1 BEARISH PE SURGE [HIGH CONVICTION]",
       "directional_bias": "PUT (PE) BEARISH",
-      "pe_win_prob": 69.4,
+      "pe_win_prob": 69.2,
       "intensity_score": 65,
       "spot_ltp": 1178.3,
       "atm_strike": 1180.0,
@@ -271,8 +271,8 @@
       "pe_chg_pct": 4.33,
       "pe_iv": 23.49,
       "target_open_strike": "1180 PE",
-      "expected_gap_pct": -0.49,
-      "top_news_headline": "Delhi High Court Orders Suspension Of Over 120 \"JIO LOTTERY\" Websites In Reliance Industries' Trademark... - LiveLawBiz"
+      "expected_gap_pct": -0.48,
+      "top_news_headline": "Prima Facie Satisfies Test Of Rogue Website: Delhi High Court Grants Relief To Reliance Industries,... - Verdictum"
     },
     {
       "rank": 172,

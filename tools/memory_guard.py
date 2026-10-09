@@ -7,7 +7,7 @@ CONTRACT=ROOT/"docs"/"permanent_failure_memory.json"
 REQUIRED={
     "tools/cycle_metadata.py":("generate_cycle_metadata","expected_quotes=219","oldest_exchange_timestamp"),
     "tools/exchange_timestamp.py":("exchFeedTime","oldest_exchange_timestamp"),
-    "tools/check_freshness.py":("120 if market_session", "3600","source_timestamp"),
+    "tools/check_freshness.py":("120 if market_session", "86400","source_timestamp"),
     "tools/atomic_snapshots.py":("publish_bundle","replace","backup"),
     "scanner.py":("generate_cycle_metadata","ANGEL_REQUIRE_EXCHANGE_TIME"),
     ".github/workflows/market_bot.yml":("ANGEL_CYCLE_METADATA_FILE","check_freshness.py","probe_angel_live.py"),
