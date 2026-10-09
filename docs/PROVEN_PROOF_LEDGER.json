@@ -184,5 +184,20 @@
       "source_sha": null,
       "evidence": null
     }
-  ]
+  ],
+  "encoding_safety": {
+    "status": "NOT_RUN",
+    "timestamp": null,
+    "checks": [
+      "tracked_python_syntax",
+      "staged_non_ascii",
+      "cp1252_positive_negative",
+      "cli_help",
+      "argparse_exit_2",
+      "windows_linux_ci",
+      "branch_protection",
+      "agy_routing_preserved"
+    ],
+    "policy": "No PASS without source SHA and executed evidence"
+  }
 }

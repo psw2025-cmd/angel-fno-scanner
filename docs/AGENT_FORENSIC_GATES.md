@@ -80,3 +80,6 @@ Never git push --force. Use ordinary push; --force-with-lease only if a history 
 AGY must independently reproduce and classify gspread.exceptions.APIError [-1] with redacted HTTP status, Sheets ID provenance, authorization and scopes; separately validate JSON-only protocol. An AGY CLI timeout is not signoff. Retry with bounded read-only calls; record AGY raw redacted response and independent ChatGPT review. Until verified, CROSS_AGENT_SIGNOFF=BLOCKED and no production readiness claim or LIVE trading.
 
 **Prior baseline:** commit 5f099c3. These six gates strengthen the universal rules and must be adopted by every agent after the PR merges.
+
+## Mandatory Windows encoding gate
+Past: review PM-001, historical regressions and prior fixes. Present: inspect staged blobs, branch, dirty worktrees, interpreter and code page. Pre-action: parse before write and preserve original. Post-action: run tools/encoding_source_gate.py --all, pytest tests/test_encoding_gate.py tests/test_cli_contract.py, Windows/Linux CI, and independent review. Future: enforce CI, retain negative tests and reopen regressions. Never claim live Sheets/BQ verified from a syntax PASS.

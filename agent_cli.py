@@ -14,7 +14,10 @@ import os
 import re
 import sys
 
-from credentials import require_authoritative_sheet_id
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
 # Ensure repository root is on sys.path
 REPO_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -178,6 +181,30 @@ def run_full_verification():
     }
 
 
+def handle_verify(args):
+    is_json_only = getattr(args, 'json_only', False) or getattr(args, 'format', 'human') == 'json'
+    if is_json_only:
+        # Suppress human prints - only json.dumps to stdout
+        # Capture all human prints to stderr
+        old_stdout = sys.stdout
+        try:
+            sys.stdout = sys.stderr
+            result = run_full_verification()
+        finally:
+            sys.stdout = old_stdout
+
+        sys.stdout.write(json.dumps(result, indent=2, ensure_ascii=False) + "\n")
+        sys.stdout.flush()
+        if result.get("status") != "PASS":
+            sys.exit(1)
+    else:
+        # Old behavior - human + json mix - backward compatible
+        result = run_full_verification()
+        format_output(result, args.format, title="Forensic System Verification Audit")
+        if result.get("status") != "PASS":
+            sys.exit(1)
+
+
 def query_next_day_gap(limit=5):
     """Retrieves Top 5 CE and PE candidates for next-day gap opening with complete micro-details."""
     if os.path.exists(NEXT_DAY_GAP_PATH):
@@ -244,7 +271,7 @@ def _export_snapshots_unstaged(output_dir="data", verified_source_timestamp=None
     os.makedirs(target_dir, exist_ok=True)
 
     print(f"[INFO] Exporting pre-rendered data snapshots to {target_dir}...")
-    
+
     # 1. Full predictions snapshot
     preds = query_predictions(limit=250)
     with open(os.path.join(target_dir, "latest_predictions.json"), "w", encoding="utf-8") as f:
@@ -413,9 +440,10 @@ def main():
     parser.add_argument("--force-pre-close", action="store_true", help="Writer-gated pre-close journaling (market_bot only)")
     parser.add_argument("--reconcile-gap", action="store_true", help="Writer-gated overnight reconciliation (market_bot only)")
     parser.add_argument("--verify", action="store_true", help="Run 17-tab forensic audit across Google Sheets, BigQuery and Engine")
+    parser.add_argument("--json-only", action="store_true", help="Output only JSON on stdout - no human text")
     parser.add_argument("--export-snapshots", action="store_true", help="Export pre-rendered data snapshots to data/ directory")
     parser.add_argument("--limit", type=int, default=10, help="Result limit (default: 10)")
-    parser.add_argument("--format", choices=["json", "markdown"], default="json", help="Output format (json or markdown)")
+    parser.add_argument("--format", choices=["human", "json", "markdown"], default="human", help="Output format (human, json, markdown)")
 
     args = parser.parse_args()
 
@@ -458,10 +486,7 @@ def main():
         reconcile_next_day_gap_trades(smartApi, sh, bq_client, preds, now_str, now_dt)
         print("[SUCCESS] Overnight gap trade reconciliation complete!")
     elif args.verify:
-        res = run_full_verification()
-        format_output(res, args.format, title="Forensic System Verification Audit")
-        if res["status"] != "PASS":
-            sys.exit(1)
+        handle_verify(args)
     elif args.export_snapshots:
         res = export_snapshots()
         format_output(res, args.format, title="Snapshot Export Status")
