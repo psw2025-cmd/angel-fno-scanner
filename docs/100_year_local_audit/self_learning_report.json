@@ -1,0 +1,39 @@
+{
+  "agent": "100_YEAR_SELF_LEARNER",
+  "evaluated_at_utc": "2026-10-09T08:58:21.438522+00:00",
+  "database": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\data\\learning_history.db",
+  "sample_size": 12,
+  "metrics": {
+    "average_latency_sec": 4.82,
+    "average_coverage_pct": 100.0,
+    "max_oldest_tick_age_sec": 35.0,
+    "partial_coverage_runs_count": 0
+  },
+  "auto_tuning_decisions": [
+    {
+      "trigger": "avg_latency=4.82s <= 8.0s",
+      "decision": "MAINTAIN_CONCURRENCY",
+      "action": "Latency is optimal. Concurrency kept at 8 workers."
+    },
+    {
+      "trigger": "100% universe coverage maintained in 12/12 runs",
+      "decision": "RETAIN_STANDARD_RETRIES",
+      "action": "Full 219 universe coverage is stable."
+    },
+    {
+      "trigger": "max_oldest_age=35.0s <= 60.0s",
+      "decision": "FRESH_TICK_VERIFIED",
+      "action": "Exchange ticks are fresh within SLA threshold."
+    }
+  ],
+  "dual_source_divergence_audit": {
+    "benchmark_symbol": "RELIANCE",
+    "angel_ltp": 1177.0,
+    "reference_nse_ltp": 1176.8,
+    "divergence_pct": 0.017,
+    "divergence_threshold_pct": 2.0,
+    "status": "CONVERGED",
+    "action": "PROCEED_NORMAL"
+  },
+  "learning_policy": "Fail-Closed, Continuous Feedback Loop, 100-Year Memory Preservation"
+}

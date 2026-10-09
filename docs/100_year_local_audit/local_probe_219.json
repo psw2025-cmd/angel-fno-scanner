@@ -1,0 +1,21 @@
+{
+  "api_fetch_latency_seconds": 7.491,
+  "coverage_pct": 100.0,
+  "data_source": "Angel One FULL",
+  "event": "exchange_timestamp_probe",
+  "fetch_failures": 0,
+  "missing_count": 0,
+  "missing_token_count": 0,
+  "mode": "READ_ONLY",
+  "oldest_age_seconds": 35.23,
+  "oldest_exchange_timestamp": "2026-10-09T07:41:00+00:00",
+  "status": "EXCHANGE_VERIFIED",
+  "total": 219,
+  "unique_tokens": 219,
+  "verified_count": 219,
+  "verified_at_utc": "2026-10-09T07:41:35Z",
+  "verified_at_ist": "2026-10-09 13:11:35 IST",
+  "proof_run_id": "37900246333",
+  "proof_git_sha": "bb128516ceb28d938689d1f0212aa8037a942d99",
+  "workflow_head_sha": "73ad18df4e1924e1cf3dc97053cd05e36799bb53"
+}

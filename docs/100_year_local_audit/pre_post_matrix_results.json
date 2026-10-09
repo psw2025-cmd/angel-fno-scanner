@@ -1,0 +1,131 @@
+{
+  "test_suite": "100_YEAR_PRE_POST_EDGE_CASE_MATRIX",
+  "timestamp_utc": "2026-10-09T08:58:20.223971+00:00",
+  "total_scenarios": 11,
+  "passed_scenarios": 11,
+  "failed_scenarios": 0,
+  "results": [
+    {
+      "scenario": "PRE_01_EMPTY_LIST",
+      "description": "Angel API returns 200 HTTP OK but payload is []",
+      "expected": "FAIL_CLOSED (Zero writes to Sheets/BQ, alarm logged)",
+      "injected": {
+        "http_status": 200,
+        "data": []
+      },
+      "verdict": "PASS",
+      "behavior": "Rejected 0-item payload; refused publication."
+    },
+    {
+      "scenario": "PRE_02_MISSING_EXCH_FEED_TIME",
+      "description": "219 quotes returned, but 1 token has null/empty exchFeedTime",
+      "expected": "FAIL_CLOSED (Reject partial exchange time as unverified)",
+      "injected": {
+        "quotes_count": 219,
+        "missing_time_count": 1
+      },
+      "verdict": "PASS",
+      "behavior": "Detected 1 unverified feed time; halted before snapshot generation."
+    },
+    {
+      "scenario": "PRE_03_TIMEZONE_MISMATCH",
+      "description": "Timestamp format mismatch between Asia/Kolkata and UTC",
+      "expected": "EXACT_ALIGNMENT (UTC 06:00 == IST 11:30)",
+      "injected": {
+        "utc": "2026-10-09T06:00:00Z",
+        "ist": "2026-10-09 11:30:00"
+      },
+      "verdict": "PASS",
+      "behavior": "Correctly converted and verified zero temporal drift across timezones."
+    },
+    {
+      "scenario": "PRE_04_DUPLICATE_TOKENS",
+      "description": "219 tokens returned with duplicate symbolToken",
+      "expected": "FAIL_CLOSED (Deduplication check must catch duplicate)",
+      "injected": {
+        "raw_count": 219,
+        "unique_count": 218
+      },
+      "verdict": "PASS",
+      "behavior": "Duplicate token detected; rejected universe corruption."
+    },
+    {
+      "scenario": "PRE_05_YESTERDAY_CACHED_DATA",
+      "description": "Market open, but feed timestamp belongs to previous date (age > 18 hours)",
+      "expected": "FAIL_CLOSED (Detect stale feed, mark STALE, do not publish)",
+      "injected": {
+        "now_ist": "2026-10-09 11:30:00+05:30",
+        "feed_time": "2026-10-08 15:30:00+05:30",
+        "age_sec": 72000.0
+      },
+      "verdict": "PASS",
+      "behavior": "Age exceeded 180s SLA; marked STALE and aborted publication."
+    },
+    {
+      "scenario": "PRE_06_NETWORK_PARTITION",
+      "description": "Connection dropped after fetching 100 of 219 symbols",
+      "expected": "FAIL_CLOSED (No destructive overwrite of production with partial 100 symbols)",
+      "injected": {
+        "expected": 219,
+        "received": 100
+      },
+      "verdict": "PASS",
+      "behavior": "Refused destructive write of partial universe; preserved prior snapshot."
+    },
+    {
+      "scenario": "POST_07_SHEETS_RACE",
+      "description": "Concurrent write attempts racing on Google Sheets cell ranges",
+      "expected": "IDEMPOTENT_ATOMIC_GRID (Fixed rectangular write_grid with single-writer lease)",
+      "injected": {
+        "grid": {
+          "rows": 219,
+          "cols": 18
+        }
+      },
+      "verdict": "PASS",
+      "behavior": "Enforced single-writer lease + bounded write_grid to eliminate cell race."
+    },
+    {
+      "scenario": "POST_08_BQ_STREAMING_CONFLICT",
+      "description": "BigQuery streaming buffer locks table from concurrent DDL/DML",
+      "expected": "BATCH_LOAD_CONFIG (Use LoadJob with WRITE_TRUNCATE and durable replay)",
+      "injected": {
+        "write_disposition": "WRITE_TRUNCATE"
+      },
+      "verdict": "PASS",
+      "behavior": "LoadJob configured with atomic WRITE_TRUNCATE; bypasses streaming lock."
+    },
+    {
+      "scenario": "POST_09_PUSH_FAILURE_ROLLBACK",
+      "description": "Git push fails due to remote lock or network drop after 3 retries",
+      "expected": "ATOMIC_ROLLBACK (Staged changes reverted, local working tree remains clean)",
+      "injected": {
+        "push_attempts": 3,
+        "remote_rejection": true
+      },
+      "verdict": "PASS",
+      "behavior": "Atomic snapshots tool rolled back staged files to base commit; zero corruption."
+    },
+    {
+      "scenario": "POST_10_DISK_FULL",
+      "description": "OS raises ENOSPC (No space left on device) during snapshot save",
+      "expected": "FAIL_CLOSED_WITH_MEMORY_FALLBACK (Catch ENOSPC, log memory incident, exit 1)",
+      "injected": {
+        "simulated_errno": 28
+      },
+      "verdict": "PASS",
+      "behavior": "Cleanly trapped ENOSPC without unhandled crash; preserved memory state."
+    },
+    {
+      "scenario": "POST_11_RUNAWAY_BUFFER",
+      "description": "Market loop streaming 5,000 continuous quotes into memory buffer",
+      "expected": "BOUNDED_MEMORY (Sliding circular buffer caps memory at fixed limit)",
+      "injected": {
+        "total_streamed": 5000,
+        "buffer_cap": 1000
+      },
+      "verdict": "PASS",
+      "behavior": "Buffer capped at 1,000 items; zero unbounded heap expansion."
+    }
+  ]
+}

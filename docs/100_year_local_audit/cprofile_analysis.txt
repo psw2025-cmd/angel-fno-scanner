@@ -1,0 +1,38 @@
+         638444 function calls (638012 primitive calls) in 0.728 seconds
+
+   Ordered by: cumulative time
+   List reduced from 607 to 30 due to restriction <30>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     1000    0.043    0.000    0.573    0.001 C:\AngelFNO_Workstation\repos\angel-fno-scanner\gainers.py:137(implied_vol)
+    49600    0.225    0.000    0.540    0.000 C:\AngelFNO_Workstation\repos\angel-fno-scanner\gainers.py:101(black76_price)
+   102200    0.105    0.000    0.196    0.000 C:\AngelFNO_Workstation\repos\angel-fno-scanner\gainers.py:84(_norm_cdf)
+     49/2    0.001    0.000    0.127    0.064 <frozen importlib._bootstrap>:1349(_find_and_load)
+     49/2    0.000    0.000    0.127    0.064 <frozen importlib._bootstrap>:1304(_find_and_load_unlocked)
+     49/2    0.001    0.000    0.125    0.063 <frozen importlib._bootstrap>:911(_load_unlocked)
+     37/2    0.000    0.000    0.125    0.062 <frozen importlib._bootstrap_external>:993(exec_module)
+    106/4    0.000    0.000    0.122    0.031 <frozen importlib._bootstrap>:480(_call_with_frames_removed)
+     44/2    0.003    0.000    0.122    0.061 {built-in method builtins.exec}
+        1    0.000    0.000    0.110    0.110 C:\AngelFNO_Workstation\repos\angel-fno-scanner\gainers.py:1(<module>)
+        1    0.000    0.000    0.095    0.095 C:\AngelFNO_Workstation\repos\angel-fno-scanner\market_calendar.py:1(<module>)
+        1    0.000    0.000    0.066    0.066 C:\Users\ADMIN\AppData\Local\Programs\Python\Python312\Lib\zoneinfo\_common.py:4(load_tzdata)
+   154801    0.063    0.000    0.063    0.000 {built-in method math.sqrt}
+      9/7    0.000    0.000    0.060    0.009 <frozen importlib._bootstrap>:1390(_handle_fromlist)
+        3    0.000    0.000    0.059    0.020 {built-in method builtins.__import__}
+   100278    0.053    0.000    0.053    0.000 {built-in method builtins.max}
+   102200    0.048    0.000    0.048    0.000 {built-in method math.erf}
+       49    0.001    0.000    0.045    0.001 <frozen importlib._bootstrap>:1240(_find_spec)
+       37    0.001    0.000    0.044    0.001 <frozen importlib._bootstrap_external>:1066(get_code)
+       40    0.000    0.000    0.042    0.001 <frozen importlib._bootstrap_external>:1524(find_spec)
+       40    0.001    0.000    0.042    0.001 <frozen importlib._bootstrap_external>:1495(_get_spec)
+        1    0.000    0.000    0.039    0.039 C:\Users\ADMIN\AppData\Local\Programs\Python\Python312\Lib\importlib\resources\__init__.py:1(<module>)
+       97    0.002    0.000    0.038    0.000 <frozen importlib._bootstrap_external>:1597(find_spec)
+        1    0.000    0.000    0.035    0.035 C:\Users\ADMIN\AppData\Local\Programs\Python\Python312\Lib\importlib\resources\_common.py:1(<module>)
+    50602    0.028    0.000    0.028    0.000 {built-in method math.log}
+        1    0.000    0.000    0.028    0.028 C:\Users\ADMIN\AppData\Local\Programs\Python\Python312\Lib\tempfile.py:1(<module>)
+       37    0.000    0.000    0.027    0.001 <frozen importlib._bootstrap_external>:1187(get_data)
+    52601    0.026    0.000    0.026    0.000 {built-in method math.exp}
+        1    0.000    0.000    0.025    0.025 C:\Users\ADMIN\AppData\Local\Programs\Python\Python312\Lib\importlib\resources\_common.py:33(wrapper)
+        1    0.000    0.000    0.025    0.025 C:\Users\ADMIN\AppData\Local\Programs\Python\Python312\Lib\importlib\resources\_common.py:51(files)
+
+

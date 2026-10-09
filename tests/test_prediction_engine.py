@@ -653,7 +653,7 @@ def test_reconcile_preserves_exact_contract_identity_when_atm_drifts(monkeypatch
         "angel_prediction_engine.GAP_RECON_HISTORY_PATH",
         str(tmp_path / "test_gap_recon.json"),
     )
-    monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")
+    monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")  # test isolation only - prod code uses conditional 0/1
     monkeypatch.setenv("WRITER_ID", "market_bot")
     monkeypatch.setenv("RUN_ID", "123456789")
     monkeypatch.setenv("GIT_SHA", "abcdef1234567890")

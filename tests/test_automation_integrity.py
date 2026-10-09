@@ -9,7 +9,7 @@ def test_market_bot_runs_short_repeating_cycles_without_cancel():
     assert "cron: '45 3 * * 1-5'" in text
     assert "github.event_name == 'schedule' && '24300' || '300'" in text
     assert "timeout-minutes: 420" in text
-    assert "cancel-in-progress: false" in text
+    assert "cancel-in-progress: false" in text  # concurrency cancel-in-progress false is intentional for single_writer to prevent kill collisions
 
 
 def test_provenance_verifier_is_read_only():

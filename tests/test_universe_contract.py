@@ -51,6 +51,7 @@ def test_scanner_prediction_failure_is_not_false_green(monkeypatch):
     monkeypatch.setattr(scanner, "heartbeat_age_seconds", lambda *_: None)
     monkeypatch.setattr(scanner, "angel_login", lambda: object())
     monkeypatch.setattr(scanner, "run_angel_loop", lambda *_: None)
+    monkeypatch.setattr(scanner.time, "sleep", lambda _: None)
 
     def failed_prediction(**_):
         raise RuntimeError("prediction publication failed")
@@ -62,7 +63,7 @@ def test_scanner_prediction_failure_is_not_false_green(monkeypatch):
 
 def test_partial_publication_preserves_sinks(monkeypatch):
     import angel_prediction_engine as engine
-    monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")
+    monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")  # test isolation only - prod code uses conditional 0/1
     monkeypatch.setenv("WRITER_ID", "market_bot")
     monkeypatch.setenv("RUN_ID", "test-cycle")
     monkeypatch.setenv("GIT_SHA", "test-sha")
@@ -85,7 +86,7 @@ def test_duplicate_output_identity_rejected():
 
 def test_malformed_forensic_row_cannot_be_dropped_into_partial_publication(monkeypatch):
     import angel_prediction_engine as engine
-    monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")
+    monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")  # test isolation only - prod code uses conditional 0/1
     monkeypatch.setenv("WRITER_ID", "market_bot")
     monkeypatch.setenv("RUN_ID", "test-cycle")
     monkeypatch.setenv("GIT_SHA", "test-sha")

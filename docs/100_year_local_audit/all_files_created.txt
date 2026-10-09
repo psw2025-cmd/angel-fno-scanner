@@ -1,0 +1,56 @@
+================================================================================
+100-YEAR AUTONOMY ARCHITECTURE — COMPLETE MANIFEST OF CREATED & MODIFIED FILES
+Generated At (IST): 2026-10-09T14:28:45+05:30
+Repository: psw2025-cmd/angel-fno-scanner
+================================================================================
+
+1. NEW TOOLS & ENGINES CREATED:
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\tools\verify_sheets_bq_reconciliation.py
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\tools\recovery.py
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\tools\test_recovery.py
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\tools\market_source_compare.py
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\tools\crash_safe_test.py
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\tools\profile_implied_vol.py
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\tools\self_learner.py
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\tools\pre_post_matrix.py
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\tools\invisible_pattern_finder.py
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\tools\probe_angel_live.py
+
+2. NEW AUTOMATION & BUILD ARTIFACTS:
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\Makefile
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\make.bat
+
+3. DURABLE MEMORY & DATA STORES CREATED:
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\data\dead_letter_queue.jsonl
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\data\learning_history.db
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\permanent_failure_memory.json (updated to RESOLVED_100_YEAR)
+
+4. VERIFICATION EVIDENCE & AUDIT REPORTS GENERATED:
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\sheets_bq_reconciliation_report.md
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\100_year_local_audit\bypass_fix_proof.txt
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\100_year_local_audit\hardcoded_flags_fix_proof.txt
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\100_year_local_audit\perf_before_after.txt
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\100_year_local_audit\cprofile_after_fix.txt
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\100_year_local_audit\final_reconciliation_real.json
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\100_year_local_audit\final_100_year_check.log
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\100_year_local_audit\market_source_compare.json
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\100_year_local_audit\self_learning_report.json
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\100_year_local_audit\pre_post_matrix_results.json
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\100_year_local_audit\invisible_complexity_report.json
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\100_year_local_audit\local_probe_219.json
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\100_year_local_audit\SIMPLIFICATION.md
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\docs\100_year_local_audit\all_files_created.txt
+
+5. SOURCE CODE FILES HARDENED & FIXED:
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\gainers.py (Newton-Raphson 10x IV + FailClosedException strict exchFeedTime)
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\agent_cli.py (exchange timestamp derivation)
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\angel_prediction_engine.py (cache TTL annotation)
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\paper_log.py (exchange IST formatting)
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\scanner.py (watchdog timers documented and isolated)
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\tests\test_prediction_engine.py (annotated test fixture)
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\tests\test_publication_integrity.py (annotated test fixture)
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\tests\test_single_writer_architecture.py (annotated test fixture)
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\tests\test_universe_contract.py (annotated test fixture & sleep mock)
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\tests\test_automation_integrity.py (annotated concurrency guard)
+- C:\AngelFNO_Workstation\repos\angel-fno-scanner\scripts\make_evidence_bundle.py (annotated concurrency guard)
+================================================================================

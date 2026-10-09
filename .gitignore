@@ -33,3 +33,4 @@ backups/
 # Windows desktop.ini (breaks git refs on Windows)
 **/desktop.ini
 *.ini.tmp
+scratch/
