@@ -34,3 +34,5 @@ backups/
 **/desktop.ini
 *.ini.tmp
 scratch/
+
+audit/archive/
