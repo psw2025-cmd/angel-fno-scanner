@@ -597,3 +597,7 @@ Heartbeat cell conflated row count with sync timestamp, corrupting health status
 ## 2026-10-09 - Exchange tick provenance hardening (draft)
 - Strict exchFeedTime and 219 distinct futures coverage; fail closed on missing metadata.
 - Local staged snapshot rollback; full live Sheets/BQ/Git reconciliation remains unverified.
+
+## 2026-10-09 - Read-only reliability analysis
+- Add SLO coverage monitor and historical failure-pattern analyzer; no automatic downgrade of freshness controls.
+- GitHub live dispatch not performed: workflow_dispatch lacks dry_run input and ALLOW_PRODUCTION_WRITES=1.
