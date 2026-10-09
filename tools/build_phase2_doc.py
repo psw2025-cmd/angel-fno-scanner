@@ -1,6 +1,6 @@
 import os
 
-content = """# AGY Phase 2 Cross-Review: Critical Evaluation of ChatGPT Phase 1 Independent Plan
+content = r"""# AGY Phase 2 Cross-Review: Critical Evaluation of ChatGPT Phase 1 Independent Plan
 
 > **Author**: AGY - Lead Autonomous System Architect
 > **Repository**: `psw2025-cmd/angel-fno-scanner`

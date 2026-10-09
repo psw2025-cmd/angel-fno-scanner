@@ -83,3 +83,28 @@ AGY must independently reproduce and classify gspread.exceptions.APIError [-1] w
 
 ## Mandatory Windows encoding gate
 Past: review PM-001, historical regressions and prior fixes. Present: inspect staged blobs, branch, dirty worktrees, interpreter and code page. Pre-action: parse before write and preserve original. Post-action: run tools/encoding_source_gate.py --all, pytest tests/test_encoding_gate.py tests/test_cli_contract.py, Windows/Linux CI, and independent review. Future: enforce CI, retain negative tests and reopen regressions. Never claim live Sheets/BQ verified from a syntax PASS.
+
+---
+
+## Gate 7 — Permanent Quality Control & Future-Proof Safety Gates
+
+Gate 7 establishes the permanent layered governance model across P0, P1, and P2 priority levels:
+
+### Priority P0 Gates (Execution-Blocking)
+1. **P0 Python Syntax & BOM Gate**: All `.py` files must parse cleanly with `ast.parse` and be decodable as `utf-8-sig` with zero syntax or unexpected BOM issues.
+2. **P0 Console Encoding (cp1252 / UTF-8) Gate**: Output emitted by CLI and test scripts must be compatible with Windows code page 1252. No bare unicode emojis or unhandled characters that crash standard Windows shells.
+3. **P0 Branch Protection Gate**: Remote `main` branch protection requires passing `encoding-safety (ubuntu-latest)` and `encoding-safety (windows-latest)`. No administrative bypass or unilateral forced merges.
+4. **P0 Non-Destructive Git Safety Gate**: Never use destructive `git checkout -f`, `git reset --hard`, or `git push --force`. All working trees, stashes, and untracked proofs must be preserved.
+5. **P0 CLI Protocol Contract Gate**: `agent_cli.py` must register `--json-only`, support `--format json`, reconfigure UTF-8 streams, and emit strictly valid JSON on stdout when requested.
+
+### Priority P1 Gates (Verification & Integrity)
+6. **P1 Source Scanner Gate**: `tools/encoding_source_gate.py` detects delta of non-ASCII characters introduced in staged commits, preventing regressions before commit.
+7. **P1 Agent Rules Enforcement Gate**: All collaborating agents must adhere to `AGENTS.md` operating contracts and record handoffs on Issue #3 / PR #45.
+8. **P1 Layered Test Suite Gate**: Positive and negative tests in `test_encoding_gate.py`, `test_cli_contract.py`, and `test_data_chain.py` must pass 100% across Linux and Windows.
+9. **P1 Permanent Incident Memory Gate**: Every critical bug or architectural regression must have an immutable postmortem document under `docs/PERMANENT_MEMORY/PM-*.md`.
+10. **P1 Independent Dual-Party Verification Gate**: Changes to shared sinks (Sheets, BigQuery, workflows) must be validated independently by both AGY (local host/data) and ChatGPT (remote/cloud).
+
+### Priority P2 Gates (Monitoring & Long-Term Health)
+11. **P2 Scheduled Drift Detection Gate**: Automated daily workflows (`.github/workflows/nasa-daily-proof.yml`) verify 219 universe parity and table freshness.
+12. **P2 Evidence Dashboard Gate**: `docs/LIVE_DASHBOARD_FOR_USER.md` maintains live status tracking all 8 systems (Local, Cloud, PowerBI, Sheets, Excel, Colab, BigQuery, GCS, n8n) with clear proof links.
+

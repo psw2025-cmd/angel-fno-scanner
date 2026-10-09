@@ -2,7 +2,9 @@ name: Encoding Safety
 on:
   pull_request:
   push:
-    branches: [main, docs/chatgpt-phase1-independent]
+    branches: [main, docs/chatgpt-phase1-independent, feat/phase1-agy]
+  schedule:
+    - cron: '30 3 * * *'  # 3:30 UTC daily drift check
   workflow_dispatch:
 permissions:
   contents: read
@@ -25,7 +27,7 @@ jobs:
           python-version: '3.11'
       - run: python -m pip install pytest -r requirements.txt
       - run: python tools/encoding_source_gate.py --all
-      - run: python -m pytest -q tests/test_encoding_gate.py tests/test_cli_contract.py
+      - run: python -m pytest -q tests/test_encoding_gate.py tests/test_cli_contract.py tests/test_data_chain.py
         env:
           PYTHONIOENCODING: ""
       - run: python -c "assert '[PASS]'.encode('cp1252') == b'[PASS]'"
