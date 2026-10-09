@@ -81,6 +81,8 @@ jobs:
 
       - name: Enforce permanent regression contract
         run: python tools/memory_guard.py
+      - name: Autonomy chaos regression gate
+        run: python tools/chaos_inject.py
       - name: Read-only Angel FULL timestamp probe
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         env:
@@ -99,6 +101,7 @@ jobs:
           set -eo pipefail
           python scanner.py
           python tools/check_freshness.py --metadata /tmp/cycle_metadata.json --market-session EOD
+          python tools/100_year_guard.py --phase pre --metadata /tmp/cycle_metadata.json
           python3 agent_cli.py --export-snapshots
           python scripts/sync_cycle_provenance_to_bq.py
 
