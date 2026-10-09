@@ -1039,3 +1039,5 @@ Agents: read FRONT.md first. Autonomous for paper-only work, no approval needed 
 
 ## Mandatory forensic verification before every agent change
 All agents MUST read `docs/AGENT_FORENSIC_GATES.md` and execute the applicable layered tests, source/encoding checks, non-destructive Git preflight and evidence recording before claiming PASS. Never confuse external verification failure with CLI parser failure. No unverified production activation or live trading.
+
+**Forensic gate baseline:** commit [5f099c3](https://github.com/psw2025-cmd/angel-fno-scanner/commit/5f099c3); six mandatory release gates in [docs/AGENT_FORENSIC_GATES.md](docs/AGENT_FORENSIC_GATES.md).

@@ -48,3 +48,35 @@
 ## Latest live status
 
 The independent worktree inserted the missing `argparse` line and confirmed AST and interactive help in PowerShell. The mandated live verification failed due to external service and/or interpreter context problems; therefore no commit/push of the CLI repair is authorized. The authoritative text proof is under `C:\Temp\AGENT_PROOF_*.txt` and must be read before next work. **Do not claim permanent resolution until the full matrix and cross-agent review pass.**
+
+## Six mandatory release gates — 2026-10-09
+
+**These are release-blocking checks, not a claim of implementation success.** Every check requires Git SHA, UTC timestamp, interpreter, exit code, and redacted evidence. BLOCKED is never PASS.
+
+### Gate 1 — Structural edit, parser, handler and tests
+Argparse registration, handler and regression tests must ship in one logical commit. AST/py_compile alone is insufficient. Test CLI help and offline mocked PASS, FAIL and exception paths. Missing --json-only in --help is CLI_BROKEN.
+
+### Gate 2 — Exit code semantics
+Exit 0 = audit PASS. Exit 1 = valid audit FAIL when machine-readable JSON explains the failure; this is not necessarily a CLI defect. Exit 2 from argparse = CLI_BROKEN. Unhandled exceptions are INFRA_OR_RUNTIME_ERROR. Capture exit code before any pipeline and inspect stdout/stderr separately.
+
+### Gate 3 — JSON-only purity
+Stdout must contain exactly one JSON document even when dependencies write to stderr. On Linux run:
+
+    set +e
+    python agent_cli.py --verify --json-only 1>/tmp/out.json 2>/tmp/err.txt
+    rc=$?
+    python -m json.tool /tmp/out.json >/dev/null
+    echo "audit_exit=$rc"
+
+Do not use && to skip JSON validation after a legitimate audit FAIL (exit 1). Validate offline mocked PASS/FAIL/exception, UTF-8 and CP1252. A Google Sheets APIError that prevents JSON emission is a separate JSON contract defect.
+
+### Gate 4 — Cloud evidence and independent readback
+C:\Temp local proof is insufficient. Publish sanitized evidence to GitHub Actions artifacts, authenticated GCS gs://fno-angel-evidence/ and an idempotent BigQuery fno_predictions.ledger row. GCS uses short-lived Workload Identity Federation, not service account JSON keys. BigQuery insertion is BLOCKED until project, dataset/table schema, IAM, deduplication key and retention are verified. Never create/overwrite a table blindly. Each proof includes SHA, UTC timestamp, run ID, checks, artifact SHA-256 and readback. Never expose secrets or raw API HTML.
+
+### Gate 5 — Git worktree safety
+Never git push --force. Use ordinary push; --force-with-lease only if a history rewrite is explicitly approved for an isolated branch. Before checkout/reset/prune inspect git status --porcelain, git worktree list --porcelain, branch, HEAD and agent locks. Never discard uncommitted changes, delete untracked proof, or remove another agent's worktree. Previous recovery reportedly discarded two modified files.
+
+### Gate 6 — AGY independent cross-agent signoff
+AGY must independently reproduce and classify gspread.exceptions.APIError [-1] with redacted HTTP status, Sheets ID provenance, authorization and scopes; separately validate JSON-only protocol. An AGY CLI timeout is not signoff. Retry with bounded read-only calls; record AGY raw redacted response and independent ChatGPT review. Until verified, CROSS_AGENT_SIGNOFF=BLOCKED and no production readiness claim or LIVE trading.
+
+**Prior baseline:** commit 5f099c3. These six gates strengthen the universal rules and must be adopted by every agent after the PR merges.

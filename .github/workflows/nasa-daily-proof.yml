@@ -6,6 +6,7 @@ on:
 permissions:
   contents: read
   issues: write
+  id-token: write
 concurrency:
   group: nasa-daily-proof
   cancel-in-progress: false
@@ -50,6 +51,22 @@ jobs:
         run: |
           python -m pip install pytest
           if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
+      - name: Test CLI registration and JSON-only purity
+        id: cli
+        continue-on-error: true
+        shell: bash
+        env:
+          LIVE_TRADING_ENABLED: 'false'
+        run: |
+          python agent_cli.py --help | grep -q -- '--json-only' || exit 2
+          python tools/nasa_cli_gate.py
+      - name: Publish CLI gate failure as a workflow failure
+        if: always()
+        shell: bash
+        run: |
+          if [ "${{ steps.cli.outcome }}" != "success" ]; then
+            echo "::error::CLI registration or JSON-only purity failed. Audit FAIL (exit 1) and argparse error (exit 2) are classified separately in the artifact."
+          fi
       - name: Collect 20 checks (read-only, fail closed)
         env:
           LIVE_TRADING_ENABLED: 'false'
@@ -63,6 +80,49 @@ jobs:
           path: proof-output/PROVEN_PROOF_LEDGER.json
           if-no-files-found: error
           retention-days: 30
+      - name: Upload sanitized CLI evidence artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-forensic-gate
+          path: proof-output/cli_forensic_gate.json
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Authenticate to Google Cloud using WIF
+        id: gcp
+        if: ${{ vars.GCP_WIF_PROVIDER != '' && vars.GCP_EVIDENCE_SERVICE_ACCOUNT != '' }}
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_EVIDENCE_SERVICE_ACCOUNT }}
+      - name: Setup gcloud
+        if: ${{ steps.gcp.outcome == 'success' }}
+        uses: google-github-actions/setup-gcloud@v2
+      - name: Upload evidence to GCS and verify readback
+        id: cloud
+        if: ${{ steps.gcp.outcome == 'success' }}
+        shell: bash
+        run: |
+          test -s proof-output/PROVEN_PROOF_LEDGER.json
+          sha256sum proof-output/PROVEN_PROOF_LEDGER.json > proof-output/PROVEN_PROOF_LEDGER.sha256
+          target="gs://fno-angel-evidence/nasa-daily-proof/${GITHUB_RUN_ID}/${GITHUB_SHA}/"
+          gcloud storage cp proof-output/PROVEN_PROOF_LEDGER.json "${target}PROVEN_PROOF_LEDGER.json"
+          gcloud storage cp proof-output/PROVEN_PROOF_LEDGER.sha256 "${target}PROVEN_PROOF_LEDGER.sha256"
+          gcloud storage cp "${target}PROVEN_PROOF_LEDGER.json" /tmp/gcs-ledger-readback.json
+          cmp proof-output/PROVEN_PROOF_LEDGER.json /tmp/gcs-ledger-readback.json
+          echo "GCS upload and readback verified for this run."
+      - name: Record missing cloud evidence and enforce gate
+        if: always()
+        shell: bash
+        run: |
+          if [ "${{ steps.gcp.outcome }}" != "success" ] || [ "${{ steps.cloud.outcome }}" != "success" ]; then
+            echo "::error::GCS evidence BLOCKED or FAIL. Configure WIF provider, evidence service account and bucket IAM; BigQuery ledger readback remains unimplemented."
+            exit 1
+          fi
+          if [ "${{ steps.cli.outcome }}" != "success" ]; then
+            echo "::error::CLI forensic gate failed."
+            exit 1
+          fi
       - name: Create issue for excessive untracked orphans
         if: always()
         env:
