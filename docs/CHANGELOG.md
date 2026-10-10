@@ -662,3 +662,7 @@ Heartbeat cell conflated row count with sync timestamp, corrupting health status
 ## 2026-10-10 - Dependency resilience primitives
 - Add bounded thread-safe token bucket, monotonic TTL/LRU cache, and single-probe circuit breaker with deterministic regression tests.
 - These modules are standalone building blocks; upstream-specific call-site integration remains separately gated.
+
+## 2026-10-10 - Local observability, DLQ replay and ETL validation
+- Add atomic counter snapshots, idempotent dead-letter replay, and schema-aware ETL rejection logging, each with regression tests.
+- Standalone modules only; production call-site integration and process safety require separate verification.
