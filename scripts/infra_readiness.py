@@ -1,4 +1,4 @@
-﻿"""Metadata-only preparation. Never imports scanner, engine, or writer helpers."""
+"""Metadata-only preparation. Never imports scanner, engine, or writer helpers."""
 import argparse
 import ast
 import csv
@@ -105,10 +105,16 @@ def local_checks(audit, offline):
     audit.check('219_symbol_config', 'PASS' if good else 'FAIL',
                 f'manifest={len(symbols)}, unique={len(set(symbols))}, scanner default={default}, effective={override}; configuration only')
     workflows = audit.repo / '.github' / 'workflows'
-    writers = [p.name for p in workflows.glob('*.yml')
-               if re.search(r"ALLOW_PRODUCTION_WRITES:\s*['\"]?1", p.read_text(encoding='utf-8-sig'))]
+    # Only market_bot may enable writes. Push events must fail closed.
     market = (workflows / 'market_bot.yml').read_text(encoding='utf-8-sig')
-    good = writers == ['market_bot.yml'] and market.count('python scanner.py') == 1
+    writer_lines = []
+    for workflow in workflows.glob('*.yml'):
+        for line in workflow.read_text(encoding='utf-8-sig').splitlines():
+            if re.match(r'^\s*ALLOW_PRODUCTION_WRITES\s*:', line) and line.split(':', 1)[1].strip().strip(chr(34)).strip(chr(39)) != '0':
+                writer_lines.append((workflow.name, line.strip()))
+    expected_policy = "github.event_name == 'schedule' && '1' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run && '1' || '0')"
+    good = writer_lines == [('market_bot.yml', 'ALLOW_PRODUCTION_WRITES: ${{ ' + expected_policy + ' }}')]
+    good = good and market.count('python scanner.py') == 1
     good = good and 'WRITER_ID: market_bot' in market and 'group: market-bot' in market
     good = good and 'angel_prediction_engine.py --run-once' not in market
     guard = (audit.repo / 'writer_guard.py').read_text(encoding='utf-8-sig')

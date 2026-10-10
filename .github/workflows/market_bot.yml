@@ -46,7 +46,7 @@ jobs:
       SHEET_ID: ${{ secrets.SHEET_ID }}
       BQ_PROJECT_ID: ${{ secrets.BQ_PROJECT_ID }}
       MAX_RUNTIME_SECONDS: ${{ github.event_name == 'schedule' && '24300' || '300' }}
-      ALLOW_PRODUCTION_WRITES: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '0' || '1' }}
+      ALLOW_PRODUCTION_WRITES: ${{ github.event_name == 'schedule' && '1' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run && '1' || '0') }}
       WRITER_ID: market_bot
       RUN_ID: ${{ github.run_id }}
       GIT_SHA: ${{ github.sha }}
@@ -117,7 +117,15 @@ jobs:
             pushed=0
             for i in 1 2 3 4 5; do
               echo "Snapshot push attempt $i/5"
-              if git push origin HEAD:main; then
+              # Rebase the snapshot-only commit on the latest main before retrying.
+              # Never force-push or overwrite concurrent publisher changes.
+              if ! git fetch origin main; then
+                echo "::warning::Fetch failed; will retry"
+              elif ! git rebase origin/main; then
+                git rebase --abort || true
+                echo "::error::Snapshot conflicts with newer main; manual reconciliation required"
+                exit 1
+              elif git push origin HEAD:main; then
                 pushed=1
                 break
               fi
