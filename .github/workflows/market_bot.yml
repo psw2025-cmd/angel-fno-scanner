@@ -96,7 +96,7 @@ jobs:
           path: ${{ runner.temp }}/probe_result.json
           if-no-files-found: warn
       - name: Run Single Authoritative Scanner and Prediction Cycle
-        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.dry_run }}
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
         run: |
           set -eo pipefail
           python scanner.py
@@ -106,7 +106,7 @@ jobs:
           python scripts/sync_cycle_provenance_to_bq.py
 
       - name: Commit & Push Updated Snapshots
-        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.dry_run }}
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
         run: |
           set -eo pipefail
           git config --global user.name "github-actions[bot]"
