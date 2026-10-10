@@ -1036,3 +1036,11 @@ If any critical category is unknown or contradictory, status is not fully produc
 This file is the permanent starting point. Read it first. Use Issue #3 for living state. Preserve evidence. Resolve disagreements through independent verification. Leave the project more truthful, safer, and more measurable than you found it.
 
 Agents: read FRONT.md first. Autonomous for paper-only work, no approval needed for paper tasks. Paper-only lock is permanent: no live orders, no force-push to main, no secrets in files.
+
+## Mandatory forensic verification before every agent change
+All agents MUST read `docs/AGENT_FORENSIC_GATES.md` and execute the applicable layered tests, source/encoding checks, non-destructive Git preflight and evidence recording before claiming PASS. Never confuse external verification failure with CLI parser failure. No unverified production activation or live trading.
+
+**Forensic gate baseline:** commit [5f099c3](https://github.com/psw2025-cmd/angel-fno-scanner/commit/5f099c3); six mandatory release gates in [docs/AGENT_FORENSIC_GATES.md](docs/AGENT_FORENSIC_GATES.md).
+
+## Permanent encoding regression gates
+All agents must read docs/PERMANENT_MEMORY/PM-001-emoji-cp1252.md and docs/AGENT_FORENSIC_GATES.md before source edits. Run tracked source gate, CP1252 and CLI tests, protect worktrees, and preserve AGY routing/self_resolve. CI proof outranks self-reported PASS.

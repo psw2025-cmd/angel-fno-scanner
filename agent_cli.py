@@ -271,7 +271,7 @@ def _export_snapshots_unstaged(output_dir="data", verified_source_timestamp=None
     os.makedirs(target_dir, exist_ok=True)
 
     print(f"[INFO] Exporting pre-rendered data snapshots to {target_dir}...")
-    
+
     # 1. Full predictions snapshot
     preds = query_predictions(limit=250)
     with open(os.path.join(target_dir, "latest_predictions.json"), "w", encoding="utf-8") as f:

@@ -1,0 +1,8 @@
+repos:
+  - repo: local
+    hooks:
+      - id: encoding-source-gate
+        name: Python staged source safety
+        entry: python tools/encoding_source_gate.py
+        language: system
+        pass_filenames: false

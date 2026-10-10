@@ -161,14 +161,14 @@ def audit_sheets():
                         total_dummy_strings += 1
 
         tab_audit_results[tab_name] = tab_errors
-        status = "🟢 PASS" if not (tab_errors["formula_errors"] or tab_errors["date_serials"] or tab_errors["dummy_strings"]) else "🔴 FAIL"
+        status = "[PASS]" if not (tab_errors["formula_errors"] or tab_errors["date_serials"] or tab_errors["dummy_strings"]) else "[FAIL]"
         print(f" - {tab_name:40s} | Rows: {row_count:4d} | Cols: {col_count:2d} | Status: {status}")
         if tab_errors["formula_errors"]:
-            print(f"     ⚠️ Formula errors ({len(tab_errors['formula_errors'])}): {tab_errors['formula_errors'][:3]}")
+            print(f"     [WARN] Formula errors ({len(tab_errors['formula_errors'])}): {tab_errors['formula_errors'][:3]}")
         if tab_errors["date_serials"]:
-            print(f"     ⚠️ Date serials ({len(tab_errors['date_serials'])}): {tab_errors['date_serials'][:3]}")
+            print(f"     [WARN] Date serials ({len(tab_errors['date_serials'])}): {tab_errors['date_serials'][:3]}")
         if tab_errors["dummy_strings"]:
-            print(f"     ⚠️ Dummy strings ({len(tab_errors['dummy_strings'])}): {tab_errors['dummy_strings'][:3]}")
+            print(f"     [WARN] Dummy strings ({len(tab_errors['dummy_strings'])}): {tab_errors['dummy_strings'][:3]}")
 
     print(f"\n[SUMMARY PART 1] Audited {total_cells_checked} cells across {len(EXPECTED_TABS)} tabs.")
     print(f" - Formula Errors (#REF!, #NAME?, etc.): {total_formula_errors}")
@@ -218,7 +218,7 @@ def audit_bigquery():
                 row_count = table.num_rows
                 size_mb = round(table.num_bytes / (1024 * 1024), 2)
                 schema_fields = [f.name for f in table.schema]
-                print(f" - Table '{tbl_name}': {row_count} rows, {size_mb} MB, {len(schema_fields)} columns. 🟢 OK")
+                print(f" - Table '{tbl_name}': {row_count} rows, {size_mb} MB, {len(schema_fields)} columns. [PASS] OK")
                 bq_results[tbl_name] = {
                     "exists": True,
                     "rows": row_count,
@@ -226,10 +226,10 @@ def audit_bigquery():
                     "columns": len(schema_fields)
                 }
                 if row_count == 0:
-                    print(f"   ⚠️ Warning: Table '{tbl_name}' currently has 0 rows.")
+                    print(f"   [WARN] Warning: Table '{tbl_name}' currently has 0 rows.")
                     all_tables_pass = False
             except Exception as e:
-                print(f" - Table '{tbl_name}': 🔴 ERROR ({e})")
+                print(f" - Table '{tbl_name}': [FAIL] ERROR ({e})")
                 bq_results[tbl_name] = {"exists": False, "error": str(e)}
                 all_tables_pass = False
 
@@ -251,10 +251,10 @@ def audit_engine_state():
     state_ok = os.path.exists(state_path) or os.path.exists(local_data_path)
     cal_ok = os.path.exists(cal_path)
 
-    print(f" - Prediction State ({state_path} or {local_data_path}): {'🟢 FOUND' if state_ok else '🔴 MISSING'}")
+    print(f" - Prediction State ({state_path} or {local_data_path}): {'[PASS] FOUND' if state_ok else '[FAIL] MISSING'}")
 
     if cal_ok:
-        print(f" - Calibration State ({cal_path}): 🟢 FOUND")
+        print(f" - Calibration State ({cal_path}): [PASS] FOUND")
         with open(cal_path, "r") as f:
             cal_data = json.load(f)
         last_rec = cal_data.get("last_reconciliation", {})
@@ -274,13 +274,13 @@ def audit_engine_state():
             if rows:
                 cal_ok = True
                 r = dict(rows[0])
-                print(f" - Calibration State (BigQuery Sandbox Log): 🟢 FOUND")
+                print(f" - Calibration State (BigQuery Sandbox Log): [PASS] FOUND")
                 print(f"   Cycle: {r.get('cycle_number', 0)}")
                 print(f"   Hit Rate: {r.get('hit_rate_pct', 0.0)}%")
                 print(f"   Recall @ 10: {r.get('recall_at_10', 0.0)}")
                 print(f"   Mean Rank: {r.get('mean_rank_of_top10', 0.0)}")
         except Exception as e:
-            print(f" - Calibration State: 🔴 MISSING ({e})")
+            print(f" - Calibration State: [FAIL] MISSING ({e})")
 
     return (state_ok and cal_ok)
 
@@ -307,16 +307,16 @@ def main():
     print(f"\n=======================================================")
     print(f"FINAL SYSTEM VERIFICATION GATE SUMMARY")
     print(f"=======================================================")
-    print(f"1. 17-Tab Google Sheet Cell Audit: {'🟢 100% PASSED' if sheet_ok else '🔴 FAILED'}")
-    print(f"2. BigQuery Sandbox Dataset Audit: {'🟢 100% PASSED' if bq_ok else '🔴 FAILED'}")
-    print(f"3. Pre-Market & Calibration Engine: {'🟢 100% PASSED' if eng_ok else '🔴 FAILED'}")
+    print(f"1. 17-Tab Google Sheet Cell Audit: {'[PASS] 100% PASSED' if sheet_ok else '[FAIL]ED'}")
+    print(f"2. BigQuery Sandbox Dataset Audit: {'[PASS] 100% PASSED' if bq_ok else '[FAIL]ED'}")
+    print(f"3. Pre-Market & Calibration Engine: {'[PASS] 100% PASSED' if eng_ok else '[FAIL]ED'}")
 
     print(f"4. Completed publication/readback: {publication_ok}; {publication_evidence}")
     if sheet_ok and bq_ok and eng_ok and publication_ok:
-        print(f"\n✨ ALL PRODUCTION GATES VERIFIED 100% PASS! EXITING CODE 0.")
+        print(f"\n[*] ALL PRODUCTION GATES VERIFIED 100% PASS! EXITING CODE 0.")
         sys.exit(0)
     else:
-        print(f"\n⚠️ ONE OR MORE VERIFICATION GATES REQUIRE RESOLUTION.")
+        print(f"\n[WARN] ONE OR MORE VERIFICATION GATES REQUIRE RESOLUTION.")
         sys.exit(1)
 
 if __name__ == "__main__":

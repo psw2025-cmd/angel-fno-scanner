@@ -1,0 +1,203 @@
+{
+  "schema_version": "2.0",
+  "kind": "baseline",
+  "source": "Phase 3 PR #45",
+  "policy": "No PASS without executed command and evidence; BLOCKED for unavailable environment",
+  "checks": [
+    {
+      "id": "P-01",
+      "check": "No emoji in print",
+      "cmd": "python -m py_compile verify_all_sheets_and_engine.py; scan stdout for emoji",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-02",
+      "check": "Orphans <10",
+      "cmd": "git status --porcelain --untracked-files=normal",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-03",
+      "check": "Harness <20",
+      "cmd": "glob audit/verify_harness_*.json",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-04",
+      "check": "desktop.ini zero",
+      "cmd": "git ls-files '**/desktop.ini'; inspect filesystem",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-05",
+      "check": "Sheets 219 == BQ 219",
+      "cmd": "python tools/verify_sheets_bq_reconciliation.py",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-06",
+      "check": "Checksum 3f6153d1e221ae43 verified full SHA",
+      "cmd": "python tools/checksum_full.py (full SHA + canonical input)",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-07",
+      "check": "pytest 221",
+      "cmd": "python -m pytest -q",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-08",
+      "check": "memory_guard 6",
+      "cmd": "python tools/memory_guard.py",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-09",
+      "check": "healthz 200",
+      "cmd": "HTTP GET configured N8N_HEALTH_URL",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-10",
+      "check": "N8N_USER_FOLDER canonical",
+      "cmd": "read n8n service environment N8N_USER_FOLDER",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-11",
+      "check": "No plaintext secrets",
+      "cmd": "secret scan tracked content and history",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-12",
+      "check": "Deployment attestation",
+      "cmd": "GET authenticated cloud /version compare SHA",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-13",
+      "check": "Single-writer lease",
+      "cmd": "query fenced lease and BQ commit marker",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-14",
+      "check": "Restore drill exists",
+      "cmd": "execute cold restore drill with key recovery",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-15",
+      "check": "Activation attestation desired==observed",
+      "cmd": "compare signed desired and live observed workflow active state",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-16",
+      "check": "Negative IAM tests",
+      "cmd": "pytest tests/test_iam_deny.py against deployed IAM",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-17",
+      "check": "Cost cap",
+      "cmd": "gcloud billing budgets list plus quota alerts",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-18",
+      "check": "Verify 3x deterministic",
+      "cmd": "python agent_cli.py --verify --format json (three times)",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-19",
+      "check": "Git worktree <=1",
+      "cmd": "git worktree list --porcelain",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    },
+    {
+      "id": "P-20",
+      "check": "Branch count <=5",
+      "cmd": "git branch -r",
+      "status": "NOT_RUN",
+      "timestamp": null,
+      "source_sha": null,
+      "evidence": null
+    }
+  ],
+  "encoding_safety": {
+    "status": "NOT_RUN",
+    "timestamp": null,
+    "checks": [
+      "tracked_python_syntax",
+      "staged_non_ascii",
+      "cp1252_positive_negative",
+      "cli_help",
+      "argparse_exit_2",
+      "windows_linux_ci",
+      "branch_protection",
+      "agy_routing_preserved"
+    ],
+    "policy": "No PASS without source SHA and executed evidence"
+  }
+}
