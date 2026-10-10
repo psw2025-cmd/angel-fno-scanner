@@ -128,7 +128,7 @@ def snapshot_target_b():
     result["PE"] = {"top1": pe[:1], "top3": pe[:3], "top5": pe[:5]}
     if any(x["volume"] is not None for x in ce + pe):
         result["volume_field_status"] = "AVAILABLE"
-    # Never overwrite an existing evidence snapshot, even when the clock repeats.
+    # Never overwrite existing evidence, even when the clock repeats.
     out = REPORTS / f"TargetB_SNAPSHOT_{stamp:%Y%m%d_%H%M%S_%f}.json"
     counter = 1
     while out.exists():
