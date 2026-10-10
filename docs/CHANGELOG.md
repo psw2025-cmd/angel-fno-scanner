@@ -666,3 +666,7 @@ Heartbeat cell conflated row count with sync timestamp, corrupting health status
 ## 2026-10-10 - Local observability, DLQ replay and ETL validation
 - Add atomic counter snapshots, idempotent dead-letter replay, and schema-aware ETL rejection logging, each with regression tests.
 - Standalone modules only; production call-site integration and process safety require separate verification.
+
+## 2026-10-10 - Orphan process audit
+- Add ownership-scoped, age-gated orphan-process classification and append-only audit evidence with a deterministic regression test.
+- Inspection only: no process termination, no boot scheduler installed; escalation requires validated PID ownership and separate approval.
