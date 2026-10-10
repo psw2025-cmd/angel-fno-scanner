@@ -1,0 +1,150 @@
+name: NASA Daily Proof (read-only)
+on:
+  schedule:
+    - cron: '45 3 * * *' # 09:15 IST, best effort, runs from default branch only
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+  id-token: write
+concurrency:
+  group: nasa-daily-proof
+  cancel-in-progress: false
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and test repository source
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path("verify_all_sheets_and_engine.py")
+          if not p.exists():
+              print("MISSING verify_all_sheets_and_engine.py")
+              raise SystemExit(1)
+          raw=p.read_bytes()
+          try:
+              compile(raw.decode("utf-8"),str(p),"exec")
+              print("utf-8 source PASS")
+          except UnicodeDecodeError:
+              compile(raw.decode("cp1252"),str(p),"exec")
+              print("cp1252 source PASS; UTF-8 migration needed")
+          PY
+      - name: Optional PowerShell health script
+        shell: pwsh
+        run: |
+          if (Test-Path tools/readonly_health_check.ps1) {
+            & ./tools/readonly_health_check.ps1 -JsonOnly
+          } else {
+            Write-Output "BLOCKED: tools/readonly_health_check.ps1 absent"
+          }
+      - name: Install pytest and declared requirements
+        shell: bash
+        run: |
+          python -m pip install pytest
+          if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
+      - name: Test CLI registration and JSON-only purity
+        id: cli
+        continue-on-error: true
+        shell: bash
+        env:
+          LIVE_TRADING_ENABLED: 'false'
+        run: |
+          python agent_cli.py --help | grep -q -- '--json-only' || exit 2
+          python tools/nasa_cli_gate.py
+      - name: Publish CLI gate failure as a workflow failure
+        if: always()
+        shell: bash
+        run: |
+          if [ "${{ steps.cli.outcome }}" != "success" ]; then
+            echo "::error::CLI registration or JSON-only purity failed. Audit FAIL (exit 1) and argparse error (exit 2) are classified separately in the artifact."
+          fi
+      - name: Collect 20 checks (read-only, fail closed)
+        env:
+          LIVE_TRADING_ENABLED: 'false'
+          NASA_ENABLE_CLOUD_VERIFY: '0'
+        run: python tools/nasa_daily_proof.py
+      - name: Upload timestamped proof ledger
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-proof-ledger
+          path: proof-output/PROVEN_PROOF_LEDGER.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload sanitized CLI evidence artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-forensic-gate
+          path: proof-output/cli_forensic_gate.json
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Authenticate to Google Cloud using WIF
+        id: gcp
+        if: ${{ vars.GCP_WIF_PROVIDER != '' && vars.GCP_EVIDENCE_SERVICE_ACCOUNT != '' }}
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_EVIDENCE_SERVICE_ACCOUNT }}
+      - name: Setup gcloud
+        if: ${{ steps.gcp.outcome == 'success' }}
+        uses: google-github-actions/setup-gcloud@v2
+      - name: Upload evidence to GCS and verify readback
+        id: cloud
+        if: ${{ steps.gcp.outcome == 'success' }}
+        shell: bash
+        run: |
+          test -s proof-output/PROVEN_PROOF_LEDGER.json
+          sha256sum proof-output/PROVEN_PROOF_LEDGER.json > proof-output/PROVEN_PROOF_LEDGER.sha256
+          target="gs://fno-angel-evidence/nasa-daily-proof/${GITHUB_RUN_ID}/${GITHUB_SHA}/"
+          gcloud storage cp proof-output/PROVEN_PROOF_LEDGER.json "${target}PROVEN_PROOF_LEDGER.json"
+          gcloud storage cp proof-output/PROVEN_PROOF_LEDGER.sha256 "${target}PROVEN_PROOF_LEDGER.sha256"
+          gcloud storage cp "${target}PROVEN_PROOF_LEDGER.json" /tmp/gcs-ledger-readback.json
+          cmp proof-output/PROVEN_PROOF_LEDGER.json /tmp/gcs-ledger-readback.json
+          echo "GCS upload and readback verified for this run."
+      - name: Record missing cloud evidence and enforce gate
+        if: always()
+        shell: bash
+        run: |
+          if [ "${{ steps.gcp.outcome }}" != "success" ] || [ "${{ steps.cloud.outcome }}" != "success" ]; then
+            echo "::error::GCS evidence BLOCKED or FAIL. Configure WIF provider, evidence service account and bucket IAM; BigQuery ledger readback remains unimplemented."
+            exit 1
+          fi
+          if [ "${{ steps.cli.outcome }}" != "success" ]; then
+            echo "::error::CLI forensic gate failed."
+            exit 1
+          fi
+      - name: Create issue for excessive untracked orphans
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          count=$(git status --porcelain --untracked-files=normal | grep -c '^??' || true)
+          echo "Runner untracked count: $count"
+          if [ "$count" -gt 10 ]; then
+            gh issue create --title "NASA proof: >10 runner untracked files" --body "Run: ${{ github.run_id }}. Count: $count. This is the hosted runner, not the laptop."
+          fi
+      - name: Harness threshold warning
+        if: always()
+        shell: bash
+        run: |
+          count=$(find audit -maxdepth 1 -name 'verify_harness_*.json' -type f 2>/dev/null | wc -l || true)
+          if [ "$count" -gt 20 ]; then echo "::warning::Harness JSON count $count exceeds 20"; fi
+      - name: Summarize results
+        if: always()
+        shell: bash
+        run: |
+          if [ -f proof-output/PROVEN_PROOF_LEDGER.json ]; then
+            python -c 'import json;d=json.load(open("proof-output/PROVEN_PROOF_LEDGER.json"));print(d["summary"])'
+          fi
+          echo "Artifact ledger is updated per run; Git baseline remains unchanged pending independent PR review." >> "$GITHUB_STEP_SUMMARY"

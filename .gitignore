@@ -1,7 +1,10 @@
 __pycache__/
+**/__pycache__/
 *.pyc
 *.bak*
+*.bak_*
 logs/
+*.log
 .env
 .env.*
 !.env.example
@@ -16,23 +19,31 @@ audit/cloud_exports/
 *.abf
 *.pdf
 desktop.ini
-**/.pbi/localSettings.json
-**/.pbi/cache.abf
+**/desktop.ini
+*.ini.tmp
+**/.pbi/
+*.pbi
+*.pbix
 system_live_telemetry.json
 tools/system_live_telemetry.json
 operator/monitor/system_live_telemetry.json
 tools/SYSTEM_LIVE_DNA_AUDIT.csv
 audit/verify_harness_*.json
+audit/archive/
 
 # One-off folder tree dump
 structure.txt
 
 # Local backups
 backups/
-
-# Windows desktop.ini (breaks git refs on Windows)
-**/desktop.ini
-*.ini.tmp
 scratch/
 
-audit/archive/
+# Jupyter / Colab checkpoints
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# Auto-generated spreadsheets & temp files
+*.xlsx
+*.xls
+C:/Temp/
+C:\Temp\

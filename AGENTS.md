@@ -1036,3 +1036,30 @@ If any critical category is unknown or contradictory, status is not fully produc
 This file is the permanent starting point. Read it first. Use Issue #3 for living state. Preserve evidence. Resolve disagreements through independent verification. Leave the project more truthful, safer, and more measurable than you found it.
 
 Agents: read FRONT.md first. Autonomous for paper-only work, no approval needed for paper tasks. Paper-only lock is permanent: no live orders, no force-push to main, no secrets in files.
+
+## Mandatory forensic verification before every agent change
+All agents MUST read `docs/AGENT_FORENSIC_GATES.md` and execute the applicable layered tests, source/encoding checks, non-destructive Git preflight and evidence recording before claiming PASS. Never confuse external verification failure with CLI parser failure. No unverified production activation or live trading.
+
+**Forensic gate baseline:** commit [5f099c3](https://github.com/psw2025-cmd/angel-fno-scanner/commit/5f099c3); six mandatory release gates in [docs/AGENT_FORENSIC_GATES.md](docs/AGENT_FORENSIC_GATES.md).
+
+## Permanent encoding regression gates
+All agents must read docs/PERMANENT_MEMORY/PM-001-emoji-cp1252.md and docs/AGENT_FORENSIC_GATES.md before source edits. Run tracked source gate, CP1252 and CLI tests, protect worktrees, and preserve AGY routing/self_resolve. CI proof outranks self-reported PASS.
+---
+
+## Mandatory multi-agent reliability addendum (2026-10-10)
+# Agent Instructions â€” Angel F&O Scanner
+
+All automated agents (AGY, Codex, Claude, or others) must follow the same operating contract.
+
+- Before edits, inspect current Git HEAD/status, existing tasks, prior incident evidence, CI, and dependencies. Never rely on historical PASS alone.
+- Maintain a durable issue ledger with stable IDs, severity, root cause, affected paths, reproduction, patch, test proof, and follow-up verification.
+- Recheck old fixes for regression when upstream/downstream code changes; add regression tests for new failure classes.
+- Edit only approved, explicitly allowlisted paths in an isolated Git worktree. Never delete user files to make a repository clean. Unexpected path prompts are denied.
+- Use AGY first, Codex second, Claude third only if each passes its own readiness check; record fallback and cooldown decisions. Do not reuse keys across providers.
+- Require syntax, unit, integration, boundary and relevant production-equivalent tests plus independent review before marking complete.
+- Store timestamp, commit, changed files, test outputs, and provenance; distinguish simulation, local, GitHub, Sheets, BigQuery, and cloud-runtime verification.
+- Keep PAPER/ANALYZE separate from LIVE trading; do not enable real orders or bypass risk gates.
+- No automatic merge, push, cloud deployment, secret changes, destructive cleanup or live trading without task-specific authorization.
+- Report unresolved conditions as NOT VERIFIED, continue unrelated safe work, and update status artifacts from measured evidence.
+
+Local supervisor contract: C:\AngelFNO_Workstation\angel-agent-supervisor\AGENT_OPERATING_CONTRACT.md
