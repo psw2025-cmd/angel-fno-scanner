@@ -36,7 +36,7 @@ def test_market_bot_is_single_authorized_writer():
     workflow = (ROOT / ".github/workflows/market_bot.yml").read_text(encoding="utf-8-sig")
     assert workflow.count("python scanner.py") == 1
     assert "angel_prediction_engine.py --run-once" not in workflow
-    assert "ALLOW_PRODUCTION_WRITES: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '0' || '1' }}" in workflow
+    assert "ALLOW_PRODUCTION_WRITES: ${{ github.event_name == 'schedule' && '1' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run && '1' || '0') }}" in workflow
     assert "if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}" in workflow
     assert "if: ${{ github.event_name != 'workflow_dispatch' || !inputs.dry_run }}" in workflow
     assert "python tools/probe_angel_live.py --read-only --log-coverage" in workflow
