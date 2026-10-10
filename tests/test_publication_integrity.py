@@ -173,6 +173,21 @@ def identity_subset(identity):
     return {k:identity[k] for k in ['cycle_id','run_id','git_sha','writer_id']}
 
 
+def test_verified_publication_appends_cycle_ledger(authorized,monkeypatch,tmp_path):
+    import json
+    path = tmp_path / 'cycles.jsonl'
+    monkeypatch.setenv('ANGEL_CYCLE_LEDGER_PATH', str(path))
+    book,bq = Book(),BQ()
+    monkeypatch.setattr(engine,'get_bigquery_client',lambda:bq)
+    identity = cycle(book,bq)
+    lines = path.read_text(encoding='utf-8').splitlines()
+    assert len(lines) == 1
+    record = json.loads(lines[0])
+    assert record['cycle_id'] == identity['cycle_id']
+    assert record['run_id'] == identity['run_id']
+    assert record['status'] == 'VERIFIED'
+
+
 def test_bq_failure_marks_partial_and_no_false_success(authorized,monkeypatch):
     book,bq = Book(),BQ()
     bq.fail_load=True

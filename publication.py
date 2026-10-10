@@ -6,11 +6,14 @@ must use verify_current_publication before accepting combined sink output.
 import hashlib
 import json
 import uuid
+import os
+from datetime import datetime, timezone
 from decimal import Decimal
 
 import gspread
 
 from sheet_grid import write_grid
+from tools.ledger_writer import append_cycle
 from universe_contract import require_verified_symbols
 from writer_guard import ACTIVE_CYCLE, require_authorized_writer
 
@@ -120,6 +123,14 @@ def publish_outputs(sh, bq_client, table_ref, ist_str, sheet_write, bq_write):
         digests = verify_outputs(sh, bq_client, table_ref, identity, expected_rows)
         write_grid(status, [STATUS_HEADERS, ["VERIFIED", *base, *digests]])
         verify_current_publication(sh, bq_client, table_ref)
+        # The ledger is local evidence only; publication readback remains authoritative.
+        ledger_path = os.environ.get('ANGEL_CYCLE_LEDGER_PATH')
+        if ledger_path:
+            append_cycle(ledger_path, {
+                'ts': datetime.now(timezone.utc).isoformat(),
+                'cycle_id': cycle_id, 'run_id': identity['run_id'],
+                'git_sha': identity['git_sha'], 'status': 'VERIFIED',
+            })
         return identity
     except Exception:
         try:
