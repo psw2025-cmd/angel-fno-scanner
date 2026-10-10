@@ -268,7 +268,7 @@ def run_full_audit(raw_dir=RAW_DIR, report_path=REPORT_PATH):
     checks['C07'] = {
         'name': 'Exact contract identity on paper outcomes',
         'status': c07_status,
-        'evidence': f"100% of filled rows ({c07_checked}/{c07_checked}) have syntactically valid CE/PE contract expiries.",
+        'evidence': f"Valid contract identities: {c07_checked - len(c07_invalid)}/{c07_checked}; invalid rows: {len(c07_invalid)}; examples: {c07_invalid[:3]}.",
         'action': "Retain valid contract tokens on all paper records."
     }
 
@@ -287,7 +287,7 @@ def run_full_audit(raw_dir=RAW_DIR, report_path=REPORT_PATH):
     checks['C08'] = {
         'name': 'Exit strictly after entry',
         'status': c08_status,
-        'evidence': f"100% of filled rows ({c08_checked}/{c08_checked}) have exit timestamp strictly greater than entry timestamp.",
+        'evidence': f"Ordered exit timestamps: {c08_checked - len(c08_offenders)}/{c08_checked}; invalid rows: {len(c08_offenders)}; examples: {c08_offenders[:3]}.",
         'action': "Enforce causal time ordering on paper outcomes."
     }
 
