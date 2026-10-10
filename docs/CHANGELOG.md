@@ -658,3 +658,7 @@ Heartbeat cell conflated row count with sync timestamp, corrupting health status
 ## 2026-10-10 - Verified publication cycle ledger
 - Record a durable local JSONL entry after successful Sheets and BigQuery publication readback when ANGEL_CYCLE_LEDGER_PATH is configured; preserve existing sink verification as authority.
 - Add publication integration regression verifying the cycle ID, run ID, and VERIFIED status in the ledger.
+
+## 2026-10-10 - Dependency resilience primitives
+- Add bounded thread-safe token bucket, monotonic TTL/LRU cache, and single-probe circuit breaker with deterministic regression tests.
+- These modules are standalone building blocks; upstream-specific call-site integration remains separately gated.
