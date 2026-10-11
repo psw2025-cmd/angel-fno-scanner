@@ -103,7 +103,7 @@ def run():
     record(20,"PASS" if c==0 and len(branches)<=5 else "FAIL","Remote branch count; threshold is policy, not intrinsic correctness",{"count":len(branches)})
     for item in data["checks"]:
         n=int(item["id"].split("-")[-1])
-        status,reason,proof=report[n]
+        status,reason,proof=report.get(n,("BLOCKED","No independent verification implemented for this ledger check",{"check_id":item["id"]}))
         item.update(status=status,timestamp=now,source_sha=sha,evidence={"reason":reason,"details":proof})
     data["generated_at_utc"]=now
     data["summary"]={s:sum(x["status"]==s for x in data["checks"]) for s in ("PASS","FAIL","BLOCKED","NOT_RUN")}
