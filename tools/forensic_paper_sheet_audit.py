@@ -268,10 +268,23 @@ def run_full_audit(raw_dir=RAW_DIR, report_path=REPORT_PATH):
     checks['C07'] = {
         'name': 'Exact contract identity on paper outcomes',
         'status': c07_status,
-        'evidence': f"100% of filled rows ({c07_checked}/{c07_checked}) have syntactically valid CE/PE contract expiries.",
+        'evidence': f"Valid contract identities: {c07_checked - len(c07_invalid)}/{c07_checked}; invalid rows: {len(c07_invalid)}; examples: {c07_invalid[:3]}.",
         'action': "Retain valid contract tokens on all paper records."
     }
 
+    # Google gviz returns Date(Y,M_zero_based,D,...) while other tabs use ISO strings.
+    def parse_paper_time(value):
+        if value is None or not str(value).strip():
+            return None
+        raw = str(value).strip()
+        match = re.fullmatch(r'Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)', raw)
+        if match:
+            y, month0, day, hh, mm, ss = match.groups()
+            return datetime.datetime(int(y), int(month0) + 1, int(day), int(hh or 0), int(mm or 0), int(ss or 0))
+        try:
+            return datetime.datetime.fromisoformat(raw.replace('Z', '+00:00')).replace(tzinfo=None)
+        except ValueError:
+            return None
     # C08
     c08_offenders = []
     c08_checked = 0
@@ -281,13 +294,15 @@ def run_full_audit(raw_dir=RAW_DIR, report_path=REPORT_PATH):
         log_val = cv[0].get('v') if len(cv) > 0 and cv[0] else None
         if out_val and log_val:
             c08_checked += 1
-            if str(out_val).strip() <= str(log_val).strip():
+            entry_time = parse_paper_time(log_val)
+            exit_time = parse_paper_time(out_val)
+            if entry_time is None or exit_time is None or exit_time <= entry_time:
                 c08_offenders.append((idx, log_val, out_val))
     c08_status = "PASS" if (c08_checked > 0 and len(c08_offenders) == 0) else "FAIL"
     checks['C08'] = {
         'name': 'Exit strictly after entry',
         'status': c08_status,
-        'evidence': f"100% of filled rows ({c08_checked}/{c08_checked}) have exit timestamp strictly greater than entry timestamp.",
+        'evidence': f"Ordered exit timestamps: {c08_checked - len(c08_offenders)}/{c08_checked}; invalid rows: {len(c08_offenders)}; examples: {c08_offenders[:3]}.",
         'action': "Enforce causal time ordering on paper outcomes."
     }
 

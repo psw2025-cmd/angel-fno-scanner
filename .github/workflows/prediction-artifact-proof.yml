@@ -1,0 +1,29 @@
+﻿name: Prediction Snapshot Artifact Proof
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-and-archive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify exact 219 unique predictions
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          files = sorted(Path('data/predictions/219').glob('*.json'))
+          assert len(files) == 219, f'Expected 219 files, found {len(files)}'
+          symbols = [json.loads(p.read_text(encoding='utf-8-sig'))['symbol'] for p in files]
+          assert len(set(symbols)) == 219, 'Duplicate symbols'
+          print('219 unique prediction JSON files: PASS')
+          PY
+      - name: Upload verified predictions
+        uses: actions/upload-artifact@v4
+        with:
+          name: predictions-219-${{ github.run_id }}
+          path: data/predictions/219/*.json
+          if-no-files-found: error
+          retention-days: 30
