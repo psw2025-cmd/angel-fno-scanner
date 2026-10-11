@@ -13,6 +13,7 @@ cross_agent_packets/
 .tmp.driveupload/
 .tmp.drivedownload/
 audit/cloud_exports/
+proof-output/
 *.exe
 
 # Power BI & Visual Monitor binary cache / live telemetry

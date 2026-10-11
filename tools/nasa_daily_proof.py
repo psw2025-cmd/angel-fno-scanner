@@ -101,6 +101,21 @@ def run():
     c,out,err=cmd(["git","branch","-r"])
     branches=[x.strip() for x in out.splitlines() if x.strip() and "->" not in x]
     record(20,"PASS" if c==0 and len(branches)<=5 else "FAIL","Remote branch count; threshold is policy, not intrinsic correctness",{"count":len(branches)})
+    # 21: PowerBI process and binary artifact safety
+    pbi_files=[x for x in cmd(["git","ls-files","*.pbix","*.pbit"])[1].splitlines() if x.strip()]
+    ign=(R/".gitignore").read_text(encoding="utf-8",errors="replace") if (R/".gitignore").exists() else ""
+    pbi_guarded=bool(re.search(r"\*\.pbix|\bpbix\b",ign))
+    record(21,"PASS" if (not pbi_files and pbi_guarded) else "FAIL","PowerBI binary artifacts excluded from repository and guarded by .gitignore",{"tracked_pbi_count":len(pbi_files),"gitignore_guarded":pbi_guarded})
+    # 22: Excel cp1252 Binary Safety acceptance test
+    c,out,err=cmd([sys.executable,"-m","pytest","tests/test_data_chain.py","-k","test_excel_and_pbi_safety"],60)
+    record(22,"PASS" if c==0 else "FAIL","test_excel_and_pbi_safety verified in pytest",{"exit":c,"tail":(out+err)[-500:]})
+    # 23: Colab Notebook Emoji & UTF-8 Gate acceptance test
+    c,out,err=cmd([sys.executable,"-m","pytest","tests/test_encoding_gate.py"],60)
+    record(23,"PASS" if c==0 else "FAIL","test_encoding_gate verified in pytest",{"exit":c,"tail":(out+err)[-500:]})
+    # 24: GCS Cloud Evidence WORM Readback
+    record(24,"BLOCKED","GCS evidence bucket gs://fno-angel-evidence/ requires cloud infrastructure and active billing")
+    # 25: BigQuery Cost Cap & Quota Guard
+    record(25,"BLOCKED","BigQuery quota policy and billing alerts require active cloud project billing")
     for item in data["checks"]:
         n=int(item["id"].split("-")[-1])
         status,reason,proof=report.get(n,("BLOCKED","No independent verification implemented for this ledger check",{"check_id":item["id"]}))

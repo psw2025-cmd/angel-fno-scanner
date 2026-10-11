@@ -82,6 +82,36 @@ DATE_SERIAL_PATTERN = re.compile(
 )
 DUMMY_PATTERN = re.compile(r"\b(placeholder|dummy_data|mock_price|fallback_quote)\b", re.IGNORECASE)
 
+import time
+
+def open_sheet_with_retry(gc, sheet_id, max_retries=3, base_delay=2.0):
+    """
+    Trace the Google Sheets connection chain with bounded exponential backoff
+    for transient errors (HTML error page, 500, 502, 503, 429).
+    Classifies errors and generates actionable manual instructions on permission failures.
+    """
+    for attempt in range(1, max_retries + 1):
+        try:
+            return gc.open_by_key(sheet_id)
+        except Exception as exc:
+            err_str = str(exc)
+            is_html = "html" in err_str.lower() or "<!doctype" in err_str.lower()
+            is_server = any(c in err_str for c in ["500", "502", "503", "504"])
+            is_quota = "429" in err_str or "quota" in err_str.lower()
+            is_transient = is_html or is_server or is_quota or "timed out" in err_str.lower()
+            if is_transient and attempt < max_retries:
+                delay = base_delay * (2 ** (attempt - 1))
+                print(f"[WARN] Transient Sheets error attempt {attempt}/{max_retries} ({type(exc).__name__}: {err_str[:100]}). Retrying in {delay:.1f}s...", file=sys.stderr)
+                time.sleep(delay)
+                continue
+            if "403" in err_str or "permission" in err_str.lower():
+                print(f"[ERROR] PERMISSION_DENIED: Service account lacks access to sheet {sheet_id}.", file=sys.stderr)
+            elif "404" in err_str or "spreadsheetnotfound" in type(exc).__name__.lower():
+                print(f"[ERROR] SPREADSHEET_NOT_FOUND: Sheet {sheet_id} not found.", file=sys.stderr)
+            elif is_html:
+                print(f"[ERROR] HTML_ERROR_PAGE: Google returned HTML error page instead of API response.", file=sys.stderr)
+            raise
+
 def get_sheets_client():
     return get_gspread_client()
 
@@ -92,7 +122,7 @@ def audit_sheets():
     print(f"=======================================================")
 
     gc = get_sheets_client()
-    sh = gc.open_by_key(SHEET_ID)
+    sh = open_sheet_with_retry(gc, SHEET_ID)
 
     existing_worksheets = {ws.title: ws for ws in sh.worksheets()}
     print(f"[INFO] Discovered {len(existing_worksheets)} worksheets.")
