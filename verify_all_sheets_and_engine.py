@@ -82,34 +82,54 @@ DATE_SERIAL_PATTERN = re.compile(
 )
 DUMMY_PATTERN = re.compile(r"\b(placeholder|dummy_data|mock_price|fallback_quote)\b", re.IGNORECASE)
 
+import random
 import time
 
 def open_sheet_with_retry(gc, sheet_id, max_retries=3, base_delay=2.0):
     """
     Trace the Google Sheets connection chain with bounded exponential backoff
-    for transient errors (HTML error page, 500, 502, 503, 429).
-    Classifies errors and generates actionable manual instructions on permission failures.
+    and full jitter for transient errors (HTML error page, 500, 502, 503, 504, 429).
+    Immediately fails without retry on fatal 401/403 (Permission) and 404 (Not Found).
     """
     for attempt in range(1, max_retries + 1):
         try:
             return gc.open_by_key(sheet_id)
         except Exception as exc:
             err_str = str(exc)
+            err_type = type(exc).__name__.lower()
+            
+            # Fatal error checks: no retry
+            is_fatal_permission = "403" in err_str or "permission" in err_str.lower() or "401" in err_str
+            is_fatal_not_found = "404" in err_str or "spreadsheetnotfound" in err_type
+            
+            if is_fatal_permission:
+                print(f"[FATAL ERROR] PERMISSION_DENIED: Service account lacks access to sheet {sheet_id}. Do not retry.", file=sys.stderr)
+                raise
+            if is_fatal_not_found:
+                print(f"[FATAL ERROR] SPREADSHEET_NOT_FOUND: Sheet {sheet_id} does not exist. Do not retry.", file=sys.stderr)
+                raise
+
+            # Retryable error checks
             is_html = "html" in err_str.lower() or "<!doctype" in err_str.lower()
             is_server = any(c in err_str for c in ["500", "502", "503", "504"])
-            is_quota = "429" in err_str or "quota" in err_str.lower()
-            is_transient = is_html or is_server or is_quota or "timed out" in err_str.lower()
+            is_quota = "429" in err_str or "quota" in err_str.lower() or "rate" in err_str.lower()
+            is_timeout = "timed out" in err_str.lower() or "timeout" in err_str.lower()
+            is_transient = is_html or is_server or is_quota or is_timeout
+
             if is_transient and attempt < max_retries:
-                delay = base_delay * (2 ** (attempt - 1))
-                print(f"[WARN] Transient Sheets error attempt {attempt}/{max_retries} ({type(exc).__name__}: {err_str[:100]}). Retrying in {delay:.1f}s...", file=sys.stderr)
+                # Exponential backoff with full jitter
+                jitter = random.uniform(0.1, 0.5)
+                delay = (base_delay * (2 ** (attempt - 1))) + jitter
+                print(f"[WARN] Transient Sheets error attempt {attempt}/{max_retries} ({type(exc).__name__}: {err_str[:80]}). Retrying in {delay:.2f}s...", file=sys.stderr)
                 time.sleep(delay)
                 continue
-            if "403" in err_str or "permission" in err_str.lower():
-                print(f"[ERROR] PERMISSION_DENIED: Service account lacks access to sheet {sheet_id}.", file=sys.stderr)
-            elif "404" in err_str or "spreadsheetnotfound" in type(exc).__name__.lower():
-                print(f"[ERROR] SPREADSHEET_NOT_FOUND: Sheet {sheet_id} not found.", file=sys.stderr)
-            elif is_html:
-                print(f"[ERROR] HTML_ERROR_PAGE: Google returned HTML error page instead of API response.", file=sys.stderr)
+                
+            if is_html:
+                print(f"[ERROR] HTML_ERROR_PAGE: Google returned HTML error page instead of API response after {attempt} attempts.", file=sys.stderr)
+            elif is_quota:
+                print(f"[ERROR] RATE_LIMIT_EXCEEDED: Google Sheets API 429 quota exhausted after {attempt} attempts.", file=sys.stderr)
+            elif is_server:
+                print(f"[ERROR] SERVER_ERROR: Google backend returned 5xx error after {attempt} attempts.", file=sys.stderr)
             raise
 
 def get_sheets_client():

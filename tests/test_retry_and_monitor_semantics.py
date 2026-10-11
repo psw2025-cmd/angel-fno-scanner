@@ -45,6 +45,29 @@ def test_open_sheet_with_retry_not_found():
     assert mock_gc.open_by_key.call_count == 1
 
 
+def test_open_sheet_with_retry_rate_limit_recovery():
+    mock_gc = mock.MagicMock()
+    mock_sheet = mock.MagicMock()
+    # 429 quota error, recovers on attempt 2
+    mock_gc.open_by_key.side_effect = [
+        Exception("429 Resource exhausted: Quota exceeded"),
+        mock_sheet,
+    ]
+
+    result = open_sheet_with_retry(mock_gc, "test_sheet_id", max_retries=3, base_delay=0.01)
+    assert result == mock_sheet
+    assert mock_gc.open_by_key.call_count == 2
+
+
+def test_open_sheet_with_retry_server_error_exhausted():
+    mock_gc = mock.MagicMock()
+    mock_gc.open_by_key.side_effect = Exception("503 Service Unavailable")
+
+    with pytest.raises(Exception, match="503 Service Unavailable"):
+        open_sheet_with_retry(mock_gc, "test_sheet_id", max_retries=3, base_delay=0.01)
+    assert mock_gc.open_by_key.call_count == 3
+
+
 def test_github_run_semantics_separate_latest_and_historical():
     """Verify that a historical failure does not mark current CI as FAIL if latest main run succeeded."""
     sample_runs = [
