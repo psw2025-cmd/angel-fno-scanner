@@ -1,65 +1,48 @@
-# TODAY — 2026-10-06 01:35 IST (market CLOSED)
+# TODAY — 2026-10-11 16:09 IST (Sunday, market CLOSED)
 
-**Mode:** PAPER / analyzer only. Next cash session 09:15 IST.
-**Git `main`:** `04c314c7`
-**Claim from AGY laptop (5 Oct afternoon):** 12/12 PASS on run `37288432509`
-**Independent remote check now:** **DISPUTED** — overnight BigQuery write dropped provenance columns.
+**Mode:** PAPER / analyzer only. Next cash session Monday 12 Oct 09:15 IST.
+**Git `main`:** `4ebeae6` (PR #67, 11 Oct 05:29 IST).
+**Checked by:** Grok remote, GitHub + Google Drive. BigQuery was **not** connected this check.
+
+The 6 Oct board on `main` is stale. Do not treat its GREEN Power BI / n8n / 12/12 lines as today's proof.
 
 ---
 
-## One-screen verdict
+## One-screen verdict (this check only)
 
-| What you see | Color | Use for trading today? |
+| What you see | Color | Why |
 |---|---|---|
-| 219 symbols in Sheet / BQ | GREEN | Coverage count only |
-| Engine still writing at 01:27 IST | YELLOW | Engine alive, **not** live market |
-| Sheet cell `CONNECTED_ANGEL` / `ACTIVE_PREDICTION_ENGINE` at 01:26 | RED false-green | Do **not** read as open market |
-| BigQuery `option_predictions_live` has 219 rows | GREEN | Verified count & schema |
-| Provenance columns (`run_id`, `git_sha`, etc.) | GREEN | Fixed in `4d7e373` via canonical schema enforcement |
-| AGY verification harness (12/12) | GREEN | Re-verified 12/12 PASS on `main` |
-| Formula Checks GATE-06 still `=216` / empty column C | RED | Ignore that gate (D-01, D-08) |
-| Gap-pick accuracy (D-06) | RED | 50% on 6 symbols — not verified |
-| Power BI Desktop & Analysis Services | GREEN | Verified PID 3200 & port 62289 listener active |
-| n8n Multi-Agent Orchestrator (11 WFs) | GREEN | 6 new workflows active; zero execution errors |
-| Canonical Colab in Drive search | GREY | Contract id not found; `Untitled72` is latest |
-| Standby sheet switch | YELLOW | Ready, secret not switched |
+| `main` moved through PRs #59–#67 | GREEN | Code is ahead of the 6 Oct board |
+| Live OPTION_SHEET last sync `2026-10-10 16:43:58` | YELLOW | Friday/Saturday print, not Monday live |
+| Session label `CONNECTED_ANGEL_SMARTAPI` + `HEALTHY` after close | RED false-green | Market is closed. Connected is not live tape |
+| `Active F&O Chains` cell is a timestamp `2026-10-10 16:47:33`, not `219` | RED | Wrong field in that column |
+| PRE_BREAKOUT still shows +10000% style CE changes | RED | Do not trade from that tab. Banner says LEGACY |
+| BigQuery row count / provenance | GREY | Connector not available today. Not re-checked |
+| Power BI PID / n8n 11 workflows | GREY | Those are laptop claims from 6 Oct. Not re-seen from here |
+| Colab contract notebook | GREY | Still not found in Drive search on 6 Oct; not re-found today |
+| Excel / `.pbix` in `operator/snapshots/` | GREY | Drop folder still only has a README |
+| Formula Checks GATE-06 / D-06 gap accuracy | RED | Still open. Do not size from gap picks |
 
-**Trader rule for 6 Oct open:** treat ranks as PAPER research. Do not treat overnight ACTIVE as live. Do not size from gap picks until D-06 has a real forward sample.
+**Trader rule for Monday open:** PAPER research only. Ignore PRE_BREAKOUT percentages. Use FORENSIC_LIVE / PUBLICATION_STATUS only if the digest is VERIFIED and the timestamp is from the new session.
 
----
+## What this check could and could not do
 
-## What AGY finished yesterday (keep — do not redo)
-
-- Universe **219** fail-closed
-- `writer_guard` + `market_bot` only
-- HEARTBEAT C2 row-count guard (PR #18)
-- G19 exact-contract identity (PR #11)
-- News schema autodetect off (PR #20)
-- `tools/verify_harness.py` 12 checks
-- D-09 schema validator Phases 1-2
-- Sheet standby `ANGEL_FNO_LIVE_PROD` aligned
-- Daily `data/*.json` snapshots from GitHub Action
-
-## Overnight Resolution (2026-10-06 01:55 IST)
-
-The `WRITE_TRUNCATE` provenance drop was identified, root-caused, and resolved:
-- **Root Cause:** Commit `04c314c7` used `if hasattr(table_pred, 'schema') and table_pred.schema: target_schema = table_pred.schema`, which reused the degraded schema that had already lost `run_id`.
-- **Fix:** In commit `4d7e373`, `target_schema` is strictly constructed from `tools.schema_validator.load_schema('option_predictions_live')`.
-- **Table Schema:** Restored all 54 columns via `bq.update_table(t, ['schema'])`.
-- **Data State:** `option_predictions_live` reloaded with 219 rows containing full provenance (`run_id=37303685472`, `writer_id=market_bot`).
-
-## Four screens you actually open
-
-1. This file
-2. [Live OPTION_SHEET](https://docs.google.com/spreadsheets/d/1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs/edit) — HEARTBEAT, FORENSIC_LIVE, PUBLICATION_STATUS, Formula Checks
-3. [data/summary.md](../data/summary.md) — yesterday close PAPER picks
-4. Power BI on the laptop (AGY) — only if PBIDesktop is running **and** source age matches Sheet
-
-## Parallel work (do not wait on chat)
-
-| Owner | Next |
+| Tool | Result |
 |---|---|
-| AGY | Re-run `tools/verify_harness.py` now. Copy `.pbix` + Sheet xlsx into `operator/snapshots/2026-10-06/` after close. Screenshot Power BI PID. |
-| Remote | Fix overnight BQ provenance drop (fail-closed if schema missing lineage). Independent `source_age`. News ISO `+05:30`. |
-| You | Look at colors. If PUBLICATION_STATUS is not VERIFIED with a digest, ignore ranks. |
-| Gemini | Do not scaffold `run_production_sequence.py` from the Sep 216-symbol doc. |
+| GitHub read `main` + branches + open PRs | OK |
+| GitHub write this file on `docs/operator-board-20261011` | OK |
+| Google Drive read OPTION_SHEET | OK, truncated to first tab |
+| BigQuery SQL | **FAIL — connector not connected and not in the connect list** |
+| Create PR | GitHub shows a Submit form I cannot click. Compare link is in the chat |
+
+## Open PRs (do not merge as one pile)
+
+| PR | What |
+|---|---|
+| [#68](https://github.com/psw2025-cmd/angel-fno-scanner/pull/68) | External evidence handoff docs |
+| [#45](https://github.com/psw2025-cmd/angel-fno-scanner/pull/45) | Phase 1 cloud audit docs + CI gates |
+| [#44](https://github.com/psw2025-cmd/angel-fno-scanner/pull/44) | Cloud plan docs |
+
+## Still do not rebuild
+
+219 universe, writer_guard, C2 heartbeat guard, G19 contract identity, infra_readiness, verify_harness.
