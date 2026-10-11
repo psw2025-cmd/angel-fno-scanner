@@ -190,6 +190,8 @@ def handle_verify(args):
         try:
             sys.stdout = sys.stderr
             result = run_full_verification()
+        except Exception as exc:
+            result = {"status": "BLOCKED", "error_type": type(exc).__name__, "reason": "External verification source unavailable or returned an error; see stderr for diagnostics", "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()}
         finally:
             sys.stdout = old_stdout
 
@@ -392,14 +394,12 @@ def format_output(data, output_format="json", title=None):
         if title:
             print(f"## {title}\n")
         print(f"**Snapshot IST**: `{data.get('timestamp_ist', '')}`\n")
-
-        print("### 🌅 Top Next-Day Gap-Up Call (CE) Picks")
+        print("### Top Next-Day Gap-Up Call (CE) Picks")
         print("| Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+50%) | Expected Gap % | Conviction % | Institutional Rationale |")
         print("| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |")
         for idx, c in enumerate(data.get("top_ce_picks", []), start=1):
             print(f"| {idx} | **{c.get('symbol', '')}** | `{c.get('target_strike', '')}` | `{c.get('contract_symbol', '')}` | ₹{float(c.get('entry_ltp', 0)):.2f} | ₹{float(c.get('stop_loss_ltp', 0)):.2f} | ₹{float(c.get('target_ltp', 0)):.2f} | **{float(c.get('expected_gap_pct', 0)):+.2f}%** | {float(c.get('conviction_pct', 0)):.1f}% | {c.get('why_rationale', '')[:80]} |")
-
-        print("\n### 💥 Top Next-Day Gap-Down Put (PE) Picks")
+        print("\n### Top Next-Day Gap-Down Put (PE) Picks")
         print("| Rank | Symbol | Target Strike | Contract | Entry LTP | Stop Loss (-15%) | Target (+60%) | Expected Gap % | Conviction % | Institutional Rationale |")
         print("| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |")
         for idx, c in enumerate(data.get("top_pe_picks", []), start=1):
