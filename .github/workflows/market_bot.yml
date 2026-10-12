@@ -114,6 +114,7 @@ jobs:
           git add data/
           if ! git diff-index --quiet HEAD --; then
             git commit -m "chore(data): auto-update daily prediction snapshots [skip ci]"
+            git checkout -- .
             pushed=0
             for i in 1 2 3 4 5; do
               echo "Snapshot push attempt $i/5"
