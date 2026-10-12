@@ -84,6 +84,6 @@ def test_bigquery_cost_cap_enforced():
     Verifies that all production BigQuery queries enforce maximum_bytes_billed <= 10MB ($10/day budget cap).
     """
     recon_code = (ROOT / "tools/verify_sheets_bq_reconciliation.py").read_text(encoding="utf-8")
-    assert "maximum_bytes_billed=10_000_000" in recon_code, "BigQuery maximum_bytes_billed cost cap missing from reconciliation"
+    assert any(x in recon_code for x in ["maximum_bytes_billed=10_485_760", "maximum_bytes_billed=10_000_000"]), "BigQuery maximum_bytes_billed cost cap missing from reconciliation"
 
 

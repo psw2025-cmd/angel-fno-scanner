@@ -1,10 +1,10 @@
 # Google Sheets & BigQuery Cross-Sink Reconciliation Report
 
-**Audit Time (IST)**: `2026-10-12T03:53:18.774875+05:30`
+**Audit Time (IST)**: `2026-10-12T14:07:05.147688+05:30`
 **Reconciliation Status**: `[PASS]`
 **Canonical Google Sheet**: `1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs`
 **BigQuery Destination**: `fno-angel-prod-1790444589.fno_predictions.option_predictions_live`
-**Target Run ID**: `37900561389`
+**Target Run ID**: `38223387415`
 
 ---
 
@@ -13,7 +13,7 @@
 - **FORENSIC_LIVE Row Count**: `219`
 - **FORENSIC_LIVE Unique Symbols**: `219`
 - **CE_PE_RANK Data Rows**: `200`
-- **Sample Timestamp**: `2026-10-10 16:47:33`
+- **Sample Timestamp**: `2026-10-12 13:59:57`
 - **Tab Inspection Status**: `PASS`
 
 ---
@@ -21,8 +21,8 @@
 ## 2. BigQuery (`fno_predictions.option_predictions_live`) Evidence
 - **Table Total Rows**: `219`
 - **Distinct Symbols Count**: `219`
-- **Oldest Exchange Timestamp**: `2026-10-10 11:17:33.329986+00:00`
-- **Newest Exchange Timestamp**: `2026-10-10 11:17:33.329986+00:00`
+- **Oldest Exchange Timestamp**: `2026-10-12 08:29:57.627075+00:00`
+- **Newest Exchange Timestamp**: `2026-10-12 08:29:57.627075+00:00`
 - **Table Inspection Status**: `PASS`
 
 ---
@@ -39,27 +39,27 @@
 ## 4. Machine-Readable Raw Audit Payload
 ```json
 {
-  "audit_timestamp_ist": "2026-10-12T03:53:18.774875+05:30",
+  "audit_timestamp_ist": "2026-10-12T14:07:05.147688+05:30",
   "status": "PASS",
   "canonical_sheet_id": "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs",
   "bigquery_table": "fno-angel-prod-1790444589.fno_predictions.option_predictions_live",
-  "target_run_id": "37900561389",
+  "target_run_id": "38223387415",
   "sheets": {
     "status": "PASS",
     "spreadsheet_title": "OPTION_SHEET",
     "forensic_live_rows": 219,
     "forensic_distinct_symbols": 219,
     "ce_pe_rank_data_rows": 200,
-    "sample_symbol": "PERSISTENT",
-    "sample_timestamp": "2026-10-10 16:47:33"
+    "sample_symbol": "MANKIND",
+    "sample_timestamp": "2026-10-12 13:59:57"
   },
   "bigquery": {
     "status": "PASS",
     "table_num_rows": 219,
     "query_total_rows": 219,
     "distinct_symbols": 219,
-    "oldest_timestamp": "2026-10-10 11:17:33.329986+00:00",
-    "newest_timestamp": "2026-10-10 11:17:33.329986+00:00"
+    "oldest_timestamp": "2026-10-12 08:29:57.627075+00:00",
+    "newest_timestamp": "2026-10-12 08:29:57.627075+00:00"
   },
   "reconciliation": {
     "universe_parity": true,

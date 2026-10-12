@@ -51,6 +51,51 @@ Every single finding raised by ChatGPT in both reviews has been resolved in the 
 
 ---
 
+## 1.5 System Startup Audit & Safe Pipeline Recovery (12 October 2026)
+
+Following a system power restart, a complete read-only startup audit was performed before executing any pipeline operations:
+
+1. **Running Processes Audit**:
+   - Windows Python daemons:
+     - PID 7900 (`.venv`): `C:\Temp\chatgpt desktop visual\chatgpt desktop 24x7 monitor.py` (parent of PID 8652, port 8766).
+     - PID 7968 (`.venv`): `C:\AngelFNO_Workstation\angel-agent-supervisor\universal_supervisor.py --interval 60 --execute-approved` (parent of PID 8660).
+   - WSL2 Ubuntu-24.04 daemons:
+     - PID 367: `n8n_readonly_listener.py`
+     - PID 2518: `node .../bin/n8n start` (listening on port 5678)
+     - PID 3437: `@n8n/task-runner`
+   - Active scanner instances: **0 running** (no duplicate services, no concurrent writers).
+
+2. **Scheduled Tasks Audit**:
+   - `AngelFNO-GitHub-Market-Fallback`: Active (runs `tools\ensure_market_bot.ps1`).
+   - `AngelFNO-WSL-Runtime-Watchdog`: Active.
+   - `AngelSupervisorTask`: Active.
+   - `ChatGPT-AngelFNO-ReadOnly-Monitor`: Active.
+
+3. **Active Ports**:
+   - `5678`: Local n8n webhook listener (`/healthz` returning HTTP 200 `{"status":"ok"}`).
+   - `8766`: ChatGPT desktop monitor listener.
+   - `8080`: Docker sandbox proxy.
+
+4. **Broker Connection & Market Freshness Probe**:
+   - Dispatched read-only probe run `38223196815` on GitHub Actions:
+   - Full 219/219 universe tokens fetched with `oldest_age_seconds: 86.63s` (<= 90s SLA FRESH).
+   - `coverage_pct: 100.0%`, `fetch_failures: 0`, `status: EXCHANGE_VERIFIED`.
+
+5. **Root-Cause Investigation of Stalled Data Publication**:
+   - Scheduled task `AngelFNO-GitHub-Market-Fallback` crashed every 15 minutes with:
+     `ERROR Exception calling "Parse" with "1" argument(s): "String was not recognized as a valid DateTime."`
+   - **Root Cause**: In PowerShell 5.1, `$runs = @($raw | ConvertFrom-Json)` wraps the JSON object array in an outer array. Calling `$_.createdAt` unrolled all 20 date strings into a space-delimited string, breaking `[DateTime]::Parse()`.
+   - **Fix Applied**: Unrolled pipeline via `$runs = @($raw | ConvertFrom-Json | ForEach-Object { $_ })`, added safe try-catch date parsing, and explicit dispatch parameters `-f dry_run=false -f market_session=EOD`.
+
+6. **Authoritative Pipeline Recovery**:
+   - Dispatched authoritative recovery run `38223387415` on GitHub Actions.
+   - `Run Single Authoritative Scanner and Prediction Cycle` SUCCEEDED:
+     - Google Sheets `FORENSIC_LIVE`: 219 rows with timestamp `2026-10-12 13:59:57 IST`.
+     - BigQuery `fno_predictions.option_predictions_live`: 219 rows with timestamp `2026-10-12 08:29:57 UTC` (`13:59:57 IST`), run_id `38223387415`.
+     - Both sinks synchronized with 100% full 219-symbol universe parity, 200 ranked CE/PE contracts, and canonical checksum `3f6153d1e221ae43`.
+
+---
+
 ## 2. Detailed Technical Resolutions per Finding
 
 ### Finding 1: P-05 (Sheets 219 == BQ 219 Parity)
@@ -60,8 +105,9 @@ Every single finding raised by ChatGPT in both reviews has been resolved in the 
   - `sheets_count`: 219
   - `bigquery_count`: 219
   - `parity_verified`: `True`
-  - `sample_symbol`: `"PERSISTENT"`
-  - `audit_timestamp_ist`: `2026-10-12T03:53:18.774875+05:30`
+  - `sample_symbol`: `"MANKIND"`
+  - `target_run_id`: `"38223387415"`
+  - `audit_timestamp_ist`: `2026-10-12T14:07:05.147688+05:30`
 
 ### Finding 2: P-06 (Checksum 3f6153d1e221ae43)
 * **What Changed**: Eliminated fixed substring checks.
@@ -69,7 +115,7 @@ Every single finding raised by ChatGPT in both reviews has been resolved in the 
   `hashlib.sha256(",".join(sorted(symbols)).encode("utf-8")).hexdigest()[:16]`
 * **Verified Values**:
   - `checksum_sha256_16`: `3f6153d1e221ae43`
-  - `target_run_id`: `37900561389`
+  - `target_run_id`: `38223387415`
   - `symbol_hash_parity_verified`: `True`
 
 ### Finding 3: P-11 (Plaintext Secrets Scan Across All Tracked Files)
@@ -110,8 +156,8 @@ Every single finding raised by ChatGPT in both reviews has been resolved in the 
   - `P-16`: `BLOCKED` — Genuine cloud IAM negative drill requires GCP cloud project permissions.
 
 ### Finding 8: P-17 (Executable Cost Cap < $10/Day)
-* **What Changed**: Added hard executable BigQuery scan limit in [tools/verify_sheets_bq_reconciliation.py](file:///C:/AngelFNO_Workstation/agy-repair-20261012/tools/verify_sheets_bq_reconciliation.py):
-  `job_config = bigquery.QueryJobConfig(maximum_bytes_billed=10_000_000)` (10 MB scan maximum).
+* **What Changed**: Added hard executable BigQuery scan limit in [tools/verify_sheets_bq_reconciliation.py](file:///C:/AngelFNO_Workstation\agy-repair-20261012\tools\verify_sheets_bq_reconciliation.py):
+  `job_config = bigquery.QueryJobConfig(maximum_bytes_billed=10_485_760)` (10 MiB scan maximum, complying with BigQuery API's minimum query charge allocation of 10,485,760 bytes).
 * **Verification**: Added `tests/test_runtime_safety.py::test_bigquery_cost_cap_enforced` **PASSED**.
 
 ### Finding 9: P-09 & P-10 (Live Local Environment Verification)

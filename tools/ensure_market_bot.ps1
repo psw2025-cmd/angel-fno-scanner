@@ -34,13 +34,24 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw 'gh run list failed'
     }
-    $runs = @($raw | ConvertFrom-Json)
+    $runs = @($raw | ConvertFrom-Json | ForEach-Object { $_ })
     $cutoff = [DateTime]::UtcNow.AddMinutes(-20)
 
-    $recent = @($runs | Where-Object {
-        $_.status -in @('queued','in_progress','waiting','pending') -or
-        ([DateTime]::Parse($_.createdAt).ToUniversalTime() -ge $cutoff)
-    })
+    $recent = @()
+    foreach ($r in $runs) {
+        if ($r.status -in @('queued','in_progress','waiting','pending')) {
+            $recent += $r
+            continue
+        }
+        if ($r.createdAt) {
+            try {
+                $dt = [DateTime]::Parse($r.createdAt).ToUniversalTime()
+                if ($dt -ge $cutoff) {
+                    $recent += $r
+                }
+            } catch {}
+        }
+    }
 
     if ($recent.Count -gt 0) {
         $r = $recent | Select-Object -First 1
@@ -49,7 +60,7 @@ try {
     }
 
     Write-AngelLog 'RECOVERY no recent/active market run; dispatching main workflow'
-    gh workflow run $Workflow --repo $Repo --ref main
+    gh workflow run $Workflow --repo $Repo --ref main -f dry_run=false -f market_session=EOD
     if ($LASTEXITCODE -ne 0) {
         throw 'gh workflow run failed'
     }
