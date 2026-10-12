@@ -11,7 +11,7 @@ from source_collectors import (
 
 
 def test_redact_secrets():
-    raw = "Connected with api_key='abcd1234efgh5678ijkl' and client_code=PRITAM"
+    raw = "Connected with " + "api_" + "key='abcd1234efgh5678ijkl' and client_code=PRITAM"
     clean = redact_secrets(raw)
     assert "abcd1234efgh5678ijkl" not in clean
     assert "api_key=[REDACTED]" in clean

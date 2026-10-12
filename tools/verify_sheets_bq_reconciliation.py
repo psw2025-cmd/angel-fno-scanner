@@ -123,7 +123,10 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
                 min(snapshot_timestamp) as oldest_timestamp
             FROM `{full_table_id}`
         """
-        query_job = bq.query(query)
+        job_config = bigquery.QueryJobConfig(
+            maximum_bytes_billed=10_000_000
+        )
+        query_job = bq.query(query, job_config=job_config)
         q_res = list(query_job.result())[0]
 
         result["bigquery"] = {
