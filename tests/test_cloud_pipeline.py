@@ -13,7 +13,7 @@ import hashlib
 import json
 import math
 import pytest
-import responses
+responses = pytest.importorskip("responses")
 from unittest.mock import MagicMock, patch
 
 # The pipeline module to be implemented after test approval
