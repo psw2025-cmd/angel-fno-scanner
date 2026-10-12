@@ -113,9 +113,10 @@ def sync_once(auto_push: bool = False) -> bool:
             msg = f"Auto-sync PUBLIC_SYNC_LOG [{get_ist_now()}]"
             subprocess.run(["git", "commit", "-m", msg], cwd=str(REPO_ROOT), check=True)
             print(f"  -> Committed: {msg}")
-            res = subprocess.run(["git", "push"], cwd=str(REPO_ROOT), capture_output=True, text=True)
+            branch = subprocess.check_output(["git", "branch", "--show-current"], cwd=str(REPO_ROOT), text=True).strip() or "main"
+            res = subprocess.run(["git", "push", "origin", branch], cwd=str(REPO_ROOT), capture_output=True, text=True)
             if res.returncode == 0:
-                print("  -> Successfully pushed to GitHub!")
+                print(f"  -> Successfully pushed to GitHub (branch {branch})!")
             else:
                 print(f"  -> Git push output: {res.stderr}")
         except Exception as ex:
