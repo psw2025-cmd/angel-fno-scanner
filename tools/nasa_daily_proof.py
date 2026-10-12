@@ -2,10 +2,14 @@
 """Read-only evidence collector; writes a timestamped JSON artifact, never fakes cloud PASS."""
 import argparse, datetime, hashlib, json, os, pathlib, re, subprocess, sys, urllib.request
 R=pathlib.Path(__file__).resolve().parents[1]
-def cmd(argv,timeout=50):
+def cmd(argv,timeout=50,max_stdout=None):
     try:
         p=subprocess.run(argv,cwd=R,capture_output=True,text=True,errors="replace",timeout=timeout,env={**os.environ,"LIVE_TRADING_ENABLED":"false","PYTHONIOENCODING":"utf-8"})
-        return p.returncode,(p.stdout or "")[-4000:],(p.stderr or "")[-800:]
+        out=p.stdout or ""
+        err=p.stderr or ""
+        if max_stdout is not None:
+            out=out[-max_stdout:]
+        return p.returncode,out,err[-800:]
     except Exception as e:return -1,"",str(e)
 def get_py_exec():
     ws_repo_venv=pathlib.Path(r"C:\AngelFNO_Workstation\repos\angel-fno-scanner\.venv\Scripts\python.exe")
@@ -127,19 +131,36 @@ def run():
         })
     else:
         record(10, "BLOCKED", "Canonical n8n database.sqlite path not accessible from runner environment")
-    # 11: secret scanning across ALL tracked repository files
-    all_tracked = [x for x in cmd(["git", "ls-files"])[1].splitlines() if x.strip() and not x.lower().endswith((".png", ".jpg", ".ico", ".pbix", ".pbit"))]
+    # 11: full-scope secret scanning across all tracked files with detailed breakdown
+    code11, out_files11, _ = cmd(["git", "ls-files"])
+    all_tracked = [x.strip() for x in out_files11.splitlines() if x.strip()]
+    git_tracked_total = len(all_tracked)
+    binary_exts = {
+        ".png": "binary_image", ".jpg": "binary_image", ".jpeg": "binary_image", ".ico": "binary_image", ".gif": "binary_image",
+        ".pbix": "powerbi_model", ".pbit": "powerbi_model",
+        ".pdf": "document_binary", ".zip": "archive_binary", ".pyc": "compiled_python", ".whl": "binary_package"
+    }
+    exclusions = {}
+    scannable_files = []
+    for rel in all_tracked:
+        ext = pathlib.Path(rel).suffix.lower()
+        if ext in binary_exts:
+            reason = binary_exts[ext]
+            exclusions[reason] = exclusions.get(reason, 0) + 1
+        else:
+            scannable_files.append(rel)
     secret_patterns = [
         r'(?i)(api_key|smartapi|client_code|jwt_token|totp_secret)\s*[:=]\s*["\'][A-Za-z0-9_\-]{16,}["\']',
         r'-----BEGIN (?:RSA|EC|PRIVATE) KEY-----\s*[A-Za-z0-9+/=]{20,}',
         r'(?i)password\s*[:=]\s*["\'][^"\']{6,}["\']'
     ]
+    synthetic_test = ("api" + "_key") + ' = "abc1234567890123456789"'
+    synthetic_detected = any(bool(re.search(pat, synthetic_test)) for pat in secret_patterns)
     found_secrets = []
-    scanned_count = 0
-    for rel in all_tracked:
+    unreadable_count = 0
+    for rel in scannable_files:
         p = R / rel
         if p.is_file():
-            scanned_count += 1
             try:
                 text = p.read_text(encoding="utf-8", errors="replace")
                 for pat in secret_patterns:
@@ -147,8 +168,20 @@ def run():
                         found_secrets.append(rel)
                         break
             except Exception:
-                pass
-    record(11, "PASS" if not found_secrets and scanned_count > 50 else "FAIL", "Zero plaintext secrets across all tracked repository files", {"flagged": found_secrets, "scanned_files": scanned_count})
+                unreadable_count += 1
+        else:
+            unreadable_count += 1
+    scanned_total = len(scannable_files)
+    p11_pass = (scanned_total > 50 and unreadable_count == 0 and synthetic_detected and not found_secrets)
+    record(11, "PASS" if p11_pass else "FAIL", "Full-scope tracked repository secret audit with synthetic detection test", {
+        "git_tracked_total": git_tracked_total,
+        "scanned_total": scanned_total,
+        "exclusions_grouped": exclusions,
+        "unreadable_count": unreadable_count,
+        "synthetic_detection_test_passed": synthetic_detected,
+        "flagged_secrets": found_secrets,
+        "clean_zero_secrets": len(found_secrets) == 0
+    })
     # 12: Cloud Run /version endpoint unconfigured under PAPER mode
     record(12, "BLOCKED", "Signed authenticated cloud /version endpoint unavailable under PAPER mode (Owner: Cloud)")
     # 13: Single-writer lease guard with positive test AND negative denial test
@@ -159,10 +192,16 @@ def run():
     drill_ok = False
     try:
         drill_res = json.loads(out14)
-        drill_ok = (drill_res.get("status") == "PASS" and drill_res.get("hashes_matched") is True and drill_res.get("production_untouched") is True)
+        drill_ok = (
+            drill_res.get("status") == "PASS"
+            and drill_res.get("hashes_matched") is True
+            and drill_res.get("production_untouched") is True
+            and drill_res.get("fixture_restore_labeled") is True
+            and len(drill_res.get("real_snapshots_restored", [])) >= 1
+        )
     except Exception:
         drill_res = None
-    record(14, "PASS" if c14 == 0 and drill_ok else "FAIL", "Isolated cold-restore drill verified with 100% SHA-256 readback match and zero production overwrite", drill_res or {"exit": c14})
+    record(14, "PASS" if c14 == 0 and drill_ok else "FAIL", "Cold-restore drill verified: real project snapshots + labeled fixtures with 100% SHA-256 match", drill_res or {"exit": c14})
     # 15: Activation attestation desired == observed
     record(15, "BLOCKED", "Live n8n workflow desired-vs-observed attestation requires N8N_API_KEY for REST API readback (Owner: Workstation/n8n)")
     # 16: Negative IAM / fail-closed authorization test
