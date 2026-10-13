@@ -7,7 +7,8 @@ and a later observation. This module does not create sample trades.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Sequence
+import math
+from typing import Sequence, Any, Tuple
 
 from gainers import as_float
 
@@ -26,6 +27,29 @@ PAPER_HEADERS = [
 ]
 
 
+def parse_percentage_change(value: Any, max_abs_pct: float = 35.0) -> float | None:
+    """Safely parse and validate an underlying session percentage change.
+
+    1. Strips any currency symbols (INR, $, etc.), percent signs (%), and commas.
+    2. Converts to float.
+    3. Validates that the magnitude is within plausible session limits (-max_abs_pct to +max_abs_pct).
+    4. Rejects lot sizes, spot prices, and unrecoverable tokens.
+    """
+    if value is None or value == "":
+        return None
+    s = str(value).strip()
+    s = s.replace("\u20b9", "").replace("$", "").replace("%", "").replace(",", "").strip()
+    try:
+        val = float(s)
+    except (ValueError, TypeError):
+        return None
+    if math.isnan(val) or math.isinf(val):
+        return None
+    if abs(val) > max_abs_pct:
+        return None
+    return val
+
+
 def _index(header: Sequence[str], name: str) -> int | None:
     for index, cell in enumerate(header):
         if str(cell).strip().lower() == name.lower():
@@ -39,10 +63,15 @@ def _cell(row: Sequence, index: int | None):
     return row[index]
 
 
-def measured_outcomes(values: Sequence[Sequence]) -> list[dict]:
-    """Return log rows that already contain a later session change filled by a previous run."""
+def measured_outcomes_with_quarantine(values: Sequence[Sequence], max_abs_pct: float = 35.0) -> tuple[list[dict], list[dict]]:
+    """Return valid measured outcomes and quarantined anomalous rows.
+
+    A row is valid if both entry and later session changes pass percentage schema validation.
+    If a row has a later session change recorded but entry or later violates typed percentage bounds
+    (e.g., currency symbols, lot sizes, or spot prices), it is quarantined to protect downstream metrics.
+    """
     if not values:
-        return []
+        return [], []
     header = [str(cell) for cell in values[0]]
     needed = [
         "Logged at IST",
@@ -56,24 +85,43 @@ def measured_outcomes(values: Sequence[Sequence]) -> list[dict]:
     ]
     columns = {name: _index(header, name) for name in needed}
     if columns["Symbol"] is None or columns["Later session change %"] is None:
-        return []
+        return [], []
     outcomes = []
+    quarantined = []
     for row in values[1:]:
         if not row or not str(_cell(row, columns["Symbol"])).strip():
             continue
-        later = as_float(_cell(row, columns["Later session change %"]))
-        entry = as_float(_cell(row, columns["Session change %"]))
-        if later is None or entry is None:
+        later_raw = _cell(row, columns["Later session change %"])
+        entry_raw = _cell(row, columns["Session change %"])
+        if str(later_raw).strip() == "":
             continue
-        outcomes.append({
+
+        later = parse_percentage_change(later_raw, max_abs_pct=max_abs_pct)
+        entry = parse_percentage_change(entry_raw, max_abs_pct=max_abs_pct)
+
+        row_dict = {
             "logged_at": str(_cell(row, columns["Logged at IST"])),
             "session_date": str(_cell(row, columns["Session date"])),
             "symbol": str(_cell(row, columns["Symbol"])).strip().upper(),
             "side": str(_cell(row, columns["Side"])).strip().upper(),
             "entry_change": entry,
             "later_change": later,
+            "entry_raw": entry_raw,
+            "later_raw": later_raw,
             "filled_at": str(_cell(row, columns["Outcome filled at"])),
-        })
+        }
+
+        if later is None or entry is None:
+            quarantined.append(row_dict)
+        else:
+            outcomes.append(row_dict)
+
+    return outcomes, quarantined
+
+
+def measured_outcomes(values: Sequence[Sequence]) -> list[dict]:
+    """Return log rows that already contain a later session change filled by a previous run."""
+    outcomes, _ = measured_outcomes_with_quarantine(values)
     return outcomes
 
 
@@ -113,7 +161,7 @@ def summarize_outcomes(outcomes: Sequence[dict]) -> dict:
 
 
 def render_production_sheet(values: Sequence[Sequence], now: datetime) -> list[list]:
-    outcomes = measured_outcomes(values)
+    outcomes, quarantined = measured_outcomes_with_quarantine(values)
     summary = summarize_outcomes(outcomes)
     win_rate = "" if summary["win_rate"] is None else round(summary["win_rate"], 4)
     follow = "" if summary["average_follow_through"] is None else round(summary["average_follow_through"], 4)
@@ -126,6 +174,7 @@ def render_production_sheet(values: Sequence[Sequence], now: datetime) -> list[l
         [],
         ["As of", now.strftime("%Y-%m-%d %H:%M:%S") + " IST"],
         ["Filled outcomes", summary["count"]],
+        ["Quarantined outcomes", len(quarantined)],
         ["Wins", summary["wins"] if summary["count"] else ""],
         ["Losses", summary["losses"] if summary["count"] else ""],
         ["Win rate", win_rate],

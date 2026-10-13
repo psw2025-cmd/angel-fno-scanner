@@ -21,3 +21,10 @@ def test_snapshot_push_step_fails_closed_when_git_push_fails():
     block = text.split("- name: Commit & Push Updated Snapshots", 1)[1].split("- name: Create Issue on Failure", 1)[0]
     assert re.search(r"if git push origin HEAD:main; then\s+pushed=1\s+break", block)
     assert re.search(r'if \[ "\$pushed" -ne 1 \]; then\s+echo ".*"\s+exit 1', block)
+
+def test_snapshot_push_cleans_unstaged_before_rebase():
+    """Enforces that unstaged working tree changes are purged before rebasing to prevent false aborts."""
+    text = WORKFLOW.read_text(encoding="utf-8")
+    block = text.split("- name: Commit & Push Updated Snapshots", 1)[1].split("- name: Create Issue on Failure", 1)[0]
+    assert "git checkout -- ." in block or "git reset --hard" in block
+

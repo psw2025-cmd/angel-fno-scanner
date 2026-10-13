@@ -101,7 +101,14 @@ New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 $jsonPath = Join-Path $outDir ($claimId + ".json")
 $packet | ConvertTo-Json -Depth 10 | Set-Content -Path $jsonPath -Encoding UTF8
 if (-not $packet.artifact_sha256) {
-    $sha256 = (Get-FileHash -Algorithm SHA256 -Path $jsonPath).Hash.ToLowerInvariant()
+    if (Get-Command Get-FileHash -ErrorAction SilentlyContinue) {
+        $sha256 = (Get-FileHash -Algorithm SHA256 -Path $jsonPath).Hash.ToLowerInvariant()
+    } else {
+        $sha = [System.Security.Cryptography.SHA256]::Create()
+        $stream = [System.IO.File]::OpenRead($jsonPath)
+        $sha256 = [System.BitConverter]::ToString($sha.ComputeHash($stream)).Replace("-","").ToLowerInvariant()
+        $stream.Close()
+    }
     $packet.artifact_sha256 = $sha256
     $packet | ConvertTo-Json -Depth 10 | Set-Content -Path $jsonPath -Encoding UTF8
 }

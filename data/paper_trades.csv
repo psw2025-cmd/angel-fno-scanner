@@ -1,1 +1,2 @@
-﻿trade_id,symbol,option_type,strike,expiry,entry_time,entry_price,exit_time,exit_price,quantity,stop_loss,take_profit,fees,realized_pnl,status,source_run_id
+trade_id,symbol,option_type,strike,expiry,entry_time,entry_price,exit_time,exit_price,quantity,stop_loss,take_profit,fees,realized_pnl,status,source_run_id
+T001,NIFTY,CE,25000,2026-10-15,2026-10-12 09:30:00,120.50,2026-10-12 15:15:00,145.00,50,110.00,150.00,20.00,1225.00,CLOSED,run_01

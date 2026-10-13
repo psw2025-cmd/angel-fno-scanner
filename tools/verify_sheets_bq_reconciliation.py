@@ -14,6 +14,7 @@ import os
 import sys
 from pathlib import Path
 from zoneinfo import ZoneInfo
+from google.cloud import bigquery
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
@@ -41,7 +42,7 @@ def get_authenticated_clients():
     return gc, bq
 
 
-def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, table=None):
+def reconcile(run_id="38223387415", sheet_id=None, project=None, dataset=None, table=None):
     """
     Read Sheets FORENSIC_LIVE and CE_PE_RANK, compare with BigQuery option_predictions_live.
     Verify universe coverage (219), distinct symbols, and run provenance.
@@ -123,7 +124,10 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
                 min(snapshot_timestamp) as oldest_timestamp
             FROM `{full_table_id}`
         """
-        query_job = bq.query(query)
+        job_config = bigquery.QueryJobConfig(
+            maximum_bytes_billed=10_485_760
+        )
+        query_job = bq.query(query, job_config=job_config)
         q_res = list(query_job.result())[0]
 
         result["bigquery"] = {
@@ -155,7 +159,7 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
     if bq_ok:
         try:
             bq_sym_query = f"SELECT DISTINCT symbol FROM `{full_table_id}` ORDER BY symbol"
-            bq_sym_list = [r.symbol for r in bq.query(bq_sym_query).result()]
+            bq_sym_list = [r.symbol for r in bq.query(bq_sym_query, job_config=job_config).result()]
             bq_hash = hashlib.sha256(",".join(bq_sym_list).encode("utf-8")).hexdigest()[:16]
         except Exception:
             bq_hash = "ERROR_BQ"
@@ -191,7 +195,7 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
 
 def main():
     parser = argparse.ArgumentParser(description="Reconcile Google Sheets and BigQuery sinks.")
-    parser.add_argument("--run-id", default="37900561389", help="Workflow run ID to reconcile")
+    parser.add_argument("--run-id", default="38223387415", help="Workflow run ID to reconcile")
     parser.add_argument("--sheet-id", default=None, help="Google Sheet ID")
     parser.add_argument("--project", default=BQ_PROJECT_DEFAULT, help="BigQuery GCP Project ID")
     parser.add_argument("--dataset", default=BQ_DATASET_DEFAULT, help="BigQuery Dataset ID")

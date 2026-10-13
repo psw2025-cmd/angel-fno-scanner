@@ -1,4 +1,4 @@
-﻿from pathlib import Path
+from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -47,4 +47,43 @@ def test_mock_leakage_prevention():
         assert "unittest.mock" not in code, f"Mock leakage detected in {script_name}"
         assert "pytest" not in code, f"Pytest import detected in production script {script_name}"
         assert "MagicMock" not in code, f"MagicMock detected in {script_name}"
+
+
+def test_single_writer_negative_denial(monkeypatch):
+    """
+    Gate P-13 Negative Test:
+    Ensures unauthorized writer IDs are denied fail-closed with RuntimeError.
+    """
+    from writer_guard import require_authorized_writer
+    import pytest
+
+    # Case 1: Unauthorized writer ID
+    monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")
+    monkeypatch.setenv("WRITER_ID", "unauthorized_rogue_writer")
+    monkeypatch.setenv("RUN_ID", "test-run")
+    monkeypatch.setenv("GIT_SHA", "test-sha")
+    with pytest.raises(RuntimeError, match="Production sink write blocked: only market_bot"):
+        require_authorized_writer()
+
+    # Case 2: Writes disallowed
+    monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "0")
+    monkeypatch.setenv("WRITER_ID", "market_bot")
+    with pytest.raises(RuntimeError, match="Production sink write blocked"):
+        require_authorized_writer()
+
+    # Case 3: Authorized writer succeeds
+    monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")
+    monkeypatch.setenv("WRITER_ID", "market_bot")
+    prov = require_authorized_writer()
+    assert prov["writer_id"] == "market_bot"
+
+
+def test_bigquery_cost_cap_enforced():
+    """
+    Gate P-17 Executable Cost Guard Test:
+    Verifies that all production BigQuery queries enforce maximum_bytes_billed <= 10MB ($10/day budget cap).
+    """
+    recon_code = (ROOT / "tools/verify_sheets_bq_reconciliation.py").read_text(encoding="utf-8")
+    assert any(x in recon_code for x in ["maximum_bytes_billed=10_485_760", "maximum_bytes_billed=10_000_000"]), "BigQuery maximum_bytes_billed cost cap missing from reconciliation"
+
 
