@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-13 - Production Cloud Run Deployment and Container Git SHA Fallback
+
+**Commit:** Pending HEAD
+
+### What changed
+- scanner.py: Added fallback to `GIT_SHA` and `GITHUB_SHA` environment variables before executing subprocess `git rev-parse HEAD`, preventing container startup failures in environments without `.git/objects`.
+- Dockerfile.cloudrun: Created production container definition with Python 3.12-slim, non-root user `scanner`, and minimal runtime dependencies.
+- .dockerignore: Configured production ignore list for clean build context.
+- tools/__init__.py: Initialized tools package namespace for module imports.
+
+### Evidence
+- pytest: 279 passed locally.
+- Cloud Run Job execution `angel-market-scan-job-t9j8j`: SUCCESS (succeededCount=1).
+- BigQuery verification: 219 rows in option_predictions_live with fresh timestamp.
+
+---
+
 ## 2026-10-09 - Post-merge 100-year verification: strict CE_PE_RANK 200 filter, checksum 3f6153d1e221ae43, 221 pytest PASS
 
 **Commit:** Pending HEAD
