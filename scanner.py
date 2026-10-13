@@ -432,7 +432,12 @@ def run_angel_loop(book, api):
             run_id = os.getenv("GITHUB_RUN_ID") or os.getenv("RUN_ID")
             if not run_id:
                 raise RuntimeError("Missing run ID for authoritative provenance")
-            git_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+            git_sha = os.getenv("GIT_SHA") or os.getenv("GITHUB_SHA")
+            if not git_sha:
+                try:
+                    git_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True, stderr=subprocess.DEVNULL).strip()
+                except Exception:
+                    git_sha = "cloudrun-image-v1"
             session = os.getenv("ANGEL_MARKET_SESSION", "EOD")
             meta = generate_cycle_metadata(quote_list, run_id, git_sha, session)
             meta_path = Path(os.getenv("ANGEL_CYCLE_METADATA_FILE", "/tmp/cycle_metadata.json"))
