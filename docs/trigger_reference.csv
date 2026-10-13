@@ -1,0 +1,122 @@
+﻿ID,Category,What_You_Say,What_I_Produce,Output_Format,When_To_Use,Real_Example
+D01,Diagram,Show me the diagram,Best fit visual,Mermaid,Default visual request,Cloud Run architecture
+D02,Diagram,Show me the sequence,Ordered timeline,Mermaid sequenceDiagram,Step ordering,market_bot chain
+D03,Diagram,Show me the architecture,Component boxes,Mermaid flowchart,System design,Scanner BQ Sheets topology
+D04,Diagram,Show me the state machine,Lifecycle circles,Mermaid stateDiagram,Retry logic,Scanner 401 re-login
+D05,Diagram,Show me the decision tree,Diamond branches,Mermaid flowchart,FMEA analysis,Writer guard failures
+D06,Diagram,Show me the timeline,Timestamped bars,Mermaid gantt,Drift over time,State drift after push
+D07,Diagram,Show me the data flow,Producer to consumer,Mermaid flowchart LR,Mapping artifacts,local JSON vs BQ
+D08,Diagram,Show me the dependency graph,Import tree,Mermaid graph,Module coupling,scanner.py imports
+D09,Diagram,Show me the heatmap,Colored matrix,Markdown table,Resource limits,Sheets 60 RPM chart
+D10,Diagram,Show me the before after,Two side by side,Mermaid x2,Proposed changes,Placeholder vs real URL
+D11,Diagram,Show me the ASCII version,Plain text boxes,ASCII art,No markdown envs,Quick topology
+D12,Diagram,Show me the Graphviz version,DOT source,Graphviz DOT,Complex routing,Alternative renderer
+A01,Advanced,Show me the spider web,Distributed trace,Mermaid graph,End to end visibility,Scanner trace
+A02,Advanced,Show me the neuron,Event flow,Mermaid flowchart,Decoupling design,Pub Sub proposal
+A03,Advanced,Show me the quantum guard,Lease and fencing,Mermaid sequence,Fixing writer guard,Replace honor system
+A04,Advanced,Show me the full pipeline trace,Correlation ID flow,Mermaid sequence,Debug drift,run_id through steps
+A05,Advanced,Show me the self healing loop,Remediation flow,Mermaid stateDiagram,Automation recovery,401 relogin path
+A06,Advanced,Show me the observability triad,Logs metrics traces,Mermaid graph,Monitoring plan,Cloud Logging stack
+A07,Advanced,Show me the circuit breaker,Failure isolation,Mermaid stateDiagram,Flaky downstream,Google 429 handling
+A08,Advanced,Show me the bulkhead,Containment zones,Mermaid graph,Prevent cascade,Scanner vs engine
+A09,Advanced,Show me the outbox pattern,Atomic DB plus queue,Mermaid sequence,Partial publish,Sheets ok BQ failed
+A10,Advanced,Show me the idempotency map,Exactly once,Mermaid sequence,Retry safety,Scheduler retry
+A11,Advanced,Show me the backpressure flow,Flow control,Mermaid flowchart,Fast upstream,Angel API to scanner
+A12,Advanced,Show me the zero trust map,Identity per hop,Mermaid graph,Remove long lived keys,WIF replacing SA keys
+A13,Advanced,Show me the process map,Laptop process topology,Mermaid flowchart,Laptop state check,PID to task correlation
+A14,Advanced,Show me the anomaly table,Process anomalies,Markdown table,Laptop triage,ERROR_SHARING_VIOLATION
+A15,Advanced,Show me the PID map,Python PID to task,Markdown table,Orphan hunt,Oct 12 orphans
+B01,Brain,Show me the brain,Full anatomy,Mermaid flowchart TB,Explain system,Angel FNO neural map
+B02,Brain,Show me the regions,Region to component,Markdown table,Onboard agent,Brain region table
+B03,Brain,Show me the signal flow,Cycle sequence,Mermaid sequence,Debug end to end,09:15 IST scan travel
+B04,Brain,Show me the diseases,Issue to disease,Markdown table,Prioritize fixes,Alzheimer to stale git
+B05,Brain,Show me the health score,Vitals status,Markdown table,Status report,Heartbeat BP oxygen
+B06,Brain,Show me the missing organs,Gap analysis,Mermaid graph,Plan upgrades,Myelin to tracing
+B07,Brain,Show me the healthy brain,Target state,Mermaid flowchart,Communicate goal,Mature architecture
+B08,Brain,Show me the reflex arc,Circuit breaker,Mermaid stateDiagram,Resilience,Google 429 protection
+B09,Brain,Show me the sleep cycle,Nightly consolidation,Mermaid flowchart,Verify runs,02:00 IST reconciliation
+B10,Brain,Show me the pain receptors,Alert routing,Mermaid flowchart,Paging setup,PagerDuty vs Slack
+B11,Brain,Show me the immune system,Guard lease CB,Mermaid flowchart,Fix writer guard,Protection stack
+B12,Brain,Show me the memory system,Storage hierarchy,Mermaid graph,Persistence,BQ Sheets Git
+S01,Script,Make it strict PASS FAIL,Binary gate,PowerShell 5.1,Pre-deployment,pre_impl_gate.ps1
+S02,Script,Any warning equals fail,Zero tolerance,PowerShell 5.1,Readiness gate,Strict pre-flight
+S03,Script,Hash triage,Dedupe by SHA256,PowerShell 5.1,Many copies,scanner.py 44 copies
+S04,Script,Show me all X,Enumerate matches,PowerShell 5.1,Discovery,writer_guard 33 copies
+S05,Script,Diff these files,Side by side,PowerShell,Family A vs B,canonical vs repair
+S06,Script,Run and capture,Output to file,PowerShell,Long output,gcloud command logging
+S07,Script,Full C drive search,dir slash s slash b,cmd plus PS,Unknown location,Find scanner.py
+S08,Script,Extract with line numbers,5 padded lines,PowerShell,File content,scanner.py line 435
+S09,Script,Save output to temp,Timestamped folder,PowerShell,Evidence,angel_evidence folder
+S10,Script,Show me the checks,PASS FAIL per item,PowerShell,Verification,100x verify diagnostic
+C01,Cloud,What secrets exist,Names only,gcloud format,Audit,7 secrets in GCP
+C02,Cloud,What APIs enabled,Enabled matrix,gcloud services,Pre-deploy,8 APIs for Cloud Run
+C03,Cloud,What service accounts,Email plus name,gcloud iam,Check writers,angel-sheets-bot found
+C04,Cloud,Migration workflow,One-time GHA YAML,YAML,Move secrets,GitHub to GCP
+C05,Cloud,OIDC setup,Workload Identity,gcloud plus YAML,Keyless auth,WIF for GitHub Actions
+C06,Cloud,Describe the job,Cloud Run Job spec,gcloud run jobs,Verify,angel-market-scan-job
+C07,Cloud,Scheduler URL,Real endpoint,gcloud scheduler,Replace placeholder,placeholder to real
+C08,Cloud,Build and push image,Docker build,gcloud builds,Registry push,scanner v1
+X01,Security,Show names not values,Redacted list,Table,Audit,env variable listing
+X02,Security,Safe migration,Values never printed,PowerShell SecureString,Copy secrets,dot env to GCP
+X03,Security,Revoke temporary role,IAM remove,gcloud,After migration,admin revoke
+X04,Security,Least privilege grant,Only needed,gcloud,After revoke,secretAccessor
+X05,Security,Audit access log,Cloud Audit Log,gcloud logging,Forensics,Secret access history
+P01,Project,Scanner entrypoint,Canonical file plus hash,Text plus SHA256,Always,repos scanner.py
+P02,Project,Writer guard,69 line file,Text plus analysis,Parallel writes,writer_guard.py
+P03,Project,Market bot workflow,5-step chain,Text plus YAML,Pre Cloud Run,market_bot.yml
+P04,Project,Cloud Scheduler,Fake URL,Text plus gcloud,Pre replace,your-cloud-run-url
+P05,Project,219 universe,Contract check,Text plus python,Any scan,EXPECTED_FNO_UNIVERSE_COUNT
+P06,Project,Cross sink,Sheets BQ recon,Python plus JSON,Parity,checksum 3f6153d1e221ae43
+P07,Project,Cycle metadata,ANGEL_CYCLE_METADATA_FILE,Text plus JSON,Fail-closed,agent_cli line 237
+P08,Project,Family A vs Family B,Scanner hashes,Table,Copies diverge,5cd35072 vs aa9daf7f
+P09,Project,5 laptop tasks,Task inventory,PowerShell,Remove laptop dep,AngelFNO-GitHub-Fallback
+P10,Project,Stale artifacts,Data producers,Text,No writer,data predictions 219
+F01,Problem,PowerShell ternary error,PS 5.1 rewrite,PowerShell,Question colon fails,pre_impl_gate line 136
+F02,Problem,Em dash parse error,Strip non ASCII,PowerShell,UTF8 mangled,Group A em dash
+F03,Problem,else after pipe,Wrap script block,PowerShell,Multi-line paste,if else over pipe
+F04,Problem,gcloud hangs,quiet flag,PowerShell,Frozen at gcloud,Secret Manager prompt
+F05,Problem,Hash conflict,Worktree dedupe,PowerShell plus git,Push fails,Snapshot conflict
+F06,Problem,File not found,Test-Path first,PowerShell,Before reading,Angel creds in dot env
+F07,Problem,Git push fails,Cloud Run replacement,gcloud,Main moves,market_bot step 5
+F08,Problem,Verify fails 45 percent,Retry backoff,Python,Unreliable verify,100x test result
+F09,Problem,Script blocked by policy,Execution policy,PowerShell,ps1 refuses,not digitally signed
+F10,Problem,Non ASCII in output,ASCII sanitizer,PowerShell,Before saving,Pre-impl gate fix
+F11,Problem,Python in PowerShell,Use AGY or editor,Workflow,Python typed in PS terminal,Missing type name after bracket
+F12,Problem,Scriptblock command bug,Use scriptblock,PowerShell,cmd not recognized,cross_verify.ps1 bug
+F13,Problem,AI hallucination,Cite raw output,Text,Agent claims,AI Studio 11 wrong facts
+O01,Format,CSV version,Comma separated,CSV,Excel Sheets,This file
+O02,Format,JSON version,Machine readable,JSON,Programmatic,Manifest files
+O03,Format,Markdown version,Doc ready,Markdown,GitHub Notion,README updates
+O04,Format,Both JSON and CSV,Dual output,CSV plus JSON,Structured data,Artifact manifests
+O05,Format,Line-numbered,5 padded,Text,Citation,scanner.py line 435
+O06,Format,Strict table,Markdown table,Markdown,PASS FAIL,Pre-impl gate report
+T01,Tracing,Add correlation ID,run_id in logs,Python,Cross service debug,writer guard plus scanner
+T02,Tracing,Add span context,OTel spans,Python plus YAML,Trace tree,Cloud Run plus BQ
+T03,Tracing,Add trace export,Cloud Trace,YAML plus Python,Visual traces,otel exporter
+T04,Tracing,Add structured logs,JSON logs,Python,Query logs,Replace print
+T05,Tracing,Add SLO monitoring,SLIs plus objectives,YAML,Alert trends,Latency plus error rate
+T06,Tracing,Add health endpoint,Readiness liveness,Python,Cloud Run probes,healthz on scanner
+T07,Tracing,Add dead letter queue,Capture failures,Python plus GCP,Data loss,Write to GCS
+T08,Tracing,Add audit trail,Immutable log,Python plus BQ,Prove who did what,WRITE_PROVENANCE tab
+T09,Tracing,Add cost tracking,Billing per job,YAML,Budget watch,Cloud Run cost
+T10,Tracing,Add canary deploy,Shadow traffic,YAML,Prod changes,v2 alongside v1
+M01,Maturity,Level 1 currently,Laptop dependent,Text,Baseline,4 Windows tasks
+M02,Maturity,Level 2 target,Cloud Run Scheduler,Text,Next 30 days,Job autonomous
+M03,Maturity,Level 3 target,Observability,Text,Next 90 days,Tracing plus SLOs
+M04,Maturity,Level 4 target,Self healing,Text,Next 6 months,Auto retry
+M05,Maturity,Level 5 target,Chaos tested,Text,Next 12 months,Weekly failure inject
+R01,Recommendation,Install OpenTelemetry,SDK plus exporter,YAML plus Python,Week 1,Trace scanner to BQ
+R02,Recommendation,Add correlation IDs,run_id everywhere,Python,Week 1,Thread from cron
+R03,Recommendation,Add lease table,BigQuery lease,SQL plus Python,Week 2,Replace honor guard
+R04,Recommendation,Add fencing tokens,Monotonic counter,SQL plus Python,Week 2,Order preservation
+R05,Recommendation,Add dead letter queue,GCS failure bucket,YAML plus Python,Week 3,Capture BQ rejects
+R06,Recommendation,Add SLO dashboard,Cloud Monitoring,YAML,Week 3,Freshness latency errors
+R07,Recommendation,Add runbook,Markdown incidents,Markdown,Week 4,What to do when X
+R08,Recommendation,Add chaos test,Failure injection,Python,Week 6,Sigstop container
+R09,Recommendation,Add event bus,Pub Sub topic,YAML,Month 2,Decouple Sheets BQ
+R10,Recommendation,Add cache layer,Redis Memorystore,YAML,Month 3,Reduce Sheets reads
+Q01,Verification,Show me the trace tree,Span hierarchy,Mermaid graph,Debug latency,48s verify breakdown
+Q02,Verification,Show me the failure path,Error propagation,Mermaid sequence,Root cause,45 percent verify fails
+Q03,Verification,Show me the data lineage,Row to cell,Mermaid flowchart,Provenance,Angel API to BQ
+Q04,Verification,Show me the SLI,Service indicators,Markdown table,Health measure,Percent within 5 min
+Q05,Verification,Show me the gap analysis,Current vs target,Mermaid graph,Plan upgrades,Level 1 to Level 5
