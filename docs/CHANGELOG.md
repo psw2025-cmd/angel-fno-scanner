@@ -12,8 +12,12 @@
 - Dockerfile, Dockerfile.cloudrun, .dockerignore, .gcloudignore, cloudbuild.validation.yaml, .github/workflows/market_bot.yml: build and workflow configuration.
 - tests/: new and updated regression tests for the modules above.
 
+- cloud_status.py: added. angel_prediction_engine.py imports it, and the first baseline commit (15a0e3c) omitted it, so that commit failed at import (12 collection errors).
+- Reconciled with main 70b096b: kept sanitize_bq_row and the module-level `_canon` (PR #97 logic) in tools/live_schema_guard.py, and kept `ENV GIT_SHA=$SOURCE_COMMIT` in Dockerfile.cloudrun (tests/test_container_provenance.py requires it). PR #97 head 6aa8172 was merged into this branch only; main and PR #97 are unchanged. The nested duplicate `_canon` that PR #97 adds inside `assert_truncate_schema_safe` was removed.
+
 ### Evidence
-- Full test run is pending (PHASE-08 gate); no pass count is claimed here.
+- pytest (isolated worktree, local): 325 passed. Targeted schema guard, provenance, lease, universe and single-writer tests: 53 passed. Encoding tests: 8 passed.
+- Not deployed. No Docker build, Cloud Run, Scheduler, BigQuery or Sheet runtime proof yet.
 - Pre-snapshot: C:\temp\AngelFNO\snap_20261015_034751 (diff.patch, status.txt, log.txt).
 
 ---
