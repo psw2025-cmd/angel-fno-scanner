@@ -1,0 +1,63 @@
+{
+  "name": "angel-market-scan-job",
+  "region": "us-central1",
+  "serviceAccountName": "angel-sheets-bot@fno-angel-prod-1790444589.iam.gserviceaccount.com",
+  "timeoutSeconds": "14400",
+  "maxRetries": 0,
+  "image": "us-central1-docker.pkg.dev/fno-angel-prod-1790444589/cloud-run-source-deploy/scanner:v1",
+  "resources": {
+    "limits": {
+      "cpu": "2",
+      "memory": "4Gi"
+    }
+  },
+  "secrets": [
+    {
+      "env": "ANGEL_API_KEY",
+      "secret": "ANGEL_API_KEY",
+      "key": "latest"
+    },
+    {
+      "env": "ANGEL_CLIENT_CODE",
+      "secret": "ANGEL_CLIENT_CODE",
+      "key": "latest"
+    },
+    {
+      "env": "ANGEL_PIN",
+      "secret": "ANGEL_PIN",
+      "key": "latest"
+    },
+    {
+      "env": "ANGEL_TOTP_SEED",
+      "secret": "ANGEL_TOTP_SEED",
+      "key": "latest"
+    },
+    {
+      "env": "SHEETS_KEY_JSON",
+      "secret": "SHEETS_KEY_JSON",
+      "key": "latest"
+    },
+    {
+      "env": "SHEET_ID",
+      "secret": "SHEET_ID",
+      "key": "latest"
+    },
+    {
+      "env": "BQ_PROJECT_ID",
+      "secret": "BQ_PROJECT_ID",
+      "key": "latest"
+    }
+  ],
+  "plainEnv": {
+    "WRITER_ID": "market_bot",
+    "ALLOW_PRODUCTION_WRITES": "1",
+    "MAX_RUNTIME_SECONDS": "24300",
+    "ANGEL_CYCLE_METADATA_FILE": "/tmp/cycle_metadata.json",
+    "ANGEL_REQUIRE_EXCHANGE_TIME": "1",
+    "ANGEL_MARKET_SESSION": "EOD",
+    "RUN_ID": "cloudrun-scheduled",
+    "GIT_SHA": "cloudrun-image-v1"
+  },
+  "creator": "warghade2012@gmail.com",
+  "lastModifier": "warghade2012@gmail.com"
+}

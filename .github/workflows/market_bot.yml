@@ -27,6 +27,7 @@ on:
 permissions:
   contents: write
   issues: write
+  pull-requests: write
 
 concurrency:
   group: market-bot
@@ -113,19 +114,22 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add data/
           if ! git diff-index --quiet HEAD --; then
-            git commit -m "chore(data): auto-update daily prediction snapshots [skip ci]"
+            # Do not add a CI-skip marker to this commit. Required encoding-safety
+            # checks must run. Publish on a non-protected data branch and open a PR.
+            # Never push main and never force-push.
+            git commit -m "chore(data): publish daily prediction snapshot for run ${GITHUB_RUN_ID}"
+            branch="data/snapshot-${GITHUB_RUN_ID}"
             pushed=0
             for i in 1 2 3 4 5; do
               echo "Snapshot push attempt $i/5"
-              # Rebase the snapshot-only commit on the latest main before retrying.
-              # Never force-push or overwrite concurrent publisher changes.
               if ! git fetch origin main; then
                 echo "::warning::Fetch failed; will retry"
               elif ! git rebase origin/main; then
                 git rebase --abort || true
                 echo "::error::Snapshot conflicts with newer main; manual reconciliation required"
                 exit 1
-              elif git push origin HEAD:main; then
+              elif git push origin HEAD:"$branch"; then
+                gh pr create --base main --head "$branch" --title "data: prediction snapshot ${GITHUB_RUN_ID}" --body "Paper snapshot publication. Required checks must run. This commit is not marked skip ci."
                 pushed=1
                 break
               fi

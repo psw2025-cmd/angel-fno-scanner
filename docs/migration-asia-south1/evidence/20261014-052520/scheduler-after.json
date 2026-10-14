@@ -1,0 +1,11 @@
+{
+  "name": "angel-market-scan-job",
+  "location": "us-central1",
+  "schedule": "15 9 * * 1-5",
+  "timeZone": "Asia/Kolkata",
+  "state": "PAUSED",
+  "userUpdateTime": "2026-10-14T00:20:09.452145Z",
+  "uri": "https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/fno-angel-prod-1790444589/jobs/angel-market-scan-job:run",
+  "serviceAccountEmail": "angel-sheets-bot@fno-angel-prod-1790444589.iam.gserviceaccount.com",
+  "meaning": "09:15 IST Monday-Friday. Job was left PAUSED. It was not resumed and it was not deleted."
+}
