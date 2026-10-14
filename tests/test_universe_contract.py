@@ -43,6 +43,8 @@ def test_scanner_prediction_failure_is_not_false_green(monkeypatch):
 
     monkeypatch.setattr(scanner, "load_env", lambda: None)
     monkeypatch.setattr(scanner, "require_authorized_writer", lambda: None)
+    monkeypatch.setattr(scanner, "acquire_cycle_lease", lambda: None)
+    monkeypatch.setattr(scanner, "apply_process_provenance", lambda: {"run_id": "test-cycle", "git_sha": "abc1234"})
     monkeypatch.setattr(scanner, "require_authoritative_sheet_id", lambda sheet_id: sheet_id)
     monkeypatch.setenv("SHEET_ID", "test-only")
     monkeypatch.setattr(scanner, "load_service_account", lambda: {})
@@ -66,7 +68,7 @@ def test_partial_publication_preserves_sinks(monkeypatch):
     monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")  # test isolation only - prod code uses conditional 0/1
     monkeypatch.setenv("WRITER_ID", "market_bot")
     monkeypatch.setenv("RUN_ID", "test-cycle")
-    monkeypatch.setenv("GIT_SHA", "test-sha")
+    monkeypatch.setenv("GIT_SHA", "abc1234")
     rows = [{"symbol": s} for s in verified_symbols() if s != "SAIL"]
     # No cloud client may be reached before the fail-closed coverage check.
     monkeypatch.setattr(engine, "get_bigquery_client", lambda: pytest.fail("BQ accessed"))
@@ -89,7 +91,7 @@ def test_malformed_forensic_row_cannot_be_dropped_into_partial_publication(monke
     monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")  # test isolation only - prod code uses conditional 0/1
     monkeypatch.setenv("WRITER_ID", "market_bot")
     monkeypatch.setenv("RUN_ID", "test-cycle")
-    monkeypatch.setenv("GIT_SHA", "test-sha")
+    monkeypatch.setenv("GIT_SHA", "abc1234")
     monkeypatch.setattr(engine, "get_gspread_client", lambda: pytest.fail("Sheets accessed"))
     predictions = [{"symbol": s} for s in verified_symbols()]
     forensic = [["test", s] + [0] * 16 for s in verified_symbols()]
@@ -105,6 +107,8 @@ def test_fresh_heartbeat_still_runs_one_prediction(monkeypatch):
     calls = []
     monkeypatch.setattr(scanner, "load_env", lambda: None)
     monkeypatch.setattr(scanner, "require_authorized_writer", lambda: None)
+    monkeypatch.setattr(scanner, "acquire_cycle_lease", lambda: None)
+    monkeypatch.setattr(scanner, "apply_process_provenance", lambda: {"run_id": "test-cycle", "git_sha": "abc1234"})
     monkeypatch.setattr(scanner, "require_authoritative_sheet_id", lambda sheet_id: sheet_id)
     monkeypatch.setenv("SHEET_ID", "test-only")
     monkeypatch.setattr(scanner, "load_service_account", lambda: {})

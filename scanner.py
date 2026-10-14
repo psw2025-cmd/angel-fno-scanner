@@ -89,7 +89,11 @@ from gainers import (
 )
 from paper_log import alerts_to_append, fill_later_changes, render_production_sheet
 from writer_guard import append_sheet_provenance, require_authorized_writer
+from tools.cycle_provenance import apply_process_provenance
+from tools.publication_lease import PublicationLeaseError, assert_current_fence
 from sheet_grid import write_grid
+from circuit_breaker import CircuitBreaker
+from rate_limiter import RateLimiter
 
 load_env()
 SHEET_ID = os.getenv("SHEET_ID", "").strip()
@@ -108,8 +112,17 @@ FORENSIC_HEADER = [
 ]
 
 
-def now_ist():
-    return datetime.datetime.now(IST).replace(tzinfo=None)
+def now_ist() -> datetime.datetime:
+    """Current Asia/Kolkata time, timezone-aware (never stripped to naive)."""
+    return datetime.datetime.now(IST)
+
+
+def parse_sheet_ist(value):
+    """Parse a 'YYYY-MM-DD HH:MM:SS' sheet cell as an IST-aware datetime, or None."""
+    try:
+        return datetime.datetime.strptime(str(value).strip()[:19], "%Y-%m-%d %H:%M:%S").replace(tzinfo=IST)
+    except (ValueError, TypeError):
+        return None
 
 
 def parse_exp(value):
@@ -131,21 +144,36 @@ def worksheet(book, title, rows=400, cols=26):
 
 
 
-def heartbeat_age_seconds(book, now):
+def heartbeat_age_seconds(book, now=None):
+    if now is None:
+        now = now_ist()
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=IST)
     try:
         stamped = book.worksheet("HEARTBEAT").acell("A2").value
     except gspread.WorksheetNotFound:
         return None
     if not stamped:
         return None
-    try:
-        wrote = datetime.datetime.strptime(str(stamped).strip(), "%Y-%m-%d %H:%M:%S")
-    except ValueError:
+    wrote = parse_sheet_ist(stamped)
+    if wrote is None:
         return None
-    return max(0, (now - wrote).total_seconds())
+    return max(0.0, (now - wrote).total_seconds())
+
+
+def acquire_cycle_lease():
+    from tools.publication_lease import acquire_production_lease
+    return acquire_production_lease()
+
+
+def _require_publication_fence():
+    if os.getenv("ANGEL_VALIDATION_ONLY") == "1":
+        raise PublicationLeaseError("validation mode cannot publish")
+    assert_current_fence()
 
 
 def publish_gainers(book, quotes, now, source):
+    _require_publication_fence()
     rows = render_gainer_sheet(quotes, now, source)
     for title in ("CE_PE_RANK", "TOP_GAINERS"):
         write_grid(worksheet(book, title, rows=max(200, len(rows) + 10), cols=len(rows[3]) if len(rows) > 3 else 26), rows)
@@ -154,12 +182,14 @@ def publish_gainers(book, quotes, now, source):
 
 
 def publish_production(book, now):
+    _require_publication_fence()
     paper = worksheet(book, "PAPER_ALERT_LOG")
     values = paper.get_all_values()
     write_grid(worksheet(book, "PRODUCTION_APPROVED"), render_production_sheet(values, now))
 
 
 def sync_paper(book, signals, latest_changes, now):
+    _require_publication_fence()
     paper = worksheet(book, "PAPER_ALERT_LOG")
     values = paper.get_all_values()
     if not values:
@@ -262,12 +292,41 @@ def discover_universe(api):
     return universe
 
 
+# SmartAPI quote protection (CDX-06): 3 calls/second with no burst, and a breaker
+# that opens after 4 consecutive failures and probes again after 45 seconds.
+smartapi_breaker = CircuitBreaker(threshold=4, cooldown=45.0)
+smartapi_limiter = RateLimiter(rate=3, capacity=1)
+
+
+def _throttle_smartapi():
+    """Block until the rate limiter grants a call (acquire() returns seconds to wait)."""
+    while True:
+        wait = smartapi_limiter.acquire()
+        if wait <= 0:
+            return
+        time.sleep(wait)
+
+
 def fetch_chunked(api, tokens, size=45):
     quotes = {}
     failures = 0
-    for start in range(0, len(tokens), size):
+    starts = list(range(0, len(tokens), size))
+    for index, start in enumerate(starts):
         chunk = tokens[start:start + size]
+        if not smartapi_breaker.allow():
+            skipped = len(starts) - index
+            failures += skipped
+            print(
+                f"[WARN] SmartAPI circuit breaker OPEN; skipping {skipped} quote chunk(s). "
+                "Existing sheet data is left untouched."
+            )
+            break
         for attempt in range(4):
+            if attempt and not smartapi_breaker.allow():
+                failures += 1
+                print("[WARN] SmartAPI circuit breaker OPEN; abandoning retries for this quote chunk.")
+                break
+            _throttle_smartapi()
             try:
                 response = api.getMarketData("FULL", {"NFO": chunk})
                 if not response or not response.get("status"):
@@ -277,8 +336,10 @@ def fetch_chunked(api, tokens, size=45):
                         from tools.exchange_timestamp import get_exchange_timestamp
                         get_exchange_timestamp(item)
                     quotes[str(item.get("symbolToken"))] = item
+                smartapi_breaker.success()
                 break
             except Exception as exc:
+                smartapi_breaker.failure()
                 if attempt == 3:
                     failures += 1
                     print(f"[ERROR] Quote chunk failed permanently after retries: {exc}")
@@ -286,7 +347,6 @@ def fetch_chunked(api, tokens, size=45):
                     backoff = (2 ** attempt) + 0.5
                     print(f"[WARN] Quote chunk error: {exc}. Retrying in {backoff}s...")
                     time.sleep(backoff)
-        time.sleep(0.35)
     return quotes, failures
 
 
@@ -419,7 +479,6 @@ def run_angel_loop(book, api):
         if os.getenv("ANGEL_REQUIRE_EXCHANGE_TIME") == "1":
             from tools.cycle_metadata import generate_cycle_metadata
             import json
-            import subprocess
             from pathlib import Path
             if len(universe) != 219:
                 raise RuntimeError(f"Expected 219 verified futures, got {len(universe)}")
@@ -429,15 +488,9 @@ def run_angel_loop(book, api):
                 if not quote:
                     raise RuntimeError("Missing futures quote: exchange freshness unverifiable")
                 quote_list.append(quote)
-            run_id = os.getenv("GITHUB_RUN_ID") or os.getenv("RUN_ID")
-            if not run_id:
-                raise RuntimeError("Missing run ID for authoritative provenance")
-            git_sha = os.getenv("GIT_SHA") or os.getenv("GITHUB_SHA")
-            if not git_sha:
-                try:
-                    git_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True, stderr=subprocess.DEVNULL).strip()
-                except Exception:
-                    git_sha = "cloudrun-image-v1"
+            provenance = apply_process_provenance()
+            run_id = provenance["run_id"]
+            git_sha = provenance["git_sha"]
             session = os.getenv("ANGEL_MARKET_SESSION", "EOD")
             meta = generate_cycle_metadata(quote_list, run_id, git_sha, session)
             meta_path = Path(os.getenv("ANGEL_CYCLE_METADATA_FILE", "/tmp/cycle_metadata.json"))
@@ -476,6 +529,7 @@ def run_angel_loop(book, api):
         chain_quotes = build_chain_quotes(universe, future_quotes, option_quotes, each_side)
         try:
             require_verified_symbols(row[1] for row in forensic_rows)
+            _require_publication_fence()
             if forensic_rows:
                 live = worksheet(book, "FORENSIC_LIVE", rows=max(300, len(forensic_rows) + 5), cols=18)
                 write_grid(live, [FORENSIC_HEADER, *forensic_rows])
@@ -512,7 +566,7 @@ def run_angel_loop(book, api):
                 
                 if last_fetch_str:
                     try:
-                        last_time = datetime.datetime.strptime(str(last_fetch_str).strip(), "%Y-%m-%d %H:%M:%S")
+                        last_time = parse_sheet_ist(last_fetch_str)
                         gap = (now - last_time).total_seconds()
                         if gap > 300 and market_is_open(last_time) and market_is_open(now):
                             outage_start = str(last_time.strftime("%Y-%m-%d %H:%M:%S"))
@@ -626,7 +680,12 @@ def refresh_from_forensic(book, now):
 
 def main():
     load_env()
+    if os.getenv("ANGEL_VALIDATION_ONLY") == "1":
+        from tools.validation_cycle import run_validation
+        raise SystemExit(run_validation())
     require_authorized_writer()
+    apply_process_provenance()
+    acquire_cycle_lease()
     sheet_id = require_authoritative_sheet_id(
         os.getenv("SHEET_ID", "").strip() or SHEET_ID
     )

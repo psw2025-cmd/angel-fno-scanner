@@ -1,5 +1,7 @@
+.git
 .git/objects
 .git/logs
+.github
 .venv
 __pycache__
 *.pyc

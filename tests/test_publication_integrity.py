@@ -65,6 +65,15 @@ class Book:
         return self.tabs[title]
 
 
+class _TableName(str):
+    """String table id that also carries the committed live schema."""
+
+    def __new__(cls, name, schema):
+        obj = str.__new__(cls, name)
+        obj.schema = schema
+        return obj
+
+
 class BQ:
     def __init__(self):
         self.snapshot, self.loads = [], []
@@ -74,11 +83,14 @@ class BQ:
         return SimpleNamespace(table=lambda name:name)
 
     def get_table(self, table):
+        if table == "option_predictions_live":
+            from tools.schema_validator import load_schema
+            return _TableName(table, load_schema(table))
         return table
 
     def load_table_from_json(self, rows, table, job_config):
         self.loads.append((table,rows,job_config))
-        def result():
+        def result(timeout=None):
             if self.fail_load:
                 raise RuntimeError('load unavailable')
             if table == 'option_predictions_live':
@@ -92,7 +104,7 @@ class BQ:
 @pytest.fixture
 def authorized(monkeypatch):
     # test isolation only - prod code uses conditional 0/1
-    for k,v in {'ALLOW_PRODUCTION_WRITES':'1','WRITER_ID':'market_bot','RUN_ID':'12345','GIT_SHA':'abc123'}.items():
+    for k,v in {'ALLOW_PRODUCTION_WRITES':'1','WRITER_ID':'market_bot','RUN_ID':'12345','GIT_SHA':'abc1234'}.items():
         monkeypatch.setenv(k,v)
 
 

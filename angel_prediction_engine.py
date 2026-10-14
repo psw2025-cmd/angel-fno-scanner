@@ -16,6 +16,7 @@ import math
 import json
 import re
 import datetime
+import concurrent.futures
 import urllib.request
 import urllib.parse
 from email.utils import parsedate_to_datetime
@@ -27,6 +28,7 @@ from concurrent.futures import ThreadPoolExecutor
 import pyotp
 import gspread
 from SmartApi import SmartConnect
+from google.api_core.exceptions import GoogleAPICallError
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
@@ -40,6 +42,11 @@ from credentials import (
 from writer_guard import append_sheet_provenance, build_provenance, require_authorized_writer
 from sheet_grid import write_grid
 from publication import publish_outputs
+from cloud_status import (
+    option_exit_recorded,
+    quote_attempt_covers_day,
+    refresh_cloud_paper_view,
+)
 from market_calendar import IST, is_trading_day, local_market_time
 
 load_env()
@@ -73,6 +80,38 @@ def resolve_bq_project_id():
 
 BQ_PROJECT_ID     = resolve_bq_project_id()
 BQ_DATASET_ID     = "fno_predictions"
+DEFAULT_BQ_TIMEOUT_SECONDS = int(os.getenv("BQ_LOAD_TIMEOUT_SECONDS", "60"))
+
+
+def bq_job_result(job, table_name, rows):
+    """Wait for a BigQuery load job with a bounded timeout (CDX-01).
+
+    On timeout or API error the rows are buffered locally (no data loss) and the
+    failure is surfaced: RuntimeError on timeout, the original API error otherwise.
+    """
+    def _buffer_rows():
+        try:
+            from scanner import write_local_backup_buffer
+            write_local_backup_buffer(BQ_DATASET_ID, table_name, rows)
+        except Exception as buffer_err:
+            print(f"[CRITICAL] Fallback buffer failed: {buffer_err}")
+
+    try:
+        return job.result(timeout=DEFAULT_BQ_TIMEOUT_SECONDS)
+    except concurrent.futures.TimeoutError as exc:
+        print(f"[ERROR] BigQuery {table_name} load job timed out after {DEFAULT_BQ_TIMEOUT_SECONDS}s: {exc}")
+        try:
+            job.cancel()  # best effort: avoid a late server-side commit duplicating buffered rows
+        except Exception:
+            pass
+        _buffer_rows()
+        raise RuntimeError(f"BigQuery load job for {table_name} timed out after {DEFAULT_BQ_TIMEOUT_SECONDS}s") from exc
+    except GoogleAPICallError as exc:
+        print(f"[ERROR] BigQuery API call error on {table_name}: {exc}")
+        _buffer_rows()
+        raise
+
+
 from universe_contract import EXPECTED_FNO_UNIVERSE_COUNT, select_verified_universe, require_verified_symbols
 
 STATE_PATH = os.path.expanduser("~/angel_prediction_state.json")
@@ -1371,7 +1410,7 @@ def journal_pre_close_paper_trades(sh, bq_client, gap_picks, ist_str, ist_now):
             autodetect=False,
         )
         job = bq_client.load_table_from_json(bq_rows, table, job_config=job_config)
-        job.result()
+        bq_job_result(job, "next_day_gap_predictions", bq_rows)
         print(f"[OK] Loaded {len(bq_rows)} next-day gap records into BigQuery next_day_gap_predictions!")
     except Exception as e:
         print(f"[WARN] Error syncing to BigQuery next_day_gap_predictions: {e}")
@@ -1387,11 +1426,12 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
     """
     require_authorized_writer()
     session_date = ist_str[:10]
+    reconciled_results = []
     try:
         ws_paper = sh.worksheet("PAPER_ALERT_LOG")
         rows = ws_paper.get_all_values()
         if len(rows) <= 1:
-            return
+            return []
 
         pred_symbol_map = {p["symbol"].strip().upper(): p for p in predictions}
         unresolved_indices = []
@@ -1399,15 +1439,16 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
         for idx, r in enumerate(rows[1:], start=2):
             if len(r) >= 9 and "[OVERNIGHT" in r[8]:
                 later_change = r[9].strip() if len(r) > 9 else ""
-                if not later_change:
-                    unresolved_indices.append((idx, r))
+                # A futures session percent is not an option exit. Only WIN/LOSS/SCRATCH is.
+                if option_exit_recorded(later_change) or quote_attempt_covers_day(later_change, session_date):
+                    continue
+                unresolved_indices.append((idx, r))
 
         if not unresolved_indices:
             print("[INFO] No pending overnight paper trades to reconcile.")
-            return
+            return []
 
         print(f"[INFO] Reconciling {len(unresolved_indices)} overnight paper trades...")
-        reconciled_results = []
         updates_for_sheet = []
 
         for row_idx, r in unresolved_indices:
@@ -1450,7 +1491,7 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
                 else:
                     outcome = "SCRATCH"
 
-                result_text = f"{ret_pct:+.2f}% ({outcome})"
+                result_text = f"{ret_pct:+.2f}% ({outcome}) exit {open_ltp:.2f}"
                 updates_for_sheet.append((row_idx, result_text, ist_str))
                 reconciled_results.append({
                     "symbol": sym,
@@ -1465,6 +1506,9 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
                     "outcome": outcome,
                     "reconciled_at_ist": ist_str
                 })
+            else:
+                updates_for_sheet.append((row_idx, f"NO DATA {session_date}", ist_str))
+                print(f"[INFO] No live option quote for {sym} {side}. Exit not recorded.")
 
         for row_idx, res_txt, fill_time in updates_for_sheet:
             try:
@@ -1520,7 +1564,10 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
                     schema=table.schema,
                     autodetect=False,
                 )
-                bq_client.load_table_from_json(bq_reconciled_rows, table, job_config=job_config).result()
+                bq_job_result(
+                    bq_client.load_table_from_json(bq_reconciled_rows, table, job_config=job_config),
+                    "next_day_gap_predictions", bq_reconciled_rows,
+                )
                 print(f"[OK] Logged {len(bq_reconciled_rows)} reconciliation results to BigQuery!")
             except Exception as e:
                 print(f"[WARN] Failed to log reconciliation to BigQuery: {e}")
@@ -1560,6 +1607,7 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
 
     except Exception as e:
         print(f"[WARN] Reconciliation loop error: {e}")
+    return reconciled_results
 
 # =====================================================================
 # DYNAMIC F&O UNIVERSE DISCOVERY & ANGEL ONE INTEGRATION
@@ -2291,9 +2339,15 @@ def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, re
         journal_pre_close_paper_trades(sh, bq_client, next_day_picks, ist_str, ist_now)
 
     # Morning Reconciliation Window (09:15 - 09:45 IST) or forced
+    reconciled = []
     if is_morning_reconcile_time(ist_now) or reconcile_morning:
         print("[INFO] Morning Open Window (09:15-09:45 IST): Reconciling overnight gap paper trades...")
-        reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str, ist_now)
+        reconciled = reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str, ist_now) or []
+
+    try:
+        refresh_cloud_paper_view(sh, ist_now, reconciled)
+    except Exception as exc:
+        print(f"[WARN] Cloud status page was not written: {exc}")
 
     # Sync to Google Sheets & BigQuery Sandbox
     publish_outputs(
@@ -2601,7 +2655,15 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
             })
 
         from tools.schema_validator import load_schema
+        from tools.live_schema_guard import assert_truncate_schema_safe, sanitize_bq_row
+        rows_to_insert = [sanitize_bq_row("option_predictions_live", r) for r in rows_to_insert]
         raw_schema = load_schema("option_predictions_live")
+        assert_truncate_schema_safe(
+            raw_schema,
+            table_pred.schema,
+            load_fields=raw_schema,
+            autodetect=False,
+        )
         target_schema = [
             bigquery.SchemaField(f["name"], f["type"], mode=f.get("mode", "NULLABLE"))
             for f in raw_schema
@@ -2613,12 +2675,13 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
             autodetect=False,
         )
         load_job = bq_client.load_table_from_json(rows_to_insert, table_pred, job_config=job_config_trunc)
-        load_job.result()
+        bq_job_result(load_job, "option_predictions_live", rows_to_insert)
         print(f"[OK] Replaced {len(rows_to_insert)} records in BigQuery option_predictions_live (WRITE_TRUNCATE active)!")
 
         # 2. News Table: deterministic replay dedup before append.
         unique_news_rows = [
-            {**row, **provenance} for row in deduplicate_news_rows(news_rows)
+            sanitize_bq_row("market_news_sentiment", {**row, **provenance})
+            for row in deduplicate_news_rows(news_rows)
         ]
         if unique_news_rows:
             table_news = bq_client.get_table(dataset_ref.table("market_news_sentiment"))
@@ -2628,7 +2691,7 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
             load_job_news = bq_client.load_table_from_json(
                 unique_news_rows, table_news, job_config=news_job_config
             )
-            load_job_news.result()
+            bq_job_result(load_job_news, "market_news_sentiment", unique_news_rows)
             print(f"[OK] Appended {len(unique_news_rows)} fresh records to BigQuery market_news_sentiment!")
         else:
             print("[INFO] No fresh headlines to append to BigQuery market_news_sentiment (dedup active).")
@@ -2649,6 +2712,7 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
             "miss_root_causes": json.dumps({"causes": "Attributed via online multi-factor model"}),
             "updated_weights_json": json.dumps(reconciliation.get("weights", {}))
         }]
+        cal_row = [sanitize_bq_row("prediction_calibration_log", r) for r in cal_row]
         cal_schema = getattr(table_cal, "schema", None)
         job_config_cal = bigquery.LoadJobConfig(
             write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
@@ -2657,7 +2721,7 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
             autodetect=False,
         )
         load_job_cal = bq_client.load_table_from_json(cal_row, table_cal, job_config=job_config_cal)
-        load_job_cal.result()
+        bq_job_result(load_job_cal, "prediction_calibration_log", cal_row)
         print(f"[OK] Appended reconciliation audit to BigQuery prediction_calibration_log!")
 
     except Exception as e:

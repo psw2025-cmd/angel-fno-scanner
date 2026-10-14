@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-10-15 - CDX-01..06 baseline on integration branch feat/cdx-01-to-12-integration
+
+**Commit:** Pending HEAD
+**Status:** IMPLEMENTED_NOT_DEPLOYED (no runtime proof yet; PAPER=ON, LIVE ORDER AUTHORITY=OFF)
+
+### What changed
+- Baseline commit of previously uncommitted local work (allowlisted files only; no .venv, caches, evidence or temp files).
+- scanner.py, angel_prediction_engine.py, paper_log.py, writer_guard.py, requirements.txt: local modifications carried over unchanged.
+- tools/cycle_provenance.py, tools/live_schema_guard.py, tools/publication_lease.py, tools/validation_cycle.py: new modules for cycle provenance, live schema guard, publication lease and validation cycle.
+- Dockerfile, Dockerfile.cloudrun, .dockerignore, .gcloudignore, cloudbuild.validation.yaml, .github/workflows/market_bot.yml: build and workflow configuration.
+- tests/: new and updated regression tests for the modules above.
+
+### Evidence
+- Full test run is pending (PHASE-08 gate); no pass count is claimed here.
+- Pre-snapshot: C:\temp\AngelFNO\snap_20261015_034751 (diff.patch, status.txt, log.txt).
+
+---
+
 ## 2026-10-13 - Production Cloud Run Deployment and Container Git SHA Fallback
 
 **Commit:** Pending HEAD

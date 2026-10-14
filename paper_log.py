@@ -221,6 +221,7 @@ def fill_later_changes(existing: Sequence[Sequence], latest: dict[str, float], n
         "later": _index(header, "Later session change %"),
         "filled": _index(header, "Outcome filled at"),
     }
+    note_at = _index(header, "Note")
     if None in columns.values():
         return None
     today = now.strftime("%Y-%m-%d")
@@ -236,6 +237,13 @@ def fill_later_changes(existing: Sequence[Sequence], latest: dict[str, float], n
         padded = padded[:width]
         session = str(padded[columns["session"]]).strip()
         symbol = str(padded[columns["symbol"]]).strip().upper()
+        note = str(padded[note_at]).upper() if note_at is not None and note_at < len(padded) else ""
+        # Overnight option rows are closed only by the option exit rule.
+        # A later futures percent is not an option fill.
+        if "[OVERNIGHT" in note:
+            if any(str(cell).strip() for cell in padded):
+                output.append(padded)
+            continue
         later_blank = str(padded[columns["later"]]).strip() == ""
         if later_blank and session and session < today and symbol in latest:
             padded[columns["later"]] = latest[symbol]
