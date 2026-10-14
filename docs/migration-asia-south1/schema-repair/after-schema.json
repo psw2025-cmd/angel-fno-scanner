@@ -1,0 +1,262 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "ce_theta",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "positive_prob",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "gap_direction",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "negative_prob",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "expected_gap_pct",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "news_sentiment_score",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "pe_vega",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "pe_theta",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "already_priced_in_prob",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "pe_gamma",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "expected_move_band",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "top_news_headline",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "pe_delta",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ce_oi",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "pe_oi_change_pct",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "target_open_strike",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "pe_oi",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "news_impact_rating",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "pe_chg_pct",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ce_delta",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "pe_ltp",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "action_rating",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ce_bid_ask_spread",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "max_pain",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ce_vega",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ce_gamma",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "rank",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "pre_open_conviction_pct",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "intensity_score",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ce_iv",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "pe_win_prob",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ce_win_prob",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "snapshot_timestamp",
+    "type": "TIMESTAMP"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ce_chg_pct",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ce_ltp",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "atm_pcr",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "symbol",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "confidence_pct",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "pe_bid_ask_spread",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "expiry",
+    "type": "DATE"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "directional_bias",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "news_source_tier",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "pe_iv",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "spot_ltp",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ce_oi_change_pct",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "atm_strike",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "market_confirmation",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "news_severity_level",
+    "type": "INTEGER"
+  },
+  {
+    "name": "cycle_id",
+    "type": "STRING"
+  },
+  {
+    "name": "source_timestamp",
+    "type": "TIMESTAMP"
+  },
+  {
+    "name": "writer_id",
+    "type": "STRING"
+  },
+  {
+    "name": "git_sha",
+    "type": "STRING"
+  },
+  {
+    "name": "run_id",
+    "type": "STRING"
+  }
+]

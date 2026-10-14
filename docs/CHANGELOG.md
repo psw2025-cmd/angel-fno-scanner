@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-14 - Refuse a narrow WRITE_TRUNCATE of option_predictions_live
+
+**Commit:** Pending HEAD
+
+### What changed
+- tools/live_schema_guard.py: Fail closed when the committed schema lacks provenance or types `run_id` as anything other than STRING. Refuse autodetect. Refuse WRITE_TRUNCATE when the live table is missing provenance, has a wrong type, or the load schema is narrower than the live table.
+- angel_prediction_engine.py: `sync_to_bigquery()` calls that guard before the `option_predictions_live` WRITE_TRUNCATE load.
+- The live table repair is additive. Existing rows keep null provenance. No truncate and no retype.
+
+### Evidence
+- pytest tests/test_live_schema_guard.py: 7 passed.
+- Live readback is recorded under docs/migration-asia-south1/schema-repair/.
+
+---
+
 ## 2026-10-14 - Paper provenance, publication fence, and snapshot GH006
 
 **Commit:** Pending HEAD

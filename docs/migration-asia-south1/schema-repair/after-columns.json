@@ -1,0 +1,27 @@
+[
+  {
+    "column_name": "cycle_id", 
+    "data_type": "STRING", 
+    "is_nullable": "YES"
+  }, 
+  {
+    "column_name": "git_sha", 
+    "data_type": "STRING", 
+    "is_nullable": "YES"
+  }, 
+  {
+    "column_name": "run_id", 
+    "data_type": "STRING", 
+    "is_nullable": "YES"
+  }, 
+  {
+    "column_name": "source_timestamp", 
+    "data_type": "TIMESTAMP", 
+    "is_nullable": "YES"
+  }, 
+  {
+    "column_name": "writer_id", 
+    "data_type": "STRING", 
+    "is_nullable": "YES"
+  }
+]
