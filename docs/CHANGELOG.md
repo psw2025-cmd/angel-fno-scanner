@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-14 - Paper provenance, publication fence, and snapshot GH006
+
+**Commit:** Pending HEAD
+
+### What changed
+- tools/cycle_provenance.py: Reject static `cloudrun-scheduled` and `cloudrun-image-v1` values. Use the Cloud Run execution id and a real source commit.
+- tools/publication_lease.py: Add an atomic BigQuery paper-cycle lease with a fencing token so GitHub Actions and Cloud Run cannot publish the same cycle. Live-order flags are refused.
+- .github/workflows/market_bot.yml: Publish snapshots on `data/snapshot-<run id>` and open a pull request. Do not push `main` and do not mark the commit to skip CI.
+- Dockerfile.cloudrun: Bake `SOURCE_COMMIT` into the image.
+- Formula Checks GATE-06 and GATE-07 were restored to the 200-row rank contract already in `tools/verify_harness.py`. That sheet edit is not in this commit.
+
+### Evidence
+- pytest: 44 passed on the provenance, lease, snapshot, writer, universe, and publication tests.
+- Mumbai cutover was not performed. The US job remains in place.
+
+---
+
 ## 2026-10-13 - Production Cloud Run Deployment and Container Git SHA Fallback
 
 **Commit:** Pending HEAD

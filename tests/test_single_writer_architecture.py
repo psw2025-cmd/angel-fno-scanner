@@ -20,13 +20,17 @@ def test_writer_guard_fails_closed(monkeypatch):
 def test_writer_guard_emits_consistent_provenance(monkeypatch):
     monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")  # test isolation only - prod code uses conditional 0/1
     monkeypatch.setenv("WRITER_ID", "market_bot")
+    monkeypatch.delenv("CLOUD_RUN_EXECUTION", raising=False)
+    monkeypatch.delenv("GITHUB_RUN_ID", raising=False)
+    monkeypatch.delenv("GITHUB_SHA", raising=False)
+    monkeypatch.delenv("SOURCE_COMMIT", raising=False)
     monkeypatch.setenv("RUN_ID", "12345")
-    monkeypatch.setenv("GIT_SHA", "abc123")
+    monkeypatch.setenv("GIT_SHA", "abc1234")
     require_authorized_writer()
     p = build_provenance("2026-10-01 11:45:00")
     assert p == {
         "run_id": "12345",
-        "git_sha": "abc123",
+        "git_sha": "abc1234",
         "writer_id": "market_bot",
         "source_timestamp": "2026-10-01 11:45:00",
     }

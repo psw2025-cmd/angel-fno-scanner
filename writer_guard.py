@@ -12,9 +12,16 @@ ACTIVE_CYCLE = ContextVar("publication_cycle", default=None)
 def build_provenance(source_timestamp=None):
     if source_timestamp is None:
         source_timestamp = datetime.datetime.now(IST).replace(microsecond=0).isoformat()
+    try:
+        from tools.cycle_provenance import resolve_git_sha, resolve_run_id
+        run_id = resolve_run_id()
+        git_sha = resolve_git_sha()
+    except Exception:
+        run_id = "UNSET"
+        git_sha = "UNSET"
     result = {
-        "run_id": (os.getenv("RUN_ID") or os.getenv("GITHUB_RUN_ID") or "UNSET").strip(),
-        "git_sha": (os.getenv("GIT_SHA") or os.getenv("GITHUB_SHA") or "UNSET").strip(),
+        "run_id": run_id,
+        "git_sha": git_sha,
         "writer_id": (os.getenv("WRITER_ID") or "UNSET").strip(),
         "source_timestamp": str(source_timestamp),
     }

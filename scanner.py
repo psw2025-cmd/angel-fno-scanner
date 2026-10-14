@@ -89,6 +89,8 @@ from gainers import (
 )
 from paper_log import alerts_to_append, fill_later_changes, render_production_sheet
 from writer_guard import append_sheet_provenance, require_authorized_writer
+from tools.cycle_provenance import apply_process_provenance
+from tools.publication_lease import PublicationLeaseError, assert_current_fence
 from sheet_grid import write_grid
 
 load_env()
@@ -145,7 +147,19 @@ def heartbeat_age_seconds(book, now):
     return max(0, (now - wrote).total_seconds())
 
 
+def acquire_cycle_lease():
+    from tools.publication_lease import acquire_production_lease
+    return acquire_production_lease()
+
+
+def _require_publication_fence():
+    if os.getenv("ANGEL_VALIDATION_ONLY") == "1":
+        raise PublicationLeaseError("validation mode cannot publish")
+    assert_current_fence()
+
+
 def publish_gainers(book, quotes, now, source):
+    _require_publication_fence()
     rows = render_gainer_sheet(quotes, now, source)
     for title in ("CE_PE_RANK", "TOP_GAINERS"):
         write_grid(worksheet(book, title, rows=max(200, len(rows) + 10), cols=len(rows[3]) if len(rows) > 3 else 26), rows)
@@ -154,12 +168,14 @@ def publish_gainers(book, quotes, now, source):
 
 
 def publish_production(book, now):
+    _require_publication_fence()
     paper = worksheet(book, "PAPER_ALERT_LOG")
     values = paper.get_all_values()
     write_grid(worksheet(book, "PRODUCTION_APPROVED"), render_production_sheet(values, now))
 
 
 def sync_paper(book, signals, latest_changes, now):
+    _require_publication_fence()
     paper = worksheet(book, "PAPER_ALERT_LOG")
     values = paper.get_all_values()
     if not values:
@@ -419,7 +435,6 @@ def run_angel_loop(book, api):
         if os.getenv("ANGEL_REQUIRE_EXCHANGE_TIME") == "1":
             from tools.cycle_metadata import generate_cycle_metadata
             import json
-            import subprocess
             from pathlib import Path
             if len(universe) != 219:
                 raise RuntimeError(f"Expected 219 verified futures, got {len(universe)}")
@@ -429,15 +444,9 @@ def run_angel_loop(book, api):
                 if not quote:
                     raise RuntimeError("Missing futures quote: exchange freshness unverifiable")
                 quote_list.append(quote)
-            run_id = os.getenv("GITHUB_RUN_ID") or os.getenv("RUN_ID")
-            if not run_id:
-                raise RuntimeError("Missing run ID for authoritative provenance")
-            git_sha = os.getenv("GIT_SHA") or os.getenv("GITHUB_SHA")
-            if not git_sha:
-                try:
-                    git_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True, stderr=subprocess.DEVNULL).strip()
-                except Exception:
-                    git_sha = "cloudrun-image-v1"
+            provenance = apply_process_provenance()
+            run_id = provenance["run_id"]
+            git_sha = provenance["git_sha"]
             session = os.getenv("ANGEL_MARKET_SESSION", "EOD")
             meta = generate_cycle_metadata(quote_list, run_id, git_sha, session)
             meta_path = Path(os.getenv("ANGEL_CYCLE_METADATA_FILE", "/tmp/cycle_metadata.json"))
@@ -476,6 +485,7 @@ def run_angel_loop(book, api):
         chain_quotes = build_chain_quotes(universe, future_quotes, option_quotes, each_side)
         try:
             require_verified_symbols(row[1] for row in forensic_rows)
+            _require_publication_fence()
             if forensic_rows:
                 live = worksheet(book, "FORENSIC_LIVE", rows=max(300, len(forensic_rows) + 5), cols=18)
                 write_grid(live, [FORENSIC_HEADER, *forensic_rows])
@@ -626,7 +636,12 @@ def refresh_from_forensic(book, now):
 
 def main():
     load_env()
+    if os.getenv("ANGEL_VALIDATION_ONLY") == "1":
+        from tools.validation_cycle import run_validation
+        raise SystemExit(run_validation())
     require_authorized_writer()
+    apply_process_provenance()
+    acquire_cycle_lease()
     sheet_id = require_authoritative_sheet_id(
         os.getenv("SHEET_ID", "").strip() or SHEET_ID
     )
