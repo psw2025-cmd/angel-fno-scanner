@@ -1,0 +1,19 @@
+{
+  "id": "fno-angel-prod-1790444589:asia-south1.a5ecf942-c5c6-4a31-884b-aea9bcc4861c",
+  "user_email": "angel-sheets-bot@fno-angel-prod-1790444589.iam.gserviceaccount.com",
+  "jobType": "LOAD",
+  "labels": null,
+  "writeDisposition": "WRITE_TRUNCATE",
+  "autodetect": false,
+  "schema_field_count": 54,
+  "schema_has_run_id": true,
+  "destinationTable": {
+    "datasetId": "fno_predictions",
+    "projectId": "fno-angel-prod-1790444589",
+    "tableId": "option_predictions_live"
+  },
+  "outputRows": "219",
+  "startTime": "1791893323825",
+  "endTime": "1791893325181",
+  "state": "DONE"
+}

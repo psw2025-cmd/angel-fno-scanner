@@ -2601,7 +2601,14 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
             })
 
         from tools.schema_validator import load_schema
+        from tools.live_schema_guard import assert_truncate_schema_safe
         raw_schema = load_schema("option_predictions_live")
+        assert_truncate_schema_safe(
+            raw_schema,
+            table_pred.schema,
+            load_fields=raw_schema,
+            autodetect=False,
+        )
         target_schema = [
             bigquery.SchemaField(f["name"], f["type"], mode=f.get("mode", "NULLABLE"))
             for f in raw_schema

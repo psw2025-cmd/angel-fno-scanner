@@ -1,0 +1,11 @@
+[
+  {
+    "table_name": "option_predictions_live"
+  }, 
+  {
+    "table_name": "option_predictions_live_backup_20261005"
+  }, 
+  {
+    "table_name": "option_predictions_live_backup_20261014_schema_repair"
+  }
+]

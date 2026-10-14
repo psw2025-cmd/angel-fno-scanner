@@ -65,6 +65,15 @@ class Book:
         return self.tabs[title]
 
 
+class _TableName(str):
+    """String table id that also carries the committed live schema."""
+
+    def __new__(cls, name, schema):
+        obj = str.__new__(cls, name)
+        obj.schema = schema
+        return obj
+
+
 class BQ:
     def __init__(self):
         self.snapshot, self.loads = [], []
@@ -74,6 +83,9 @@ class BQ:
         return SimpleNamespace(table=lambda name:name)
 
     def get_table(self, table):
+        if table == "option_predictions_live":
+            from tools.schema_validator import load_schema
+            return _TableName(table, load_schema(table))
         return table
 
     def load_table_from_json(self, rows, table, job_config):
