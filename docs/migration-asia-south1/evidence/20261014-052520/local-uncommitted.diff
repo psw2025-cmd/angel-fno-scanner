@@ -1,0 +1,121 @@
+diff --git a/angel_prediction_engine.py b/angel_prediction_engine.py
+index 2d0dfc1..e579b09 100644
+--- a/angel_prediction_engine.py
++++ b/angel_prediction_engine.py
+@@ -40,6 +40,11 @@ from credentials import (
+ from writer_guard import append_sheet_provenance, build_provenance, require_authorized_writer
+ from sheet_grid import write_grid
+ from publication import publish_outputs
++from cloud_status import (
++    option_exit_recorded,
++    quote_attempt_covers_day,
++    refresh_cloud_paper_view,
++)
+ from market_calendar import IST, is_trading_day, local_market_time
+ 
+ load_env()
+@@ -1387,11 +1392,12 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
+     """
+     require_authorized_writer()
+     session_date = ist_str[:10]
++    reconciled_results = []
+     try:
+         ws_paper = sh.worksheet("PAPER_ALERT_LOG")
+         rows = ws_paper.get_all_values()
+         if len(rows) <= 1:
+-            return
++            return []
+ 
+         pred_symbol_map = {p["symbol"].strip().upper(): p for p in predictions}
+         unresolved_indices = []
+@@ -1399,15 +1405,16 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
+         for idx, r in enumerate(rows[1:], start=2):
+             if len(r) >= 9 and "[OVERNIGHT" in r[8]:
+                 later_change = r[9].strip() if len(r) > 9 else ""
+-                if not later_change:
+-                    unresolved_indices.append((idx, r))
++                # A futures session percent is not an option exit. Only WIN/LOSS/SCRATCH is.
++                if option_exit_recorded(later_change) or quote_attempt_covers_day(later_change, session_date):
++                    continue
++                unresolved_indices.append((idx, r))
+ 
+         if not unresolved_indices:
+             print("[INFO] No pending overnight paper trades to reconcile.")
+-            return
++            return []
+ 
+         print(f"[INFO] Reconciling {len(unresolved_indices)} overnight paper trades...")
+-        reconciled_results = []
+         updates_for_sheet = []
+ 
+         for row_idx, r in unresolved_indices:
+@@ -1450,7 +1457,7 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
+                 else:
+                     outcome = "SCRATCH"
+ 
+-                result_text = f"{ret_pct:+.2f}% ({outcome})"
++                result_text = f"{ret_pct:+.2f}% ({outcome}) exit {open_ltp:.2f}"
+                 updates_for_sheet.append((row_idx, result_text, ist_str))
+                 reconciled_results.append({
+                     "symbol": sym,
+@@ -1465,6 +1472,9 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
+                     "outcome": outcome,
+                     "reconciled_at_ist": ist_str
+                 })
++            else:
++                updates_for_sheet.append((row_idx, f"NO DATA {session_date}", ist_str))
++                print(f"[INFO] No live option quote for {sym} {side}. Exit not recorded.")
+ 
+         for row_idx, res_txt, fill_time in updates_for_sheet:
+             try:
+@@ -1560,6 +1570,7 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
+ 
+     except Exception as e:
+         print(f"[WARN] Reconciliation loop error: {e}")
++    return reconciled_results
+ 
+ # =====================================================================
+ # DYNAMIC F&O UNIVERSE DISCOVERY & ANGEL ONE INTEGRATION
+@@ -2291,9 +2302,15 @@ def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, re
+         journal_pre_close_paper_trades(sh, bq_client, next_day_picks, ist_str, ist_now)
+ 
+     # Morning Reconciliation Window (09:15 - 09:45 IST) or forced
++    reconciled = []
+     if is_morning_reconcile_time(ist_now) or reconcile_morning:
+         print("[INFO] Morning Open Window (09:15-09:45 IST): Reconciling overnight gap paper trades...")
+-        reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str, ist_now)
++        reconciled = reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str, ist_now) or []
++
++    try:
++        refresh_cloud_paper_view(sh, ist_now, reconciled)
++    except Exception as exc:
++        print(f"[WARN] Cloud status page was not written: {exc}")
+ 
+     # Sync to Google Sheets & BigQuery Sandbox
+     publish_outputs(
+diff --git a/paper_log.py b/paper_log.py
+index 4585104..e21452e 100644
+--- a/paper_log.py
++++ b/paper_log.py
+@@ -221,6 +221,7 @@ def fill_later_changes(existing: Sequence[Sequence], latest: dict[str, float], n
+         "later": _index(header, "Later session change %"),
+         "filled": _index(header, "Outcome filled at"),
+     }
++    note_at = _index(header, "Note")
+     if None in columns.values():
+         return None
+     today = now.strftime("%Y-%m-%d")
+@@ -236,6 +237,13 @@ def fill_later_changes(existing: Sequence[Sequence], latest: dict[str, float], n
+         padded = padded[:width]
+         session = str(padded[columns["session"]]).strip()
+         symbol = str(padded[columns["symbol"]]).strip().upper()
++        note = str(padded[note_at]).upper() if note_at is not None and note_at < len(padded) else ""
++        # Overnight option rows are closed only by the option exit rule.
++        # A later futures percent is not an option fill.
++        if "[OVERNIGHT" in note:
++            if any(str(cell).strip() for cell in padded):
++                output.append(padded)
++            continue
+         later_blank = str(padded[columns["later"]]).strip() == ""
+         if later_blank and session and session < today and symbol in latest:
+             padded[columns["later"]] = latest[symbol]

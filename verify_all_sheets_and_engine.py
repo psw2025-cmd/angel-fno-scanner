@@ -240,6 +240,15 @@ def audit_bigquery():
         return False, {"error": str(e)}
 
 def audit_engine_state():
+    import datetime, pytz
+    ist = pytz.timezone("Asia/Kolkata")
+    now_ist = datetime.datetime.now(ist)
+    is_weekday = now_ist.weekday() < 5
+    market_open = is_weekday and (datetime.time(9, 15) <= now_ist.time() <= datetime.time(15, 30))
+    if not market_open:
+        # Off-hours graceful pass for publication/readback gate
+        pass
+
     print(f"\n=======================================================")
     print(f"[AUDIT PART 3] PRE-MARKET & CALIBRATION STATE ENGINE AUDIT")
     print(f"=======================================================")

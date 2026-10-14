@@ -172,6 +172,17 @@ def _require_publication_fence():
     assert_current_fence()
 
 
+def acquire_cycle_lease():
+    from tools.publication_lease import acquire_production_lease
+    return acquire_production_lease()
+
+
+def _require_publication_fence():
+    if os.getenv("ANGEL_VALIDATION_ONLY") == "1":
+        raise PublicationLeaseError("validation mode cannot publish")
+    assert_current_fence()
+
+
 def publish_gainers(book, quotes, now, source):
     _require_publication_fence()
     rows = render_gainer_sheet(quotes, now, source)
