@@ -10,7 +10,6 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-COPY .git .git
 
 ARG SOURCE_COMMIT=unknown
 RUN printf '%s\n' "$SOURCE_COMMIT" > /app/SOURCE_COMMIT \
