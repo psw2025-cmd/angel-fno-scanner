@@ -48,8 +48,9 @@ def main():
     from phase2.daily_close import execute, canonical_hash
     from phase2.local_publisher import LocalArtifactPublisher
     enforce_paper_mode()
-    if git("branch", "--show-current") != "test-framework":
-        raise RuntimeError("Checkout test-framework before executing")
+    target_branch = os.getenv("PAPER_LEDGER_BRANCH", "test-framework")
+    if target_branch not in ("main", "test-framework") or git("branch", "--show-current") != target_branch:
+        raise RuntimeError("Unexpected paper ledger branch")
     manifest_path = ROOT / args.manifest
     manifest, master_sha256 = discover(manifest_path)
     print("ANGEL_INSTRUMENT_MASTER_SHA256", master_sha256)
@@ -140,7 +141,7 @@ def main():
         if git("status", "--porcelain", "--", str(entry_path.relative_to(ROOT))):
             git("add", "--", str(entry_path.relative_to(ROOT)))
             git("commit", "-m", "data: immutable Phase 2 entry manifest " + receipt["prediction_hash"])
-        git("push", "origin", "HEAD:test-framework")
+        git("push", "origin", "HEAD:" + target_branch)
         print("PAPER_LEDGER_COMMIT", git("rev-parse", "HEAD"))
 
 
