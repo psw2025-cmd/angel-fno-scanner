@@ -18,10 +18,16 @@ def discover(path, *, max_per_side=12):
         raise ValueError("Invalid Angel instrument master")
     today = datetime.now(IST).date()
     groups = {}
+    diagnostic = {"nfo_optidx": 0, "name_match": 0, "symbol_match": 0, "parsed": 0, "future": 0}
     for x in data:
         if not isinstance(x, dict) or x.get("exch_seg") != "NFO" or x.get("instrumenttype") != "OPTIDX":
             continue
+        diagnostic["nfo_optidx"] += 1
         name, symbol = x.get("name"), x.get("symbol", "")
+        if name in ("NIFTY", "BANKNIFTY"):
+            diagnostic["name_match"] += 1
+        if isinstance(symbol, str) and symbol.startswith(("NIFTY", "BANKNIFTY")) and symbol.endswith(("CE", "PE")):
+            diagnostic["symbol_match"] += 1
         if name not in ("NIFTY", "BANKNIFTY") or not symbol.startswith(name) or not symbol.endswith(("CE", "PE")):
             continue
         try:
@@ -30,15 +36,17 @@ def discover(path, *, max_per_side=12):
             token = str(x["token"])
         except (ValueError, KeyError, TypeError):
             continue
+        diagnostic["parsed"] += 1
         if expiry < today or strike <= 0 or not token.isdigit():
             continue
+        diagnostic["future"] += 1
         side = symbol[-2:]
         groups.setdefault((name, expiry, side), []).append({"underlying": name, "exchange": "NFO", "option_type": side, "tradingsymbol": symbol, "symboltoken": token, "expiry": expiry.isoformat(), "strike": strike})
     output = []
     for name in ("NIFTY", "BANKNIFTY"):
         expiries = sorted({expiry for n, expiry, side in groups if n == name and groups.get((n, expiry, "CE")) and groups.get((n, expiry, "PE"))})
         if not expiries:
-            raise RuntimeError("No valid paired future expiry for " + name)
+            raise RuntimeError("No valid paired future expiry for " + name + "; master diagnostic=" + json.dumps(diagnostic, sort_keys=True) + "; available_group_count=" + str(len(groups)))
         expiry = expiries[0]
         ce = {x["strike"]: x for x in groups[(name, expiry, "CE")]}
         pe = {x["strike"]: x for x in groups[(name, expiry, "PE")]}
