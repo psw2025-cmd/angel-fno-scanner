@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 import requests
+from decimal import Decimal, InvalidOperation
 
 URL = "https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json"
 IST = ZoneInfo("Asia/Kolkata")
@@ -32,9 +33,9 @@ def discover(path, *, max_per_side=12):
             continue
         try:
             expiry = datetime.strptime(x["expiry"], "%d%b%Y").date()
-            strike = int(x["strike"]) / 100
+            strike = float(Decimal(str(x["strike"])) / Decimal("100"))
             token = str(x["token"])
-        except (ValueError, KeyError, TypeError):
+        except (ValueError, KeyError, TypeError, InvalidOperation):
             continue
         diagnostic["parsed"] += 1
         if expiry < today or strike <= 0 or not token.isdigit():
