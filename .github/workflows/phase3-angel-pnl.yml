@@ -1,6 +1,12 @@
 name: Phase 3 Angel theoretical paper PnL
 on:
   workflow_dispatch:
+    inputs:
+      force_intraday:
+        description: 'Explicit same-day engineering test; never certified next-day PnL'
+        type: boolean
+        required: false
+        default: false
   schedule:
     - cron: '30 10 * * 1-5'
 permissions:
@@ -45,7 +51,14 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
       - name: Run theoretical read-only PnL (fails closed without original entry premium)
-        run: python run_phase3_pnl.py --push
+        env:
+          FORCE_INTRADAY: ${{ inputs.force_intraday }}
+        run: |
+          if [ "$FORCE_INTRADAY" = "true" ]; then
+            python run_phase3_pnl.py --force-intraday-test --push
+          else
+            python run_phase3_pnl.py --push
+          fi
       - name: Upload report when available
         if: always()
         uses: actions/upload-artifact@v4
