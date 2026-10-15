@@ -85,7 +85,7 @@ def main():
         bid, ask = num(buy[0].get("price"), "bid_price"), num(sell[0].get("price"), "ask_price")
         if bid <= 0 or ask < bid:
             raise RuntimeError("Invalid executable spread")
-        oi = num(q.get("openInterest"), "openInterest")
+        oi = num(q.get("openInterest") if q.get("openInterest") is not None else q.get("opnInterest"), "openInterest/opnInterest")
         volume = num(q.get("tradeVolume"), "tradeVolume")
         key = (item["underlying"], item["expiry"])
         totals.setdefault(key, {"CE": 0, "PE": 0})[item["option_type"]] += oi
