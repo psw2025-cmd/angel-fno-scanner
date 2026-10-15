@@ -50,6 +50,8 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+      - name: Refresh branch before broker snapshot to minimize non-fast-forward conflicts
+        run: git pull --ff-only origin test-framework
       - name: Generate real Angel read-only paper receipt and push ledger
         env:
           PYTHONPATH: .
