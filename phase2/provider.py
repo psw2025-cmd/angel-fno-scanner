@@ -9,7 +9,7 @@ class AuthorizedChainProvider:
     def __init__(self, *, endpoint=None, token=None, session=None):
         enforce_paper_mode()
         self.endpoint = endpoint or os.environ["PHASE2_CHAIN_ENDPOINT"]
-        self.token = token or os.environ["PHASE2_MARKETDATA_TOKEN"]
+        self.token = token or os.getenv("PHASE2_MARKETDATA_TOKEN", "")
         if urlparse(self.endpoint).scheme != "https" or not urlparse(self.endpoint).hostname or urlparse(self.endpoint).username or urlparse(self.endpoint).password:
             raise ValueError("HTTPS provider endpoint required")
         self.session = session or requests.Session()
@@ -18,7 +18,7 @@ class AuthorizedChainProvider:
         enforce_paper_mode()
         if symbol not in ("NIFTY", "BANKNIFTY"):
             raise ValueError("Unsupported underlying")
-        response = self.session.get(self.endpoint, params={"symbol": symbol}, headers={"Authorization": "Bearer " + self.token}, timeout=(5, 15))
+        response = self.session.get(self.endpoint, params={"symbol": symbol}, headers=({"Authorization": "Bearer " + self.token} if self.token else {"Accept": "application/json"}), timeout=(5, 15))
         if response.status_code == 429:
             retry = response.headers.get("Retry-After")
             raise RateLimited(float(retry) if retry and retry.isdigit() else None)
