@@ -6,6 +6,7 @@ from phase2.option_stream import enforce_paper_mode
 from phase2.provider import AuthorizedChainProvider
 from phase2.model import FeatureEngine
 from phase2.trained_model import TrainedRankingModel
+from phase2.heuristic import V1HeuristicModel
 from phase2.publisher import PaperPublisher
 from phase2.daily_close import execute
 
@@ -31,7 +32,7 @@ class VerifiedClose:
 def main():
     enforce_paper_mode()
     provider = AuthorizedChainProvider()
-    model = TrainedRankingModel("phase2/artifacts")
+    model = V1HeuristicModel() if os.getenv("PHASE2_MODEL_KIND") == "HEURISTIC" else TrainedRankingModel("phase2/artifacts")
     publisher = PaperPublisher(os.environ["PHASE2_PAPER_LEDGER_TABLE"])
     receipt = execute(VerifiedClose(provider), FeatureEngine(), model, publisher)
     print(json.dumps(receipt, sort_keys=True))
