@@ -66,14 +66,14 @@ def main():
     raw_path.write_text(json.dumps(snapshot, sort_keys=True, indent=2, allow_nan=False) + "\\n", encoding="utf-8")
     digest = hashlib.sha256(raw_path.read_bytes()).hexdigest()
     print("REAL_BROKER_RAW_SNAPSHOT_SHA256", digest)
-    def num(value):
+    def num(value, field):
         try:
             v = float(value)
             if not __import__("math").isfinite(v) or v < 0:
                 raise ValueError("Invalid numeric quote")
             return v
         except (TypeError, ValueError):
-            raise ValueError("Required broker quote field missing or invalid")
+            raise ValueError("Required broker quote field missing or invalid: " + field)
     rows = []
     totals = {}
     for entry in raw:
@@ -82,11 +82,11 @@ def main():
         buy, sell = depth.get("buy") or [], depth.get("sell") or []
         if not buy or not sell:
             raise RuntimeError("Missing executable bid/ask depth")
-        bid, ask = num(buy[0].get("price")), num(sell[0].get("price"))
+        bid, ask = num(buy[0].get("price"), "bid_price"), num(sell[0].get("price"), "ask_price")
         if bid <= 0 or ask < bid:
             raise RuntimeError("Invalid executable spread")
-        oi = num(q.get("openInterest"))
-        volume = num(q.get("tradeVolume"))
+        oi = num(q.get("openInterest"), "openInterest")
+        volume = num(q.get("tradeVolume"), "tradeVolume")
         key = (item["underlying"], item["expiry"])
         totals.setdefault(key, {"CE": 0, "PE": 0})[item["option_type"]] += oi
         rows.append({**item, "oi": oi, "volume": volume, "spread_pct": 200*(ask-bid)/(ask+bid), "iv_rank": None})
