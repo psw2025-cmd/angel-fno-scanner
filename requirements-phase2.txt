@@ -1,0 +1,11 @@
+pytest>=8,<10
+requests>=2.31,<3
+google-cloud-bigquery>=3,<4
+joblib>=1.4,<2
+scikit-learn>=1.5,<2
+smartapi-python>=1.5,<2
+pyotp>=2.9,<3
+
+logzero>=1.7,<2
+websocket-client>=1.8,<2
+pycryptodome>=3.20,<4

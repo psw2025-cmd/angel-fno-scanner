@@ -8,7 +8,7 @@ on:
         required: false
         default: false
   schedule:
-    - cron: '30 10 * * 1-5'
+    - cron: '55 9 * * 1-5' # 15:25 IST; GitHub schedules may be delayed
 permissions:
   contents: write
 concurrency:
@@ -16,7 +16,6 @@ concurrency:
   cancel-in-progress: false
 jobs:
   paper-pnl:
-    if: github.ref == 'refs/heads/test-framework'
     runs-on: ubuntu-latest
     environment: phase2-paper
     timeout-minutes: 45
@@ -59,6 +58,9 @@ jobs:
           else
             python run_phase3_pnl.py --push
           fi
+      - name: Update and push factual paper dashboard
+        if: success()
+        run: python update_phase4_dashboard.py
       - name: Upload report when available
         if: always()
         uses: actions/upload-artifact@v4
