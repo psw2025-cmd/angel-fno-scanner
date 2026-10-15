@@ -114,3 +114,4 @@ def main():
         git("push", "origin", "HEAD:test-framework")
         print("PAPER_LEDGER_COMMIT", git("rev-parse", "HEAD"))
 
+\nif __name__ == "__main__":\n    try:\n        main()\n    except Exception as exc:\n        print("PHASE2_FAIL_CLOSED:", exc, file=sys.stderr)\n        sys.exit(1)\n
