@@ -76,6 +76,7 @@ def main():
             raise ValueError("Required broker quote field missing or invalid: " + field)
     rows = []
     totals = {}
+    entries = {}
     for entry in raw:
         item, q = entry["contract"], entry["quote"]
         depth = q.get("depth") or {}
@@ -90,6 +91,10 @@ def main():
         key = (item["underlying"], item["expiry"])
         totals.setdefault(key, {"CE": 0, "PE": 0})[item["option_type"]] += oi
         rows.append({**item, "oi": oi, "volume": volume, "spread_pct": 200*(ask-bid)/(ask+bid), "iv_rank": None})
+        identity = (item["underlying"], item["expiry"], item["strike"], item["option_type"])
+        if identity in entries:
+            raise RuntimeError("Duplicate entry contract identity")
+        entries[identity] = {"underlying": item["underlying"], "exchange": "NFO", "expiry": item["expiry"], "strike": item["strike"], "option_type": item["option_type"], "tradingsymbol": item["tradingsymbol"], "symboltoken": str(item["symboltoken"]), "captured_at": snapshot["captured_at"], "entry_bid": bid, "entry_ask": ask, "entry_price": ask, "entry_price_method": "SNAPSHOT_BEST_ASK_NOT_FILLED"}
     contracts = []
     for row in rows:
         counts = totals[(row["underlying"], row["expiry"])]
@@ -100,6 +105,21 @@ def main():
     ranking = V1HeuristicModel().predict(features)
     if not ranking:
         raise RuntimeError("No ranked contracts")
+    ranked_entries = []
+    for ranked in ranking:
+        identity = (ranked["symbol"], ranked["expiry"], ranked["strike"], ranked["option_type"])
+        if identity not in entries:
+            raise RuntimeError("Ranked contract has no authenticated quote entry")
+        e = {**entries[identity], "rank": ranked["rank"]}
+        ranked_entries.append(e)
+        ranked["exchange"] = e["exchange"]
+        ranked["tradingsymbol"] = e["tradingsymbol"]
+        ranked["symboltoken"] = e["symboltoken"]
+        ranked["entry_bid"] = e["entry_bid"]
+        ranked["entry_ask"] = e["entry_ask"]
+        ranked["entry_price"] = e["entry_price"]
+        ranked["entry_captured_at"] = e["captured_at"]
+        ranked["entry_price_method"] = e["entry_price_method"]
     stamp = snapshot["captured_at"]
     prediction = {"run_id": canonical_hash({"raw_snapshot_sha256": digest, "model_version": V1HeuristicModel.version}), "created_at": stamp, "mode": "PAPER", "live_order_authority": 0, "source_timestamp": stamp, "source_hash": digest, "features_hash": canonical_hash(features), "model_version": V1HeuristicModel.version, "ranking": ranking, "provenance": {"source_kind": os.environ["PHASE2_SOURCE_KIND"], "instrument_master_sha256": master_sha256, "snapshot_kind": "BROKER_QUOTE_CAPTURE_NOT_OFFICIAL_CLOSE", "pcr_scope": "SELECTED_NEAREST_EXPIRY_STRIKES_ONLY"}}
     prediction["prediction_hash"] = canonical_hash(prediction)
@@ -108,10 +128,18 @@ def main():
     receipt = LocalArtifactPublisher(receipt_path).publish_once(prediction)
     assert receipt["prediction_hash"] == canonical_hash({k:v for k,v in prediction.items() if k != "prediction_hash"})
     print("PAPER_PREDICTION_SHA256", receipt["prediction_hash"])
+    entry_manifest = {"prediction_hash": receipt["prediction_hash"], "source_hash": digest, "paper_mode": 1, "live_order_authority": 0, "contracts": ranked_entries}
+    entry_path = ROOT / "data" / "paper_ledger" / ("entry_" + receipt["prediction_hash"] + ".json")
+    if entry_path.exists() and json.loads(entry_path.read_text(encoding="utf-8")) != entry_manifest:
+        raise RuntimeError("Immutable entry manifest conflict")
+    entry_path.write_text(json.dumps(entry_manifest, sort_keys=True, indent=2, allow_nan=False) + "\n", encoding="utf-8")
     if args.push:
         if git("status", "--porcelain", "--", "data/paper_ledger/receipt.json"):
-            git("add", "--", "data/paper_ledger/receipt.json")
+            git("add", "--", "data/paper_ledger/receipt.json", str(entry_path.relative_to(ROOT)))
             git("commit", "-m", "data: local read-only Angel snapshot paper receipt " + receipt["prediction_hash"])
+        if git("status", "--porcelain", "--", str(entry_path.relative_to(ROOT))):
+            git("add", "--", str(entry_path.relative_to(ROOT)))
+            git("commit", "-m", "data: immutable Phase 2 entry manifest " + receipt["prediction_hash"])
         git("push", "origin", "HEAD:test-framework")
         print("PAPER_LEDGER_COMMIT", git("rev-parse", "HEAD"))
 
