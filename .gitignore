@@ -47,3 +47,8 @@ scratch/
 *.xls
 C:/Temp/
 C:\Temp\
+
+# Phase 2 local private credentials, broker mapping and raw market snapshots
+!.env.phase2.example
+phase2/angel_contracts.local.json
+data/raw_snapshot.json
