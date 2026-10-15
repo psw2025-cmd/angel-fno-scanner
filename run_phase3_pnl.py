@@ -28,6 +28,7 @@ def positive(value, field):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--push", action="store_true")
+    ap.add_argument("--force-intraday-test", action="store_true", help="Explicit same-day engineering test, never next-day PnL")
     args = ap.parse_args()
     if os.getenv("PAPER_MODE") != "1" or os.getenv("LIVE_ORDER_AUTHORITY") != "0":
         raise RuntimeError("Paper-only environment flags required")
@@ -44,7 +45,7 @@ def main():
         receipt = json.loads(git("show", commit + ":data/paper_ledger/receipt.json"))
         payload = json.loads(receipt["bigquery_merge_parameters"]["payload"])
         stamp = datetime.fromisoformat(payload["source_timestamp"]).astimezone(IST)
-        if stamp.date() >= now.date(): continue
+        if stamp.date() > now.date() or (stamp.date() == now.date() and not args.force_intraday_test): continue
         if receipt.get("paper_mode") != 1 or receipt.get("live_order_authority") != 0 or payload.get("mode") != "PAPER" or payload.get("live_order_authority") != 0:
             raise RuntimeError("Unsafe historical receipt")
         expected = digest({k:v for k,v in payload.items() if k != "prediction_hash"})
@@ -54,7 +55,9 @@ def main():
         candidates.append((stamp, receipt, payload))
     if not candidates: raise RuntimeError("No prior IST-day Phase 2 receipt in Git history")
     stamp, receipt, payload = max(candidates, key=lambda x:x[0])
-    if stamp.date().toordinal() != now.date().toordinal()-1:
+    if args.force_intraday_test:
+        if stamp.date() != now.date(): raise RuntimeError("Intraday test requires a same-day original receipt")
+    elif stamp.date().toordinal() != now.date().toordinal()-1:
         raise RuntimeError("Latest receipt is not from previous IST calendar day")
     key = receipt["prediction_hash"]
     manifest_path = "data/paper_ledger/entry_" + key + ".json"
@@ -99,9 +102,9 @@ def main():
         if ask < bid: raise RuntimeError("Crossed current spread")
         pnl = bid-entry_ask
         results.append({"rank":rank,"underlying":item["underlying"],"expiry":item["expiry"],"strike":item["strike"],"option_type":item["option_type"],"exchange":"NFO","tradingsymbol":symbol,"symboltoken":token,"entry_captured_at":item["captured_at"],"entry_bid":entry_bid,"entry_ask":entry_ask,"current_bid":bid,"current_ask":ask,"broker_exchange_timestamp":quote.get("exchFeedTime"),"theoretical_long_pnl_per_unit":round(pnl,8),"theoretical_long_pnl_pct":round(100*pnl/entry_ask,8)})
-    report = {"status":"THEORETICAL_PAPER_MARK_TO_MARKET_NOT_FILLED","paper_mode":1,"live_order_authority":0,"source_prediction_hash":key,"source_hash":receipt["source_hash"],"source_timestamp":payload["source_timestamp"],"evaluated_at":now.isoformat(),"entry_manifest_sha256":digest(entry),"method":"LONG_ENTRY_ASK_TO_CURRENT_BID_PER_UNIT_EXCLUDES_FEES_TAXES","contracts":results}
+    report = {"status":("INTRADAY_ENGINEERING_TEST_NOT_NEXT_DAY_PNL" if args.force_intraday_test else "THEORETICAL_PAPER_MARK_TO_MARKET_NOT_FILLED"),"evaluation_mode":("INTRADAY_TEST" if args.force_intraday_test else "NEXT_DAY"),"paper_mode":1,"live_order_authority":0,"source_prediction_hash":key,"source_hash":receipt["source_hash"],"source_timestamp":payload["source_timestamp"],"evaluated_at":now.isoformat(),"entry_manifest_sha256":digest(entry),"method":"LONG_ENTRY_ASK_TO_CURRENT_BID_PER_UNIT_EXCLUDES_FEES_TAXES","contracts":results}
     report["report_sha256"] = digest(report)
-    target = ROOT/"data"/"pnl_ledger"/(key+"_"+now.date().isoformat()+".json")
+    target = ROOT/"data"/"pnl_ledger"/(key+"_"+now.date().isoformat()+("_INTRADAY_TEST" if args.force_intraday_test else "")+".json")
     target.parent.mkdir(parents=True,exist_ok=True)
     if target.exists():
         if json.loads(target.read_text(encoding="utf-8")) != report: raise RuntimeError("Existing daily report immutable; refusing overwrite")
