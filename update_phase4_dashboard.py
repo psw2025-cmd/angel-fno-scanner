@@ -31,7 +31,7 @@ def main():
     dna_flags = sum(len(x["flags"]) for x in dna["contracts"]) if dna else None
     comparisons = sum(len(x["flags"]) for x in comparison["contracts"]) if comparison else None
     watches = dna["structure_watch"] if dna else []
-    watch_rows = "".join(f"| {x[\u0027underlying\u0027]} | {x[\u0027expiry\u0027]} | {x[\u0027state\u0027]} | {x[\u0027selected_pcr\u0027]} |\\n" for x in watches)
+    watch_rows = "".join(f"| {x['underlying']} | {x['expiry']} | {x['state']} | {x['selected_pcr']} |\\n" for x in watches)
     content = ("# Angel FNO paper dashboard\n\n"
       "**Read-only, theoretical paper figures. No actual fills, fees, taxes or investment return.**\n\n"
       "| Latest Phase 2 date (IST) | Latest Phase 2 prediction SHA-256 |\n|---|---|\n"
