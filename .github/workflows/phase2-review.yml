@@ -1,5 +1,12 @@
 name: Phase 2 offline review
 on:
+  push:
+    branches: [test-framework]
+    paths:
+      - 'phase2/**'
+      - 'tools/phase2_schema_migration.py'
+      - 'tests/test_phase2.py'
+      - '.github/workflows/phase2-review.yml'
   workflow_dispatch:
 permissions:
   contents: read
