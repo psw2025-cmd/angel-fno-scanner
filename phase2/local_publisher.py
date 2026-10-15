@@ -23,6 +23,7 @@ class LocalArtifactPublisher:
             "bigquery_insert_id": None,
             "bigquery_job_id": None,
             "prediction_hash": digest,
+            "source_hash": prediction["source_hash"],
             "destination_table": os.environ["PHASE2_PAPER_LEDGER_TABLE"],
             "bigquery_merge_parameters": {"hash": digest, "payload": payload},
             "source_kind": os.environ.get("PHASE2_SOURCE_KIND", "UNSPECIFIED"),
