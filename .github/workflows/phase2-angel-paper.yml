@@ -1,0 +1,82 @@
+name: Phase 2 Angel One read-only paper receipt
+on:
+  workflow_dispatch:
+  push:
+    branches: [test-framework]
+    paths:
+      - '.github/workflows/phase2-angel-paper.yml'
+permissions:
+  contents: write
+concurrency:
+  group: phase2-angel-paper-test-framework
+  cancel-in-progress: false
+jobs:
+  paper:
+    runs-on: ubuntu-latest
+    environment: phase2-paper
+    timeout-minutes: 45
+    env:
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      PHASE2_SOURCE_KIND: ANGEL_SMARTAPI_READONLY_QUOTES_NOT_OFFICIAL_SETTLEMENT
+      ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+      ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+      ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+      ANGEL_TOTP_SEED: ${{ secrets.ANGEL_TOTP_SEED }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: test-framework
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify paper-only mode and secret presence without exposing values
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$PAPER_MODE" = 1
+          test "$LIVE_ORDER_AUTHORITY" = 0
+          for name in ANGEL_API_KEY ANGEL_CLIENT_CODE ANGEL_PIN ANGEL_TOTP_SEED; do
+            if [ -z "${!name:-}" ]; then echo "::error::Required GitHub Secret $name is unavailable to this job"; exit 1; fi
+          done
+          echo 'PAPER_GUARDS_AND_SECRET_PRESENCE_PASS'
+      - name: Install Phase 2 dependencies
+        run: python -m pip install -r requirements-phase2.txt
+      - name: Generate real Angel read-only paper receipt and push ledger
+        env:
+          PYTHONPATH: .
+        run: python run_phase2_local.py --push
+      - name: Independently validate remote receipt content and prediction digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, subprocess
+          from phase2.daily_close import canonical_hash
+          p='data/paper_ledger/receipt.json'
+          with open(p,encoding='utf-8') as f: r=json.load(f)
+          prediction=json.loads(r['bigquery_merge_parameters']['payload'])
+          digest=canonical_hash({k:v for k,v in prediction.items() if k!='prediction_hash'})
+          assert r['status']=='LOCAL_ARTIFACT_ONLY_NOT_INSERTED'
+          assert r['paper_mode']==1 and r['live_order_authority']==0
+          assert prediction['mode']=='PAPER' and prediction['live_order_authority']==0
+          assert r['source_kind']=='ANGEL_SMARTAPI_READONLY_QUOTES_NOT_OFFICIAL_SETTLEMENT'
+          assert digest==r['prediction_hash']==prediction['prediction_hash']==r['bigquery_merge_parameters']['hash']
+          assert r['source_hash']==prediction['source_hash']
+          local=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+          remote=subprocess.check_output(['git','ls-remote','origin','refs/heads/test-framework'],text=True).split()[0]
+          assert local==remote, 'Remote branch changed or push not confirmed'
+          tracked=subprocess.check_output(['git','show','HEAD:'+p],text=True)
+          assert json.loads(tracked)==r, 'Remote commit receipt differs'
+          print('ANGEL_PAPER_REMOTE_VERIFIED',local,digest,r['source_hash'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase2-angel-paper-evidence
+          path: |
+            data/paper_ledger/receipt.json
+            data/raw_snapshot.json
+          if-no-files-found: warn
+          retention-days: 14
