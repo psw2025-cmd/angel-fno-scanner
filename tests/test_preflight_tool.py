@@ -15,6 +15,7 @@ def _good():
         },
         "scheduler": {"a": "ENABLED"},
         "bigquery": {"columns": COLS, "n": 219, "syms": 219, "git_sha_nonnull": 219},
+        "github_secrets": {"repo": ["ANGEL_API_KEY", "SHEET_ID"], "env": {"phase2-paper": []}},
         "sheet": {"gates": {"GATE-01": "PASS", "OVERALL": "PASS"}},
     }
 
@@ -72,7 +73,22 @@ def test_failing_sheet_gate_fails_and_is_named():
     assert "GATE-04" in checks["sheet_gates"]["detail"]
 
 
+def test_environment_secret_shadowing_repo_secret_fails():
+    ev = _good()
+    ev["github_secrets"]["env"] = {"phase2-paper": ["ANGEL_API_KEY"]}
+    checks = {c["check"]: c for c in evaluate(ev)}
+    assert checks["env_secrets_not_shadowing_repo"]["status"] == FAIL
+    assert "ANGEL_API_KEY" in checks["env_secrets_not_shadowing_repo"]["detail"]
+
+
+def test_environment_only_secret_names_do_not_fail():
+    ev = _good()
+    ev["github_secrets"]["env"] = {"phase2-paper": ["ONLY_IN_ENV"]}
+    assert _by(evaluate(ev))["env_secrets_not_shadowing_repo"] == PASS
+
+
 def test_unmeasurable_sources_are_not_proven_never_pass():
-    ev = {"git": {}, "job": {"error": "x"}, "scheduler": {"error": "x"}, "bigquery": {"error": "x"}, "sheet": {"error": "x"}}
+    ev = {"git": {}, "job": {"error": "x"}, "scheduler": {"error": "x"}, "bigquery": {"error": "x"},
+          "github_secrets": {"error": "x"}, "sheet": {"error": "x"}}
     statuses = set(_by(evaluate(ev)).values())
     assert statuses == {NOT_PROVEN}

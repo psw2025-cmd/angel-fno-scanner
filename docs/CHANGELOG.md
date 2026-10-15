@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-15 - Preflight guard: environment secrets must not shadow repository secrets
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED (tooling only)
+**Evidence:** workflow runs 38750259483 and 38750447937 (Phase 2 Angel One read-only paper receipt) failed because the `phase2-paper` environment held empty ANGEL_* secrets that override the repository secrets. Fixed operationally by deleting the unused/empty environment secrets (names only; no values were read); run 38753111169 then passed all steps.
+
+### What changed
+- tools/preflight.py: new `env_secrets_not_shadowing_repo` check (names only) fails when any environment secret has the same name as a repository secret.
+- tests/test_preflight_tool.py: shadowing fails, env-only names pass, unmeasurable stays NOT_PROVEN.
+
 ## 2026-10-15 - Systemic Sheets 429 tolerance (tools/sheets_quota.py, scanner.py)
 
 **Status:** IMPLEMENTED_NOT_DEPLOYED

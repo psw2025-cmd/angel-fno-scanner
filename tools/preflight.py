@@ -122,6 +122,26 @@ def collect_bigquery() -> dict:
     return out
 
 
+GH_REPO = "psw2025-cmd/angel-fno-scanner"
+
+
+def collect_github_secrets() -> dict:
+    """Secret NAMES only (GitHub never returns values)."""
+    repo_names, err = _json_cmd(["gh", "secret", "list", "--repo", GH_REPO, "--json", "name"])
+    if repo_names is None:
+        return {"error": err}
+    envs, err = _json_cmd(["gh", "api", f"repos/{GH_REPO}/environments", "--jq", "[.environments[].name]"])
+    if envs is None:
+        return {"error": err}
+    env_names = {}
+    for env in envs:
+        items, err = _json_cmd(["gh", "secret", "list", "--env", env, "--repo", GH_REPO, "--json", "name"])
+        if items is None:
+            return {"error": err}
+        env_names[env] = sorted(i["name"] for i in items)
+    return {"repo": sorted(i["name"] for i in repo_names), "env": env_names}
+
+
 def collect_sheet() -> dict:
     try:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -187,6 +207,18 @@ def evaluate(ev: dict) -> list[dict]:
         else:
             add("universe_complete", NOT_PROVEN, bq.get("query_error", ""))
 
+    gh_secrets = ev.get("github_secrets")
+    if not gh_secrets or "error" in gh_secrets:
+        add("env_secrets_not_shadowing_repo", NOT_PROVEN, (gh_secrets or {}).get("error", "skipped"))
+    else:
+        # An environment secret overrides the repository secret of the same name; an empty
+        # one silently breaks every job that declares that environment.
+        repo_set = set(gh_secrets["repo"])
+        shadow = {env: sorted(set(names) & repo_set) for env, names in gh_secrets["env"].items()}
+        shadow = {env: names for env, names in shadow.items() if names}
+        add("env_secrets_not_shadowing_repo", FAIL if shadow else PASS,
+            "shadowing=" + json.dumps(shadow, sort_keys=True) if shadow else "no environment secret shadows a repo secret")
+
     sheet = ev.get("sheet")
     if not sheet or "error" in sheet:
         add("sheet_gates", NOT_PROVEN, (sheet or {}).get("error", "skipped"))
@@ -210,6 +242,7 @@ def main(argv: list[str] | None = None) -> int:
         ev["job"] = collect_job()
         ev["scheduler"] = collect_scheduler()
         ev["bigquery"] = collect_bigquery()
+        ev["github_secrets"] = collect_github_secrets()
     if not args.skip_sheet:
         ev["sheet"] = collect_sheet()
     checks = evaluate(ev)
