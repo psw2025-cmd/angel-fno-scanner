@@ -51,7 +51,7 @@ jobs:
           SA="phase1-val-${GITHUB_RUN_ID}"
           SA="${SA:0:28}"
           EMAIL="${SA}@${PROJECT_ID}.iam.gserviceaccount.com"
-          IMAGE="asia-south1-docker.pkg.dev/${PROJECT_ID}/phase1-validation/scanner-validation:${GITHUB_SHA}"
+          IMAGE=""
           cleanup() {
             rc=$?
             trap - EXIT
@@ -74,6 +74,7 @@ jobs:
           gcloud builds submit . --project "$PROJECT_ID" --region "$REGION" --config cloudbuild.validation.yaml --async --format='value(id)' > /tmp/phase1-build-id
           BUILD_ID="$(cat /tmp/phase1-build-id)"
           echo "BUILD_ID=$BUILD_ID"
+          IMAGE="asia-south1-docker.pkg.dev/${PROJECT_ID}/phase1-validation/scanner-validation:${BUILD_ID}"
           gcloud builds log "$BUILD_ID" --project "$PROJECT_ID" --region "$REGION" --stream
           test "$(gcloud builds describe "$BUILD_ID" --project "$PROJECT_ID" --region "$REGION" --format='value(status)')" = SUCCESS
           gcloud run jobs create "$JOB" --project "$PROJECT_ID" --region "$REGION" --image "$IMAGE" --service-account "$EMAIL" --set-env-vars PAPER_MODE=1,LIVE_ORDER_AUTHORITY=0 --max-retries 0 --task-timeout 300s --tasks 1 --quiet
