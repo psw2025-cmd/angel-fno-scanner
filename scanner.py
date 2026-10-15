@@ -95,6 +95,9 @@ from sheet_grid import write_grid
 from circuit_breaker import CircuitBreaker
 from rate_limiter import RateLimiter
 
+from tools.sheets_quota import install as install_sheets_quota_retry
+
+install_sheets_quota_retry()
 load_env()
 SHEET_ID = os.getenv("SHEET_ID", "").strip()
 from tools.runtime_budget import effective_runtime_budget
@@ -138,11 +141,22 @@ def load_service_account():
     return load_sa_credentials()
 
 
+_WORKSHEET_CACHE = {}
+
+
 def worksheet(book, title, rows=400, cols=26):
+    # Each book.worksheet() call is a Sheets metadata read; cache per spreadsheet to
+    # stay inside the per-minute read quota.
+    key = (getattr(book, "id", id(book)), title)
+    cached = _WORKSHEET_CACHE.get(key)
+    if cached is not None:
+        return cached
     try:
-        return book.worksheet(title)
+        ws = book.worksheet(title)
     except gspread.WorksheetNotFound:
-        return book.add_worksheet(title=title, rows=rows, cols=cols)
+        ws = book.add_worksheet(title=title, rows=rows, cols=cols)
+    _WORKSHEET_CACHE[key] = ws
+    return ws
 
 
 

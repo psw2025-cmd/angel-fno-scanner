@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-15 - Systemic Sheets 429 tolerance (tools/sheets_quota.py, scanner.py)
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED
+**Evidence:** execution angel-market-scan-job-qc8x6 (image b26e842) crashed at 08:04Z with a 429 'Read requests per minute per user' raised from `scanner.worksheet()` -> `book.worksheet("FORENSIC_LIVE")`; the writer_guard-only fix did not cover other callers.
+
+### What changed
+- tools/sheets_quota.py (new): idempotent `install()` wraps gspread `HTTPClient.request`; HTTP 429 only is retried with bounded backoff (5/10/20/40/60 s), all other errors propagate, persistent 429 still raises (fail closed).
+- scanner.py: installs the wrapper at import and caches worksheet handles per spreadsheet so each cycle no longer repeats one metadata read per `worksheet()` call.
+- tests/test_sheets_quota.py (new): retry-then-success, bounded fail-closed, non-429 not retried, idempotent install, worksheet cache.
+
 ## 2026-10-15 - Fix cycle crash on Sheets 429 in WRITE_PROVENANCE (writer_guard.py)
 
 **Status:** IMPLEMENTED_NOT_DEPLOYED
