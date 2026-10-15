@@ -3,7 +3,8 @@ import json
 import os
 from datetime import datetime, timezone
 from phase2.option_stream import enforce_paper_mode
-from phase2.provider import AuthorizedChainProvider
+from phase2.nse_public import NSEPublicChainProvider
+from phase2.local_publisher import LocalArtifactPublisher
 from phase2.model import FeatureEngine
 from phase2.trained_model import TrainedRankingModel
 from phase2.heuristic import V1HeuristicModel
@@ -27,13 +28,13 @@ class VerifiedClose:
                 contracts.append({**c, "symbol": d["symbol"]})
         if not contracts:
             raise RuntimeError("No real provider contracts")
-        return {"officially_published": True, "quality": "VALID", "source_timestamp": max(timestamps).isoformat(), "sources": [{"symbol": d["symbol"], "source_id": d["source_id"], "source_timestamp": d["source_timestamp"]} for d in data], "contracts": contracts}
+        return {"officially_published": True, "quality": "VALID", "source_timestamp": max(timestamps).isoformat(), "sources": [{"symbol": d["symbol"], "source_id": d["source_id"], "source_timestamp": d["source_timestamp"], "raw_sha256": d["raw_sha256"], "source_kind": d["source_kind"]} for d in data], "contracts": contracts}
 
 def main():
     enforce_paper_mode()
-    provider = AuthorizedChainProvider()
+    provider = NSEPublicChainProvider()
     model = V1HeuristicModel() if os.getenv("PHASE2_MODEL_KIND") == "HEURISTIC" else TrainedRankingModel("phase2/artifacts")
-    publisher = PaperPublisher(os.environ["PHASE2_PAPER_LEDGER_TABLE"])
+    publisher = LocalArtifactPublisher("receipt.json")
     receipt = execute(VerifiedClose(provider), FeatureEngine(), model, publisher)
     print(json.dumps(receipt, sort_keys=True))
 
