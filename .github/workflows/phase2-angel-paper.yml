@@ -13,7 +13,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: phase2-angel-paper-main
+  group: phase2-angel-paper-test-framework
   cancel-in-progress: false
 jobs:
   paper:
@@ -24,7 +24,7 @@ jobs:
       PAPER_MODE: '1'
       LIVE_ORDER_AUTHORITY: '0'
       PHASE2_SOURCE_KIND: ANGEL_SMARTAPI_READONLY_QUOTES_NOT_OFFICIAL_SETTLEMENT
-      PAPER_LEDGER_BRANCH: main
+      PAPER_LEDGER_BRANCH: test-framework
       ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
       ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
       ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
@@ -32,7 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: test-framework
           persist-credentials: true
       - uses: actions/setup-python@v5
         with:
@@ -54,7 +54,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
       - name: Refresh branch before broker snapshot to minimize non-fast-forward conflicts
-        run: git pull --ff-only origin main
+        run: git pull --ff-only origin test-framework
       - name: Generate real Angel read-only paper receipt and push ledger
         env:
           PYTHONPATH: .
@@ -77,7 +77,7 @@ jobs:
           assert digest==r['prediction_hash']==prediction['prediction_hash']==r['bigquery_merge_parameters']['hash']
           assert r['source_hash']==prediction['source_hash']
           local=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
-          remote=subprocess.check_output(['git','ls-remote','origin','refs/heads/main'],text=True).split()[0]
+          remote=subprocess.check_output(['git','ls-remote','origin','refs/heads/test-framework'],text=True).split()[0]
           assert local==remote, 'Remote branch changed or push not confirmed'
           tracked=subprocess.check_output(['git','show','HEAD:'+p],text=True)
           assert json.loads(tracked)==r, 'Remote commit receipt differs'
