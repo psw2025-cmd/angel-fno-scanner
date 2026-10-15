@@ -89,3 +89,21 @@ def test_deterministic_paper_replay():
     first = execute(Close(), Features(), Model(), Publisher())
     second = execute(Close(), Features(), Model(), Publisher())
     assert first['prediction_hash'] == second['prediction_hash']
+
+def test_replay_hash_stable():
+    class Close:
+        def get_verified_official_close(self, **kwargs):
+            return {"officially_published": True, "quality": "VALID", "source_timestamp": "2026-10-15T10:00:00+00:00"}
+    class Features:
+        def transform(self, closing):
+            return [{"signal": 1}]
+    class Model:
+        version = "test-model-v1"
+        def predict(self, features):
+            return [{"symbol": "NIFTY", "rank": 1}]
+    class Publisher:
+        def publish_once(self, prediction):
+            return {"prediction_hash": prediction["prediction_hash"]}
+    first = execute(Close(), Features(), Model(), Publisher())
+    second = execute(Close(), Features(), Model(), Publisher())
+    assert first["prediction_hash"] == second["prediction_hash"]
