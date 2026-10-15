@@ -1,6 +1,8 @@
 name: Phase 2 Angel One read-only paper receipt
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '45 9 * * 1-5' # 15:15 IST; GitHub schedules may be delayed
   push:
     branches: [test-framework]
     paths:
@@ -11,7 +13,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: phase2-angel-paper-test-framework
+  group: phase2-angel-paper-main
   cancel-in-progress: false
 jobs:
   paper:
@@ -29,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: test-framework
+          ref: main
           persist-credentials: true
       - uses: actions/setup-python@v5
         with:
@@ -51,7 +53,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
       - name: Refresh branch before broker snapshot to minimize non-fast-forward conflicts
-        run: git pull --ff-only origin test-framework
+        run: git pull --ff-only origin main
       - name: Generate real Angel read-only paper receipt and push ledger
         env:
           PYTHONPATH: .
@@ -74,7 +76,7 @@ jobs:
           assert digest==r['prediction_hash']==prediction['prediction_hash']==r['bigquery_merge_parameters']['hash']
           assert r['source_hash']==prediction['source_hash']
           local=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
-          remote=subprocess.check_output(['git','ls-remote','origin','refs/heads/test-framework'],text=True).split()[0]
+          remote=subprocess.check_output(['git','ls-remote','origin','refs/heads/main'],text=True).split()[0]
           assert local==remote, 'Remote branch changed or push not confirmed'
           tracked=subprocess.check_output(['git','show','HEAD:'+p],text=True)
           assert json.loads(tracked)==r, 'Remote commit receipt differs'
