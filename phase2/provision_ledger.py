@@ -6,10 +6,10 @@ def provision():
     enforce_paper_mode()
     from google.cloud import bigquery
     project = os.environ["PHASE2_PAPER_PROJECT_ID"]
-    if project == "fno-angel-prod-1790444589":
-        raise RuntimeError("Production project forbidden for isolated Phase 2 provisioning")
+    if project != "fno-angel-prod-1790444589":
+        raise RuntimeError("Unexpected paper project")
     client = bigquery.Client(project=project)
-    dataset_id = f"{project}.paper_trading_phase2"
+    dataset_id = f"{project}.PAPER_TRADING_SANDBOX_PHASE2"
     dataset = bigquery.Dataset(dataset_id)
     dataset.location = "US"  # BigQuery US multi-region, not Cloud Run us-central1
     client.create_dataset(dataset, exists_ok=True)
