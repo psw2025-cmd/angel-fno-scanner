@@ -97,7 +97,9 @@ from rate_limiter import RateLimiter
 
 load_env()
 SHEET_ID = os.getenv("SHEET_ID", "").strip()
-MAX_RUNTIME_SECONDS = max(1, int(os.getenv("MAX_RUNTIME_SECONDS", "22500")))
+from tools.runtime_budget import effective_runtime_budget
+# Clamped below the Cloud Run task timeout so the watchdog ends the loop before the platform kills it.
+MAX_RUNTIME_SECONDS = effective_runtime_budget()
 IST = ZoneInfo("Asia/Kolkata")
 from universe_contract import EXPECTED_FNO_UNIVERSE_COUNT, select_verified_universe, require_verified_symbols
 # Static literal duplicated for infra_readiness.py AST probe (does not import scanner at import time).

@@ -11,7 +11,10 @@ RUN pip install --no-cache-dir --upgrade pip \
 
 COPY . .
 
-RUN useradd --create-home --shell /bin/bash scanner \
+ARG SOURCE_COMMIT=unknown
+ENV GIT_SHA=$SOURCE_COMMIT
+RUN printf '%s\n' "$SOURCE_COMMIT" > /app/SOURCE_COMMIT \
+    && useradd --create-home --shell /bin/bash scanner \
     && chown -R scanner:scanner /app
 USER scanner
 

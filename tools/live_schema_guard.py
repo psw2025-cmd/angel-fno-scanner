@@ -49,7 +49,12 @@ def _canon(t: str) -> str:
 
 
 def sanitize_bq_row(table_name: str, row: dict) -> dict:
-    """Return a copy of ``row`` with float values for INT64 columns cast to int (CDX-02).
+    """Return a copy of ``row`` with integral float values for INT64 columns cast to int (CDX-02).
+
+    Integer policy (all INT64 columns in the contract are counters or ranks, so one
+    strict policy applies to every field): a value is accepted only if it is exactly
+    integral (3, 3.0, "3"). A fractional value (12.6, 2.5) is corrupt data and raises
+    SchemaGuardError; it is never rounded, truncated or silently replaced.
 
     Driven by schemas/<table_name>.json so it cannot drift from the contract.
     bool and None are left untouched (the schema validator rejects bool). A value
@@ -71,7 +76,11 @@ def sanitize_bq_row(table_name: str, row: dict) -> dict:
             as_float = float(val)
             if as_float != as_float or as_float in (float("inf"), float("-inf")):
                 raise ValueError("non-finite")
-            sanitized[key] = int(round(as_float))
+            if not as_float.is_integer():
+                raise ValueError("fractional value for INT64 column; refusing to round")
+            if abs(as_float) > 2 ** 53:
+                raise ValueError("exceeds exactly representable integer range")
+            sanitized[key] = int(as_float)
         except (ValueError, TypeError, OverflowError) as exc:
             raise SchemaGuardError(
                 f"{table_name}.{key} must be INT64-compatible, got {val!r}"

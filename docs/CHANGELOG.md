@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-10-15 - Phase 0 hardening: integer policy, stale SHA, provenance, runtime budget
+
+**Commit:** Pending HEAD
+**Status:** IMPLEMENTED_NOT_DEPLOYED
+
+### What changed
+- tools/live_schema_guard.py: `sanitize_bq_row` no longer rounds. Integral values (3, 3.0, "3") are accepted; fractional values (12.6, 2.5) and values beyond 2**53 raise SchemaGuardError (fail closed).
+- tools/cycle_provenance.py: `resolve_git_sha` raises when a valid env SHA and a valid baked SOURCE_COMMIT disagree (stale-but-valid SHA). Placeholders such as `cloudrun-v2` still fall back to the baked file.
+- Dockerfile: bakes SOURCE_COMMIT and GIT_SHA like Dockerfile.cloudrun.
+- tools/runtime_budget.py (new) and scanner.py: on Cloud Run jobs the application watchdog budget is clamped to the platform timeout (default 14400 s) minus 600 s, so MAX_RUNTIME_SECONDS=24300 can no longer outlive the task.
+- tests/test_cdx_hardening_20261015.py: 21 regression tests.
+
+### Evidence
+- New tests: 10 of 21 FAIL on 0119205 and all 21 PASS on this change.
+- Full suite in an isolated worktree: 346 passed, twice.
+- Not deployed; no runtime proof.
+
+---
+
 ## 2026-10-15 - CDX-01..06 baseline on integration branch feat/cdx-01-to-12-integration
 
 **Commit:** Pending HEAD
