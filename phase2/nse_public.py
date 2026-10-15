@@ -14,7 +14,10 @@ class NSEPublicChainProvider:
     def __init__(self, session=None):
         enforce_paper_mode()
         self.session = session or requests.Session()
-        self.session.headers.update({"Accept": "application/json", "User-Agent": "Mozilla/5.0", "Referer": "https://www.nseindia.com/option-chain"})
+        self.session.headers.update({"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36", "Accept-Language": "en-US,en;q=0.9", "Referer": "https://www.nseindia.com/"})
+        home = self.session.get("https://www.nseindia.com/", timeout=(10, 25))
+        home.raise_for_status()
+        self.session.headers.update({"Accept": "application/json, text/plain, */*", "Referer": "https://www.nseindia.com/option-chain"})
     def fetch_chain(self, symbol):
         enforce_paper_mode()
         if symbol not in ("NIFTY", "BANKNIFTY"):
