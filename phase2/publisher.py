@@ -7,7 +7,7 @@ from phase2.daily_close import canonical_hash
 class PaperPublisher:
     def __init__(self, table_id, *, client=None):
         enforce_paper_mode()
-        if not table_id or table_id != os.environ.get("PHASE2_PAPER_LEDGER_TABLE"):
+        if not table_id or table_id != os.environ.get("PHASE2_PAPER_LEDGER_TABLE") or table_id != "fno-angel-prod-1790444589.PAPER_TRADING_SANDBOX_PHASE2.prediction_ledger":
             raise RuntimeError("Explicit paper ledger allowlist required")
         from google.cloud import bigquery
         self.client = client or bigquery.Client()
