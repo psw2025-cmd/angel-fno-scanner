@@ -1,0 +1,960 @@
+{
+  "captured_at": "2026-10-15T21:43:43.587534+05:30",
+  "contracts": [
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-19",
+      "flags": [],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 179920.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 0.74216042,
+      "symboltoken": "47127",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622350CE",
+      "underlying": "NIFTY",
+      "volume": 423605.0,
+      "volume_oi_ratio": 2.35440751
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 2806050.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 1.73913043,
+      "symboltoken": "47128",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622350PE",
+      "underlying": "NIFTY",
+      "volume": 29384680.0,
+      "volume_oi_ratio": 10.47190178
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-19",
+      "flags": [],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 772785.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 1.07792896,
+      "symboltoken": "47129",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622400CE",
+      "underlying": "NIFTY",
+      "volume": 2101190.0,
+      "volume_oi_ratio": 2.71898393
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 6847815.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 3.27868852,
+      "symboltoken": "47130",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622400PE",
+      "underlying": "NIFTY",
+      "volume": 66417585.0,
+      "volume_oi_ratio": 9.69909161
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 269490.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 0.89772672,
+      "symboltoken": "47131",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622450CE",
+      "underlying": "NIFTY",
+      "volume": 1350700.0,
+      "volume_oi_ratio": 5.01205982
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 2915185.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 4.06885759,
+      "symboltoken": "47132",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622450PE",
+      "underlying": "NIFTY",
+      "volume": 34131955.0,
+      "volume_oi_ratio": 11.7083324
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 2154815.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 0.66996331,
+      "symboltoken": "47133",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622500CE",
+      "underlying": "NIFTY",
+      "volume": 11201190.0,
+      "volume_oi_ratio": 5.19821423
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 13018070.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 2.33463035,
+      "symboltoken": "47136",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622500PE",
+      "underlying": "NIFTY",
+      "volume": 106394730.0,
+      "volume_oi_ratio": 8.17284974
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 467805.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 0.69415848,
+      "symboltoken": "47137",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622550CE",
+      "underlying": "NIFTY",
+      "volume": 5843955.0,
+      "volume_oi_ratio": 12.49228845
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 3400475.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 3.03687636,
+      "symboltoken": "47138",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622550PE",
+      "underlying": "NIFTY",
+      "volume": 38865970.0,
+      "volume_oi_ratio": 11.42957087
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 1855555.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 0.93896714,
+      "symboltoken": "47139",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622600CE",
+      "underlying": "NIFTY",
+      "volume": 29218865.0,
+      "volume_oi_ratio": 15.74669843
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 8064160.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 0.88731145,
+      "symboltoken": "47140",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622600PE",
+      "underlying": "NIFTY",
+      "volume": 97855485.0,
+      "volume_oi_ratio": 12.134616
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 900315.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 0.53771471,
+      "symboltoken": "47141",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622650CE",
+      "underlying": "NIFTY",
+      "volume": 33342855.0,
+      "volume_oi_ratio": 37.03465454
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 4110340.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 1.47275405,
+      "symboltoken": "47142",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622650PE",
+      "underlying": "NIFTY",
+      "volume": 62761400.0,
+      "volume_oi_ratio": 15.26915048
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 2791425.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 0.63361589,
+      "symboltoken": "47143",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622700CE",
+      "underlying": "NIFTY",
+      "volume": 96518695.0,
+      "volume_oi_ratio": 34.57685412
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 11248380.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 0.83983203,
+      "symboltoken": "47144",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622700PE",
+      "underlying": "NIFTY",
+      "volume": 140857795.0,
+      "volume_oi_ratio": 12.52249613
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 1322100.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 0.59500198,
+      "symboltoken": "47149",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622750CE",
+      "underlying": "NIFTY",
+      "volume": 74265165.0,
+      "volume_oi_ratio": 56.17212389
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 4953780.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 1.47420147,
+      "symboltoken": "47152",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622750PE",
+      "underlying": "NIFTY",
+      "volume": 75870405.0,
+      "volume_oi_ratio": 15.31565895
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 2935335.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 0.84467386,
+      "symboltoken": "47153",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622800CE",
+      "underlying": "NIFTY",
+      "volume": 125535020.0,
+      "volume_oi_ratio": 42.76684603
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 8773375.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 0.79872204,
+      "symboltoken": "47154",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622800PE",
+      "underlying": "NIFTY",
+      "volume": 137215780.0,
+      "volume_oi_ratio": 15.64002223
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 1313325.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 0.75746949,
+      "symboltoken": "47155",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622850CE",
+      "underlying": "NIFTY",
+      "volume": 86520005.0,
+      "volume_oi_ratio": 65.87859441
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 5143840.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 1.23657664,
+      "symboltoken": "47156",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622850PE",
+      "underlying": "NIFTY",
+      "volume": 70995990.0,
+      "volume_oi_ratio": 13.80213809
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 4743440.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 0.48143054,
+      "symboltoken": "47157",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622900CE",
+      "underlying": "NIFTY",
+      "volume": 177737885.0,
+      "volume_oi_ratio": 37.47025049
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-19",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 8030035.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 1.06269926,
+      "symboltoken": "47158",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622900PE",
+      "underlying": "NIFTY",
+      "volume": 147348305.0,
+      "volume_oi_ratio": 18.34964667
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 174570.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 3.89627601,
+      "symboltoken": "49465",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2655900CE",
+      "underlying": "BANKNIFTY",
+      "volume": 1642410.0,
+      "volume_oi_ratio": 9.40831758
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 163590.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 3.43066649,
+      "symboltoken": "49466",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2655900PE",
+      "underlying": "BANKNIFTY",
+      "volume": 1305030.0,
+      "volume_oi_ratio": 7.97744361
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 1283160.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 2.79375514,
+      "symboltoken": "49467",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656000CE",
+      "underlying": "BANKNIFTY",
+      "volume": 4934580.0,
+      "volume_oi_ratio": 3.84564668
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 749550.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 2.17584012,
+      "symboltoken": "49468",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656000PE",
+      "underlying": "BANKNIFTY",
+      "volume": 2735520.0,
+      "volume_oi_ratio": 3.64954973
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 95100.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 3.05205509,
+      "symboltoken": "49469",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656100CE",
+      "underlying": "BANKNIFTY",
+      "volume": 971940.0,
+      "volume_oi_ratio": 10.22018927
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:39:59",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 59940.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 3.41251255,
+      "symboltoken": "49470",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656100PE",
+      "underlying": "BANKNIFTY",
+      "volume": 411630.0,
+      "volume_oi_ratio": 6.86736737
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 121950.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 4.23965323,
+      "symboltoken": "49471",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656200CE",
+      "underlying": "BANKNIFTY",
+      "volume": 879600.0,
+      "volume_oi_ratio": 7.21279213
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 42420.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 4.98884886,
+      "symboltoken": "49472",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656200PE",
+      "underlying": "BANKNIFTY",
+      "volume": 241620.0,
+      "volume_oi_ratio": 5.69589816
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 80790.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 4.31711664,
+      "symboltoken": "49473",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656300CE",
+      "underlying": "BANKNIFTY",
+      "volume": 745380.0,
+      "volume_oi_ratio": 9.22614185
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 20430.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 4.32175155,
+      "symboltoken": "49476",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656300PE",
+      "underlying": "BANKNIFTY",
+      "volume": 109770.0,
+      "volume_oi_ratio": 5.37298091
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 81180.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 3.66300366,
+      "symboltoken": "49477",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656400CE",
+      "underlying": "BANKNIFTY",
+      "volume": 645810.0,
+      "volume_oi_ratio": 7.95528455
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 53370.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 1.64946007,
+      "symboltoken": "49478",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656400PE",
+      "underlying": "BANKNIFTY",
+      "volume": 241980.0,
+      "volume_oi_ratio": 4.53400787
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 645630.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 2.95566502,
+      "symboltoken": "49479",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656500CE",
+      "underlying": "BANKNIFTY",
+      "volume": 2451630.0,
+      "volume_oi_ratio": 3.79726778
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-27",
+      "flags": [],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 290670.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 2.76090558,
+      "symboltoken": "49480",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656500PE",
+      "underlying": "BANKNIFTY",
+      "volume": 483990.0,
+      "volume_oi_ratio": 1.66508412
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 127620.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 1.98607889,
+      "symboltoken": "49481",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656600CE",
+      "underlying": "BANKNIFTY",
+      "volume": 549870.0,
+      "volume_oi_ratio": 4.30865068
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-27",
+      "flags": [
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 17670.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 4.50243029,
+      "symboltoken": "49486",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656600PE",
+      "underlying": "BANKNIFTY",
+      "volume": 39720.0,
+      "volume_oi_ratio": 2.24787776
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 126150.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 5.34161491,
+      "symboltoken": "49487",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656700CE",
+      "underlying": "BANKNIFTY",
+      "volume": 534270.0,
+      "volume_oi_ratio": 4.2351962
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-27",
+      "flags": [
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 9630.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 7.44486585,
+      "symboltoken": "49490",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656700PE",
+      "underlying": "BANKNIFTY",
+      "volume": 13440.0,
+      "volume_oi_ratio": 1.39563863
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:39:59",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 154110.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 4.3135436,
+      "symboltoken": "49491",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656800CE",
+      "underlying": "BANKNIFTY",
+      "volume": 495180.0,
+      "volume_oi_ratio": 3.21315943
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 18150.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 3.68721055,
+      "symboltoken": "49492",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656800PE",
+      "underlying": "BANKNIFTY",
+      "volume": 68430.0,
+      "volume_oi_ratio": 3.77024793
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 71250.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 4.9242923,
+      "symboltoken": "49493",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656900CE",
+      "underlying": "BANKNIFTY",
+      "volume": 393840.0,
+      "volume_oi_ratio": 5.52757895
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-27",
+      "flags": [
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 7380.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 7.14153409,
+      "symboltoken": "49494",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656900PE",
+      "underlying": "BANKNIFTY",
+      "volume": 5520.0,
+      "volume_oi_ratio": 0.74796748
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:01",
+      "expiry": "2026-10-27",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 872700.0,
+      "oi_change_pct": null,
+      "option_type": "CE",
+      "spread_pct": 4.32692308,
+      "symboltoken": "49495",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2657000CE",
+      "underlying": "BANKNIFTY",
+      "volume": 2648640.0,
+      "volume_oi_ratio": 3.03499484
+    },
+    {
+      "broker_exchange_timestamp": "15-Oct-2026 15:40:00",
+      "expiry": "2026-10-27",
+      "flags": [],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi": 353790.0,
+      "oi_change_pct": null,
+      "option_type": "PE",
+      "spread_pct": 1.49665223,
+      "symboltoken": "49496",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2657000PE",
+      "underlying": "BANKNIFTY",
+      "volume": 215310.0,
+      "volume_oi_ratio": 0.60858136
+    }
+  ],
+  "limitations": [
+    "IV_AND_THETA_UNAVAILABLE_NO_VERIFIED_INPUT",
+    "TOP_BOTTOM_ARE_OI_ONLY_HYPOTHESES_NOT_CONFIRMED",
+    "VOLUME_OI_RATIO_IS_NOT_OI_DELTA"
+  ],
+  "live_order_authority": 0,
+  "paper_mode": 1,
+  "prediction_hash": "55d169f4846c2539da8a2d1494459bf3fbd66450b2658004a54842fbcaebdf8e",
+  "schema_version": "OPTION_DNA_V1",
+  "source_hash": "ca81ba4b7dad91974077948c010a010b2bc2cc363c821cc0c24680e8464d6d51",
+  "structure_watch": [
+    {
+      "confirmed_reversal": false,
+      "expiry": "2026-10-27",
+      "limitation": "Selected strike OI only; no price trend, full-chain breadth or backtested turning-point validation",
+      "selected_ce_oi": 3834210.0,
+      "selected_contracts": 24,
+      "selected_pcr": 0.46596039,
+      "selected_pe_oi": 1786590.0,
+      "state": "POTENTIAL_TOP_WATCH_OI_IMBALANCE_ONLY",
+      "underlying": "BANKNIFTY"
+    },
+    {
+      "confirmed_reversal": false,
+      "expiry": "2026-10-19",
+      "limitation": "Selected strike OI only; no price trend, full-chain breadth or backtested turning-point validation",
+      "selected_ce_oi": 19706310.0,
+      "selected_contracts": 24,
+      "selected_pcr": 4.0246756,
+      "selected_pe_oi": 79311505.0,
+      "state": "POTENTIAL_BOTTOM_WATCH_OI_IMBALANCE_ONLY",
+      "underlying": "NIFTY"
+    }
+  ]
+}
