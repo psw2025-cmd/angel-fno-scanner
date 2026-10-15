@@ -47,6 +47,7 @@ def main():
     from phase2.heuristic import V1HeuristicModel
     from phase2.daily_close import execute, canonical_hash
     from phase2.local_publisher import LocalArtifactPublisher
+    from phase2.option_dna import snapshot_dna, structure_watch
     enforce_paper_mode()
     target_branch = os.getenv("PAPER_LEDGER_BRANCH", "test-framework")
     if target_branch not in ("main", "test-framework") or git("branch", "--show-current") != target_branch:
@@ -75,6 +76,7 @@ def main():
             return v
         except (TypeError, ValueError):
             raise ValueError("Required broker quote field missing or invalid: " + field)
+    dna_rows = []
     rows = []
     totals = {}
     entries = {}
@@ -91,7 +93,9 @@ def main():
         volume = num(q.get("tradeVolume"), "tradeVolume")
         key = (item["underlying"], item["expiry"])
         totals.setdefault(key, {"CE": 0, "PE": 0})[item["option_type"]] += oi
-        rows.append({**item, "oi": oi, "volume": volume, "spread_pct": 200*(ask-bid)/(ask+bid), "iv_rank": None})
+        dna = snapshot_dna(q)
+        dna_rows.append({"tradingsymbol":item["tradingsymbol"],"symboltoken":str(item["symboltoken"]),"underlying":item["underlying"],"expiry":item["expiry"],"option_type":item["option_type"],"oi":oi,"volume":volume,**dna})
+        rows.append({**item, "oi": oi, "volume": volume, "spread_pct": dna["spread_pct"], "iv_rank": None})
         identity = (item["underlying"], item["expiry"], item["strike"], item["option_type"])
         if identity in entries:
             raise RuntimeError("Duplicate entry contract identity")
@@ -122,6 +126,7 @@ def main():
         ranked["entry_captured_at"] = e["captured_at"]
         ranked["entry_price_method"] = e["entry_price_method"]
     stamp = snapshot["captured_at"]
+    structure = structure_watch(ranking)
     prediction = {"run_id": canonical_hash({"raw_snapshot_sha256": digest, "model_version": V1HeuristicModel.version}), "created_at": stamp, "mode": "PAPER", "live_order_authority": 0, "source_timestamp": stamp, "source_hash": digest, "features_hash": canonical_hash(features), "model_version": V1HeuristicModel.version, "ranking": ranking, "provenance": {"source_kind": os.environ["PHASE2_SOURCE_KIND"], "instrument_master_sha256": master_sha256, "snapshot_kind": "BROKER_QUOTE_CAPTURE_NOT_OFFICIAL_CLOSE", "pcr_scope": "SELECTED_NEAREST_EXPIRY_STRIKES_ONLY"}}
     prediction["prediction_hash"] = canonical_hash(prediction)
     receipt_path = ROOT / "data" / "paper_ledger" / "receipt.json"
@@ -134,13 +139,21 @@ def main():
     if entry_path.exists() and json.loads(entry_path.read_text(encoding="utf-8")) != entry_manifest:
         raise RuntimeError("Immutable entry manifest conflict")
     entry_path.write_text(json.dumps(entry_manifest, sort_keys=True, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+    anomaly = {"schema_version":"OPTION_DNA_V1","paper_mode":1,"live_order_authority":0,"prediction_hash":receipt["prediction_hash"],"source_hash":digest,"captured_at":stamp,"contracts":dna_rows,"structure_watch":structure,"limitations":["IV_AND_THETA_UNAVAILABLE_NO_VERIFIED_INPUT","TOP_BOTTOM_ARE_OI_ONLY_HYPOTHESES_NOT_CONFIRMED","VOLUME_OI_RATIO_IS_NOT_OI_DELTA"]}
+    anomaly_path = ROOT/"data"/"anomaly_logs"/("dna_"+receipt["prediction_hash"]+".json")
+    anomaly_path.parent.mkdir(parents=True,exist_ok=True)
+    if anomaly_path.exists() and json.loads(anomaly_path.read_text(encoding="utf-8")) != anomaly: raise RuntimeError("Immutable DNA ledger conflict")
+    anomaly_path.write_text(json.dumps(anomaly,sort_keys=True,indent=2,allow_nan=False)+"\n",encoding="utf-8")
     if args.push:
         if git("status", "--porcelain", "--", "data/paper_ledger/receipt.json"):
-            git("add", "--", "data/paper_ledger/receipt.json", str(entry_path.relative_to(ROOT)))
+            git("add", "--", "data/paper_ledger/receipt.json", str(entry_path.relative_to(ROOT)), str(anomaly_path.relative_to(ROOT)))
             git("commit", "-m", "data: local read-only Angel snapshot paper receipt " + receipt["prediction_hash"])
         if git("status", "--porcelain", "--", str(entry_path.relative_to(ROOT))):
             git("add", "--", str(entry_path.relative_to(ROOT)))
             git("commit", "-m", "data: immutable Phase 2 entry manifest " + receipt["prediction_hash"])
+        git("add", "--", str(anomaly_path.relative_to(ROOT)))
+        if git("diff", "--cached", "--name-only"):
+            git("commit", "-m", "data: immutable Option DNA evidence " + receipt["prediction_hash"])
         git("push", "origin", "HEAD:" + target_branch)
         print("PAPER_LEDGER_COMMIT", git("rev-parse", "HEAD"))
 
