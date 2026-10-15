@@ -15,7 +15,26 @@ concurrency:
   group: phase3-pnl-test-framework
   cancel-in-progress: false
 jobs:
+  market-calendar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      market_closed: ${{ steps.calendar.outputs.market_closed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: First gate - verify official NSE trading calendar in IST
+        id: calendar
+        run: python nse_calendar.py
   paper-pnl:
+    needs: market-calendar
+    if: needs.market-calendar.outputs.market_closed == 'false'
     runs-on: ubuntu-latest
     environment: phase2-paper
     timeout-minutes: 45
