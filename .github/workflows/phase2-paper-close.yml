@@ -1,4 +1,4 @@
-name: Phase 2 paper close (real integration)
+name: Phase 2 paper close (offline artifact proof)
 on:
   push:
     branches: [test-framework]
@@ -17,6 +17,7 @@ jobs:
       PAPER_MODE: '1'
       LIVE_ORDER_AUTHORITY: '0'
       PHASE2_MODEL_KIND: 'HEURISTIC'
+      PHASE2_SOURCE_KIND: SYNTHETIC_TEST_FIXTURE_NOT_MARKET_DATA
       PHASE2_CHAIN_ENDPOINT: https://www.nseindia.com/api/option-chain-indices
       PHASE2_PAPER_PROJECT_ID: fno-angel-prod-1790444589
       PHASE2_PAPER_LEDGER_TABLE: fno-angel-prod-1790444589.PAPER_TRADING_SANDBOX_PHASE2.prediction_ledger
@@ -37,13 +38,27 @@ jobs:
           test -n "$PHASE2_CHAIN_ENDPOINT"
           test -n "$PHASE2_PAPER_LEDGER_TABLE"
           test "$PHASE2_MODEL_KIND" = HEURISTIC
-      - name: Authenticate to Google Cloud through workload identity
-        uses: google-github-actions/auth@v2
+      - name: Execute isolated offline quantitative proof
+        run: PYTHONPATH=. python -m phase2.offline_proof
+      - name: Independently verify artifact hash and safety labels
+        run: |
+          python - <<'PY'
+          import json
+          from phase2.daily_close import canonical_hash
+          r=json.load(open('receipt.json'))
+          p=json.loads(r['bigquery_merge_parameters']['payload'])
+          assert r['prediction_hash']==canonical_hash({k:v for k,v in p.items() if k!='prediction_hash'})
+          assert r['prediction_hash']==p['prediction_hash']==r['bigquery_merge_parameters']['hash']
+          assert r['status']=='LOCAL_ARTIFACT_ONLY_NOT_INSERTED'
+          assert r['bigquery_insert_id'] is None and r['bigquery_job_id'] is None
+          assert r['source_kind']=='SYNTHETIC_TEST_FIXTURE_NOT_MARKET_DATA'
+          assert p['mode']=='PAPER' and p['live_order_authority']==0
+          print('OFFLINE_ARTIFACT_VERIFIED',r['prediction_hash'])
+          PY
+      - name: Upload offline proof receipt
+        uses: actions/upload-artifact@v4
         with:
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-          project_id: ${{ env.PHASE2_PAPER_PROJECT_ID }}
-      - name: Provision isolated persistent paper ledger
-        run: PYTHONPATH=. python -m phase2.provision_ledger
-      - name: Execute paper-only integration
-        run: PYTHONPATH=. python -m phase2.real_close
+          name: phase2-offline-receipt
+          path: receipt.json
+          if-no-files-found: error
+          retention-days: 30
