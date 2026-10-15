@@ -25,9 +25,9 @@ def main():
     content = ("# Angel FNO paper dashboard\n\n"
       "**Read-only, theoretical paper figures. No actual fills, fees, taxes or investment return.**\n\n"
       "| Latest Phase 2 date (IST) | Latest Phase 2 prediction SHA-256 |\n|---|---|\n"
-      f"| {payload['source_timestamp']} | \`{latest}\` |\n\n"
+      f"| {payload['source_timestamp']} | `{latest}` |\n\n"
       "| Phase 3 evaluation | Source prediction SHA-256 | Contracts | Sum of per-unit theoretical long PnL (INR)* | Evaluated (IST) |\n|---|---|---:|---:|---|\n"
-      f"| {report['status']} | \`{report['source_prediction_hash']}\` | {len(rows)} | {total:.8f} | {report['evaluated_at']} |\n\n"
+      f"| {report['status']} | `{report['source_prediction_hash']}` | {len(rows)} | {total:.8f} | {report['evaluated_at']} |\n\n"
       "*Unweighted sum of individual per-unit marks across distinct contracts; **not** tradable portfolio PnL. "
       "Entry at original ask, mark at comparison bid. The report is an intraday engineering test when so labelled. "
       "GitHub scheduled workflows may run late or fail closed on missing/stale broker data.\n")
