@@ -1,7 +1,6 @@
 """Fail-closed, dependency-injected paper close orchestration."""
 import hashlib
 import json
-import uuid
 from datetime import datetime, timezone
 from phase2.option_stream import enforce_paper_mode
 
@@ -19,9 +18,10 @@ def execute(closing_provider, feature_engine, ranking_model, paper_publisher):
     ranking = ranking_model.predict(features)
     if not ranking or not getattr(ranking_model, "version", None):
         raise RuntimeError("Unversioned or empty ranking")
+    cycle_key = canonical_hash({"source": closing, "features": features, "model_version": ranking_model.version})
     prediction = {
-        "run_id": str(uuid.uuid4()),
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "run_id": cycle_key,
+        "created_at": closing["source_timestamp"],
         "mode": "PAPER", "live_order_authority": 0,
         "source_timestamp": closing["source_timestamp"],
         "source_hash": canonical_hash(closing),
