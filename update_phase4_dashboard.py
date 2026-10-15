@@ -31,18 +31,18 @@ def main():
     dna_flags = sum(len(x["flags"]) for x in dna["contracts"]) if dna else None
     comparisons = sum(len(x["flags"]) for x in comparison["contracts"]) if comparison else None
     watches = dna["structure_watch"] if dna else []
-    watch_rows = "".join(f"| {x['underlying']} | {x['expiry']} | {x['state']} | {x['selected_pcr']} |\\n" for x in watches)
+    watch_rows = "".join(f"| {x['underlying']} | {x['expiry']} | {x['state']} | {x['selected_pcr']} |\n" for x in watches)
     content = ("# Angel FNO paper dashboard\n\n"
       "**Read-only, theoretical paper figures. No actual fills, fees, taxes or investment return.**\n\n"
       "| Latest Phase 2 date (IST) | Latest Phase 2 prediction SHA-256 |\n|---|---|\n"
       f"| {payload['source_timestamp']} | `{latest}` |\n\n"
       "| Phase 3 evaluation | Source prediction SHA-256 | Contracts | Sum of per-unit theoretical long PnL (INR)* | Evaluated (IST) |\n|---|---|---:|---:|---|\n"
       f"| {report['status']} | `{report['source_prediction_hash']}` | {len(rows)} | {total:.8f} | {report['evaluated_at']} |\n\n"
-      "\\n## Option DNA and market structure watch\\n\\n"
-      f"Phase 2 anomaly flags: {dna_flags if dna_flags is not None else 'UNAVAILABLE (legacy)'}; Phase 3 comparison flags: {comparisons if comparisons is not None else 'UNAVAILABLE'}. IV/Theta: **UNAVAILABLE — no verified Greeks/time series**.\\n\\n"
-      "| Underlying | Expiry | OI-only hypothesis | Selected-strike PCR |\\n|---|---|---|---:|\\n"
-      + (watch_rows or "| — | — | INSUFFICIENT DATA | — |\\n")
-      + "\\n**Top/bottom labels are unconfirmed OI imbalance watches, not reversal predictions.**\\n\\n"
+      "\n## Option DNA and market structure watch\n\n"
+      f"Phase 2 anomaly flags: {dna_flags if dna_flags is not None else 'UNAVAILABLE (legacy)'}; Phase 3 comparison flags: {comparisons if comparisons is not None else 'UNAVAILABLE'}. IV/Theta: **UNAVAILABLE — no verified Greeks/time series**.\n\n"
+      "| Underlying | Expiry | OI-only hypothesis | Selected-strike PCR |\n|---|---|---|---:|\n"
+      + (watch_rows or "| — | — | INSUFFICIENT DATA | — |\n")
+      + "\n**Top/bottom labels are unconfirmed OI imbalance watches, not reversal predictions.**\n\n"
       "*Unweighted sum of individual per-unit marks across distinct contracts; **not** tradable portfolio PnL. "
       "Entry at original ask, mark at comparison bid. The report is an intraday engineering test when so labelled. "
       "GitHub scheduled workflows may run late or fail closed on missing/stale broker data.\n")
