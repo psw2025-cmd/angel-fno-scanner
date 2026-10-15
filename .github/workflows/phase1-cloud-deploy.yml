@@ -7,10 +7,10 @@ permissions:
 jobs:
   validation:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 20
     env:
       PROJECT_ID: ${{ vars.PHASE1_VALIDATION_PROJECT_ID }}
-      REGION: asia-south1
+      REGION: us-central1
       PAPER_MODE: '1'
       LIVE_ORDER_AUTHORITY: '0'
     steps:
@@ -57,13 +57,14 @@ jobs:
             trap - EXIT
             gcloud run jobs delete "$JOB" --region "$REGION" --project "$PROJECT_ID" --quiet || true
             bq rm -r -f -d "${PROJECT_ID}:${DATASET}" || true
+            if [ -n "${IMAGE:-}" ]; then gcloud artifacts docker images delete "$IMAGE" --project "$PROJECT_ID" --quiet --delete-tags || true; fi
             gcloud iam service-accounts delete "$EMAIL" --project "$PROJECT_ID" --quiet || true
             echo "CLEANUP_ATTEMPTED job=$JOB dataset=$DATASET service_account=$EMAIL"
             exit "$rc"
           }
           trap cleanup EXIT
           echo "DATASET_ID=${PROJECT_ID}:${DATASET} REGION=$REGION"
-          bq --project_id="$PROJECT_ID" --location="$REGION" mk --dataset --default_table_expiration 86400 "${PROJECT_ID}:${DATASET}"
+          bq --project_id="$PROJECT_ID" --location="$REGION" mk --dataset --default_table_expiration 3600 --default_partition_expiration 3600 "${PROJECT_ID}:${DATASET}"
           gcloud iam service-accounts create "$SA" --project "$PROJECT_ID" --display-name="Offline Phase 1 validator"
           export EMAIL
           gcloud projects get-iam-policy "$PROJECT_ID" --format=json > /tmp/phase1-iam.json
@@ -74,10 +75,10 @@ jobs:
           gcloud builds submit . --project "$PROJECT_ID" --region "$REGION" --config cloudbuild.validation.yaml --async --format='value(id)' > /tmp/phase1-build-id
           BUILD_ID="$(cat /tmp/phase1-build-id)"
           echo "BUILD_ID=$BUILD_ID"
-          IMAGE="asia-south1-docker.pkg.dev/${PROJECT_ID}/phase1-validation/scanner-validation:${BUILD_ID}"
+          IMAGE="us-central1-docker.pkg.dev/${PROJECT_ID}/phase1-validation/scanner-validation:${BUILD_ID}"
           gcloud builds log "$BUILD_ID" --project "$PROJECT_ID" --region "$REGION" --stream
           test "$(gcloud builds describe "$BUILD_ID" --project "$PROJECT_ID" --region "$REGION" --format='value(status)')" = SUCCESS
-          gcloud run jobs create "$JOB" --project "$PROJECT_ID" --region "$REGION" --image "$IMAGE" --service-account "$EMAIL" --set-env-vars PAPER_MODE=1,LIVE_ORDER_AUTHORITY=0 --max-retries 0 --task-timeout 300s --tasks 1 --quiet
+          gcloud run jobs create "$JOB" --project "$PROJECT_ID" --region "$REGION" --image "$IMAGE" --service-account "$EMAIL" --set-env-vars PAPER_MODE=1,LIVE_ORDER_AUTHORITY=0 --cpu 1 --memory 512Mi --max-retries 0 --task-timeout 120s --tasks 1 --quiet
           echo "CLOUD_RUN_JOB=$JOB SERVICE_ACCOUNT=$EMAIL"
           gcloud run jobs describe "$JOB" --project "$PROJECT_ID" --region "$REGION" --format=yaml
           gcloud run jobs execute "$JOB" --project "$PROJECT_ID" --region "$REGION" --wait
