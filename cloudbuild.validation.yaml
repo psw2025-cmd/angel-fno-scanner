@@ -7,7 +7,7 @@ steps:
     - --build-arg
     - SOURCE_COMMIT=$BUILD_ID
     - -t
-    - asia-south1-docker.pkg.dev/$PROJECT_ID/phase1-validation/scanner-validation:$BUILD_ID
+    - us-central1-docker.pkg.dev/$PROJECT_ID/phase1-validation/scanner-validation:$BUILD_ID
     - .
 images:
-  - asia-south1-docker.pkg.dev/$PROJECT_ID/phase1-validation/scanner-validation:$BUILD_ID
+  - us-central1-docker.pkg.dev/$PROJECT_ID/phase1-validation/scanner-validation:$BUILD_ID
