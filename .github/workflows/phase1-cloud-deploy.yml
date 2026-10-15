@@ -1,0 +1,85 @@
+name: Phase 1 isolated cloud validation
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PROJECT_ID: ${{ vars.PHASE1_VALIDATION_PROJECT_ID }}
+      REGION: us-central1
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: test-framework
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Fail closed and run offline tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ github.ref }}" = refs/heads/test-framework
+          test -n "$PROJECT_ID"
+          test "$PROJECT_ID" != fno-angel-prod-1790444589
+          test "$PAPER_MODE" = 1
+          test "$LIVE_ORDER_AUTHORITY" = 0
+          ! grep -E 'scanner.py|Dockerfile.cloudrun' Dockerfile.validation cloudbuild.validation.yaml
+          python -m pip install pytest
+          PYTHONPATH=. python -m pytest -q -s tests/test_phase1_offline.py
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          project_id: ${{ env.PROJECT_ID }}
+      - uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: bq
+      - name: Create isolated resources and run offline image
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test "$PROJECT_ID" != fno-angel-prod-1790444589
+          DATASET="phase1_validation_${GITHUB_RUN_ID}_${GITHUB_RUN_ATTEMPT}"
+          JOB="phase1-validation-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          SA="phase1-val-${GITHUB_RUN_ID}"
+          SA="${SA:0:28}"
+          EMAIL="${SA}@${PROJECT_ID}.iam.gserviceaccount.com"
+          IMAGE=""
+          cleanup() {
+            rc=$?
+            trap - EXIT
+            gcloud run jobs delete "$JOB" --region "$REGION" --project "$PROJECT_ID" --quiet || true
+            bq rm -r -f -d "${PROJECT_ID}:${DATASET}" || true
+            if [ -n "${IMAGE:-}" ]; then gcloud artifacts docker images delete "$IMAGE" --project "$PROJECT_ID" --quiet --delete-tags || true; fi
+            gcloud iam service-accounts delete "$EMAIL" --project "$PROJECT_ID" --quiet || true
+            echo "CLEANUP_ATTEMPTED job=$JOB dataset=$DATASET service_account=$EMAIL"
+            exit "$rc"
+          }
+          trap cleanup EXIT
+          echo "DATASET_ID=${PROJECT_ID}:${DATASET} REGION=$REGION"
+          bq --project_id="$PROJECT_ID" --location="$REGION" mk --dataset --default_table_expiration 3600 --default_partition_expiration 3600 "${PROJECT_ID}:${DATASET}"
+          gcloud iam service-accounts create "$SA" --project "$PROJECT_ID" --display-name="Offline Phase 1 validator"
+          export EMAIL
+          gcloud projects get-iam-policy "$PROJECT_ID" --format=json > /tmp/phase1-iam.json
+          python -c 'import json,os; x=json.load(open("/tmp/phase1-iam.json")); m="serviceAccount:"+os.environ["EMAIL"]; assert not any(m in b.get("members",[]) for b in x.get("bindings",[])), "unexpected project IAM binding"; print("PASS: no project IAM binding")'
+          if ! gcloud artifacts repositories describe phase1-validation --location="$REGION" --project="$PROJECT_ID" >/dev/null 2>&1; then
+            gcloud artifacts repositories create phase1-validation --repository-format=docker --location="$REGION" --project="$PROJECT_ID"
+          fi
+          gcloud builds submit . --project "$PROJECT_ID" --region "$REGION" --config cloudbuild.validation.yaml --async --format='value(id)' > /tmp/phase1-build-id
+          BUILD_ID="$(cat /tmp/phase1-build-id)"
+          echo "BUILD_ID=$BUILD_ID"
+          IMAGE="us-central1-docker.pkg.dev/${PROJECT_ID}/phase1-validation/scanner-validation:${BUILD_ID}"
+          gcloud builds log "$BUILD_ID" --project "$PROJECT_ID" --region "$REGION" --stream
+          test "$(gcloud builds describe "$BUILD_ID" --project "$PROJECT_ID" --region "$REGION" --format='value(status)')" = SUCCESS
+          gcloud run jobs create "$JOB" --project "$PROJECT_ID" --region "$REGION" --image "$IMAGE" --service-account "$EMAIL" --set-env-vars PAPER_MODE=1,LIVE_ORDER_AUTHORITY=0 --cpu 1 --memory 512Mi --max-retries 0 --task-timeout 120s --tasks 1 --quiet
+          echo "CLOUD_RUN_JOB=$JOB SERVICE_ACCOUNT=$EMAIL"
+          gcloud run jobs describe "$JOB" --project "$PROJECT_ID" --region "$REGION" --format=yaml
+          gcloud run jobs execute "$JOB" --project "$PROJECT_ID" --region "$REGION" --wait
+          echo ISOLATED_EXECUTION_SUCCESS

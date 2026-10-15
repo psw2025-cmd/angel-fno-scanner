@@ -3,11 +3,11 @@ steps:
   args:
     - build
     - -f
-    - Dockerfile.cloudrun
+    - Dockerfile.validation
     - --build-arg
-    - SOURCE_COMMIT=$COMMIT_SHA
+    - SOURCE_COMMIT=$BUILD_ID
     - -t
-    - asia-south1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/scanner-validation:$COMMIT_SHA
+    - us-central1-docker.pkg.dev/$PROJECT_ID/phase1-validation/scanner-validation:$BUILD_ID
     - .
 images:
-  - asia-south1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/scanner-validation:$COMMIT_SHA
+  - us-central1-docker.pkg.dev/$PROJECT_ID/phase1-validation/scanner-validation:$BUILD_ID

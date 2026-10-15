@@ -1,0 +1,11 @@
+FROM python:3.11-slim
+WORKDIR /validation
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PAPER_MODE=1 LIVE_ORDER_AUTHORITY=0
+RUN pip install --no-cache-dir pytest
+COPY schemas/option_predictions_live.json schemas/option_predictions_live.json
+COPY agent_manifest.json universe_contract.py ./
+COPY tests/fixtures/ tests/fixtures/
+COPY tests/test_phase1_offline.py tests/test_phase1_offline.py
+RUN useradd -m validator && chown -R validator:validator /validation
+USER validator
+ENTRYPOINT ["python", "-m", "pytest", "-q", "-s", "tests/test_phase1_offline.py"]
