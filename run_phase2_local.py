@@ -34,7 +34,8 @@ def main():
     parser.add_argument("--manifest", default="phase2/angel_contracts.local.json")
     parser.add_argument("--push", action="store_true", help="Explicitly push verified receipt to test-framework")
     args = parser.parse_args()
-    load_env(ROOT / ".env")
+    if (ROOT / ".env").is_file():
+        load_env(ROOT / ".env")
     os.environ["PAPER_MODE"] = "1"
     os.environ["LIVE_ORDER_AUTHORITY"] = "0"
     os.environ["PHASE2_PAPER_LEDGER_TABLE"] = TABLE
@@ -114,4 +115,10 @@ def main():
         git("push", "origin", "HEAD:test-framework")
         print("PAPER_LEDGER_COMMIT", git("rev-parse", "HEAD"))
 
-\nif __name__ == "__main__":\n    try:\n        main()\n    except Exception as exc:\n        print("PHASE2_FAIL_CLOSED:", exc, file=sys.stderr)\n        sys.exit(1)\n
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as exc:
+        print("PHASE2_FAIL_CLOSED:", exc, file=sys.stderr)
+        sys.exit(1)
