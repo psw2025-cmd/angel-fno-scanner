@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from fixtures.phase1_safety import assert_safe
 from fixtures.six_column_repair import repair, REPAIR
+from universe_contract import verified_symbols, require_verified_symbols
 ROOT=Path(__file__).resolve().parents[1]
 def test_safety():
     assert assert_safe("fixture-only")
@@ -20,8 +21,12 @@ def test_six_column_repair():
     with pytest.raises(ValueError): repair(baseline+[{"name":"run_id","type":"INT64","mode":"NULLABLE"}])
 def test_219_symbol_scrubbed_replay():
     assert_safe("fixture-only")
-    symbols=[f"TEST_SYMBOL_{i:03d}" for i in range(1,220)]
+    symbols=list(verified_symbols())
     print("OFFLINE 219-symbol scrubbed replay initiating")
     assert len(symbols)==len(set(symbols))==219
-    assert all(s.startswith("TEST_SYMBOL_") for s in symbols)
-    print("OFFLINE 219-symbol scrubbed replay completed successfully; cloud credentials not required")
+    assert {"NIFTY", "BANKNIFTY", "RELIANCE"}.issubset(set(symbols))
+    require_verified_symbols(symbols)
+    with pytest.raises(RuntimeError): require_verified_symbols(symbols[:-1])
+    with pytest.raises(RuntimeError): require_verified_symbols(symbols[:-1] + ["FAKE_SYMBOL"])
+    with pytest.raises(RuntimeError): require_verified_symbols(symbols[:-1] + [symbols[0]])
+    print("OFFLINE 219-symbol scrubbed replay completed successfully; no cloud SDK or credentials invoked")
