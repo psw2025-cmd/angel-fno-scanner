@@ -22,7 +22,7 @@ class PaperPublisher:
         if not digest or canonical_hash({k: v for k, v in prediction.items() if k != "prediction_hash"}) != digest:
             raise ValueError("Prediction integrity failure")
         # BigQuery does not enforce uniqueness; serialize writers externally and MERGE on the hash.
-        query = f"""MERGE \`{self.table_id}\` T USING (SELECT @hash AS prediction_hash, @payload AS payload_json) S
+        query = f"""MERGE `{self.table_id}` T USING (SELECT @hash AS prediction_hash, @payload AS payload_json) S
         ON T.prediction_hash = S.prediction_hash
         WHEN NOT MATCHED THEN INSERT (prediction_hash, payload_json) VALUES (S.prediction_hash, S.payload_json)"""
         cfg = self.bigquery.QueryJobConfig(query_parameters=[
@@ -30,7 +30,7 @@ class PaperPublisher:
             self.bigquery.ScalarQueryParameter("payload", "STRING", json.dumps(prediction, sort_keys=True, allow_nan=False)),
         ])
         self.client.query(query, job_config=cfg).result()
-        rows = list(self.client.query(f"SELECT COUNT(*) AS n FROM \`{self.table_id}\` WHERE prediction_hash=@hash", job_config=self.bigquery.QueryJobConfig(query_parameters=[self.bigquery.ScalarQueryParameter("hash", "STRING", digest)])).result())
+        rows = list(self.client.query(f"SELECT COUNT(*) AS n FROM `{self.table_id}` WHERE prediction_hash=@hash", job_config=self.bigquery.QueryJobConfig(query_parameters=[self.bigquery.ScalarQueryParameter("hash", "STRING", digest)])).result())
         if len(rows) != 1 or rows[0].n != 1:
             raise RuntimeError("Paper ledger reconciliation failed")
         return {"prediction_hash": digest, "table": self.table_id, "status": "VERIFIED_PAPER"}
