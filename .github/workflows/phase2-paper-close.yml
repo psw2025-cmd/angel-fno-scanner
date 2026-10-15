@@ -19,7 +19,8 @@ jobs:
       PHASE2_MODEL_KIND: 'HEURISTIC'
       PHASE2_CHAIN_ENDPOINT: ${{ vars.PHASE2_CHAIN_ENDPOINT }}
       PHASE2_MARKETDATA_TOKEN: ${{ secrets.PHASE2_MARKETDATA_TOKEN }}
-      PHASE2_PAPER_LEDGER_TABLE: ${{ vars.PHASE2_PAPER_LEDGER_TABLE }}
+      PHASE2_PAPER_PROJECT_ID: ${{ vars.PHASE1_VALIDATION_PROJECT_ID }}
+      PHASE2_PAPER_LEDGER_TABLE: ${{ format('{0}.paper_trading_phase2.prediction_ledger', vars.PHASE1_VALIDATION_PROJECT_ID) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -31,6 +32,8 @@ jobs:
         run: |
           test "$PAPER_MODE" = 1
           test "$LIVE_ORDER_AUTHORITY" = 0
+          test -n "$PHASE2_PAPER_PROJECT_ID"
+          test "$PHASE2_PAPER_PROJECT_ID" != fno-angel-prod-1790444589
           test -n "$PHASE2_CHAIN_ENDPOINT"
           test -n "$PHASE2_MARKETDATA_TOKEN"
           test -n "$PHASE2_PAPER_LEDGER_TABLE"
@@ -38,7 +41,10 @@ jobs:
       - name: Authenticate to Google Cloud through workload identity
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.GCP_PHASE2_PAPER_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          project_id: ${{ env.PHASE2_PAPER_PROJECT_ID }}
+      - name: Provision isolated persistent paper ledger
+        run: PYTHONPATH=. python -m phase2.provision_ledger
       - name: Execute paper-only integration
         run: PYTHONPATH=. python -m phase2.real_close
