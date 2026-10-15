@@ -39,6 +39,7 @@ def main():
     os.environ["LIVE_ORDER_AUTHORITY"] = "0"
     os.environ["PHASE2_PAPER_LEDGER_TABLE"] = TABLE
     os.environ["PHASE2_SOURCE_KIND"] = "ANGEL_SMARTAPI_READONLY_QUOTES_NOT_OFFICIAL_SETTLEMENT"
+    from phase2.angel_instruments import discover
     from phase2.option_stream import enforce_paper_mode
     from phase2.angel_readonly import AngelReadOnlyProvider
     from phase2.model import FeatureEngine
@@ -49,23 +50,8 @@ def main():
     if git("branch", "--show-current") != "test-framework":
         raise RuntimeError("Checkout test-framework before executing")
     manifest_path = ROOT / args.manifest
-    if not manifest_path.is_file():
-        raise RuntimeError("Missing locally verified Angel option-contract manifest: " + str(manifest_path))
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if not isinstance(manifest, list) or not manifest:
-        raise ValueError("Manifest must be a nonempty JSON list")
-    keys = set()
-    for item in manifest:
-        if item.get("underlying") not in ("NIFTY", "BANKNIFTY") or item.get("option_type") not in ("CE", "PE") or item.get("exchange") != "NFO":
-            raise ValueError("Invalid contract manifest identity")
-        if not all(item.get(k) for k in ("tradingsymbol", "symboltoken", "expiry", "strike")):
-            raise ValueError("Missing contract mapping")
-        key = (item["underlying"], item["expiry"], item["strike"], item["option_type"])
-        if key in keys:
-            raise ValueError("Duplicate contract mapping")
-        keys.add(key)
-    if {x["underlying"] for x in manifest} != {"NIFTY", "BANKNIFTY"} or {x["option_type"] for x in manifest} != {"CE", "PE"}:
-        raise ValueError("Both underlyings and CE/PE required")
+    manifest, master_sha256 = discover(manifest_path)
+    print("ANGEL_INSTRUMENT_MASTER_SHA256", master_sha256)
     broker = AngelReadOnlyProvider()
     raw = []
     for item in manifest:
@@ -73,19 +59,58 @@ def main():
         if quote.get("tradingSymbol") != item["tradingsymbol"]:
             raise RuntimeError("Quote trading symbol mismatch")
         raw.append({"contract": item, "quote": quote})
-    # Broker FULL quotes alone do not establish a complete, time-aligned option chain,
-    # per-contract PCR, executable bid/ask and official close. Never manufacture these.
-    snapshot = {"source_kind": os.environ["PHASE2_SOURCE_KIND"], "captured_at": datetime.now(IST).isoformat(), "quotes": raw}
+    snapshot = {"source_kind": os.environ["PHASE2_SOURCE_KIND"], "captured_at": datetime.now(IST).isoformat(), "instrument_master_sha256": master_sha256, "quotes": raw}
     raw_path = ROOT / "data" / "raw_snapshot.json"
     raw_path.parent.mkdir(parents=True, exist_ok=True)
-    raw_path.write_text(json.dumps(snapshot, sort_keys=True, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+    raw_path.write_text(json.dumps(snapshot, sort_keys=True, indent=2, allow_nan=False) + "\\n", encoding="utf-8")
     digest = hashlib.sha256(raw_path.read_bytes()).hexdigest()
     print("REAL_BROKER_RAW_SNAPSHOT_SHA256", digest)
-    raise RuntimeError("Raw broker quotes captured locally, but certified close requires verified complete chain, timestamp, bid/ask and observed PCR; no prediction/receipt or push performed.")
+    def num(value):
+        try:
+            v = float(value)
+            if not __import__("math").isfinite(v) or v < 0:
+                raise ValueError("Invalid numeric quote")
+            return v
+        except (TypeError, ValueError):
+            raise ValueError("Required broker quote field missing or invalid")
+    rows = []
+    totals = {}
+    for entry in raw:
+        item, q = entry["contract"], entry["quote"]
+        depth = q.get("depth") or {}
+        buy, sell = depth.get("buy") or [], depth.get("sell") or []
+        if not buy or not sell:
+            raise RuntimeError("Missing executable bid/ask depth")
+        bid, ask = num(buy[0].get("price")), num(sell[0].get("price"))
+        if bid <= 0 or ask < bid:
+            raise RuntimeError("Invalid executable spread")
+        oi = num(q.get("openInterest"))
+        volume = num(q.get("tradeVolume"))
+        key = (item["underlying"], item["expiry"])
+        totals.setdefault(key, {"CE": 0, "PE": 0})[item["option_type"]] += oi
+        rows.append({**item, "oi": oi, "volume": volume, "spread_pct": 200*(ask-bid)/(ask+bid), "iv_rank": None})
+    contracts = []
+    for row in rows:
+        counts = totals[(row["underlying"], row["expiry"])]
+        if counts["CE"] <= 0 or counts["PE"] <= 0:
+            raise RuntimeError("Observed PCR unavailable")
+        contracts.append({"symbol": row["underlying"], "expiry": row["expiry"], "strike": row["strike"], "option_type": row["option_type"], "oi": row["oi"], "volume": row["volume"], "spread_pct": row["spread_pct"], "pcr": counts["PE"]/counts["CE"], "iv_rank": None})
+    features = FeatureEngine().transform({"contracts": contracts})
+    ranking = V1HeuristicModel().predict(features)
+    if not ranking:
+        raise RuntimeError("No ranked contracts")
+    stamp = snapshot["captured_at"]
+    prediction = {"run_id": canonical_hash({"raw_snapshot_sha256": digest, "model_version": V1HeuristicModel.version}), "created_at": stamp, "mode": "PAPER", "live_order_authority": 0, "source_timestamp": stamp, "source_hash": digest, "features_hash": canonical_hash(features), "model_version": V1HeuristicModel.version, "ranking": ranking, "provenance": {"source_kind": os.environ["PHASE2_SOURCE_KIND"], "instrument_master_sha256": master_sha256, "snapshot_kind": "BROKER_QUOTE_CAPTURE_NOT_OFFICIAL_CLOSE", "pcr_scope": "SELECTED_NEAREST_EXPIRY_STRIKES_ONLY"}}
+    prediction["prediction_hash"] = canonical_hash(prediction)
+    receipt_path = ROOT / "data" / "paper_ledger" / "receipt.json"
+    receipt_path.parent.mkdir(parents=True, exist_ok=True)
+    receipt = LocalArtifactPublisher(receipt_path).publish_once(prediction)
+    assert receipt["prediction_hash"] == canonical_hash({k:v for k,v in prediction.items() if k != "prediction_hash"})
+    print("PAPER_PREDICTION_SHA256", receipt["prediction_hash"])
+    if args.push:
+        if git("status", "--porcelain", "--", "data/paper_ledger/receipt.json"):
+            git("add", "--", "data/paper_ledger/receipt.json")
+            git("commit", "-m", "data: local read-only Angel snapshot paper receipt " + receipt["prediction_hash"])
+        git("push", "origin", "HEAD:test-framework")
+        print("PAPER_LEDGER_COMMIT", git("rev-parse", "HEAD"))
 
-if __name__ == "__main__":
-    try:
-        main()
-    except Exception as exc:
-        print("PHASE2_FAIL_CLOSED:", exc, file=sys.stderr)
-        sys.exit(1)
