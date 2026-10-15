@@ -6,7 +6,7 @@ import json
 import math
 import os
 import subprocess
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -57,8 +57,12 @@ def main():
     stamp, receipt, payload = max(candidates, key=lambda x:x[0])
     if args.force_intraday_test:
         if stamp.date() != now.date(): raise RuntimeError("Intraday test requires a same-day original receipt")
-    elif stamp.date().toordinal() != now.date().toordinal()-1:
-        raise RuntimeError("Latest receipt is not from previous IST calendar day")
+    else:
+        previous_weekday = now.date() - timedelta(days=1)
+        while previous_weekday.weekday() >= 5:
+            previous_weekday -= timedelta(days=1)
+        if stamp.date() != previous_weekday:
+            raise RuntimeError("Latest receipt is not from previous weekday; exchange holidays require explicit validation")
     key = receipt["prediction_hash"]
     manifest_path = "data/paper_ledger/entry_" + key + ".json"
     try:
