@@ -76,6 +76,9 @@ def main():
         if type(rank) is not int or rank < 1 or rank > len(ranking) or rank in seen: raise RuntimeError("Duplicate/invalid rank")
         seen.add(rank)
         ref = ranking[rank-1]
+        for k in ("symboltoken", "tradingsymbol", "entry_bid", "entry_ask", "entry_price"):
+            if ref.get(k) != item.get(k) and not (k == "entry_price" and ref.get(k) == item.get("entry_ask")):
+                raise RuntimeError("Receipt-to-manifest provenance mismatch: "+k)
         for k in ("expiry","strike","option_type"):
             if item.get(k) != ref.get(k): raise RuntimeError("Entry contract identity mismatch: "+k)
         if item.get("underlying") != ref.get("symbol") or item.get("exchange") != "NFO": raise RuntimeError("Entry underlying/exchange mismatch")
