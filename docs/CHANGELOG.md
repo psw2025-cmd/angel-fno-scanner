@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-15 - Fix false readback mismatch on negative zero (publication.py)
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED
+**Evidence:** execution angel-market-scan-job-tcrvm: `first difference (row, col, expected, actual)=(199, 32, '-0', '0')` in OPTION_PREDICTIONS. A float -0.0 normalized to '-0' while Sheets stores/returns 0, so every cycle containing -0.0 failed closed (also tvr28).
+
+### What changed
+- publication.py: `_number_text` canonicalizes any zero (including -0.0) to "0"; all other numeric normalization unchanged, so real differences still fail.
+- tests/test_publication_first_diff.py: -0.0 vs 0 regression plus near-zero real differences still detected.
+
 ## 2026-10-15 - publication readback error names the first differing cell (publication.py)
 
 **Status:** IMPLEMENTED_NOT_DEPLOYED

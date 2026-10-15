@@ -23,11 +23,19 @@ STATUS_HEADERS = ["State", "Cycle ID", "Run ID", "Git SHA", "Writer ID",
 REQUIRED_TABS = ("FORENSIC_LIVE", "OPTION_PREDICTIONS", "NEWS_LIVE")
 
 
+def _number_text(value):
+    """Canonical text for a number. Negative zero (-0.0) equals 0 and Sheets returns 0."""
+    d = Decimal(str(value)).normalize()
+    if d == 0:
+        return "0"
+    return format(d, "f")
+
+
 def _normalize(rows):
     # Sheets omits trailing blanks and returns numbers as strings.
     normalized = []
     for row in rows:
-        cells = [format(Decimal(str(cell)).normalize(), "f")
+        cells = [_number_text(cell)
                  if isinstance(cell, (int, float)) and not isinstance(cell, bool)
                  else str(cell) for cell in row]
         while cells and cells[-1] == "":

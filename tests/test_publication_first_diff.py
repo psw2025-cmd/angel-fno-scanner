@@ -10,6 +10,17 @@ def test_equal_matrices_have_no_diff():
     assert publication.matrix_hash(a) == publication.matrix_hash(b)
 
 
+def test_negative_zero_equals_zero_regression_tvr28():
+    # execution tcrvm: expected '-0' (float -0.0) vs Sheets readback '0' at OPTION_PREDICTIONS row 199 col 32
+    assert publication.first_diff([["a", -0.0]], [["a", 0]]) is None
+    assert publication.matrix_hash([["a", -0.0, 0.0, -0]]) == publication.matrix_hash([["a", "0", "0", "0"]])
+
+
+def test_real_differences_still_detected_near_zero():
+    assert publication.first_diff([["a", 0.001]], [["a", 0]]) is not None
+    assert publication.first_diff([["a", -1]], [["a", 1]]) is not None
+
+
 def test_first_diff_reports_row_col_and_values():
     exp = [["a", "b"], ["c", "=====", "z"]]
     act = [["a", "b"], ["c", "#ERROR!", "z"]]
