@@ -37,10 +37,6 @@ jobs:
       LIVE_ORDER_AUTHORITY: '0'
       PHASE2_SOURCE_KIND: ANGEL_SMARTAPI_READONLY_QUOTES_NOT_OFFICIAL_SETTLEMENT
       PAPER_LEDGER_BRANCH: test-framework
-      ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
-      ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
-      ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
-      ANGEL_TOTP_SEED: ${{ secrets.ANGEL_TOTP_SEED }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,6 +46,11 @@ jobs:
         with:
           python-version: '3.11'
       - name: Verify paper-only mode and secret presence without exposing values
+        env:
+          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+          ANGEL_TOTP_SEED: ${{ secrets.ANGEL_TOTP_SEED }}
         shell: bash
         run: |
           set -euo pipefail
@@ -59,6 +60,15 @@ jobs:
             if [ -z "${!name:-}" ]; then echo "::error::Required GitHub Secret $name is unavailable to this job"; exit 1; fi
           done
           echo 'PAPER_GUARDS_AND_SECRET_PRESENCE_PASS'
+      - name: Fail closed if checked-out runtime differs from reviewed main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin main
+          for path in run_phase2_local.py run_phase3_pnl.py update_phase4_dashboard.py phase2/option_dna.py nse_calendar.py nse_holidays.json; do
+            test "$(git hash-object "$path")" = "$(git rev-parse "FETCH_HEAD:$path")" || { echo "::error::Runtime code drift: $path"; exit 1; }
+          done
+          echo 'REVIEWED_RUNTIME_PARITY_PASS'
       - name: Install Phase 2 dependencies
         run: python -m pip install -r requirements-phase2.txt
       - name: Configure paper ledger Git identity
@@ -69,6 +79,10 @@ jobs:
         run: git pull --ff-only origin test-framework
       - name: Generate real Angel read-only paper receipt and push ledger
         env:
+          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+          ANGEL_TOTP_SEED: ${{ secrets.ANGEL_TOTP_SEED }}
           PYTHONPATH: .
         run: python run_phase2_local.py --push
       - name: Independently validate remote receipt content and prediction digest
@@ -88,6 +102,15 @@ jobs:
           assert r['source_kind']=='ANGEL_SMARTAPI_READONLY_QUOTES_NOT_OFFICIAL_SETTLEMENT'
           assert digest==r['prediction_hash']==prediction['prediction_hash']==r['bigquery_merge_parameters']['hash']
           assert r['source_hash']==prediction['source_hash']
+          from pathlib import Path
+          dna_path=Path('data/anomaly_logs')/('dna_'+digest+'.json')
+          assert dna_path.is_file(), 'Option DNA evidence missing from runtime'
+          dna=json.loads(dna_path.read_text(encoding='utf-8'))
+          assert dna['prediction_hash']==digest and dna['source_hash']==r['source_hash']
+          assert dna['paper_mode']==1 and dna['live_order_authority']==0
+          assert len(dna['contracts'])==len(prediction['ranking'])
+          assert all(x['iv'] is None and x['theta'] is None for x in dna['contracts'])
+          assert json.loads(subprocess.check_output(['git','show','HEAD:'+str(dna_path)],text=True))==dna
           local=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
           remote=subprocess.check_output(['git','ls-remote','origin','refs/heads/test-framework'],text=True).split()[0]
           assert local==remote, 'Remote branch changed or push not confirmed'
@@ -102,5 +125,6 @@ jobs:
           path: |
             data/paper_ledger/receipt.json
             data/raw_snapshot.json
+            data/anomaly_logs/dna_*.json
           if-no-files-found: warn
           retention-days: 14
