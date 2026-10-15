@@ -1,0 +1,39 @@
+name: Phase 2 paper close (real integration)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  paper:
+    runs-on: ubuntu-latest
+    environment: phase2-paper
+    env:
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      PHASE2_CHAIN_ENDPOINT: ${{ vars.PHASE2_CHAIN_ENDPOINT }}
+      PHASE2_MARKETDATA_TOKEN: ${{ secrets.PHASE2_MARKETDATA_TOKEN }}
+      PHASE2_PAPER_LEDGER_TABLE: ${{ vars.PHASE2_PAPER_LEDGER_TABLE }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r requirements-phase2.txt
+      - name: Verify real-data prerequisites (fail closed)
+        shell: bash
+        run: |
+          test "$PAPER_MODE" = 1
+          test "$LIVE_ORDER_AUTHORITY" = 0
+          test -n "$PHASE2_CHAIN_ENDPOINT"
+          test -n "$PHASE2_MARKETDATA_TOKEN"
+          test -n "$PHASE2_PAPER_LEDGER_TABLE"
+          test -f phase2/artifacts/model.joblib
+          test -f phase2/artifacts/manifest.json
+      - name: Authenticate to Google Cloud through workload identity
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_PHASE2_PAPER_SERVICE_ACCOUNT }}
+      - name: Execute paper-only integration
+        run: PYTHONPATH=. python -m phase2.real_close
