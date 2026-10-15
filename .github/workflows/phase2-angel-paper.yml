@@ -5,6 +5,9 @@ on:
     branches: [test-framework]
     paths:
       - '.github/workflows/phase2-angel-paper.yml'
+      - 'requirements-phase2.txt'
+      - 'run_phase2_local.py'
+      - 'phase2/**'
 permissions:
   contents: write
 concurrency:
@@ -43,6 +46,10 @@ jobs:
           echo 'PAPER_GUARDS_AND_SECRET_PRESENCE_PASS'
       - name: Install Phase 2 dependencies
         run: python -m pip install -r requirements-phase2.txt
+      - name: Configure paper ledger Git identity
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
       - name: Generate real Angel read-only paper receipt and push ledger
         env:
           PYTHONPATH: .
