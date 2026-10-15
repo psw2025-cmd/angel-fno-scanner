@@ -17,10 +17,9 @@ jobs:
       PAPER_MODE: '1'
       LIVE_ORDER_AUTHORITY: '0'
       PHASE2_MODEL_KIND: 'HEURISTIC'
-      PHASE2_CHAIN_ENDPOINT: ${{ vars.PHASE2_CHAIN_ENDPOINT }}
-      PHASE2_MARKETDATA_TOKEN: ${{ secrets.PHASE2_MARKETDATA_TOKEN }}
-      PHASE2_PAPER_PROJECT_ID: ${{ vars.PHASE1_VALIDATION_PROJECT_ID }}
-      PHASE2_PAPER_LEDGER_TABLE: ${{ format('{0}.paper_trading_phase2.prediction_ledger', vars.PHASE1_VALIDATION_PROJECT_ID) }}
+      PHASE2_CHAIN_ENDPOINT: https://www.nseindia.com/api/option-chain-indices
+      PHASE2_PAPER_PROJECT_ID: ${{ vars.PHASE1_VALIDATION_PROJECT_ID || secrets.PHASE1_VALIDATION_PROJECT_ID }}
+      PHASE2_PAPER_LEDGER_TABLE: ${{ format('{0}.paper_trading_phase2.prediction_ledger', vars.PHASE1_VALIDATION_PROJECT_ID || secrets.PHASE1_VALIDATION_PROJECT_ID) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -35,7 +34,6 @@ jobs:
           test -n "$PHASE2_PAPER_PROJECT_ID"
           test "$PHASE2_PAPER_PROJECT_ID" != fno-angel-prod-1790444589
           test -n "$PHASE2_CHAIN_ENDPOINT"
-          test -n "$PHASE2_MARKETDATA_TOKEN"
           test -n "$PHASE2_PAPER_LEDGER_TABLE"
           test "$PHASE2_MODEL_KIND" = HEURISTIC
       - name: Authenticate to Google Cloud through workload identity
