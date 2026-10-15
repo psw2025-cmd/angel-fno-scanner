@@ -1,5 +1,10 @@
 name: Phase 2 paper close (real integration)
 on:
+  push:
+    branches: [test-framework]
+    paths:
+      - 'phase2/**'
+      - '.github/workflows/phase2-paper-close.yml'
   workflow_dispatch:
 permissions:
   contents: read
