@@ -32,6 +32,10 @@ def main():
     args = ap.parse_args()
     if os.getenv("PAPER_MODE") != "1" or os.getenv("LIVE_ORDER_AUTHORITY") != "0":
         raise RuntimeError("Paper-only environment flags required")
+    from nse_calendar import trading_status, previous_trading_day
+    if trading_status()["market_closed"]:
+        print("MARKET_CLOSED: Phase 3 skipped without quote, PnL or dashboard mutation")
+        return
     from phase2.option_stream import enforce_paper_mode
     from phase2.angel_readonly import AngelReadOnlyProvider
     enforce_paper_mode()
@@ -58,9 +62,7 @@ def main():
     if args.force_intraday_test:
         if stamp.date() != now.date(): raise RuntimeError("Intraday test requires a same-day original receipt")
     else:
-        previous_weekday = now.date() - timedelta(days=1)
-        while previous_weekday.weekday() >= 5:
-            previous_weekday -= timedelta(days=1)
+        previous_weekday = previous_trading_day(now.date())
         if stamp.date() != previous_weekday:
             raise RuntimeError("Latest receipt is not from previous weekday; exchange holidays require explicit validation")
     key = receipt["prediction_hash"]
