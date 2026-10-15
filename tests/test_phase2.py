@@ -70,3 +70,22 @@ def test_paper_prediction():
             assert prediction["mode"] == "PAPER" and prediction["live_order_authority"] == 0
             return {"prediction_hash": prediction["prediction_hash"]}
     assert len(execute(Close(), Features(), Model(), Publisher())["prediction_hash"]) == 64
+
+
+def test_deterministic_paper_replay():
+    class Close:
+        def get_verified_official_close(self, **kwargs):
+            return {'officially_published': True, 'quality': 'VALID', 'source_timestamp': '2026-10-15T10:00:00+00:00'}
+    class Features:
+        def transform(self, closing):
+            return [{'signal': 1}]
+    class Model:
+        version = 'test-v1'
+        def predict(self, features):
+            return [{'symbol': 'NIFTY', 'rank': 1}]
+    class Publisher:
+        def publish_once(self, prediction):
+            return {'prediction_hash': prediction['prediction_hash']}
+    first = execute(Close(), Features(), Model(), Publisher())
+    second = execute(Close(), Features(), Model(), Publisher())
+    assert first['prediction_hash'] == second['prediction_hash']
