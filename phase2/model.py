@@ -13,7 +13,7 @@ class FeatureEngine:
             oi, volume, spread = c.get("oi"), c.get("volume"), c.get("spread_pct")
             if any(not isinstance(v, (int, float)) or isinstance(v, bool) or not math.isfinite(v) or v < 0 for v in (oi, volume, spread)):
                 continue
-            output.append({"symbol": c["symbol"], "expiry": c["expiry"], "strike": c["strike"], "option_type": c["option_type"], "oi": oi, "volume": volume, "spread_pct": spread})
+            output.append({"iv_rank": c.get("iv_rank"), "pcr": c.get("pcr"), "symbol": c["symbol"], "expiry": c["expiry"], "strike": c["strike"], "option_type": c["option_type"], "oi": oi, "volume": volume, "spread_pct": spread})
         if not output:
             raise ValueError("No validated liquid contracts")
         return output
