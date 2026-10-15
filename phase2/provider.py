@@ -2,6 +2,7 @@
 import os
 from datetime import datetime, timezone
 import requests
+from urllib.parse import urlparse
 from phase2.option_stream import RateLimited, enforce_paper_mode
 
 class AuthorizedChainProvider:
@@ -9,7 +10,7 @@ class AuthorizedChainProvider:
         enforce_paper_mode()
         self.endpoint = endpoint or os.environ["PHASE2_CHAIN_ENDPOINT"]
         self.token = token or os.environ["PHASE2_MARKETDATA_TOKEN"]
-        if not self.endpoint.startswith("https://"):
+        if urlparse(self.endpoint).scheme != "https" or not urlparse(self.endpoint).hostname or urlparse(self.endpoint).username or urlparse(self.endpoint).password:
             raise ValueError("HTTPS provider endpoint required")
         self.session = session or requests.Session()
 
