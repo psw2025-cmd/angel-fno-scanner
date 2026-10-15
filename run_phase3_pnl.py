@@ -34,6 +34,7 @@ def main():
         raise RuntimeError("Paper-only environment flags required")
     from phase2.option_stream import enforce_paper_mode
     from phase2.angel_readonly import AngelReadOnlyProvider
+    from phase2.option_dna import snapshot_dna
     enforce_paper_mode()
     if git("branch", "--show-current") != "test-framework":
         raise RuntimeError("Must run on test-framework")
@@ -75,8 +76,17 @@ def main():
     if not isinstance(rows,list) or not rows: raise RuntimeError("Empty entry manifest")
     ranking = payload["ranking"]
     if len(rows) != len(ranking): raise RuntimeError("Entry manifest and ranking coverage mismatch")
+    dna_path = "data/anomaly_logs/dna_" + key + ".json"
+    try:
+        original_dna = json.loads(git("show","HEAD:"+dna_path))
+    except subprocess.CalledProcessError:
+        original_dna = None  # Legacy receipts predate Option DNA; do not invent historical metrics.
+    if original_dna is not None and (original_dna.get("prediction_hash")!=key or original_dna.get("source_hash")!=receipt["source_hash"] or original_dna.get("paper_mode")!=1 or original_dna.get("live_order_authority")!=0):
+        raise RuntimeError("Option DNA source provenance mismatch")
+    prior_by_token = {x["symboltoken"]:x for x in original_dna["contracts"]} if original_dna else {}
     broker = AngelReadOnlyProvider()
     results = []
+    dna_comparisons = []
     seen = set()
     for item in rows:
         rank = item.get("rank")
@@ -104,10 +114,19 @@ def main():
         bid = positive(buy[0].get("price"),"current bid")
         ask = positive(sell[0].get("price"),"current ask")
         if ask < bid: raise RuntimeError("Crossed current spread")
+        current_dna = snapshot_dna(quote,prior=prior_by_token.get(token))
+        dna_comparisons.append({"rank":rank,"tradingsymbol":symbol,"symboltoken":token,**current_dna})
         pnl = bid-entry_ask
         results.append({"rank":rank,"underlying":item["underlying"],"expiry":item["expiry"],"strike":item["strike"],"option_type":item["option_type"],"exchange":"NFO","tradingsymbol":symbol,"symboltoken":token,"entry_captured_at":item["captured_at"],"entry_bid":entry_bid,"entry_ask":entry_ask,"current_bid":bid,"current_ask":ask,"broker_exchange_timestamp":quote.get("exchFeedTime"),"theoretical_long_pnl_per_unit":round(pnl,8),"theoretical_long_pnl_pct":round(100*pnl/entry_ask,8)})
     report = {"status":("INTRADAY_ENGINEERING_TEST_NOT_NEXT_DAY_PNL" if args.force_intraday_test else "THEORETICAL_PAPER_MARK_TO_MARKET_NOT_FILLED"),"evaluation_mode":("INTRADAY_TEST" if args.force_intraday_test else "NEXT_DAY"),"paper_mode":1,"live_order_authority":0,"source_prediction_hash":key,"source_hash":receipt["source_hash"],"source_timestamp":payload["source_timestamp"],"evaluated_at":now.isoformat(),"entry_manifest_sha256":digest(entry),"method":"LONG_ENTRY_ASK_TO_CURRENT_BID_PER_UNIT_EXCLUDES_FEES_TAXES","contracts":results}
+    report["option_dna_status"] = "AVAILABLE" if original_dna else "LEGACY_ENTRY_DNA_UNAVAILABLE"
+    report["option_dna_flags_count"] = sum(len(x["flags"]) for x in dna_comparisons)
     report["report_sha256"] = digest(report)
+    comparison = {"schema_version":"OPTION_DNA_PHASE3_V1","paper_mode":1,"live_order_authority":0,"prediction_hash":key,"report_sha256":report["report_sha256"],"evaluated_at":now.isoformat(),"entry_dna_status":report["option_dna_status"],"contracts":dna_comparisons,"limitations":["IV_THETA_NOT_CALCULABLE_WITHOUT_VERIFIED_GREEKS_AND_TIME_SERIES","STALE_BROKER_TIMESTAMPS_ARE_NOT_NEW_MARKET_MOVEMENT"]}
+    comparison_path = ROOT/"data"/"anomaly_logs"/("comparison_"+report["report_sha256"]+".json")
+    comparison_path.parent.mkdir(parents=True,exist_ok=True)
+    if comparison_path.exists() and json.loads(comparison_path.read_text(encoding="utf-8")) != comparison: raise RuntimeError("Immutable Phase 3 DNA comparison conflict")
+    comparison_path.write_text(json.dumps(comparison,sort_keys=True,indent=2,allow_nan=False)+"\n",encoding="utf-8")
     target = ROOT/"data"/"pnl_ledger"/(key+"_"+now.date().isoformat()+("_INTRADAY_TEST" if args.force_intraday_test else "")+".json")
     target.parent.mkdir(parents=True,exist_ok=True)
     if target.exists():
@@ -116,7 +135,7 @@ def main():
         target.write_text(json.dumps(report,sort_keys=True,indent=2,allow_nan=False)+"\n",encoding="utf-8")
     (ROOT/"pnl_report.json").write_text(json.dumps(report,sort_keys=True,indent=2,allow_nan=False)+"\n",encoding="utf-8")
     if args.push:
-        git("add","--",str(target.relative_to(ROOT)))
+        git("add","--",str(target.relative_to(ROOT)),str(comparison_path.relative_to(ROOT)))
         if git("diff","--cached","--name-only"):
             git("commit","-m","data: Phase 3 theoretical paper PnL "+report["report_sha256"])
         git("push","origin","HEAD:test-framework")
