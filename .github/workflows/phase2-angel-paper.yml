@@ -3,13 +3,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '45 9 * * 1-5' # 15:15 IST; GitHub schedules may be delayed
-  push:
-    branches: [test-framework]
-    paths:
-      - '.github/workflows/phase2-angel-paper.yml'
-      - 'requirements-phase2.txt'
-      - 'run_phase2_local.py'
-      - 'phase2/**'
 permissions:
   contents: write
 concurrency:
