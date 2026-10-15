@@ -34,6 +34,10 @@ def main():
     parser.add_argument("--manifest", default="phase2/angel_contracts.local.json")
     parser.add_argument("--push", action="store_true", help="Explicitly push verified receipt to test-framework")
     args = parser.parse_args()
+    from nse_calendar import trading_status
+    if trading_status()["market_closed"]:
+        print("MARKET_CLOSED: Phase 2 skipped without quote or ledger mutation")
+        return
     if (ROOT / ".env").is_file():
         load_env(ROOT / ".env")
     os.environ["PAPER_MODE"] = "1"
