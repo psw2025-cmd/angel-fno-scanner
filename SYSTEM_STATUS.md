@@ -19,3 +19,6 @@
 
 ## One-time owner setup
 Use the actual existing repo secret names: `ANGEL_API_KEY`, `ANGEL_CLIENT_CODE`, `ANGEL_PIN`, `ANGEL_TOTP_SEED`. Optional cloud identity: `GCP_WORKLOAD_IDENTITY_PROVIDER` and `GCP_SERVICE_ACCOUNT`, configured only with a dedicated sandbox-limited service account. Never commit credentials, tokens, or raw authentication responses.
+
+## Local headless runner (Windows)
+`run_phase2_local.py` is committed on `test-framework`. It reads the owner's local `.env`, forces PAPER_MODE=1 and LIVE_ORDER_AUTHORITY=0, authenticates through read-only Angel SmartAPI, validates an owner-supplied locally verified NFO contract manifest, and captures `data/raw_snapshot.json` with a SHA-256 digest. It deliberately fails closed before publishing a prediction because individual FULL broker quotes have not yet been demonstrated to supply a complete synchronized chain, verified bid/ask, observed PCR and official close. The requested automatic receipt push is **not certified or enabled** until those validations exist; `--push` does not override them. No broker secrets, JWT, refresh tokens or TOTP values may be committed. Cloud broker authentication was not observed to fail: cloud NSE access and cloud GCP authentication failed, while broker credentials were not established.
