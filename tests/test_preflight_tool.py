@@ -16,7 +16,11 @@ def _good():
         "scheduler": {"a": "ENABLED"},
         "bigquery": {"columns": COLS, "n": 219, "syms": 219, "git_sha_nonnull": 219},
         "github_secrets": {"repo": ["ANGEL_API_KEY", "SHEET_ID"], "env": {"phase2-paper": []}},
-        "sheet": {"gates": {"GATE-01": "PASS", "OVERALL": "PASS"}},
+        "sheet": {
+            "gates": {"GATE-01": "PASS", "OVERALL": "PASS"},
+            "gate06_formula": '=COUNTA(CE_PE_RANK!A5:A204)&" / 200" =IF(COUNTA(CE_PE_RANK!A5:A204)=200,"PASS","FAIL")',
+            "gate07_formula": '=COUNTIF(CE_PE_RANK!U5:U204,"HIGH MOMENTUM") =IF(C3="MARKET CLOSED",1,2)',
+        },
     }
 
 
@@ -71,6 +75,12 @@ def test_failing_sheet_gate_fails_and_is_named():
     checks = {c["check"]: c for c in evaluate(ev)}
     assert checks["sheet_gates"]["status"] == FAIL
     assert "GATE-04" in checks["sheet_gates"]["detail"]
+
+
+def test_reverted_216_formula_contract_fails():
+    ev = _good()
+    ev["sheet"]["gate06_formula"] = '=COUNTA(CE_PE_RANK!C3:C218)&" / 216"'
+    assert _by(evaluate(ev))["formula_checks_contract"] == FAIL
 
 
 def test_environment_secret_shadowing_repo_secret_fails():

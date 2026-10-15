@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-15 - Preflight guard: Formula Checks must keep the 200-row rank contract
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED (tooling only)
+**Evidence:** after GATE-06/07 were corrected, the sheet was rewritten back to the retired 216-row formulas by a non-repo writer (Drive revision 2026-10-15T09:55:54Z by the shared service account, right after the foreign BigQuery writer stopped). Re-applied and verified (GATE-06 200/200, OVERALL 0 failed gates).
+
+### What changed
+- tools/preflight.py: new `formula_checks_contract` check reads the raw GATE-06/07 formulas and FAILS if the retired `C3:C218` / `Y3:Y218` ranges return.
+- tests/test_preflight_tool.py: reverted formula fails; good case passes.
+
 ## 2026-10-15 - Fix false readback mismatch on negative zero (publication.py)
 
 **Status:** IMPLEMENTED_NOT_DEPLOYED

@@ -151,7 +151,12 @@ def collect_sheet() -> dict:
         gc = gspread.service_account_from_dict(credentials.load_service_account())
         ws = gc.open_by_key(credentials.get_canonical_sheet_id()).worksheet("Formula Checks")
         rows = ws.get("A1:E12")
-        return {"gates": {r[0]: r[4] for r in rows if len(r) >= 5 and r[0]}}
+        raw = {r[0]: r for r in ws.get("A1:E12", value_render_option="FORMULA") if r}
+        return {
+            "gates": {r[0]: r[4] for r in rows if len(r) >= 5 and r[0]},
+            "gate06_formula": " ".join(raw.get("GATE-06", [])[2:5:2]),
+            "gate07_formula": " ".join(raw.get("GATE-07", [])[2:5:2]),
+        }
     except Exception as exc:
         return {"error": f"{type(exc).__name__}: {exc}"[:300]}
 
@@ -225,6 +230,14 @@ def evaluate(ev: dict) -> list[dict]:
     else:
         failing = sorted(g for g, s in sheet["gates"].items() if s in ("FAIL", "BLOCKED", "RANK LAYER BLOCKED"))
         add("sheet_gates", FAIL if failing else PASS, "failing=" + ",".join(failing) if failing else "no failing gates")
+        g6, g7 = sheet.get("gate06_formula"), sheet.get("gate07_formula")
+        if g6 is None or g7 is None:
+            add("formula_checks_contract", NOT_PROVEN, "formula text not collected")
+        else:
+            # The 200-contract rank board is canonical; the retired 216-row formulas must not return.
+            ok = "A5:A204" in g6 and "U5:U204" in g7 and "C3:C218" not in g6 and "Y3:Y218" not in g7
+            add("formula_checks_contract", PASS if ok else FAIL,
+                "GATE-06/07 use the 200-row rank contract" if ok else "GATE-06/07 reverted to retired 216-row formulas")
     return checks
 
 
