@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-15 - Fix cycle crash on Sheets 429 in WRITE_PROVENANCE (writer_guard.py)
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED
+**Evidence:** Cloud Run execution angel-market-scan-job-48b4q failed at 07:41Z: a 429 read-quota error from `sh.worksheet("WRITE_PROVENANCE")` was treated as "sheet missing", then `add_worksheet` raised "already exists" and the cycle was marked unverified.
+
+### What changed
+- writer_guard.py: sheet is created only on `WorksheetNotFound`; 429 quota errors are retried with bounded backoff (5/15/30/60 s) and then fail closed; an "already exists" race re-fetches the sheet; non-quota errors still propagate.
+- tests/test_writer_guard_quota.py (new): 429 on read is retried without creating the sheet, missing sheet is created, non-quota errors propagate, persistent 429 fails closed.
+
+## 2026-10-15 - Read-only agent preflight (tools/preflight.py)
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED (tooling only; no runtime behaviour change)
+
+### What changed
+- tools/preflight.py (new): one command collects git HEAD/remote main, Cloud Run job image/env/executions, Scheduler states, option_predictions_live schema/rows/provenance and Formula Checks gate statuses into one JSON evidence file. Rules are fail-closed: unmeasurable sources are NOT_PROVEN, never PASS; exit code 1 on any FAIL.
+- tests/test_preflight_tool.py (new): nine tests covering missing provenance columns, partial universe, null git_sha, budget equal to platform timeout, placeholder GIT_SHA, tag-only image, failing sheet gate and unmeasurable sources.
+
 ## 2026-10-15 - Phase 0 hardening: integer policy, stale SHA, provenance, runtime budget
 
 **Commit:** Pending HEAD
