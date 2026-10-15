@@ -11,6 +11,7 @@ jobs:
     env:
       PAPER_MODE: '1'
       LIVE_ORDER_AUTHORITY: '0'
+      PHASE2_MODEL_KIND: 'HEURISTIC'
       PHASE2_CHAIN_ENDPOINT: ${{ vars.PHASE2_CHAIN_ENDPOINT }}
       PHASE2_MARKETDATA_TOKEN: ${{ secrets.PHASE2_MARKETDATA_TOKEN }}
       PHASE2_PAPER_LEDGER_TABLE: ${{ vars.PHASE2_PAPER_LEDGER_TABLE }}
@@ -28,8 +29,7 @@ jobs:
           test -n "$PHASE2_CHAIN_ENDPOINT"
           test -n "$PHASE2_MARKETDATA_TOKEN"
           test -n "$PHASE2_PAPER_LEDGER_TABLE"
-          test -f phase2/artifacts/model.joblib
-          test -f phase2/artifacts/manifest.json
+          test "$PHASE2_MODEL_KIND" = HEURISTIC
       - name: Authenticate to Google Cloud through workload identity
         uses: google-github-actions/auth@v2
         with:
