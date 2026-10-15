@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-15 - publication readback error names the first differing cell (publication.py)
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED
+**Evidence:** execution angel-market-scan-job-tvr28 failed 3/3 attempts with `OPTION_PREDICTIONS readback differs from this cycle's intended output` and no location, so the cause could not be diagnosed from logs.
+
+### What changed
+- publication.py: normalization factored into `_normalize`; new `first_diff()`; the RuntimeError now includes `(row, col, expected, actual)` (truncated to 60 chars). Hashing behaviour is unchanged (fail-closed semantics identical).
+- tests/test_publication_first_diff.py (new): equal matrices, cell location, row-count mismatch, error message content.
+
 ## 2026-10-15 - Preflight guard: environment secrets must not shadow repository secrets
 
 **Status:** IMPLEMENTED_NOT_DEPLOYED (tooling only)
