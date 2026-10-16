@@ -33,7 +33,7 @@ async def stream_live(send_tick, normalize):
     token=c["ANGEL_SYMBOL_TOKEN"]
     def on_open(ws):
         log.info("smartapi_connected exchange=%s token=%s",exchange,token)
-        ws.subscribe("level3-paper",3,[{"exchangeType":exchange,"tokens":[token]}])
+        websocket.subscribe("level3-paper",3,[{"exchangeType":exchange,"tokens":[token]}])
     def on_data(ws,message):
         log.info("smartapi_raw_tick_received token=%s timestamp=%s",message.get("token"),datetime.now(timezone.utc).isoformat())
         try:
