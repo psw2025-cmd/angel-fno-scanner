@@ -154,3 +154,14 @@ python3 agent_cli.py --export-snapshots
 5. **17-Tab Google Sheet Integration**: Synchronizes real-time predictions, Greeks, news impact, and ranking dashboards with strict cell-level schema validators.
 
 Agents: read FRONT.md first. Autonomous for paper-only work, no approval needed for paper tasks. Paper-only lock is permanent: no live orders, no force-push to main, no secrets in files.
+
+## Cloud identity architecture (GitHub OIDC / GCP Workload Identity Federation)
+
+Status as of 2026-10-16: workflow code is WIF-only, but the GCP/GitHub side is NOT provisioned (see `audit/WIF_VERIFICATION_20261016.md`). Do not treat WIF as active until a run proves it.
+
+- The migrate workflow (`_migrate_secrets_one_time.yml`) and NASA Daily Proof (`nasa-daily-proof.yml`) authenticate ONLY with `google-github-actions/auth@v2` using GitHub OIDC (`id-token: write`). They contain no static service-account key path (no `sa.json`, no JSON key secret) and fail closed when the variables below are empty.
+- Repository variables (not secrets) required: `GCP_WIF_PROVIDER`, `GCP_MIGRATION_SERVICE_ACCOUNT`, `GCP_EVIDENCE_SERVICE_ACCOUNT`.
+- `GCP_MIGRATION_SERVICE_ACCOUNT`: used only by the one-time migration (environment `gcp-secret-migration`). Needs Secret Manager write on the four Angel secrets (`ANGEL_API_KEY`, `ANGEL_CLIENT_CODE`, `ANGEL_PIN`, `ANGEL_TOTP_SEED`). No storage access.
+- `GCP_EVIDENCE_SERVICE_ACCOUNT`: used only by NASA Daily Proof to upload `PROVEN_PROOF_LEDGER.json` to `gs://fno-angel-evidence/nasa-daily-proof/<run>/<sha>/` and read it back byte-for-byte. Needs object write/read on that bucket only. No Secret Manager access.
+- Static keys are NOT fully removed: `SHEETS_KEY_JSON` is still used by `market_bot.yml`, `nightly_verify.yml`, `agent_dispatch.yml` and `agent_issue_ops.yml` for Sheets/BigQuery. Migrating those to WIF is open work.
+- PAPER_MODE=1 and LIVE_ORDER_AUTHORITY=0 remain mandatory; no workflow here can place broker orders.
