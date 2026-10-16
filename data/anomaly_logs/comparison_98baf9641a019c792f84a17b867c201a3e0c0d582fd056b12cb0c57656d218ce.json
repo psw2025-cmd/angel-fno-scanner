@@ -1,0 +1,741 @@
+{
+  "contracts": [
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -17.70657673,
+      "rank": 1,
+      "spread_pct": 1.92910089,
+      "symboltoken": "49478",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656400PE",
+      "volume_oi_ratio": 1.87636612
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -2.38276944,
+      "rank": 2,
+      "spread_pct": 1.63494338,
+      "symboltoken": "49496",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2657000PE",
+      "volume_oi_ratio": 0.43189715
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:01",
+      "flags": [
+        "OI_FALL_20PCT_WITH_VOLUME"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -21.35115607,
+      "rank": 3,
+      "spread_pct": 0.77199342,
+      "symboltoken": "47127",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622350CE",
+      "volume_oi_ratio": 0.55075792
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "OI_FALL_20PCT_WITH_VOLUME"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -24.15678358,
+      "rank": 4,
+      "spread_pct": 0.51712993,
+      "symboltoken": "47129",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622400CE",
+      "volume_oi_ratio": 1.01730065
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:01",
+      "flags": [
+        "OI_FALL_20PCT_WITH_VOLUME"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -27.73757839,
+      "rank": 5,
+      "spread_pct": 0.42544962,
+      "symboltoken": "47131",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622450CE",
+      "volume_oi_ratio": 1.13150868
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "OI_FALL_20PCT_WITH_VOLUME"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -23.33564598,
+      "rank": 6,
+      "spread_pct": 0.4691689,
+      "symboltoken": "47133",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622500CE",
+      "volume_oi_ratio": 1.59704899
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "OI_FALL_20PCT_WITH_VOLUME"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -27.95609282,
+      "rank": 7,
+      "spread_pct": 0.58367533,
+      "symboltoken": "47137",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622550CE",
+      "volume_oi_ratio": 1.71070395
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "OI_FALL_20PCT_WITH_VOLUME"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -36.48369356,
+      "rank": 8,
+      "spread_pct": 0.63148399,
+      "symboltoken": "47139",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622600CE",
+      "volume_oi_ratio": 2.01593867
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "OI_FALL_20PCT_WITH_VOLUME"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -26.65511515,
+      "rank": 9,
+      "spread_pct": 0.35492458,
+      "symboltoken": "47141",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622650CE",
+      "volume_oi_ratio": 2.26626636
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "OI_FALL_20PCT_WITH_VOLUME",
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -33.84794505,
+      "rank": 10,
+      "spread_pct": 0.50865331,
+      "symboltoken": "47143",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622700CE",
+      "volume_oi_ratio": 5.07810905
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "OI_FALL_20PCT_WITH_VOLUME",
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -45.29498525,
+      "rank": 11,
+      "spread_pct": 0.23915031,
+      "symboltoken": "47149",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622750CE",
+      "volume_oi_ratio": 9.38545879
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "OI_FALL_20PCT_WITH_VOLUME",
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -52.14243008,
+      "rank": 12,
+      "spread_pct": 0.19336126,
+      "symboltoken": "47153",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622800CE",
+      "volume_oi_ratio": 20.5758375
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "OI_FALL_20PCT_WITH_VOLUME",
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -48.68596882,
+      "rank": 13,
+      "spread_pct": 0.32024112,
+      "symboltoken": "47155",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622850CE",
+      "volume_oi_ratio": 44.48611111
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:01",
+      "flags": [
+        "OI_FALL_20PCT_WITH_VOLUME",
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -40.88604473,
+      "rank": 14,
+      "spread_pct": 0.81521739,
+      "symboltoken": "47157",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622900CE",
+      "volume_oi_ratio": 40.84948654
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:39:58",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -11.51857076,
+      "rank": 15,
+      "spread_pct": 1.33150164,
+      "symboltoken": "49481",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656600CE",
+      "volume_oi_ratio": 5.76833156
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "SPREAD_SHOCK_2X_PRIOR",
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -10.76441974,
+      "rank": 16,
+      "spread_pct": 5.29100529,
+      "symboltoken": "47128",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622350PE",
+      "volume_oi_ratio": 19.05889988
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "SPREAD_SHOCK_2X_PRIOR",
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 22.61655275,
+      "rank": 17,
+      "spread_pct": 5.47112462,
+      "symboltoken": "47140",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622600PE",
+      "volume_oi_ratio": 13.63691224
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "SPREAD_SHOCK_2X_PRIOR",
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 37.28097919,
+      "rank": 18,
+      "spread_pct": 4.08163265,
+      "symboltoken": "47142",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622650PE",
+      "volume_oi_ratio": 15.70130513
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "SPREAD_SHOCK_2X_PRIOR",
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 6.9146846,
+      "rank": 19,
+      "spread_pct": 2.51046025,
+      "symboltoken": "47144",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622700PE",
+      "volume_oi_ratio": 16.37833616
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 7.35579699,
+      "rank": 20,
+      "spread_pct": 2.78745645,
+      "symboltoken": "47152",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622750PE",
+      "volume_oi_ratio": 24.2359383
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 21.65734395,
+      "rank": 21,
+      "spread_pct": 1.36798906,
+      "symboltoken": "47154",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622800PE",
+      "volume_oi_ratio": 24.52600681
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:01",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 11.75192074,
+      "rank": 22,
+      "spread_pct": 1.69133192,
+      "symboltoken": "47156",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622850PE",
+      "volume_oi_ratio": 31.88036546
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:01",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 40.91177685,
+      "rank": 23,
+      "spread_pct": 1.14660115,
+      "symboltoken": "47158",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622900PE",
+      "volume_oi_ratio": 33.84813966
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 11.84052243,
+      "rank": 24,
+      "spread_pct": 1.55260275,
+      "symboltoken": "49465",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2655900CE",
+      "volume_oi_ratio": 12.60679164
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -16.94480103,
+      "rank": 25,
+      "spread_pct": 2.55012561,
+      "symboltoken": "49466",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2655900PE",
+      "volume_oi_ratio": 11.8134246
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:39:59",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -4.55204339,
+      "rank": 26,
+      "spread_pct": 1.25256565,
+      "symboltoken": "49467",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656000CE",
+      "volume_oi_ratio": 4.50427434
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 3.09385631,
+      "rank": 27,
+      "spread_pct": 1.18887491,
+      "symboltoken": "49468",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656000PE",
+      "volume_oi_ratio": 3.60761705
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:39:59",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 21.29337539,
+      "rank": 28,
+      "spread_pct": 1.56304677,
+      "symboltoken": "49469",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656100CE",
+      "volume_oi_ratio": 8.64551365
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 6.50650651,
+      "rank": 29,
+      "spread_pct": 1.82604517,
+      "symboltoken": "49470",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656100PE",
+      "volume_oi_ratio": 5.45441729
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 12.52152522,
+      "rank": 30,
+      "spread_pct": 1.80841305,
+      "symboltoken": "49471",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656200CE",
+      "volume_oi_ratio": 8.54787932
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 12.02263083,
+      "rank": 31,
+      "spread_pct": 3.3719782,
+      "symboltoken": "49472",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656200PE",
+      "volume_oi_ratio": 7.42739899
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 33.56851095,
+      "rank": 32,
+      "spread_pct": 2.79883382,
+      "symboltoken": "49473",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656300CE",
+      "volume_oi_ratio": 8.23630803
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:01",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 44.49339207,
+      "rank": 33,
+      "spread_pct": 2.19973603,
+      "symboltoken": "49476",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656300PE",
+      "volume_oi_ratio": 5.19207317
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -15.2623799,
+      "rank": 34,
+      "spread_pct": 3.01985885,
+      "symboltoken": "49477",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656400CE",
+      "volume_oi_ratio": 8.70388138
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:39:59",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -2.38371823,
+      "rank": 35,
+      "spread_pct": 1.61755136,
+      "symboltoken": "49479",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656500CE",
+      "volume_oi_ratio": 3.81045316
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:39:59",
+      "flags": [],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -5.06760244,
+      "rank": 36,
+      "spread_pct": 2.40977747,
+      "symboltoken": "49480",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656500PE",
+      "volume_oi_ratio": 1.25831703
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 7.8098472,
+      "rank": 37,
+      "spread_pct": 2.04483732,
+      "symboltoken": "49486",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656600PE",
+      "volume_oi_ratio": 1.1007874
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:39:59",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -9.8216409,
+      "rank": 38,
+      "spread_pct": 1.69673796,
+      "symboltoken": "49487",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656700CE",
+      "volume_oi_ratio": 5.48470464
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 9.34579439,
+      "rank": 39,
+      "spread_pct": 1.93521245,
+      "symboltoken": "49490",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656700PE",
+      "volume_oi_ratio": 1.8974359
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -5.76211797,
+      "rank": 40,
+      "spread_pct": 1.82040484,
+      "symboltoken": "49491",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656800CE",
+      "volume_oi_ratio": 4.22350754
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -1.32231405,
+      "rank": 41,
+      "spread_pct": 2.07756233,
+      "symboltoken": "49492",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656800PE",
+      "volume_oi_ratio": 0.5360134
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 5.89473684,
+      "rank": 42,
+      "spread_pct": 2.01894704,
+      "symboltoken": "49493",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656900CE",
+      "volume_oi_ratio": 5.6306163
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": -6.09756098,
+      "rank": 43,
+      "spread_pct": 1.93990602,
+      "symboltoken": "49494",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2656900PE",
+      "volume_oi_ratio": 0.57142857
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 6.01581299,
+      "rank": 44,
+      "spread_pct": 2.09852392,
+      "symboltoken": "49495",
+      "theta": null,
+      "tradingsymbol": "BANKNIFTY27OCT2657000CE",
+      "volume_oi_ratio": 3.09918936
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 3.91738095,
+      "rank": 45,
+      "spread_pct": 4.83091787,
+      "symboltoken": "47130",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622400PE",
+      "volume_oi_ratio": 12.85439997
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:01",
+      "flags": [
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 4.18738433,
+      "rank": 46,
+      "spread_pct": 4.40528634,
+      "symboltoken": "47132",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622450PE",
+      "volume_oi_ratio": 18.54574443
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "SPREAD_SHOCK_2X_PRIOR",
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 3.85963511,
+      "rank": 47,
+      "spread_pct": 5.62248996,
+      "symboltoken": "47136",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622500PE",
+      "volume_oi_ratio": 11.84326564
+    },
+    {
+      "broker_exchange_timestamp": "16-Oct-2026 15:40:00",
+      "flags": [
+        "SPREAD_SHOCK_2X_PRIOR",
+        "VOLUME_OI_RATIO_HIGH_3X_NOT_OI_CHANGE",
+        "WIDE_SPREAD_3PCT"
+      ],
+      "iv": null,
+      "iv_theta_status": "UNAVAILABLE_NO_VERIFIED_IV_GREEKS_OR_TIME_SERIES",
+      "oi_change_pct": 14.57325815,
+      "rank": 48,
+      "spread_pct": 6.36042403,
+      "symboltoken": "47138",
+      "theta": null,
+      "tradingsymbol": "NIFTY19OCT2622550PE",
+      "volume_oi_ratio": 18.61749445
+    }
+  ],
+  "entry_dna_status": "AVAILABLE",
+  "evaluated_at": "2026-10-16T19:52:25.969279+05:30",
+  "limitations": [
+    "IV_THETA_NOT_CALCULABLE_WITHOUT_VERIFIED_GREEKS_AND_TIME_SERIES",
+    "STALE_BROKER_TIMESTAMPS_ARE_NOT_NEW_MARKET_MOVEMENT"
+  ],
+  "live_order_authority": 0,
+  "paper_mode": 1,
+  "prediction_hash": "55d169f4846c2539da8a2d1494459bf3fbd66450b2658004a54842fbcaebdf8e",
+  "report_sha256": "98baf9641a019c792f84a17b867c201a3e0c0d582fd056b12cb0c57656d218ce",
+  "schema_version": "OPTION_DNA_PHASE3_V1"
+}
