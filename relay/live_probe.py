@@ -7,6 +7,8 @@ from datetime import datetime, timezone
 os.environ["PAPER_MODE"]="1"
 os.environ["LIVE_ORDER_AUTHORITY"]="0"
 os.environ["FEED_MODE"]="live_smartapi"
+from market_clock import market_preflight
+market_preflight()
 from app import normalize
 from smartapi_adapter import stream_live, config
 
