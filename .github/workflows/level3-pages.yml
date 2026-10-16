@@ -72,13 +72,15 @@ jobs:
       ANGEL_CLIENT_ID: ${{ secrets.ANGEL_CLIENT_ID }}
       ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
       ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
-      ANGEL_EXCHANGE_TYPE: ${{ vars.ANGEL_EXCHANGE_TYPE }}
-      ANGEL_SYMBOL_TOKEN: ${{ vars.ANGEL_SYMBOL_TOKEN }}
+      ANGEL_EXCHANGE_TYPE: '1'
+      ANGEL_SYMBOL_TOKEN: '2885'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: IST market-hours preflight before login
+        run: python relay/market_clock.py
       - name: Validate secret presence without disclosure
         run: |
           python - <<'PY'
