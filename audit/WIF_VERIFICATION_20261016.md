@@ -93,3 +93,25 @@ OBSERVATION (gcloud, project fno-angel-prod-1790444589; secret values never read
 INFERENCE: production scanning depends on Secret Manager `@latest` being correct. Adding a version takes effect at the next job execution. Production does not use WIF, so missing WIF does not affect the running job.
 
 Implications for the migrate run: a new version with wrong values would break the next scheduled scan; rollback is `gcloud secrets versions disable <n>` on the bad version. The migration identity needs only secretVersionAdder plus read access for `describe`, not Secret Manager Administrator.
+## Addendum 3 - Investigation of 3 failed Cloud Run executions (2026-10-15) and related findings
+
+OBSERVATION (Cloud Run job `angel-market-scan-job`, asia-south1; Cloud Logging REST; no secret values read):
+
+| Execution | Start (UTC) | Started by | Image | Result | Error |
+|---|---|---|---|---|---|
+| kzvmb | 2026-10-15 09:50 | Cloud Scheduler (`angel-sheets-bot`), 15:20 IST pre-close | 8a2c642742 | FAIL exit 1 | `SchemaGuardError: live option_predictions_live is missing run_id; refusing WRITE_TRUNCATE` (guard from commit 2ed6839, 2026-10-14) |
+| tvr28 | 2026-10-15 13:34 | manual, warghade2012@gmail.com | 8a2c642742 | FAIL exit 1 | `OPTION_PREDICTIONS readback differs from this cycle's intended output` (publication.py verify_outputs) |
+| tcrvm | 2026-10-15 14:59 | manual, warghade2012@gmail.com | 562add4e8b | FAIL exit 1 | same readback mismatch |
+| l7d96 | 2026-10-15 15:16 | manual, warghade2012@gmail.com | 2c42562256 | SUCCESS | - |
+| bkzj8 | 2026-10-16 09:50 | Cloud Scheduler | 2c42562256 | SUCCESS | - |
+
+- Both guards failed closed as designed: no partial publication was accepted (publication.py writes FAILED_PARTIAL).
+- Failure 1 cause: live table lacked run_id at that moment. verify_all on 2026-10-16 shows run_id = STRING on all 4 tables (CLOSED by schema repair; the scheduled 15:20 IST Oct 15 cycle was lost and later replaced by a manual catch-up).
+- Failures 2 and 3: cause of the readback mismatch is NOT PROVEN. Success followed only after a new image (2c42562256). No commit touching publication.py/sheet_grid.py exists on main after 2ed6839, so the fix is in code not on main, or in a non-publication file. Image-to-commit mapping is unavailable (no build labels/GIT_SHA env on the job).
+- Manual runs used ALLOW_PRODUCTION_WRITES=1 and ANGEL_MARKET_SESSION=EOD, outside scheduled slots (19:04 IST and 20:29 IST), writing to production sinks.
+
+COVERAGE GAP (OBSERVATION): the 09:15 IST run (execution spb2v) stops at MAX_RUNTIME_SECONDS=13800 and exited at 07:36:49Z (13:06 IST). The next scheduled run starts 15:20 IST. NSE trades until 15:30 IST, so live ingestion has no scheduled coverage for about 2h13m (13:07-15:20 IST). Job taskTimeout is 14400s. The scanner default is 22500s and `tests/test_runtime_safety.py` expects the schedule to cover the close. Per AGENTS.md section 12, data older than 180s during session is STALE.
+
+DOC DRIFT (OBSERVATION): committed docs/migration-asia-south1 state the Mumbai job was not created and the US job remains. Live GCP shows only the asia-south1 job (created 2026-10-14) and asia-south1 schedulers ENABLED. The docs are stale.
+
+STATUS: OBSERVED. Production changes (runtime cap, timeout, scheduler overlap, image provenance) are WAITING_FOR_USER approval.
