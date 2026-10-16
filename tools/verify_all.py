@@ -84,7 +84,12 @@ def check_pytest():
 
 def check_bigquery_types():
     print("\n[3/6] Checking BigQuery run_id types across all four tables...")
-    client = get_bigquery_client()
+    try:
+        client = get_bigquery_client()
+    except Exception as exc:
+        reason = "CLIENT_INIT_FAILED: " + type(exc).__name__
+        print("      BigQuery " + reason)
+        return {"status": "FAIL", "tables": {t: reason for t in TABLES}}
     table_statuses = {}
     all_ok = True
 
@@ -155,6 +160,7 @@ def run_readiness_probe():
     latest_dir = evidence_dirs[0] if evidence_dirs else None
 
     checks_summary = {}
+    evidence_valid = False
     fail_count = 0
     pass_count = 0
     other_count = 0
@@ -162,7 +168,11 @@ def run_readiness_probe():
     if latest_dir and (latest_dir / "SYSTEM_STATUS.json").exists():
         try:
             status_json = json.loads((latest_dir / "SYSTEM_STATUS.json").read_text(encoding="utf-8"))
-            for item in status_json.get("checks", []):
+            items = status_json.get("checks", [])
+            if not isinstance(items, list) or not items:
+                raise ValueError("Missing readiness checks")
+            evidence_valid = True
+            for item in items:
                 chk_name = item.get("check")
                 chk_status = item.get("status")
                 checks_summary[chk_name] = chk_status
@@ -175,13 +185,19 @@ def run_readiness_probe():
         except Exception as e:
             checks_summary["error"] = str(e)
 
+    if proc.returncode != 0:
+        checks_summary["probe_execution"] = "FAIL"
+        fail_count += 1
+    if not evidence_valid:
+        checks_summary["evidence_missing_or_invalid"] = "FAIL"
+        fail_count += 1
     print(f"      Readiness Summary: {pass_count} PASS, {fail_count} FAIL, {other_count} OTHER (NOT_PROVEN/UNKNOWN)")
     for name, st in checks_summary.items():
         if name != "error":
             print(f"        * {name:<25}: {st}")
 
     return {
-        "status": "PASS" if fail_count == 0 else "FAIL",
+        "status": "PASS" if fail_count == 0 and evidence_valid and proc.returncode == 0 else "FAIL",
         "fail_count": fail_count,
         "pass_count": pass_count,
         "other_count": other_count,
@@ -212,6 +228,8 @@ def main():
         critical_failures.append("BigQuery run_id types are not STRING")
     if formula_res["status"] != "PASS":
         critical_failures.append("Google Sheet Formula Checks contract drifted from canonical 219/200 rules")
+    if readiness_res["status"] != "PASS":
+        critical_failures.append("Infrastructure probe execution or evidence validation failed")
     if readiness_res["fail_count"] > 0:
         # Note: If git is dirty/unpushed, readiness probe working_tree / current_main might show FAIL
         # We separate working_tree from other functional failures
