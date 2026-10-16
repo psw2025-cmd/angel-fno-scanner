@@ -79,3 +79,17 @@ These version-1 entries come from the earlier successful migration run 383892656
 | Overall | FAIL | FAIL (closed) |
 
 Nightly Verify remains FAIL by design until the live sheet drift and runtime provenance are resolved with real evidence. PR #113 CI (encoding-safety x2, pytest) passed; merge awaits user approval.
+## Addendum 2 - Secret Manager consumer trace (read-only, 2026-10-16 ~14:00 UTC)
+
+OBSERVATION (gcloud, project fno-angel-prod-1790444589; secret values never read or printed):
+
+- Cloud Run job `angel-market-scan-job` (asia-south1, runs as `angel-sheets-bot`) injects ANGEL_API_KEY, ANGEL_CLIENT_CODE, ANGEL_PIN, ANGEL_TOTP_SEED, plus SHEETS_KEY_JSON, SHEET_ID, BQ_PROJECT_ID from Secret Manager via secretKeyRef `@latest`. All 7 secrets grant `roles/secretmanager.secretAccessor` to `angel-sheets-bot` only.
+- Triggered by Cloud Scheduler `angel-market-scan-mumbai` (15 9 * * 1-5) and `angel-market-scan-mumbai-preclose` (20 15 * * 1-5), both ENABLED. Executions 2026-10-16 03:45Z and 09:50Z completed successfully (failed executions seen on 2026-10-15 are not investigated here).
+- Cloud Run service `angel-fno-scanner` (us-central1): no env vars and no secret references. Not a consumer.
+- Repo code never calls the Secret Manager API (no access_secret_version). The only repo writer is `_migrate_secrets_one_time.yml` (adds versions from GitHub secrets).
+- GitHub workflows (market_bot, phase2-angel-paper, phase3-angel-pnl, level3-pages) read GitHub Actions secrets, not Secret Manager. Two copies of the Angel credentials therefore exist: GitHub secrets (last updated 2026-09-26) and Secret Manager version 1 (2026-10-13).
+- Project Data Access audit logging is not configured (no auditConfigs), so per-access history cannot be shown.
+
+INFERENCE: production scanning depends on Secret Manager `@latest` being correct. Adding a version takes effect at the next job execution. Production does not use WIF, so missing WIF does not affect the running job.
+
+Implications for the migrate run: a new version with wrong values would break the next scheduled scan; rollback is `gcloud secrets versions disable <n>` on the bad version. The migration identity needs only secretVersionAdder plus read access for `describe`, not Secret Manager Administrator.
