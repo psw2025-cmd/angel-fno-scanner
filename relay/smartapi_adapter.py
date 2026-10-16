@@ -6,7 +6,7 @@ import threading
 from datetime import datetime, timezone
 
 log = logging.getLogger("level3.smartapi")
-REQUIRED = ("ANGEL_API_KEY","ANGEL_CLIENT_CODE","ANGEL_PIN","ANGEL_TOTP_SECRET","ANGEL_EXCHANGE_TYPE","ANGEL_SYMBOL_TOKEN")
+REQUIRED = ("ANGEL_API_KEY","ANGEL_CLIENT_ID","ANGEL_PIN","ANGEL_TOTP_SECRET","ANGEL_EXCHANGE_TYPE","ANGEL_SYMBOL_TOKEN")
 def config():
     missing=[key for key in REQUIRED if not os.getenv(key)]
     if missing: raise RuntimeError("Missing SmartAPI configuration: "+", ".join(missing))
@@ -21,11 +21,11 @@ async def stream_live(send_tick, normalize):
     from SmartApi.smartWebSocketV2 import SmartWebSocketV2
     import pyotp
     session_client=SmartConnect(api_key=c["ANGEL_API_KEY"])
-    session=session_client.generateSession(c["ANGEL_CLIENT_CODE"],c["ANGEL_PIN"],pyotp.TOTP(c["ANGEL_TOTP_SECRET"]).now())
+    session=session_client.generateSession(c["ANGEL_CLIENT_ID"],c["ANGEL_PIN"],pyotp.TOTP(c["ANGEL_TOTP_SECRET"]).now())
     data=session.get("data") if isinstance(session,dict) else None
     if not data or not data.get("jwtToken") or not data.get("feedToken"):
         raise RuntimeError("SmartAPI session authentication failed")
-    websocket=SmartWebSocketV2(data["jwtToken"],c["ANGEL_API_KEY"],c["ANGEL_CLIENT_CODE"],data["feedToken"])
+    websocket=SmartWebSocketV2(data["jwtToken"],c["ANGEL_API_KEY"],c["ANGEL_CLIENT_ID"],data["feedToken"])
     loop=asyncio.get_running_loop()
     queue=asyncio.Queue(maxsize=100)
     stopped=threading.Event()
@@ -35,6 +35,7 @@ async def stream_live(send_tick, normalize):
         log.info("smartapi_connected exchange=%s token=%s",exchange,token)
         ws.subscribe("level3-paper",3,[{"exchangeType":exchange,"tokens":[token]}])
     def on_data(ws,message):
+        log.info("smartapi_raw_tick_received token=%s timestamp=%s",message.get("token"),datetime.now(timezone.utc).isoformat())
         try:
             if str(message.get("token"))!=token:return
             # SmartAPI SNAP_QUOTE prices are scaled by 100; reject absent bid/ask/volume.
@@ -45,6 +46,7 @@ async def stream_live(send_tick, normalize):
             bid=float(bids[0]["price"])/100
             ask=float(asks[0]["price"])/100
             tick=normalize(token,float(message["last_traded_price"])/100,bid,ask,float(message["volume_trade_for_the_day"]),datetime.now(timezone.utc).isoformat())
+            log.info("smartapi_normalized_tick token=%s ts=%s bid=%s ask=%s volume=%s",token,tick["ts"],bid,ask,tick["volume"])
             loop.call_soon_threadsafe(enqueue,tick)
         except (KeyError,ValueError,TypeError,IndexError) as exc:
             log.warning("smartapi_tick_rejected reason=%s",type(exc).__name__)
