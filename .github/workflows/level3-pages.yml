@@ -1,0 +1,95 @@
+name: Level3 frontend CI and Pages
+on:
+  push:
+    branches: [main]
+    paths: ['frontend/**', 'relay/**', '.github/workflows/level3-pages.yml']
+  pull_request:
+    paths: ['frontend/**', 'relay/**', '.github/workflows/level3-pages.yml']
+  workflow_dispatch:
+    inputs:
+      run_live_probe:
+        description: 'Run PAPER-only one-token SmartAPI receipt probe'
+        required: true
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: level3-pages
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      FEED_MODE: synthetic
+      FRONTEND_ORIGIN: http://127.0.0.1:8001
+      DASHBOARD_ACCESS_CODE: ci-only-synthetic-test
+      CI_FAST_TICKS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r relay/requirements.txt
+      - run: cd relay && pytest -q
+      - run: node --check frontend/app.js
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Synthetic browser E2E
+        run: |
+          (cd relay && uvicorn app:app --host 127.0.0.1 --port 8000) &
+          (cd frontend && python -m http.server 8001 --bind 127.0.0.1) &
+          node relay/browser-e2e.cjs
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  live_probe:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_live_probe == true && github.ref == 'refs/heads/feat/level3-secure-relay'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      FEED_MODE: live_smartapi
+      ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+      ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+      ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+      ANGEL_TOTP_SEED: ${{ secrets.ANGEL_TOTP_SEED }}
+      ANGEL_EXCHANGE_TYPE: '1'
+      ANGEL_SYMBOL_TOKEN: '2885'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: IST market-hours preflight before login
+        run: python relay/market_clock.py
+      - name: Validate secret presence without disclosure
+        run: |
+          python - <<'PY'
+          import os
+          names=('ANGEL_API_KEY','ANGEL_CLIENT_CODE','ANGEL_PIN','ANGEL_TOTP_SEED','ANGEL_EXCHANGE_TYPE','ANGEL_SYMBOL_TOKEN')
+          missing=[name for name in names if not os.getenv(name)]
+          if missing: raise SystemExit('Missing secret/variable names: '+', '.join(missing))
+          print('PASS: four server-side credentials and one-token subscription config present')
+          PY
+      - run: pip install -r relay/requirements.txt smartapi-python pyotp logzero websocket-client
+      - name: Prove real normalized broker tick
+        run: cd relay && python live_probe.py
