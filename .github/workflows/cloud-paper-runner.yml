@@ -1,0 +1,54 @@
+name: Cloud PAPER Runner
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: angel-cloud-paper-writer
+  cancel-in-progress: false
+
+jobs:
+  paper-runner:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: phase2-paper
+
+    env:
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      FEED_MODE: live_smartapi
+      ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+      ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+      ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+      ANGEL_TOTP_SEED: ${{ secrets.ANGEL_TOTP_SEED }}
+      ANGEL_EXCHANGE_TYPE: ${{ secrets.ANGEL_EXCHANGE_TYPE }}
+      ANGEL_SYMBOL_TOKEN: ${{ secrets.ANGEL_SYMBOL_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install existing dependencies
+        run: pip install -r requirements-phase2.txt
+
+      - name: Verify safety and configuration
+        run: python cloud_runner/main.py --preflight
+
+      - name: Execute PAPER-only cycle
+        run: python cloud_runner/main.py --once
+
+      - name: Upload sanitized evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-paper-evidence
+          path: proof-output/cloud-paper/
+          if-no-files-found: error
