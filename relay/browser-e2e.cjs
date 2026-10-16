@@ -4,7 +4,7 @@ const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors
 await page.goto('http://127.0.0.1:8001',{waitUntil:'load'});
 await page.getByLabel('Relay URL').fill('ws://127.0.0.1:8000/ws');
 await page.getByLabel('Access code').fill('ci-only-synthetic-test');
-await page.getByRole('button',{name:'Connect'}).click();
+await page.getByRole('button',{name:'Connect',exact:true}).click();
 await page.getByRole('cell',{name:'SYNTHETIC-CE'}).waitFor({timeout:15000});
 await page.getByRole('cell',{name:'0.30'}).first().waitFor();
 await page.getByRole('cell',{name:'25',exact:true}).first().waitFor({timeout:15000});
