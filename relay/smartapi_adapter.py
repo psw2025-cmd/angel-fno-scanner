@@ -51,6 +51,11 @@ async def stream_live(send_tick, normalize):
     if not data or not data.get("jwtToken") or not data.get("feedToken"):
         raise RuntimeError("SmartAPI session authentication failed")
     websocket=SmartWebSocketV2(data["jwtToken"],c["ANGEL_API_KEY"],c["ANGEL_CLIENT_CODE"],data["feedToken"])
+    # SmartAPI 1.5.5 registers its internal _on_close with websocket-client, which
+    # supplies (wsapp, status_code, reason); its original signature accepts only
+    # wsapp. Scope the compatibility shim to this single SDK instance.
+    # This one-tick probe shuts down explicitly; reconnect behavior needs separate testing.
+    websocket._on_close = lambda wsapp, *args: None
     loop=asyncio.get_running_loop()
     queue=asyncio.Queue(maxsize=100)
     stopped=threading.Event()
