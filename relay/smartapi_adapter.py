@@ -53,7 +53,8 @@ async def stream_live(send_tick, normalize):
     def enqueue(tick):
         if not queue.full():queue.put_nowait(tick)
     def on_error(ws,error):log.error("smartapi_socket_error type=%s",type(error).__name__)
-    def on_close(ws,*args):log.info("smartapi_socket_closed")
+    def on_close(ws, *args):
+        log.info("WebSocket closed")
     websocket.on_open=on_open
     websocket.on_data=on_data
     websocket.on_error=on_error
