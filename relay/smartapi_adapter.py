@@ -14,6 +14,31 @@ def config():
         raise RuntimeError("Unsafe authority flags")
     return {key:os.environ[key] for key in REQUIRED}
 
+def extract_quote(message, token):
+    """Pull (ltp, bid, ask, volume) from a SmartWebSocketV2 SNAP_QUOTE dict.
+
+    The SDK (smartWebSocketV2._parse_best_5_buy_and_sell_data) exposes depth as
+    `best_5_buy_data` / `best_5_sell_data` (entries: flag, quantity, price,
+    "no of orders"); prices are integers scaled by 100. Returns None when the
+    tick is for another token or has no executable depth (bid/ask <= 0), so
+    empty/pre-open depth is never published. Raises KeyError for a malformed
+    payload so the caller can log the exact missing field.
+    """
+    if str(message.get("token")) != str(token):
+        return None
+    buys = message["best_5_buy_data"]
+    sells = message["best_5_sell_data"]
+    bid_prices = [float(x["price"]) / 100 for x in buys if float(x["price"]) > 0]
+    ask_prices = [float(x["price"]) / 100 for x in sells if float(x["price"]) > 0]
+    if not bid_prices or not ask_prices:
+        return None
+    return (
+        float(message["last_traded_price"]) / 100,
+        max(bid_prices),
+        min(ask_prices),
+        float(message["volume_trade_for_the_day"]),
+    )
+
 async def stream_live(send_tick, normalize):
     """Run blocking SDK in a thread and pass normalized ticks into async relay."""
     c=config()
@@ -37,19 +62,14 @@ async def stream_live(send_tick, normalize):
     def on_data(ws,message):
         log.info("smartapi_raw_tick_received token=%s timestamp=%s",message.get("token"),datetime.now(timezone.utc).isoformat())
         try:
-            if str(message.get("token"))!=token:return
-            # SmartAPI SNAP_QUOTE prices are scaled by 100; reject absent bid/ask/volume.
-            depth=message["best_5_data"]
-            bids=[x for x in depth if x.get("buy_sell_indicator")==1]
-            asks=[x for x in depth if x.get("buy_sell_indicator")==2]
-            if not bids or not asks:return
-            bid=float(bids[0]["price"])/100
-            ask=float(asks[0]["price"])/100
-            tick=normalize(token,float(message["last_traded_price"])/100,bid,ask,float(message["volume_trade_for_the_day"]),datetime.now(timezone.utc).isoformat())
+            quote=extract_quote(message,token)
+            if quote is None:return
+            ltp,bid,ask,volume=quote
+            tick=normalize(token,ltp,bid,ask,volume,datetime.now(timezone.utc).isoformat())
             log.info("smartapi_normalized_tick token=%s ts=%s bid=%s ask=%s volume=%s",token,tick["ts"],bid,ask,tick["volume"])
             loop.call_soon_threadsafe(enqueue,tick)
         except (KeyError,ValueError,TypeError,IndexError) as exc:
-            log.warning("smartapi_tick_rejected reason=%s",type(exc).__name__)
+            log.warning("smartapi_tick_rejected reason=%s detail=%s",type(exc).__name__,exc)
     def enqueue(tick):
         if not queue.full():queue.put_nowait(tick)
     def on_error(ws,error):log.error("smartapi_socket_error type=%s",type(error).__name__)
