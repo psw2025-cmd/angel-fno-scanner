@@ -67,3 +67,15 @@ These version-1 entries come from the earlier successful migration run 383892656
 2. Create bucket `gs://fno-angel-evidence`.
 3. Set repo (or environment) variables `GCP_WIF_PROVIDER`, `GCP_MIGRATION_SERVICE_ACCOUNT`, `GCP_EVIDENCE_SERVICE_ACCOUNT`; create environment `gcp-secret-migration`.
 4. Decide Formula Checks dash drift (sheet vs contract).
+
+## Addendum - fix proof on PR branch (run 38898121018, SHA 6633ee2, branch fix/ci-green-wif-docs, 2026-10-16T12:05Z)
+
+| Check | Before (38895975236 on main) | After (38898121018) |
+|---|---|---|
+| pytest | FAIL (0 passed, exit 2) | PASS (304 passed, exit 0) |
+| BigQuery run_id STRING x4 | PASS | PASS |
+| Formula Checks contract | FAIL | FAIL (unchanged: live sheet drift) |
+| Readiness probe | FAIL | FAIL: working_tree/current_main FAIL only because run was on a non-main SHA; runtime_provenance NOT_PROVEN |
+| Overall | FAIL | FAIL (closed) |
+
+Nightly Verify remains FAIL by design until the live sheet drift and runtime provenance are resolved with real evidence. PR #113 CI (encoding-safety x2, pytest) passed; merge awaits user approval.
