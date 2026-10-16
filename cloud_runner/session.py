@@ -11,11 +11,14 @@ def enforce_safety():
     if os.getenv("PAPER_MODE") != "1" or os.getenv("LIVE_ORDER_AUTHORITY") != "0":
         raise RuntimeError("PAPER-only authority flags required")
 
-def validate_environment():
+def validate_environment(*, streaming=False):
     enforce_safety()
-    missing = [name for name in REQUIRED if not os.getenv(name)]
+    required = REQUIRED if streaming else REQUIRED[:4]
+    missing = [name for name in required if not os.getenv(name)]
     if missing:
         raise RuntimeError("Missing required variable names: " + ", ".join(missing))
+    if not streaming:
+        return True
     try:
         exchange = int(os.environ["ANGEL_EXCHANGE_TYPE"])
     except ValueError as exc:
