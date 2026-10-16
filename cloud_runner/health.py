@@ -9,7 +9,8 @@ def snapshot():
         "checked_at": datetime.now(timezone.utc).isoformat(),
         "paper_mode": True,
         "live_order_authority": False,
-        "configuration_present": all(bool(os.getenv(k)) for k in REQUIRED),
+        "snapshot_configuration_present": all(bool(os.getenv(k)) for k in REQUIRED[:4]),
+        "streaming_configuration_present": all(bool(os.getenv(k)) for k in REQUIRED),
         "broker_authenticated": "NOT_TESTED",
         "tick_freshness": "NOT_TESTED",
     }
