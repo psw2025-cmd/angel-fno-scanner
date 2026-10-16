@@ -12,7 +12,8 @@ from pydantic import BaseModel
 
 assert os.getenv("PAPER_MODE", "1") == "1"
 assert os.getenv("LIVE_ORDER_AUTHORITY", "0") == "0"
-assert os.getenv("FEED_MODE", "synthetic") == "synthetic", "Live feed disabled for this gate"
+MODE = os.getenv("FEED_MODE", "synthetic")
+assert MODE in ("synthetic", "live_smartapi"), "Unsupported feed mode"
 ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://127.0.0.1:8001")
 ACCESS_CODE = os.getenv("DASHBOARD_ACCESS_CODE")
 app = FastAPI()
@@ -47,7 +48,7 @@ def normalize(token, ltp, bid, ask, volume, ts=None):
 
 @app.get("/health")
 def health():
-    return {"status":"ok","mode":"synthetic","paper_mode":True,"live_order_authority":False}
+    return {"status":"ok","mode":MODE,"paper_mode":True,"live_order_authority":False}
 
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket):
@@ -59,6 +60,15 @@ async def ws_endpoint(ws: WebSocket):
         return
     await ws.accept(subprotocol="level3")
     await ws.send_json({"type":"status","message":"SYNTHETIC / PAPER"})
+    if MODE == "live_smartapi":
+        try:
+            from smartapi_adapter import stream_live
+            await stream_live(ws.send_json, normalize)
+        except Exception as exc:
+            import logging
+            logging.getLogger("level3").exception("live_feed_unavailable error_type=%s", type(exc).__name__)
+            await ws.close(code=1011)
+        return
     volume = 1000
     try:
         while True:
