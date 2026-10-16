@@ -42,19 +42,26 @@ jobs:
       - name: Verify safety and configuration
         run: python cloud_runner/main.py --preflight
 
-      - name: Prepare isolated reviewed Phase 2 writer
+      - name: Checkout isolated reviewed Phase 2 writer
+        uses: actions/checkout@v4
+        with:
+          ref: test-framework
+          path: paper-runtime
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify reviewed writer parity
         shell: bash
         run: |
           set -euo pipefail
-          git clone --quiet --branch test-framework --single-branch "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" "$RUNNER_TEMP/paper-runtime"
-          git -C "$RUNNER_TEMP/paper-runtime" fetch --quiet origin main
+          git -C paper-runtime fetch --quiet origin main
           for path in run_phase2_local.py run_phase3_pnl.py update_phase4_dashboard.py phase2/option_dna.py nse_calendar.py nse_holidays.json; do
-            test "$(git -C "$RUNNER_TEMP/paper-runtime" hash-object "$path")" = "$(git -C "$RUNNER_TEMP/paper-runtime" rev-parse "origin/main:$path")" || { echo "::error::Reviewed writer drift: $path"; exit 1; }
+            test "$(git -C paper-runtime hash-object "$path")" = "$(git -C paper-runtime rev-parse "origin/main:$path")" || { echo "::error::Reviewed writer drift: $path"; exit 1; }
           done
 
       - name: Execute PAPER-only cycle
         env:
-          CLOUD_PAPER_RUNTIME_DIR: ${{ runner.temp }}/paper-runtime
+          CLOUD_PAPER_RUNTIME_DIR: ${{ github.workspace }}/paper-runtime
         run: python cloud_runner/main.py --once
 
       - name: Upload sanitized evidence
