@@ -6,7 +6,7 @@ import threading
 from datetime import datetime, timezone
 
 log = logging.getLogger("level3.smartapi")
-REQUIRED = ("ANGEL_API_KEY","ANGEL_CLIENT_ID","ANGEL_PIN","ANGEL_TOTP_SECRET","ANGEL_EXCHANGE_TYPE","ANGEL_SYMBOL_TOKEN")
+REQUIRED = ("ANGEL_API_KEY","ANGEL_CLIENT_CODE","ANGEL_PIN","ANGEL_TOTP_SEED","ANGEL_EXCHANGE_TYPE","ANGEL_SYMBOL_TOKEN")
 def config():
     missing=[key for key in REQUIRED if not os.getenv(key)]
     if missing: raise RuntimeError("Missing SmartAPI configuration: "+", ".join(missing))
@@ -21,11 +21,11 @@ async def stream_live(send_tick, normalize):
     from SmartApi.smartWebSocketV2 import SmartWebSocketV2
     import pyotp
     session_client=SmartConnect(api_key=c["ANGEL_API_KEY"])
-    session=session_client.generateSession(c["ANGEL_CLIENT_ID"],c["ANGEL_PIN"],pyotp.TOTP(c["ANGEL_TOTP_SECRET"]).now())
+    session=session_client.generateSession(c["ANGEL_CLIENT_CODE"],c["ANGEL_PIN"],pyotp.TOTP(c["ANGEL_TOTP_SEED"]).now())
     data=session.get("data") if isinstance(session,dict) else None
     if not data or not data.get("jwtToken") or not data.get("feedToken"):
         raise RuntimeError("SmartAPI session authentication failed")
-    websocket=SmartWebSocketV2(data["jwtToken"],c["ANGEL_API_KEY"],c["ANGEL_CLIENT_ID"],data["feedToken"])
+    websocket=SmartWebSocketV2(data["jwtToken"],c["ANGEL_API_KEY"],c["ANGEL_CLIENT_CODE"],data["feedToken"])
     loop=asyncio.get_running_loop()
     queue=asyncio.Queue(maxsize=100)
     stopped=threading.Event()
