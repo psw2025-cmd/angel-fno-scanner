@@ -18,7 +18,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install dependencies
-        run: pip install -r requirements.txt pytest
+        # relay/requirements.txt is required so pytest can collect relay/test_*.py
+        # (same dependency set as PR Tests). Without it pytest exits 2 (collection error).
+        run: pip install -r requirements.txt -r relay/requirements.txt pytest
       - name: Run unified verification suite
         run: python tools/verify_all.py
       - name: Upload verification report artifact

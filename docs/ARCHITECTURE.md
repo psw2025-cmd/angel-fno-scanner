@@ -115,3 +115,16 @@ Angel One SmartAPI (FULL quotes: LTP, OI, Volume, Prev Close)
 3. **Out-of-Order Multi-Tab Writes**: If BigQuery fails after Google Sheets updates, `publication.py` records `FAILED_PARTIAL` in `PUBLICATION_STATUS`. Consumers calling `verify_current_publication()` reject the partial state.
 4. **Exchange Calendar Anomalies**: `market_calendar.py` uses the official 2026 NSE holiday schedule. Unknown years or unreviewed dates fail closed.
 5. **Concurrent Run Collisions**: GitHub Actions `market_bot.yml` enforces concurrency groups (`cancel-in-progress: false`), and `writer_guard.py` verifies runtime credentials before opening writes.
+
+---
+
+## Cloud Identity: GitHub OIDC + Workload Identity Federation (2026-10-16)
+
+| Workflow | Identity (repo variable) | Purpose | Least privilege |
+|---|---|---|---|
+| `_migrate_secrets_one_time.yml` | `GCP_MIGRATION_SERVICE_ACCOUNT` via `GCP_WIF_PROVIDER` | Add versions of the four Angel secrets in Secret Manager | Secret Manager write on those secrets only |
+| `nasa-daily-proof.yml` | `GCP_EVIDENCE_SERVICE_ACCOUNT` via `GCP_WIF_PROVIDER` | Upload proof ledger to `gs://fno-angel-evidence` and verify byte readback | Object write/read on the evidence bucket only |
+
+Both workflows fail closed if a variable is empty, before any cloud call. Neither contains a static-key fallback.
+
+Known gaps (verified 2026-10-16, see `audit/WIF_VERIFICATION_20261016.md`): no WIF pool/provider, migration/evidence service accounts, evidence bucket or `gcp-secret-migration` environment exist yet; repository variables are unset. `SHEETS_KEY_JSON` (static service-account JSON) is still used by `market_bot`, `nightly_verify`, `agent_dispatch`, `agent_issue_ops`.

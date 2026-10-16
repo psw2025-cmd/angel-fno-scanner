@@ -61,4 +61,5 @@ def test_n8n_sync_enforces_integrity():
 
 def test_nightly_verify_installs_pytest():
     text = (ROOT / ".github/workflows/nightly_verify.yml").read_text(encoding="utf-8")
-    assert "pip install -r requirements.txt pytest" in text
+    # relay/test_*.py need fastapi; without relay requirements pytest exits 2 (collection error)
+    assert "pip install -r requirements.txt -r relay/requirements.txt pytest" in text
