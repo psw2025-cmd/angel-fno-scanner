@@ -6,6 +6,12 @@ on:
   pull_request:
     paths: ['frontend/**', 'relay/**', '.github/workflows/level3-pages.yml']
   workflow_dispatch:
+    inputs:
+      run_live_probe:
+        description: 'Run PAPER-only one-token SmartAPI receipt probe'
+        required: true
+        type: boolean
+        default: false
 permissions:
   contents: read
   pages: write
@@ -53,3 +59,35 @@ jobs:
           path: frontend
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  live_probe:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_live_probe == true && github.ref == 'refs/heads/feat/level3-secure-relay'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      FEED_MODE: live_smartapi
+      ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+      ANGEL_CLIENT_ID: ${{ secrets.ANGEL_CLIENT_ID }}
+      ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+      ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
+      ANGEL_EXCHANGE_TYPE: ${{ vars.ANGEL_EXCHANGE_TYPE }}
+      ANGEL_SYMBOL_TOKEN: ${{ vars.ANGEL_SYMBOL_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate secret presence without disclosure
+        run: |
+          python - <<'PY'
+          import os
+          names=('ANGEL_API_KEY','ANGEL_CLIENT_ID','ANGEL_PIN','ANGEL_TOTP_SECRET','ANGEL_EXCHANGE_TYPE','ANGEL_SYMBOL_TOKEN')
+          missing=[name for name in names if not os.getenv(name)]
+          if missing: raise SystemExit('Missing secret/variable names: '+', '.join(missing))
+          print('PASS: four server-side credentials and one-token subscription config present')
+          PY
+      - run: pip install -r relay/requirements.txt smartapi-python pyotp logzero websocket-client
+      - name: Prove real normalized broker tick
+        run: cd relay && python live_probe.py
