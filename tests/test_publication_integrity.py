@@ -90,7 +90,7 @@ class BQ:
 
     def load_table_from_json(self, rows, table, job_config):
         self.loads.append((table,rows,job_config))
-        def result():
+        def result(timeout=None):
             if self.fail_load:
                 raise RuntimeError('load unavailable')
             if table == 'option_predictions_live':

@@ -1,5 +1,109 @@
 # Changelog
 
+## 2026-10-15 - Preflight guard: Formula Checks must keep the 200-row rank contract
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED (tooling only)
+**Evidence:** after GATE-06/07 were corrected, the sheet was rewritten back to the retired 216-row formulas by a non-repo writer (Drive revision 2026-10-15T09:55:54Z by the shared service account, right after the foreign BigQuery writer stopped). Re-applied and verified (GATE-06 200/200, OVERALL 0 failed gates).
+
+### What changed
+- tools/preflight.py: new `formula_checks_contract` check reads the raw GATE-06/07 formulas and FAILS if the retired `C3:C218` / `Y3:Y218` ranges return.
+- tests/test_preflight_tool.py: reverted formula fails; good case passes.
+
+## 2026-10-15 - Fix false readback mismatch on negative zero (publication.py)
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED
+**Evidence:** execution angel-market-scan-job-tcrvm: `first difference (row, col, expected, actual)=(199, 32, '-0', '0')` in OPTION_PREDICTIONS. A float -0.0 normalized to '-0' while Sheets stores/returns 0, so every cycle containing -0.0 failed closed (also tvr28).
+
+### What changed
+- publication.py: `_number_text` canonicalizes any zero (including -0.0) to "0"; all other numeric normalization unchanged, so real differences still fail.
+- tests/test_publication_first_diff.py: -0.0 vs 0 regression plus near-zero real differences still detected.
+
+## 2026-10-15 - publication readback error names the first differing cell (publication.py)
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED
+**Evidence:** execution angel-market-scan-job-tvr28 failed 3/3 attempts with `OPTION_PREDICTIONS readback differs from this cycle's intended output` and no location, so the cause could not be diagnosed from logs.
+
+### What changed
+- publication.py: normalization factored into `_normalize`; new `first_diff()`; the RuntimeError now includes `(row, col, expected, actual)` (truncated to 60 chars). Hashing behaviour is unchanged (fail-closed semantics identical).
+- tests/test_publication_first_diff.py (new): equal matrices, cell location, row-count mismatch, error message content.
+
+## 2026-10-15 - Preflight guard: environment secrets must not shadow repository secrets
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED (tooling only)
+**Evidence:** workflow runs 38750259483 and 38750447937 (Phase 2 Angel One read-only paper receipt) failed because the `phase2-paper` environment held empty ANGEL_* secrets that override the repository secrets. Fixed operationally by deleting the unused/empty environment secrets (names only; no values were read); run 38753111169 then passed all steps.
+
+### What changed
+- tools/preflight.py: new `env_secrets_not_shadowing_repo` check (names only) fails when any environment secret has the same name as a repository secret.
+- tests/test_preflight_tool.py: shadowing fails, env-only names pass, unmeasurable stays NOT_PROVEN.
+
+## 2026-10-15 - Systemic Sheets 429 tolerance (tools/sheets_quota.py, scanner.py)
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED
+**Evidence:** execution angel-market-scan-job-qc8x6 (image b26e842) crashed at 08:04Z with a 429 'Read requests per minute per user' raised from `scanner.worksheet()` -> `book.worksheet("FORENSIC_LIVE")`; the writer_guard-only fix did not cover other callers.
+
+### What changed
+- tools/sheets_quota.py (new): idempotent `install()` wraps gspread `HTTPClient.request`; HTTP 429 only is retried with bounded backoff (5/10/20/40/60 s), all other errors propagate, persistent 429 still raises (fail closed).
+- scanner.py: installs the wrapper at import and caches worksheet handles per spreadsheet so each cycle no longer repeats one metadata read per `worksheet()` call.
+- tests/test_sheets_quota.py (new): retry-then-success, bounded fail-closed, non-429 not retried, idempotent install, worksheet cache.
+
+## 2026-10-15 - Fix cycle crash on Sheets 429 in WRITE_PROVENANCE (writer_guard.py)
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED
+**Evidence:** Cloud Run execution angel-market-scan-job-48b4q failed at 07:41Z: a 429 read-quota error from `sh.worksheet("WRITE_PROVENANCE")` was treated as "sheet missing", then `add_worksheet` raised "already exists" and the cycle was marked unverified.
+
+### What changed
+- writer_guard.py: sheet is created only on `WorksheetNotFound`; 429 quota errors are retried with bounded backoff (5/15/30/60 s) and then fail closed; an "already exists" race re-fetches the sheet; non-quota errors still propagate.
+- tests/test_writer_guard_quota.py (new): 429 on read is retried without creating the sheet, missing sheet is created, non-quota errors propagate, persistent 429 fails closed.
+
+## 2026-10-15 - Read-only agent preflight (tools/preflight.py)
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED (tooling only; no runtime behaviour change)
+
+### What changed
+- tools/preflight.py (new): one command collects git HEAD/remote main, Cloud Run job image/env/executions, Scheduler states, option_predictions_live schema/rows/provenance and Formula Checks gate statuses into one JSON evidence file. Rules are fail-closed: unmeasurable sources are NOT_PROVEN, never PASS; exit code 1 on any FAIL.
+- tests/test_preflight_tool.py (new): nine tests covering missing provenance columns, partial universe, null git_sha, budget equal to platform timeout, placeholder GIT_SHA, tag-only image, failing sheet gate and unmeasurable sources.
+
+## 2026-10-15 - Phase 0 hardening: integer policy, stale SHA, provenance, runtime budget
+
+**Commit:** Pending HEAD
+**Status:** IMPLEMENTED_NOT_DEPLOYED
+
+### What changed
+- tools/live_schema_guard.py: `sanitize_bq_row` no longer rounds. Integral values (3, 3.0, "3") are accepted; fractional values (12.6, 2.5) and values beyond 2**53 raise SchemaGuardError (fail closed).
+- tools/cycle_provenance.py: `resolve_git_sha` raises when a valid env SHA and a valid baked SOURCE_COMMIT disagree (stale-but-valid SHA). Placeholders such as `cloudrun-v2` still fall back to the baked file.
+- Dockerfile: bakes SOURCE_COMMIT and GIT_SHA like Dockerfile.cloudrun.
+- tools/runtime_budget.py (new) and scanner.py: on Cloud Run jobs the application watchdog budget is clamped to the platform timeout (default 14400 s) minus 600 s, so MAX_RUNTIME_SECONDS=24300 can no longer outlive the task.
+- tests/test_cdx_hardening_20261015.py: 21 regression tests.
+
+### Evidence
+- New tests: 10 of 21 FAIL on 0119205 and all 21 PASS on this change.
+- Full suite in an isolated worktree: 346 passed, twice.
+- Not deployed; no runtime proof.
+
+---
+
+## 2026-10-15 - CDX-01..06 baseline on integration branch feat/cdx-01-to-12-integration
+
+**Commit:** Pending HEAD
+**Status:** IMPLEMENTED_NOT_DEPLOYED (no runtime proof yet; PAPER=ON, LIVE ORDER AUTHORITY=OFF)
+
+### What changed
+- Baseline commit of previously uncommitted local work (allowlisted files only; no .venv, caches, evidence or temp files).
+- scanner.py, angel_prediction_engine.py, paper_log.py, writer_guard.py, requirements.txt: local modifications carried over unchanged.
+- tools/cycle_provenance.py, tools/live_schema_guard.py, tools/publication_lease.py, tools/validation_cycle.py: new modules for cycle provenance, live schema guard, publication lease and validation cycle.
+- Dockerfile, Dockerfile.cloudrun, .dockerignore, .gcloudignore, cloudbuild.validation.yaml, .github/workflows/market_bot.yml: build and workflow configuration.
+- tests/: new and updated regression tests for the modules above.
+
+- cloud_status.py: added. angel_prediction_engine.py imports it, and the first baseline commit (15a0e3c) omitted it, so that commit failed at import (12 collection errors).
+- Reconciled with main 70b096b: kept sanitize_bq_row and the module-level `_canon` (PR #97 logic) in tools/live_schema_guard.py, and kept `ENV GIT_SHA=$SOURCE_COMMIT` in Dockerfile.cloudrun (tests/test_container_provenance.py requires it). PR #97 head 6aa8172 was merged into this branch only; main and PR #97 are unchanged. The nested duplicate `_canon` that PR #97 adds inside `assert_truncate_schema_safe` was removed.
+
+### Evidence
+- pytest (isolated worktree, local): 325 passed. Targeted schema guard, provenance, lease, universe and single-writer tests: 53 passed. Encoding tests: 8 passed.
+- Not deployed. No Docker build, Cloud Run, Scheduler, BigQuery or Sheet runtime proof yet.
+- Pre-snapshot: C:\temp\AngelFNO\snap_20261015_034751 (diff.patch, status.txt, log.txt).
+
+---
+
 ## 2026-10-14 - Refuse a narrow WRITE_TRUNCATE of option_predictions_live
 
 **Commit:** Pending HEAD

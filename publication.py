@@ -23,11 +23,19 @@ STATUS_HEADERS = ["State", "Cycle ID", "Run ID", "Git SHA", "Writer ID",
 REQUIRED_TABS = ("FORENSIC_LIVE", "OPTION_PREDICTIONS", "NEWS_LIVE")
 
 
-def matrix_hash(rows):
+def _number_text(value):
+    """Canonical text for a number. Negative zero (-0.0) equals 0 and Sheets returns 0."""
+    d = Decimal(str(value)).normalize()
+    if d == 0:
+        return "0"
+    return format(d, "f")
+
+
+def _normalize(rows):
     # Sheets omits trailing blanks and returns numbers as strings.
     normalized = []
     for row in rows:
-        cells = [format(Decimal(str(cell)).normalize(), "f")
+        cells = [_number_text(cell)
                  if isinstance(cell, (int, float)) and not isinstance(cell, bool)
                  else str(cell) for cell in row]
         while cells and cells[-1] == "":
@@ -35,8 +43,30 @@ def matrix_hash(rows):
         normalized.append(cells)
     while normalized and not normalized[-1]:
         normalized.pop()
+    return normalized
+
+
+def matrix_hash(rows):
+    normalized = _normalize(rows)
     return hashlib.sha256(json.dumps(normalized, ensure_ascii=False,
                                      separators=(",", ":")).encode()).hexdigest()
+
+
+def first_diff(expected_rows, actual_rows):
+    """Locate the first differing cell (1-based) after the same normalization as matrix_hash.
+
+    Returns None when equal, else (row, col, expected_text, actual_text); text is truncated.
+    """
+    exp, act = _normalize(expected_rows), _normalize(actual_rows)
+    if len(exp) != len(act):
+        return (min(len(exp), len(act)) + 1, 0, f"{len(exp)} rows", f"{len(act)} rows")
+    for r, (er, ar) in enumerate(zip(exp, act), start=1):
+        for c in range(max(len(er), len(ar))):
+            ev = er[c] if c < len(er) else "<absent>"
+            av = ar[c] if c < len(ar) else "<absent>"
+            if ev != av:
+                return (r, c + 1, ev[:60], av[:60])
+    return None
 
 
 def sheet_symbols(title, rows):
@@ -57,7 +87,10 @@ def verify_outputs(sh, bq_client, table_ref, identity, expected_rows=None):
         require_verified_symbols(sheet_symbols(title, rows))
         digest = matrix_hash(rows)
         if expected_rows is not None and digest != matrix_hash(expected_rows[title]):
-            raise RuntimeError(f"{title} readback differs from this cycle's intended output")
+            where = first_diff(expected_rows[title], rows)
+            raise RuntimeError(
+                f"{title} readback differs from this cycle's intended output; "
+                f"first difference (row, col, expected, actual)={where!r}")
         digests.append(digest)
     # Table-data read has no SQL query or scan job. Bound the read to catch extras.
     rows = list(bq_client.list_rows(table_ref, max_results=220, page_size=220))

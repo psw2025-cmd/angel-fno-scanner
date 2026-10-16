@@ -34,6 +34,60 @@ def _type(field) -> str:
     return str(raw).upper()
 
 
+def _canon(t: str) -> str:
+    """Normalise BigQuery legacy/standard numeric type names (PR #97).
+
+    BigQuery reports live columns as FLOAT/INTEGER while load schemas use
+    FLOAT64/INT64; they are the same type and must not count as a retype.
+    """
+    t = (t or "").upper()
+    if t in ("FLOAT", "FLOAT64"):
+        return "FLOAT64"
+    if t in ("INTEGER", "INT64"):
+        return "INT64"
+    return t
+
+
+def sanitize_bq_row(table_name: str, row: dict) -> dict:
+    """Return a copy of ``row`` with integral float values for INT64 columns cast to int (CDX-02).
+
+    Integer policy (all INT64 columns in the contract are counters or ranks, so one
+    strict policy applies to every field): a value is accepted only if it is exactly
+    integral (3, 3.0, "3"). A fractional value (12.6, 2.5) is corrupt data and raises
+    SchemaGuardError; it is never rounded, truncated or silently replaced.
+
+    Driven by schemas/<table_name>.json so it cannot drift from the contract.
+    bool and None are left untouched (the schema validator rejects bool). A value
+    that cannot be represented as an integer raises SchemaGuardError instead of
+    being silently replaced, so bad data fails closed.
+    """
+    from tools.schema_validator import load_schema
+
+    int_cols = {
+        f["name"] for f in load_schema(table_name)
+        if str(f.get("type", "")).upper() in ("INT64", "INTEGER")
+    }
+    sanitized = dict(row)
+    for key in int_cols & sanitized.keys():
+        val = sanitized[key]
+        if val is None or isinstance(val, bool) or isinstance(val, int):
+            continue
+        try:
+            as_float = float(val)
+            if as_float != as_float or as_float in (float("inf"), float("-inf")):
+                raise ValueError("non-finite")
+            if not as_float.is_integer():
+                raise ValueError("fractional value for INT64 column; refusing to round")
+            if abs(as_float) > 2 ** 53:
+                raise ValueError("exceeds exactly representable integer range")
+            sanitized[key] = int(as_float)
+        except (ValueError, TypeError, OverflowError) as exc:
+            raise SchemaGuardError(
+                f"{table_name}.{key} must be INT64-compatible, got {val!r}"
+            ) from exc
+    return sanitized
+
+
 def field_map(fields) -> dict[str, str]:
     mapped = {}
     for field in fields or []:
@@ -102,7 +156,7 @@ def assert_truncate_schema_safe(committed_fields, live_fields, load_fields=None,
         )
     retyped = sorted(
         name for name, live_type in live.items()
-        if name in load and load[name] != live_type
+        if name in load and _canon(load[name]) != _canon(live_type)
     )
     if retyped:
         detail = ", ".join(f"{name} live={live[name]} load={load[name]}" for name in retyped)
@@ -115,3 +169,4 @@ def assert_truncate_schema_safe(committed_fields, live_fields, load_fields=None,
         raise SchemaGuardError(
             "load schema omits committed fields: " + ", ".join(missing_from_load)
         )
+
