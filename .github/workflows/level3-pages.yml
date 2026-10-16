@@ -45,7 +45,7 @@ jobs:
           (cd frontend && python -m http.server 8001 --bind 127.0.0.1) &
           node relay/browser-e2e.cjs
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     needs: test
     runs-on: ubuntu-latest
     environment:
