@@ -1,0 +1,7 @@
+name: Cloud PAPER Runner
+on: workflow_dispatch
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Registered"
