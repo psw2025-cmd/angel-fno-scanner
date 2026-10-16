@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "tracks": {
+    "gap_up": "T+1_open",
+    "breakout": "5-20_trading_days",
+    "multibagger": "3-12_calendar_months"
+  },
+  "prediction_required": [
+    "prediction_id",
+    "track",
+    "symbol",
+    "published_at",
+    "target_date",
+    "previous_close",
+    "predicted_return_pct",
+    "model_version"
+  ],
+  "r2_prefixes": [
+    "raw/",
+    "predictions/",
+    "actuals/",
+    "validation/",
+    "models/versions/",
+    "metrics/"
+  ],
+  "paper_mode": 1,
+  "live_order_authority": 0
+}
