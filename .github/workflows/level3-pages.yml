@@ -3,6 +3,8 @@ on:
   push:
     branches: [main]
     paths: ['frontend/**', 'relay/**', '.github/workflows/level3-pages.yml']
+  pull_request:
+    paths: ['frontend/**', 'relay/**', '.github/workflows/level3-pages.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -21,8 +23,13 @@ jobs:
           python-version: '3.11'
       - run: pip install -r relay/requirements.txt
       - run: cd relay && pytest -q
+        env:
+          PAPER_MODE: '1'
+          LIVE_ORDER_AUTHORITY: '0'
+          FEED_MODE: synthetic
       - run: node --check frontend/app.js
   deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: test
     runs-on: ubuntu-latest
     environment:
