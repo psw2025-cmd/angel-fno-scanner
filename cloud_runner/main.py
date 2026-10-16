@@ -9,7 +9,7 @@ from pathlib import Path
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from cloud_runner.session import validate_environment
+from cloud_runner.session import validate_environment, REQUIRED
 from cloud_runner.health import snapshot
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -79,6 +79,6 @@ if __name__ == "__main__":
         sys.exit(main())
     except Exception as exc:
         PROOF.mkdir(parents=True, exist_ok=True)
-        (PROOF / "status.json").write_text(json.dumps({"status": "FAIL_CLOSED", "error_type": type(exc).__name__, "paper_mode": os.getenv("PAPER_MODE") == "1", "live_order_authority": os.getenv("LIVE_ORDER_AUTHORITY") == "0"}, sort_keys=True) + "\n", encoding="utf-8")
+        (PROOF / "status.json").write_text(json.dumps({"status": "FAIL_CLOSED", "error_type": type(exc).__name__, "missing_snapshot_variable_names": [name for name in REQUIRED[:4] if not os.getenv(name)], "paper_mode": os.getenv("PAPER_MODE") == "1", "live_order_authority": os.getenv("LIVE_ORDER_AUTHORITY") == "0"}, sort_keys=True) + "\n", encoding="utf-8")
         print("CLOUD_PAPER_RUNNER_FAIL_CLOSED type=" + type(exc).__name__, file=sys.stderr)
         sys.exit(1)
