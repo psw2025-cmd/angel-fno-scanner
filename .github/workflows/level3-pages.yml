@@ -69,9 +69,9 @@ jobs:
       LIVE_ORDER_AUTHORITY: '0'
       FEED_MODE: live_smartapi
       ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
-      ANGEL_CLIENT_ID: ${{ secrets.ANGEL_CLIENT_ID }}
+      ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
       ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
-      ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
+      ANGEL_TOTP_SEED: ${{ secrets.ANGEL_TOTP_SEED }}
       ANGEL_EXCHANGE_TYPE: '1'
       ANGEL_SYMBOL_TOKEN: '2885'
     steps:
@@ -85,7 +85,7 @@ jobs:
         run: |
           python - <<'PY'
           import os
-          names=('ANGEL_API_KEY','ANGEL_CLIENT_ID','ANGEL_PIN','ANGEL_TOTP_SECRET','ANGEL_EXCHANGE_TYPE','ANGEL_SYMBOL_TOKEN')
+          names=('ANGEL_API_KEY','ANGEL_CLIENT_CODE','ANGEL_PIN','ANGEL_TOTP_SEED','ANGEL_EXCHANGE_TYPE','ANGEL_SYMBOL_TOKEN')
           missing=[name for name in names if not os.getenv(name)]
           if missing: raise SystemExit('Missing secret/variable names: '+', '.join(missing))
           print('PASS: four server-side credentials and one-token subscription config present')
