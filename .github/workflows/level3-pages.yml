@@ -16,6 +16,13 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      FEED_MODE: synthetic
+      FRONTEND_ORIGIN: http://127.0.0.1:8001
+      DASHBOARD_ACCESS_CODE: ci-only-synthetic-test
+      CI_FAST_TICKS: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -23,11 +30,14 @@ jobs:
           python-version: '3.11'
       - run: pip install -r relay/requirements.txt
       - run: cd relay && pytest -q
-        env:
-          PAPER_MODE: '1'
-          LIVE_ORDER_AUTHORITY: '0'
-          FEED_MODE: synthetic
       - run: node --check frontend/app.js
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Synthetic browser E2E
+        run: |
+          (cd relay && uvicorn app:app --host 127.0.0.1 --port 8000) &
+          (cd frontend && python -m http.server 8001 --bind 127.0.0.1) &
+          node relay/browser-e2e.cjs
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: test
