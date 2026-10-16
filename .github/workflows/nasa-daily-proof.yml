@@ -88,6 +88,16 @@ jobs:
           path: proof-output/cli_forensic_gate.json
           if-no-files-found: warn
           retention-days: 30
+      - name: Classify required WIF configuration
+        shell: bash
+        env:
+          WIF_PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
+          EVIDENCE_SA: ${{ vars.GCP_EVIDENCE_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          test -n "$WIF_PROVIDER" || { echo "::error::NASA_MISSING_GCP_WIF_PROVIDER"; exit 1; }
+          test -n "$EVIDENCE_SA" || { echo "::error::NASA_MISSING_GCP_EVIDENCE_SERVICE_ACCOUNT"; exit 1; }
+          echo "NASA_WIF_CONFIGURATION_PRESENT"
       - name: Authenticate to Google Cloud using WIF
         id: gcp
         if: ${{ vars.GCP_WIF_PROVIDER != '' && vars.GCP_EVIDENCE_SERVICE_ACCOUNT != '' }}
@@ -103,7 +113,8 @@ jobs:
         if: ${{ steps.gcp.outcome == 'success' }}
         shell: bash
         run: |
-          test -s proof-output/PROVEN_PROOF_LEDGER.json
+          test -s proof-output/PROVEN_PROOF_LEDGER.json || { echo "::error::NASA_PROOF_LEDGER_MISSING"; exit 1; }
+          gcloud storage buckets describe gs://fno-angel-evidence --format='value(name)' >/dev/null || { echo "::error::NASA_GCS_BUCKET_MISSING_OR_ACCESS_DENIED"; exit 1; }
           sha256sum proof-output/PROVEN_PROOF_LEDGER.json > proof-output/PROVEN_PROOF_LEDGER.sha256
           target="gs://fno-angel-evidence/nasa-daily-proof/${GITHUB_RUN_ID}/${GITHUB_SHA}/"
           gcloud storage cp proof-output/PROVEN_PROOF_LEDGER.json "${target}PROVEN_PROOF_LEDGER.json"
@@ -116,7 +127,7 @@ jobs:
         shell: bash
         run: |
           if [ "${{ steps.gcp.outcome }}" != "success" ] || [ "${{ steps.cloud.outcome }}" != "success" ]; then
-            echo "::error::GCS evidence BLOCKED or FAIL. Configure WIF provider, evidence service account and bucket IAM; BigQuery ledger readback remains unimplemented."
+            echo "::error::NASA_CLOUD_EVIDENCE_FAIL: verify WIF variable presence, OIDC trust and impersonation, GCS bucket existence/IAM, upload and readback; BigQuery ledger readback remains unimplemented."
             exit 1
           fi
           if [ "${{ steps.cli.outcome }}" != "success" ]; then
