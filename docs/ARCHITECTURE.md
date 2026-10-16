@@ -127,4 +127,4 @@ Angel One SmartAPI (FULL quotes: LTP, OI, Volume, Prev Close)
 
 Both workflows fail closed if a variable is empty, before any cloud call. Neither contains a static-key fallback.
 
-Known gaps (verified 2026-10-16, see `audit/WIF_VERIFICATION_20261016.md`): no WIF pool/provider, migration/evidence service accounts, evidence bucket or `gcp-secret-migration` environment exist yet; repository variables are unset. `SHEETS_KEY_JSON` (static service-account JSON) is still used by `market_bot`, `nightly_verify`, `agent_dispatch`, `agent_issue_ops`.
+Provisioned and verified 2026-10-16 (see `audit/WIF_VERIFICATION_20261016.md`): pool `github-actions`, provider `github-oidc` (condition: this repo and `refs/heads/main`), service accounts `angel-secret-migrator` and `angel-evidence-writer`, bucket `gs://fno-angel-evidence` (private, versioned), environment `gcp-secret-migration` (main only), and the three repository variables. Remaining gap: `SHEETS_KEY_JSON` (static service-account JSON) is still used by `market_bot`, `nightly_verify`, `agent_dispatch`, `agent_issue_ops`.
