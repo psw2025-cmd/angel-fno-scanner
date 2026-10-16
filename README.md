@@ -157,7 +157,7 @@ Agents: read FRONT.md first. Autonomous for paper-only work, no approval needed 
 
 ## Cloud identity architecture (GitHub OIDC / GCP Workload Identity Federation)
 
-Status as of 2026-10-16: workflow code is WIF-only, but the GCP/GitHub side is NOT provisioned (see `audit/WIF_VERIFICATION_20261016.md`). Do not treat WIF as active until a run proves it.
+Status as of 2026-10-16: WIF is provisioned and proven by Migrate Secrets run 38945257582 and NASA Daily Proof run 38945241217 on main 6b036a4 (see `audit/WIF_VERIFICATION_20261016.md`). Pool `github-actions`, provider `github-oidc`, restricted to this repo and `refs/heads/main`. Service accounts: `angel-secret-migrator` (migration) and `angel-evidence-writer` (evidence).
 
 - The migrate workflow (`_migrate_secrets_one_time.yml`) and NASA Daily Proof (`nasa-daily-proof.yml`) authenticate ONLY with `google-github-actions/auth@v2` using GitHub OIDC (`id-token: write`). They contain no static service-account key path (no `sa.json`, no JSON key secret) and fail closed when the variables below are empty.
 - Repository variables (not secrets) required: `GCP_WIF_PROVIDER`, `GCP_MIGRATION_SERVICE_ACCOUNT`, `GCP_EVIDENCE_SERVICE_ACCOUNT`.

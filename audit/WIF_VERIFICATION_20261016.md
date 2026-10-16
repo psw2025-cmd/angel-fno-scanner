@@ -115,3 +115,31 @@ COVERAGE GAP (OBSERVATION): the 09:15 IST run (execution spb2v) stops at MAX_RUN
 DOC DRIFT (OBSERVATION): committed docs/migration-asia-south1 state the Mumbai job was not created and the US job remains. Live GCP shows only the asia-south1 job (created 2026-10-14) and asia-south1 schedulers ENABLED. The docs are stale.
 
 STATUS: OBSERVED. Production changes (runtime cap, timeout, scheduler overlap, image provenance) are WAITING_FOR_USER approval.
+## Addendum 4 - WIF provisioned and proven (owner-approved, 2026-10-16)
+
+Authority: project owner (warghade2012@gmail.com, roles/owner verified) approved Package 1 and Package 3. PAPER_MODE=1, LIVE_ORDER_AUTHORITY=0. Production scanner untouched by Package 1.
+
+Actions (all verified independently afterward):
+- PR #113 merged as 6b036a4 (checks green: pytest, encoding-safety x2, Bugbot).
+- Enabled sts.googleapis.com.
+- Workload identity pool `github-actions`; OIDC provider `github-oidc`, attribute condition `assertion.repository=='psw2025-cmd/angel-fno-scanner'&&assertion.ref=='refs/heads/main'`.
+- Service accounts: `angel-secret-migrator` (secretVersionAdder + viewer on the 4 Angel secrets only, serviceUsageViewer on project; impersonation allowed only from environment `gcp-secret-migration`); `angel-evidence-writer` (objectAdmin + legacyBucketReader on the evidence bucket only; impersonation from this repo).
+- Bucket `gs://fno-angel-evidence`: asia-south1, uniform access, public access prevention enforced, versioning on.
+- GitHub: variables GCP_WIF_PROVIDER, GCP_MIGRATION_SERVICE_ACCOUNT, GCP_EVIDENCE_SERVICE_ACCOUNT set; environment `gcp-secret-migration` limited to branch main.
+
+Runs on main 6b036a4 (workflow_dispatch):
+
+| Workflow | Run ID | Result |
+|---|---|---|
+| Migrate Secrets to GCP (one-time) | 38945257582 | PASS |
+| NASA Daily Proof (read-only) | 38945241217 | PASS (cloud step) |
+
+Evidence:
+- Authentication: logs show the WIF provider and migration SA as inputs, "Created credentials file ... Successfully authenticated". The job passes no `credentials_json` and no static key. The credentials file is the short-lived external-account config, not a key.
+- Secret Manager (direct gcloud): ANGEL_API_KEY, ANGEL_CLIENT_CODE, ANGEL_PIN, ANGEL_TOTP_SEED each have version 2 (created 2026-10-16 18:10:42-46 UTC), version 1 retained. Log shows SECRET_VERSION_ADDED for all four.
+- Production safety: SHA-256 comparison (no values printed) shows version 2 IDENTICAL to version 1 for all four, so the live Cloud Run job (reads `latest`) is unaffected.
+- NASA: log shows upload of PROVEN_PROOF_LEDGER.json and .sha256 to gs://fno-angel-evidence/nasa-daily-proof/38945241217/6b036a4a63c48a28a7e89c4aae2541217b00da9b/ and "GCS upload and readback verified". Independent check: downloaded object, recomputed SHA-256 d071d3ffd5a79a31e9d58da09a18aa9f41b39b42f8c6906e1e56ca2cc4bf94bd equals the recorded value (14595 bytes).
+
+CAVEAT (OBSERVED): the NASA ledger content still reports PROOF_SUMMARY {"BLOCKED": 17, "FAIL": 1, "PASS": 7}. The workflow passes because its enforced gates are the cloud upload/readback and the CLI gate; the 17 BLOCKED and 1 FAIL checks are not enforced as failures. Investigation is OPEN.
+
+Package 3: the Formula Checks contract in tools/verify_harness.py now uses the plain hyphen that the live sheet already has (ASCII, per PM-001); the formula is still compared exactly. Regression test: tests/test_formula_contract_ascii.py.

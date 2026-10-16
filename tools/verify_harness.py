@@ -295,7 +295,7 @@ def check_gate_formulas(formula_rows, sheet_data, sh_obj):
         ("GATE-04", 2): '=COUNTIFS(FORENSIC_LIVE!Q2:Q220,">=0",FORENSIC_LIVE!Q2:Q220,"<=10")&" in range; "&COUNTIFS(FORENSIC_LIVE!B2:B220,"<>",FORENSIC_LIVE!Q2:Q220,"")&" blank"',
         ("GATE-04", 4): '=IF(COUNTIFS(FORENSIC_LIVE!Q2:Q220,">10")+COUNTIFS(FORENSIC_LIVE!Q2:Q220,"<0")>0,"FAIL","PASS")',
         ("OVERALL", 2): '=(COUNTIF(E2:E6,"FAIL")+COUNTIF(E10:E11,"FAIL"))&" failed gates"',
-        ("OVERALL", 4): '=IF(COUNTIF(E2:E6,"FAIL")+COUNTIF(E10:E11,"FAIL")>0,"BLOCKED",IF(C3="MARKET CLOSED","MARKET CLOSED — alerts are not live","PASS — session open and gates clear"))',
+        ("OVERALL", 4): '=IF(COUNTIF(E2:E6,"FAIL")+COUNTIF(E10:E11,"FAIL")>0,"BLOCKED",IF(C3="MARKET CLOSED","MARKET CLOSED - alerts are not live","PASS - session open and gates clear"))',
         ("GATE-06", 2): '=COUNTA(CE_PE_RANK!A5:A204)&" / 200"',
         ("GATE-06", 4): '=IF(COUNTA(CE_PE_RANK!A5:A204)=200,"PASS","FAIL")',
         ("GATE-07", 2): '=COUNTIF(CE_PE_RANK!U5:U204,"HIGH MOMENTUM")',
