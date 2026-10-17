@@ -1,0 +1,22 @@
+Domain,Criterion,Result,Evidence_ID,Verification_Method,Confidence_Pct,Notes
+Runtime,Power BI Desktop + engine alive and owning the open report,PASS,E-01,"Process, parent link, listener",99,PID 23416 / 11740 / port 59161
+Data freshness,Loaded data within last session,FAIL,E-03;E-12,Partition RefreshedTime,99,18 days old
+Data freshness,Upstream feed Power BI reads is alive,FAIL,E-06;E-10;E-11,"git log, run list, JSON timestamp",97,GitHub JSON dead since 2026-10-09
+Data freshness,"Operational sources alive (Sheet, BigQuery)",PASS WITH RISKS,E-08;E-09,Sheet ping + BQ Modified agree (2026-10-16 ~23:40 IST),96,Fresh for last session; BQ timestamp column mislabelled
+Universe,216/219 symbol completeness shown correctly,FAIL,E-05;E-13;E-09,Live Symbols 171; measure literal 216; contract 219,98,Both loaded data and KPI logic wrong
+ETL / Power Query,Silent failure prevented,FAIL,E-14,try/otherwise-empty on all sources,90,No gate
+ETL / Power Query,PaperLog refresh will map columns,FAIL,E-18,Header mismatch,80,INFERENCE; refresh not executed
+Data model,Relationships and keys,PASS WITH RISKS,E-14,1 relationship only,90,Islands; no cross-filter
+DAX,All measures evaluate without error,FAIL,E-05,6 of 59 error,99,Top Gap family
+DAX,KPI logic matches engine contract and AGENTS rules,FAIL,E-05;E-13,"216 literal, actionable gate missing",95,R04 R06
+Visuals,All 76 visuals render,FAIL,E-12,UI scan: 2 error cards (+ empty chart/table) on page 6,96,9 of 10 pages render without error cards
+Visuals,Totals and aggregations are meaningful,FAIL,E-12,Screenshots pages 9-10,90,R07
+Dashboard truthfulness,No false-green status,FAIL,E-05;E-12,Heartbeat HEALTHY/0s from constant,99,"AGENTS sections 12, 34"
+Dashboard truthfulness,Forward accuracy not overstated,PASS,E-05;E-14,Forward Accuracy blank + BLOCKED label; titles say not forward accuracy,95,Honest labelling
+Reconciliation,Internal consistency of loaded model (PASS+REJECT = rows),PASS,E-05,93 + 78 = 171,99,Arithmetic right on stale data
+Governance,Automated tests and CI cover the model,FAIL,E-16,"0 tests, 0 workflows",97,R13
+Governance,Single authoritative project copy,PASS WITH RISKS,E-02;E-16,Open copy identical to main but 24 copies exist,90,R14
+Security,No secrets embedded; PAPER-only; no order code in model,PASS,E-16,Pattern scan of TMDL/PBIR,85,"Absence of match, not proof of absence"
+Security,Least-privilege data access,FAIL,E-08;E-20,Public repo + anonymous Sheet,95,R12
+Operations,Refresh recorded and monitored,FAIL,E-16,"No schedule, no log",80,NOT VERIFIED beyond local evidence
+OVERALL,Production readiness verdict,FAIL,E-01..E-20,Any critical FAIL overrides averages (AGENTS section 34),96,FAIL=13 PASS WITH RISKS=3 PASS=4

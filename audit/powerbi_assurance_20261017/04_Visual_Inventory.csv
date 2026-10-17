@@ -1,0 +1,77 @@
+Page_No,Page_Name,Visual_ID,Visual_Type,Title_or_Text,Measures,Columns,Tables,Has_Visual_Filters,Page_Live_Error_Cards,Defect_Flags,Evidence_ID
+1,1. Live Command Center,13aeeecc37cb58eb6163,barChart,Real CE movers,,ForensicLive[ce_chg_pct]+ForensicLive[symbol],ForensicLive,YES,0,FROZEN_TABLE:ForensicLive,E-12;E-14
+1,1. Live Command Center,2ca0ed476eb734a293b1,card,Liquidity rejects,Liquidity REJECT Count,,OptionPredictions,NO,0,,E-12;E-14
+1,1. Live Command Center,3dbcceea8b8159131bf9,card,Top CE %,Top Real CE %,,ForensicLive,NO,0,FROZEN_TABLE:ForensicLive,E-12;E-14
+1,1. Live Command Center,3fb82f701de17f71e721,card,Top real PE,Top Real PE Symbol,,ForensicLive,NO,0,FROZEN_TABLE:ForensicLive,E-12;E-14
+1,1. Live Command Center,4288fb359bf1990e8354,card,Top PE %,Top Real PE %,,ForensicLive,NO,0,FROZEN_TABLE:ForensicLive,E-12;E-14
+1,1. Live Command Center,4343467ed7feb0cf2032,card,Avg confidence,Average Confidence Safe Display,,OptionPredictions,NO,0,,E-12;E-14
+1,1. Live Command Center,565765784991d025d0cc,card,Top real CE,Top Real CE Symbol,,ForensicLive,NO,0,FROZEN_TABLE:ForensicLive,E-12;E-14
+1,1. Live Command Center,7a3ab17d130d436009fc,textbox,ANGEL F&O \u2014 LIVE COMMAND CENTER,,,,NO,0,,E-12;E-14
+1,1. Live Command Center,7a648f411219af495565,card,CE alerts,CE Alert Count,,CERank,NO,0,FROZEN_TABLE:CERank,E-12;E-14
+1,1. Live Command Center,8ef1b470b2b7e2e3953f,card,PE alerts,PE Alert Count,,CERank,NO,0,FROZEN_TABLE:CERank,E-12;E-14
+1,1. Live Command Center,bdd531928b8ca06f4171,card,News domains,Independent News Domains,,News,NO,0,,E-12;E-14
+1,1. Live Command Center,d11b05062b84a1c8abb0,card,Universe,Universe Health,,OptionPredictions,NO,0,,E-12;E-14
+1,1. Live Command Center,dae3411ca240ae5c9f65,card,Probability errors,Probability Error Count Safe,,OptionPredictions,NO,0,,E-12;E-14
+1,1. Live Command Center,eff2dcdb3ffa6ad244f5,card,Latest market time,Latest Forensic Time,,ForensicLive,NO,0,FROZEN_TABLE:ForensicLive,E-12;E-14
+1,1. Live Command Center,f900229feac3001a0e3c,barChart,Real PE movers,,ForensicLive[pe_chg_pct]+ForensicLive[symbol],ForensicLive,NO,0,FROZEN_TABLE:ForensicLive,E-12;E-14
+2,2. Real CE Market,1dc17cca83ad6a7729cc,scatterChart,Underlying move vs CE move,,ForensicLive[ce_chg_pct]+ForensicLive[ce_oi]+ForensicLive[fut_chg_pct]+ForensicLive[symbol],ForensicLive,NO,0,FROZEN_TABLE:ForensicLive,E-12;E-14
+2,2. Real CE Market,63070392f841cecad44b,textbox,"REAL CE MARKET \u2014 OBSERVED DATA, NOT FORECAST",,,,NO,0,,E-12;E-14
+2,2. Real CE Market,649934c7f5b124d78061,slicer,Symbol,,ForensicLive[symbol],ForensicLive,NO,0,FROZEN_TABLE:ForensicLive,E-12;E-14
+2,2. Real CE Market,c8865cb6a366fd2c8f37,barChart,CE change % by symbol,,ForensicLive[ce_chg_pct]+ForensicLive[symbol],ForensicLive,NO,0,FROZEN_TABLE:ForensicLive,E-12;E-14
+2,2. Real CE Market,db40884cc3d87cb2e9f5,tableEx,Real CE details,,ForensicLive[atm_pcr]+ForensicLive[ce_chg_pct]+ForensicLive[ce_ltp]+ForensicLive[ce_obi]+ForensicLive[ce_oi]+ForensicLive[forensic_signal]+ForensicLive[fut_chg_pct]+ForensicLive[symbol]+ForensicLive[time_ist],ForensicLive,NO,0,FROZEN_TABLE:ForensicLive,E-12;E-14
+3,3. Real PE Market,14d5d5b8086ce4c6d0dc,textbox,"REAL PE MARKET \u2014 OBSERVED DATA, NOT FORECAST",,,,NO,0,,E-12;E-14
+3,3. Real PE Market,59d3ddcc5f8c38f1d9a3,scatterChart,Underlying move vs PE move,,ForensicLive[fut_chg_pct]+ForensicLive[pe_chg_pct]+ForensicLive[pe_oi]+ForensicLive[symbol],ForensicLive,NO,0,FROZEN_TABLE:ForensicLive,E-12;E-14
+3,3. Real PE Market,68a45107d39e61e16278,tableEx,Real PE details,,ForensicLive[atm_pcr]+ForensicLive[forensic_signal]+ForensicLive[fut_chg_pct]+ForensicLive[pe_chg_pct]+ForensicLive[pe_ltp]+ForensicLive[pe_oi]+ForensicLive[symbol]+ForensicLive[time_ist],ForensicLive,NO,0,FROZEN_TABLE:ForensicLive,E-12;E-14
+3,3. Real PE Market,9f027e0aa23d4aee5159,barChart,PE change % by symbol,,ForensicLive[pe_chg_pct]+ForensicLive[symbol],ForensicLive,NO,0,FROZEN_TABLE:ForensicLive,E-12;E-14
+3,3. Real PE Market,f4d5368aed5ec854b793,slicer,Symbol,,ForensicLive[symbol],ForensicLive,NO,0,FROZEN_TABLE:ForensicLive,E-12;E-14
+4,4. OI PCR OBI Confirmation,7e9b08680e33ccfb7cd9,tableEx,Measured confirmation matrix,,CERank[atm_pcr]+CERank[ce_oi_change]+CERank[ce_streak]+CERank[explanation]+CERank[fut_chg_pct]+CERank[fut_obi]+CERank[opening_gap_pct]+CERank[pe_oi_change]+CERank[pe_streak]+CERank[rank_status]+CERank[symbol],CERank,NO,0,FROZEN_TABLE:CERank,E-12;E-14
+4,4. OI PCR OBI Confirmation,98060bd404e3aa742a78,textbox,OI / PCR / OBI / STREAK CONFIRMATION,,,,NO,0,,E-12;E-14
+4,4. OI PCR OBI Confirmation,b9ac869d4745d5401e6c,barChart,CE vs PE OI,,CERank[ce_oi]+CERank[pe_oi]+CERank[symbol],CERank,NO,0,FROZEN_TABLE:CERank,E-12;E-14
+4,4. OI PCR OBI Confirmation,ee5ddfdabcf89ce1178b,scatterChart,Futures OBI vs future move,,ForensicLive[ce_oi]+ForensicLive[fut_chg_pct]+ForensicLive[fut_obi]+ForensicLive[symbol],ForensicLive,NO,0,FROZEN_TABLE:ForensicLive,E-12;E-14
+5,5. Model Prediction,0026bb8933bbe305c391,card,Top CE probability,Top Model CE Probability,,OptionPredictions,NO,0,,E-12;E-14
+5,5. Model Prediction,075ea3d8f18e50f8e226,textbox,MODEL FORECAST \u2014 KEEP SEPARATE FROM REAL MARKET,,,,NO,0,,E-12;E-14
+5,5. Model Prediction,0d0edf095b199e31fd37,barChart,Expected opening gap %,Expected Gap Visual,OptionPredictions[symbol],OptionPredictions,NO,0,,E-12;E-14
+5,5. Model Prediction,3dee09cbd4fa98c44067,card,Top PE probability,Top Model PE Probability,,OptionPredictions,NO,0,,E-12;E-14
+5,5. Model Prediction,a82eb4cd1a3af89a6a07,card,Largest negative gap estimate,Largest Expected Gap Down Safe %,,OptionPredictions,NO,0,,E-12;E-14
+5,5. Model Prediction,a92b1c584e6b0bb4fa16,card,Largest positive gap estimate,Largest Expected Gap Up Safe %,,OptionPredictions,NO,0,,E-12;E-14
+5,5. Model Prediction,c0e2ad6e87d1b0d3c6ee,tableEx,Model prediction matrix,CE Probability Visual+Confidence Visual+Expected Gap Visual+Intensity Visual+PE Probability Visual,OptionPredictions[gap_direction]+OptionPredictions[liquidity_status]+OptionPredictions[model_side]+OptionPredictions[symbol]+OptionPredictions[target_open_strike],OptionPredictions,NO,0,,E-12;E-14
+5,5. Model Prediction,edcf22548447062e505e,barChart,CE vs PE model probability,CE Probability Visual+PE Probability Visual,OptionPredictions[symbol],OptionPredictions,NO,0,,E-12;E-14
+5,5. Model Prediction,ee6e80968adfbe3de35a,card,Avg confidence,Average Confidence Safe Display,,OptionPredictions,NO,0,,E-12;E-14
+6,6. Next Session Gap Forecast,230e8067178c4d920a54,card,Top gap-down,,,,NO,2,EMPTY_PLACEHOLDER_NO_FIELDS_BOUND,E-12;E-14
+6,6. Next Session Gap Forecast,403df67fc2a0e668bd2f,card,Forecast status,Next Session Forecast Status,,OptionPredictions,NO,2,,E-12;E-14
+6,6. Next Session Gap Forecast,65a5ceaee6c65e7dd420,card,Gap-up candidate,Top Gap Up Symbol,,OptionPredictions,NO,2,LIVE_MEASURE_ERROR:Top Gap Up Symbol,E-12;E-14
+6,6. Next Session Gap Forecast,685ef179ee93cf820dea,textbox,"NEXT SESSION GAP FORECAST \u2014 MODEL ESTIMATE, NOT GUARANTEED GAIN",,,,NO,2,,E-12;E-14
+6,6. Next Session Gap Forecast,74a46e290f5c455da33e,barChart,NEXT-SESSION expected opening gap %,Expected Gap Visual,OptionPredictions[symbol],OptionPredictions,YES,2,FILTER_YIELDS_ZERO_ROWS:forecast_window=NEXT_SESSION_ELIGIBLE(0 of 171 rows),E-12;E-14
+6,6. Next Session Gap Forecast,98c6b8d468e028dbaaaf,tableEx,Next-session forecast detail,Confidence Visual+Expected Gap Visual,OptionPredictions[forecast_window]+OptionPredictions[gap_direction]+OptionPredictions[liquidity_status]+OptionPredictions[model_side]+OptionPredictions[symbol]+OptionPredictions[target_open_strike]+OptionPredictions[top_news_headline],OptionPredictions,YES,2,FILTER_YIELDS_ZERO_ROWS:forecast_window=NEXT_SESSION_ELIGIBLE(0 of 171 rows),E-12;E-14
+6,6. Next Session Gap Forecast,af279446e17d9bc35f3f,card,Gap-down candidate,Top Gap Down Symbol,,OptionPredictions,NO,2,LIVE_MEASURE_ERROR:Top Gap Down Symbol,E-12;E-14
+6,6. Next Session Gap Forecast,d9004b744c2bd1ef3161,card,Top gap-up,,,,NO,2,EMPTY_PLACEHOLDER_NO_FIELDS_BOUND,E-12;E-14
+7,7. Greeks and Volatility,01b00e204774db9a148a,barChart,CE IV vs PE IV,CE IV Visual+PE IV Visual,OptionPredictions[symbol],OptionPredictions,NO,0,,E-12;E-14
+7,7. Greeks and Volatility,85905a18f1cee966bb99,barChart,CE gamma vs PE gamma,CE Gamma Visual+PE Gamma Visual,OptionPredictions[symbol],OptionPredictions,NO,0,,E-12;E-14
+7,7. Greeks and Volatility,a395d106420ab7520efa,tableEx,Greeks & liquidity detail,,OptionPredictions[atm_pcr]+OptionPredictions[ce_bid_ask_spread]+OptionPredictions[ce_delta]+OptionPredictions[ce_gamma]+OptionPredictions[ce_iv]+OptionPredictions[liquidity_status]+OptionPredictions[pe_bid_ask_spread]+OptionPredictions[pe_delta]+OptionPredictions[pe_gamma]+OptionPredictions[pe_iv]+O,OptionPredictions,NO,0,,E-12;E-14
+7,7. Greeks and Volatility,b612be6a180490aa2655,textbox,GREEKS / IV / PCR \u2014 OPTION MICROSTRUCTURE,,,,NO,0,,E-12;E-14
+8,8. News Intelligence,0174a72c1f88b7fd46f0,card,Symbols with news,News Symbols,,News,NO,0,,E-12;E-14
+8,8. News Intelligence,156b4f1fc1fca080b85c,tableEx,BigQuery news intelligence,,News[headline]+News[published_at]+News[sentiment_score]+News[severity_level]+News[source_domain]+News[symbol],News,NO,0,,E-12;E-14
+8,8. News Intelligence,28a1a04cab1e8df027a9,card,Independent domains,Independent News Domains,,News,NO,0,,E-12;E-14
+8,8. News Intelligence,5c59a32a1106749b803d,barChart,News severity by symbol,News Severity Visual,News[symbol],News,NO,0,,E-12;E-14
+8,8. News Intelligence,801a324ebde4d722085a,tableEx,Live Sheet news feed,,SheetNews[event]+SheetNews[headline]+SheetNews[sentiment]+SheetNews[source_agreement_pct]+SheetNews[source_count]+SheetNews[symbol]+SheetNews[time_ist]+SheetNews[tone_rating],SheetNews,NO,0,,E-12;E-14
+8,8. News Intelligence,adbd4cca506ab76d6067,textbox,LIVE NEWS / CATALYST / SOURCE COVERAGE,,,,NO,0,,E-12;E-14
+8,8. News Intelligence,d9db5ba53d13eabfb576,card,News rows,News Rows,,,NO,0,,E-12;E-14
+9,9. Calibration and QA,890b139ea4fbf3bba688,card,Probability errors,Probability Error Count Safe,,OptionPredictions,NO,0,,E-12;E-14
+9,9. Calibration and QA,899d60a495086cee47d7,textbox,SELF-CALIBRATION / DATA QUALITY \u2014 NOT FORWARD ACCURACY,,,,NO,0,,E-12;E-14
+9,9. Calibration and QA,998c3a3acf6125a8bc2a,card,Recall @ 10,Self Calibration Recall @ 10,,Calibration,NO,0,FROZEN_TABLE:Calibration,E-12;E-14
+9,9. Calibration and QA,9ff9e2db54d38afeab44,card,Liquidity rejects,Liquidity REJECT Count,,OptionPredictions,NO,0,,E-12;E-14
+9,9. Calibration and QA,a764eb5f44b741954a41,card,Self-cal hit rate,Self Calibration Hit Rate %,,Calibration,NO,0,FROZEN_TABLE:Calibration,E-12;E-14
+9,9. Calibration and QA,c7dc922465d289f00f48,tableEx,Calibration log,,Calibration[brier_score]+Calibration[calibration_date]+Calibration[mean_rank]+Calibration[recall_at_10]+Calibration[top10_hit_rate],Calibration,NO,0,FROZEN_TABLE:Calibration,E-12;E-14
+9,9. Calibration and QA,ebd9e3d00691a16e922b,tableEx,Prediction QA,,OptionPredictions[ce_bid_ask_spread]+OptionPredictions[ce_ltp]+OptionPredictions[liquidity_status]+OptionPredictions[pe_bid_ask_spread]+OptionPredictions[pe_ltp]+OptionPredictions[probability_sum]+OptionPredictions[probability_valid]+OptionPredictions[snapshot_time_ist_corrected]+OptionPredictions[s,OptionPredictions,NO,0,,E-12;E-14
+9,9. Calibration and QA,ee7640005d84660d866b,lineChart,Calibration history,,Calibration[calibration_date]+Calibration[recall_at_10]+Calibration[top10_hit_rate],Calibration,NO,0,FROZEN_TABLE:Calibration,E-12;E-14
+9,9. Calibration and QA,fa61eaec35a2177d7383,card,Timestamp safety,Timestamp Safety Status,,OptionPredictions,NO,0,,E-12;E-14
+10,10. Forward PAPER and Audit,0b7bb73b66cbed677594,tableEx,PAPER log \u2014 raw semantics preserved,,PaperLog[action]+PaperLog[entry_time]+PaperLog[forward_accuracy_eligible]+PaperLog[fut_ltp]+PaperLog[note]+PaperLog[outcome_filled_at]+PaperLog[raw_later_session_change_pct]+PaperLog[raw_session_change_pct]+PaperLog[session_date]+PaperLog[symbol],PaperLog,NO,0,,E-12;E-14
+10,10. Forward PAPER and Audit,0d56518906311ffc81a4,card,Heartbeat symbols,Heartbeat Symbols Display,,Heartbeat,NO,0,FROZEN_TABLE:Heartbeat,E-12;E-14
+10,10. Forward PAPER and Audit,199ad1ffad0f53be04e1,card,Writer freshness,Heartbeat Freshness Display,,Heartbeat,NO,0,FROZEN_TABLE:Heartbeat,E-12;E-14
+10,10. Forward PAPER and Audit,31e620ee3a5c680c8f84,card,Heartbeat,Heartbeat Status Display,,Heartbeat,NO,0,FROZEN_TABLE:Heartbeat,E-12;E-14
+10,10. Forward PAPER and Audit,38243cd9fd3c3a44a595,card,Feed status,Heartbeat Feed Display,,Heartbeat,NO,0,FROZEN_TABLE:Heartbeat,E-12;E-14
+10,10. Forward PAPER and Audit,4f46ed6153ebfc46f275,card,Model disclaimer,Model Disclaimer,,,NO,0,,E-12;E-14
+10,10. Forward PAPER and Audit,804ae5d08261723abdcf,tableEx,Runtime heartbeat,,Heartbeat[engine_status]+Heartbeat[feed_alert]+Heartbeat[runner_status]+Heartbeat[symbols_scanned]+Heartbeat[timestamp]+Heartbeat[writer_age_sec],Heartbeat,NO,0,FROZEN_TABLE:Heartbeat,E-12;E-14
+10,10. Forward PAPER and Audit,9f936b3018eb541bc39d,textbox,FORWARD PAPER / RUNTIME AUDIT \u2014 PROOF FIRST,,,,NO,0,,E-12;E-14
+10,10. Forward PAPER and Audit,b7a73ce0868cb9923343,card,Forward outcome status,Forward Outcome Status,,,NO,0,,E-12;E-14
+10,10. Forward PAPER and Audit,d7eb7175d115ed5e68fb,card,Timestamp status,Timestamp Safety Status,,OptionPredictions,NO,0,,E-12;E-14

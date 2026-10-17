@@ -1,0 +1,152 @@
+DEFINE
+MEASURE _Measures[Patched Top Gap Up Symbol] =
+VAR HasNext =
+    CALCULATE(
+        COUNTROWS(OptionPredictions),
+        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE",
+        OptionPredictions[expected_gap_pct] > 0,
+        OptionPredictions[liquidity_status] = "PASS"
+    ) > 0
+VAR Eligible =
+    FILTER(
+        OptionPredictions,
+        1.0 * OptionPredictions[expected_gap_pct] > 0
+            && OptionPredictions[liquidity_status] = "PASS"
+            && (NOT HasNext || OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE")
+    )
+VAR T =
+    TOPN(
+        1,
+        Eligible,
+        1.0 * OptionPredictions[expected_gap_pct], DESC,
+        1.0 * OptionPredictions[confidence_pct], DESC
+    )
+RETURN
+    IF(COUNTROWS(Eligible) = 0, "PENDING", CONCATENATEX(T, OptionPredictions[symbol], ", "))
+MEASURE _Measures[Patched Top Gap Down Symbol] =
+VAR HasNext =
+    CALCULATE(
+        COUNTROWS(OptionPredictions),
+        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE",
+        OptionPredictions[expected_gap_pct] < 0,
+        OptionPredictions[liquidity_status] = "PASS"
+    ) > 0
+VAR Eligible =
+    FILTER(
+        OptionPredictions,
+        1.0 * OptionPredictions[expected_gap_pct] < 0
+            && OptionPredictions[liquidity_status] = "PASS"
+            && (NOT HasNext || OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE")
+    )
+VAR T =
+    TOPN(
+        1,
+        Eligible,
+        1.0 * OptionPredictions[expected_gap_pct], ASC,
+        1.0 * OptionPredictions[confidence_pct], DESC
+    )
+RETURN
+    IF(COUNTROWS(Eligible) = 0, "PENDING", CONCATENATEX(T, OptionPredictions[symbol], ", "))
+MEASURE _Measures[Patched Top Gap Up Expected %] =
+VAR HasNext =
+    CALCULATE(
+        COUNTROWS(OptionPredictions),
+        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE",
+        OptionPredictions[expected_gap_pct] > 0,
+        OptionPredictions[liquidity_status] = "PASS"
+    ) > 0
+VAR Eligible =
+    FILTER(
+        OptionPredictions,
+        1.0 * OptionPredictions[expected_gap_pct] > 0
+            && OptionPredictions[liquidity_status] = "PASS"
+            && (NOT HasNext || OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE")
+    )
+VAR T =
+    TOPN(
+        1,
+        Eligible,
+        1.0 * OptionPredictions[expected_gap_pct], DESC,
+        1.0 * OptionPredictions[confidence_pct], DESC
+    )
+RETURN
+    IF(COUNTROWS(Eligible) = 0, BLANK(), MAXX(T, 1.0 * OptionPredictions[expected_gap_pct]))
+MEASURE _Measures[Patched Top Gap Down Expected %] =
+VAR HasNext =
+    CALCULATE(
+        COUNTROWS(OptionPredictions),
+        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE",
+        OptionPredictions[expected_gap_pct] < 0,
+        OptionPredictions[liquidity_status] = "PASS"
+    ) > 0
+VAR Eligible =
+    FILTER(
+        OptionPredictions,
+        1.0 * OptionPredictions[expected_gap_pct] < 0
+            && OptionPredictions[liquidity_status] = "PASS"
+            && (NOT HasNext || OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE")
+    )
+VAR T =
+    TOPN(
+        1,
+        Eligible,
+        1.0 * OptionPredictions[expected_gap_pct], ASC,
+        1.0 * OptionPredictions[confidence_pct], DESC
+    )
+RETURN
+    IF(COUNTROWS(Eligible) = 0, BLANK(), MINX(T, 1.0 * OptionPredictions[expected_gap_pct]))
+MEASURE _Measures[Patched Top Gap Up Display Safe] =
+VAR HasNext =
+    CALCULATE(
+        COUNTROWS(OptionPredictions),
+        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE",
+        OptionPredictions[expected_gap_pct] > 0,
+        OptionPredictions[liquidity_status] = "PASS"
+    ) > 0
+VAR Eligible =
+    FILTER(
+        OptionPredictions,
+        1.0 * OptionPredictions[expected_gap_pct] > 0
+            && OptionPredictions[liquidity_status] = "PASS"
+            && (NOT HasNext || OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE")
+    )
+VAR T =
+    TOPN(
+        1,
+        Eligible,
+        1.0 * OptionPredictions[expected_gap_pct], DESC,
+        1.0 * OptionPredictions[confidence_pct], DESC
+    )
+VAR S = CONCATENATEX(T, OptionPredictions[symbol], "")
+VAR G = MAXX(T, 1.0 * OptionPredictions[expected_gap_pct])
+RETURN
+    IF(COUNTROWS(Eligible) = 0, "PENDING", S & " | +" & FORMAT(G, "0.00") & "%")
+MEASURE _Measures[Patched Top Gap Down Display Safe] =
+VAR HasNext =
+    CALCULATE(
+        COUNTROWS(OptionPredictions),
+        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE",
+        OptionPredictions[expected_gap_pct] < 0,
+        OptionPredictions[liquidity_status] = "PASS"
+    ) > 0
+VAR Eligible =
+    FILTER(
+        OptionPredictions,
+        1.0 * OptionPredictions[expected_gap_pct] < 0
+            && OptionPredictions[liquidity_status] = "PASS"
+            && (NOT HasNext || OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE")
+    )
+VAR T =
+    TOPN(
+        1,
+        Eligible,
+        1.0 * OptionPredictions[expected_gap_pct], ASC,
+        1.0 * OptionPredictions[confidence_pct], DESC
+    )
+VAR S = CONCATENATEX(T, OptionPredictions[symbol], "")
+VAR G = MINX(T, 1.0 * OptionPredictions[expected_gap_pct])
+RETURN
+    IF(COUNTROWS(Eligible) = 0, "PENDING", S & " | " & FORMAT(G, "0.00") & "%")
+MEASURE _Measures[Patched Universe Health] =
+IF(DISTINCTCOUNT(OptionPredictions[symbol]) = 219, "PASS 219/219", "FAIL / INCOMPLETE")
+EVALUATE ROW("Top_Gap_Up_Symbol", [Patched Top Gap Up Symbol], "Top_Gap_Down_Symbol", [Patched Top Gap Down Symbol], "Top_Gap_Up_Expected_pct", [Patched Top Gap Up Expected %], "Top_Gap_Down_Expected_pct", [Patched Top Gap Down Expected %], "Top_Gap_Up_Display_Safe", [Patched Top Gap Up Display Safe], "Top_Gap_Down_Display_Safe", [Patched Top Gap Down Display Safe], "Universe_Health", [Patched Universe Health])

@@ -1,0 +1,13 @@
+flowchart LR
+  S1[Angel One quotes] --> E1[engine cycle] --> B1[(BQ option_predictions_live)]
+  E1 --> S2[(Sheet HEARTBEAT / FORENSIC_LIVE / CE_PE_RANK / NEWS_LIVE / PAPER_ALERT_LOG)]
+  B1 -.exporter stopped 2026-10-09.-> J1[data/latest_predictions.json]
+  J1 --> PQ1[PQ: Web.Contents > FromRecords > FixSnapshot > Liquidity > ForecastWindow] --> T1[OptionPredictions]
+  S2 --> PQ2[PQ: SheetCsv > Rename > Types] --> T2[PaperLog and SheetNews]
+  S2 -.manual paste 2026-09-29.-> T3[Heartbeat ForensicLive CERank constants]
+  T1 --> D1[Live Symbols, Universe Health, Liquidity, Gap measures]
+  T3 --> D2[Top Real CE/PE, Heartbeat displays, alert counts]
+  T2 --> D3[PaperLog table]
+  D1 --> VIS[Pages 1,5,6,7,9]
+  D2 --> VIS2[Pages 1,2,3,4,10]
+  D3 --> VIS3[Page 10]

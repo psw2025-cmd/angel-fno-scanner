@@ -1,0 +1,8 @@
+executed_at_ist=2026-10-17T14:51:02.7981687+05:30 model_modified=NO (query-scoped DEFINE MEASURE only)
+[Top_Gap_Up_Symbol]=KALYANKJIL
+[Top_Gap_Down_Symbol]=BAJFINANCE
+[Top_Gap_Up_Expected_pct]=1.53
+[Top_Gap_Down_Expected_pct]=-1.61
+[Top_Gap_Up_Display_Safe]=KALYANKJIL | +1.53%
+[Top_Gap_Down_Display_Safe]=BAJFINANCE | -1.61%
+[Universe_Health]=FAIL / INCOMPLETE

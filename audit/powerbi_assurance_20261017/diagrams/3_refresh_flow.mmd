@@ -1,0 +1,14 @@
+flowchart TD
+  A[Owner presses Refresh in Desktop] --> B{Per table}
+  B -->|OptionPredictions, News| C[Download GitHub raw JSON]
+  C --> C2{Fresh?}
+  C2 -->|No - 2026-10-09| C3[Loads old data and still shows Refreshed]
+  B -->|PaperLog, SheetNews| D[Download Sheet gviz CSV]
+  D --> D2{Header matches Rename?}
+  D2 -->|No for PAPER_ALERT_LOG| D3[Columns become null silently]
+  B -->|Heartbeat, ForensicLive, CERank, Calibration| E[No query: constants unchanged]
+  C3 --> F[DAX measures]
+  D3 --> F
+  E --> F
+  F --> G[Visuals]
+  G --> H[No recorded refresh result, no stale banner]

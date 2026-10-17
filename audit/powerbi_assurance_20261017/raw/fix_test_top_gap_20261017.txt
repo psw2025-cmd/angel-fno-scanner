@@ -1,0 +1,19 @@
+executed_at_ist=2026-10-17T14:46:29.9860864+05:30
+engine=localhost:59161 (query-scoped DEFINE MEASURE; model NOT modified)
+fixed_top_gap_up=KALYANKJIL
+fixed_top_gap_down=BAJFINANCE
+independent_top_up=KALYANKJIL gap=1.53
+independent_top_down=BAJFINANCE gap=-1.61
+--- DAX tested ---
+DEFINE
+MEASURE _Measures[Fix Top Gap Up Symbol] =
+    VAR HasNext = CALCULATE(COUNTROWS(OptionPredictions), OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE", OptionPredictions[expected_gap_pct] > 0, OptionPredictions[liquidity_status] = "PASS") > 0
+    VAR Eligible = FILTER(OptionPredictions, 1.0 * OptionPredictions[expected_gap_pct] > 0 && OptionPredictions[liquidity_status] = "PASS" && (NOT HasNext || OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE"))
+    VAR T = TOPN(1, Eligible, 1.0 * OptionPredictions[expected_gap_pct], DESC, 1.0 * OptionPredictions[confidence_pct], DESC)
+    RETURN IF(COUNTROWS(Eligible) = 0, "PENDING", CONCATENATEX(T, OptionPredictions[symbol], ", "))
+MEASURE _Measures[Fix Top Gap Down Symbol] =
+    VAR HasNext = CALCULATE(COUNTROWS(OptionPredictions), OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE", OptionPredictions[expected_gap_pct] < 0, OptionPredictions[liquidity_status] = "PASS") > 0
+    VAR Eligible = FILTER(OptionPredictions, 1.0 * OptionPredictions[expected_gap_pct] < 0 && OptionPredictions[liquidity_status] = "PASS" && (NOT HasNext || OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE"))
+    VAR T = TOPN(1, Eligible, 1.0 * OptionPredictions[expected_gap_pct], ASC, 1.0 * OptionPredictions[confidence_pct], DESC)
+    RETURN IF(COUNTROWS(Eligible) = 0, "PENDING", CONCATENATEX(T, OptionPredictions[symbol], ", "))
+EVALUATE ROW("up", [Fix Top Gap Up Symbol], "down", [Fix Top Gap Down Symbol])

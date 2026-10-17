@@ -1,0 +1,34 @@
+Item_ID,Category,Item,Path_or_Locator,Size_or_Count,Last_Modified,Hash12,Notes,Evidence_ID
+INV-001,RUNTIME_PROCESS,PBIDesktop.exe,PID 23416 parent 8116,,2026-10-17T13:53:04.7475570+05:30,,"""C:\Program Files\Microsoft Power BI Desktop\bin\PBIDesktop.exe"" ""C:\AngelFNO_Workstation\repos\angel-fno-scanner\ANGEL_FNO_MONITOR.pbip""",E-01
+INV-002,RUNTIME_PROCESS,msmdsrv.exe,PID 11740 parent 23416,,2026-10-17T13:53:11.6509300+05:30,,"""C:\Program Files\Microsoft Power BI Desktop\bin\msmdsrv.exe"" -c -n AnalysisServicesWorkspace_362ce5f0-5908-45b1-9b59-71ccef13183e -s ""C:\Users\ADMIN\AppData\Local\Microsoft\Power BI Desktop\AnalysisServicesWorkspaces\AnalysisServicesWorksp",E-01
+INV-003,RUNTIME_PORT,msmdsrv listener,127.0.0.1:59161 and ::1:59161 (owner PID 11740),,,,Local Analysis Services workspace behind the open report,E-01
+INV-004,PBIP_CONTENT_GROUP,PBIP semantic-model content hash da4ba55e651d,21 copies,21,,da4ba55e651d,e.g. C:\AngelFNO_Workstation\agy-repair-20261012,E-02
+INV-005,PBIP_CONTENT_GROUP,PBIP semantic-model content hash f16d9352bbc4,2 copies,2,,f16d9352bbc4,CONTAINS the copy currently open in Power BI Desktop. e.g. C:\AngelFNO_Workstation\audit_backup\LOCAL_REPO_20261014_052831\repository,E-02
+INV-006,PBIP_CONTENT_GROUP,PBIP semantic-model content hash 0000a4fe9781,1 copies,1,,0000a4fe9781,e.g. C:\AngelFNO_Workstation\worktrees\ci-green,E-02
+INV-007,OPENED_PROJECT,ANGEL_FNO_MONITOR.pbip (open in Desktop),C:\AngelFNO_Workstation\repos\angel-fno-scanner\ANGEL_FNO_MONITOR.pbip,,,,Title bar: Last saved 9/30/2026 4:51 AM,E-12
+INV-008,PBIT_TEMPLATE,ANGEL_FNO_MONITOR2.pbit,C:\Users\ADMIN\Documents\ANGEL_FNO_MONITOR2.pbit,113986,2026-09-30T04:52:12.158136+05:30,4134d09ea53d,Stale template from 2026-09-30; compared below,E-15
+INV-009,MODEL_TABLE,_Measures,"CALCULATED_HELPER | ROW(""Dummy"", 1)",1 cols / 59 measures,,,Live rows: n/a,E-03
+INV-010,MODEL_TABLE,Calibration,EMBEDDED_STATIC_CONSTANT | #table literal inside TMDL,5 cols / 0 measures,,,Live rows: 2,E-03
+INV-011,MODEL_TABLE,CERank,EMBEDDED_STATIC_CONSTANT | DATATABLE literal inside TMDL,17 cols / 0 measures,,,Live rows: 216,E-03
+INV-012,MODEL_TABLE,DateTableTemplate_4a4d3f4c-4678-481d-bc36-ae9a317f711c,"CALCULATED_DATE_TABLE | Calendar(Date(2015,1,1), Date(2015,1,1))",7 cols / 0 measures,,,Live rows: n/a,E-03
+INV-013,MODEL_TABLE,ForensicLive,EMBEDDED_STATIC_CONSTANT | DATATABLE literal inside TMDL,19 cols / 0 measures,,,Live rows: 216,E-03
+INV-014,MODEL_TABLE,Heartbeat,EMBEDDED_STATIC_CONSTANT | DATATABLE literal inside TMDL,6 cols / 0 measures,,,Live rows: 1,E-03
+INV-015,MODEL_TABLE,LocalDateTable_2d59eba7-2d6e-4bb7-aff5-d75e0575aee5,"CALCULATED_DATE_TABLE | Calendar(Date(Year(MIN('OptionPredictions'[snapshot_time_ist_corrected])), 1, 1), Date(Year(MAX('OptionPredictions'[snap",7 cols / 0 measures,,,Live rows: n/a,E-03
+INV-016,MODEL_TABLE,News,EXTERNAL_HTTP_JSON | https://raw.githubusercontent.com/psw2025-cmd/angel-fno-scanner/main/data/market_news.json,7 cols / 0 measures,,,Live rows: 50,E-03
+INV-017,MODEL_TABLE,OptionPredictions,EXTERNAL_HTTP_JSON | https://raw.githubusercontent.com/psw2025-cmd/angel-fno-scanner/main/data/latest_predictions.json,33 cols / 0 measures,,,Live rows: 171,E-03
+INV-018,MODEL_TABLE,PaperLog,GOOGLE_SHEET_GVIZ_CSV | sheet tab PAPER_ALERT_LOG range A1:K500,10 cols / 0 measures,,,Live rows: 464,E-03
+INV-019,MODEL_TABLE,SheetNews,GOOGLE_SHEET_GVIZ_CSV | sheet tab NEWS_LIVE range A2:L240,10 cols / 0 measures,,,Live rows: 216,E-03
+INV-020,REPORT,ANGEL_FNO_MONITOR.Report (PBIR),10 pages / 76 visuals,76,,,Pages: 1. Live Command Center; 2. Real CE Market; 3. Real PE Market; 4. OI PCR OBI Confirmation; 5. Model Prediction; 6. Next Session Gap Forecast; 7. Greeks and Volatility; 8. News Intelligence; 9. Calibration and QA; 10. Forward PAPER and Audit,E-14
+INV-021,UPSTREAM_SOURCE,GitHub raw latest_predictions.json,raw/latest_predictions_json_20261017.json,388801,2026-10-17T14:14:00+05:30,ce14ee31c84c,"Fetched anonymously (HTTP 200, no credentials)",E-06
+INV-022,UPSTREAM_SOURCE,GitHub raw market_news.json,raw/market_news_json_20261017.json,50781,2026-10-17T14:14:00+05:30,851cc89c12c7,"Fetched anonymously (HTTP 200, no credentials)",E-07
+INV-023,UPSTREAM_SOURCE,Sheet HEARTBEAT,raw/sheet_HEARTBEAT_20261017.csv,934,2026-10-17T14:14:00+05:30,e760ad2a1c0a,"Fetched anonymously (HTTP 200, no credentials)",E-08
+INV-024,UPSTREAM_SOURCE,Sheet FORENSIC_LIVE,raw/sheet_FORENSIC_LIVE_20261017.csv,52122,2026-10-17T14:14:00+05:30,d5307e5c1f6c,"Fetched anonymously (HTTP 200, no credentials)",E-08
+INV-025,UPSTREAM_SOURCE,Sheet CE_PE_RANK,raw/sheet_CE_PE_RANK_20261017.csv,83270,2026-10-17T14:14:00+05:30,db6903a4179c,"Fetched anonymously (HTTP 200, no credentials)",E-08
+INV-026,UPSTREAM_SOURCE,Sheet NEWS_LIVE,raw/sheet_NEWS_LIVE_20261017.csv,108024,2026-10-17T14:14:00+05:30,563b07efdf01,"Fetched anonymously (HTTP 200, no credentials)",E-08
+INV-027,UPSTREAM_SOURCE,Sheet PAPER_ALERT_LOG,raw/sheet_PAPER_ALERT_LOG_20261017.csv,117962,2026-10-17T14:14:00+05:30,1020761b1834,"Fetched anonymously (HTTP 200, no credentials)",E-08
+INV-028,UPSTREAM_BIGQUERY,fno_predictions.market_news_sentiment,BigQuery table,30923,2026-10-16 18:11Z,,Age hours 14.6 at query time,E-09
+INV-029,UPSTREAM_BIGQUERY,fno_predictions.next_day_gap_predictions,BigQuery table,608,2026-10-16 10:11Z,,Age hours 22.6 at query time,E-09
+INV-030,UPSTREAM_BIGQUERY,fno_predictions.option_predictions_live,BigQuery table,219,2026-10-16 18:11Z,,Age hours 14.6 at query time,E-09
+INV-031,UPSTREAM_BIGQUERY,fno_predictions.prediction_calibration_log,BigQuery table,405,2026-10-16 18:11Z,,Age hours 14.6 at query time,E-09
+INV-032,REPOSITORY,Local repo (opened by Desktop),C:\AngelFNO_Workstation\repos\angel-fno-scanner,,,,branch=feat/cdx-01-to-12-integration,E-16
+INV-033,REPOSITORY,Audit worktree,C:\AngelFNO_Workstation\worktrees\ci-green,,,,branch=audit/powerbi-assurance-20261017,E-16

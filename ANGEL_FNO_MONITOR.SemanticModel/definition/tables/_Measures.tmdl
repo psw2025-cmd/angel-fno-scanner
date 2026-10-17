@@ -5,7 +5,7 @@ table _Measures
 		formatString: #,##0
 		lineageTag: m0000000-0000-0000-0000-000000000002
 
-	measure 'Universe Health' = IF([Live Symbols] = 216, "PASS 216/216", "FAIL / INCOMPLETE")
+	measure 'Universe Health' = IF([Live Symbols] = 219, "PASS 219/219", "FAIL / INCOMPLETE")
 		lineageTag: m0000000-0000-0000-0000-000000000003
 
 	measure 'Latest Model Snapshot IST' = MAX(OptionPredictions[snapshot_time_ist_corrected])
@@ -132,20 +132,20 @@ table _Measures
 		lineageTag: m0000000-0000-0000-0000-000000000022
 
 	measure 'Top Gap Up Symbol' =
-			VAR NextEligible =
-			    FILTER(
-			        OptionPredictions,
-			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE"
-			            && 1.0 * OptionPredictions[expected_gap_pct] > 0
-			            && OptionPredictions[liquidity_status] = "PASS"
-			    )
-			VAR ActiveEligible =
+			VAR HasNext =
+			    CALCULATE(
+			        COUNTROWS(OptionPredictions),
+			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE",
+			        OptionPredictions[expected_gap_pct] > 0,
+			        OptionPredictions[liquidity_status] = "PASS"
+			    ) > 0
+			VAR Eligible =
 			    FILTER(
 			        OptionPredictions,
 			        1.0 * OptionPredictions[expected_gap_pct] > 0
 			            && OptionPredictions[liquidity_status] = "PASS"
+			            && (NOT HasNext || OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE")
 			    )
-			VAR Eligible = IF(COUNTROWS(NextEligible) > 0, NextEligible, ActiveEligible)
 			VAR T =
 			    TOPN(
 			        1,
@@ -158,20 +158,20 @@ table _Measures
 		lineageTag: m0000000-0000-0000-0000-000000000023
 
 	measure 'Top Gap Up Expected %' =
-			VAR NextEligible =
-			    FILTER(
-			        OptionPredictions,
-			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE"
-			            && 1.0 * OptionPredictions[expected_gap_pct] > 0
-			            && OptionPredictions[liquidity_status] = "PASS"
-			    )
-			VAR ActiveEligible =
+			VAR HasNext =
+			    CALCULATE(
+			        COUNTROWS(OptionPredictions),
+			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE",
+			        OptionPredictions[expected_gap_pct] > 0,
+			        OptionPredictions[liquidity_status] = "PASS"
+			    ) > 0
+			VAR Eligible =
 			    FILTER(
 			        OptionPredictions,
 			        1.0 * OptionPredictions[expected_gap_pct] > 0
 			            && OptionPredictions[liquidity_status] = "PASS"
+			            && (NOT HasNext || OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE")
 			    )
-			VAR Eligible = IF(COUNTROWS(NextEligible) > 0, NextEligible, ActiveEligible)
 			VAR T =
 			    TOPN(
 			        1,
@@ -185,20 +185,20 @@ table _Measures
 		lineageTag: m0000000-0000-0000-0000-000000000024
 
 	measure 'Top Gap Down Symbol' =
-			VAR NextEligible =
-			    FILTER(
-			        OptionPredictions,
-			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE"
-			            && 1.0 * OptionPredictions[expected_gap_pct] < 0
-			            && OptionPredictions[liquidity_status] = "PASS"
-			    )
-			VAR ActiveEligible =
+			VAR HasNext =
+			    CALCULATE(
+			        COUNTROWS(OptionPredictions),
+			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE",
+			        OptionPredictions[expected_gap_pct] < 0,
+			        OptionPredictions[liquidity_status] = "PASS"
+			    ) > 0
+			VAR Eligible =
 			    FILTER(
 			        OptionPredictions,
 			        1.0 * OptionPredictions[expected_gap_pct] < 0
 			            && OptionPredictions[liquidity_status] = "PASS"
+			            && (NOT HasNext || OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE")
 			    )
-			VAR Eligible = IF(COUNTROWS(NextEligible) > 0, NextEligible, ActiveEligible)
 			VAR T =
 			    TOPN(
 			        1,
@@ -211,20 +211,20 @@ table _Measures
 		lineageTag: m0000000-0000-0000-0000-000000000025
 
 	measure 'Top Gap Down Expected %' =
-			VAR NextEligible =
-			    FILTER(
-			        OptionPredictions,
-			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE"
-			            && 1.0 * OptionPredictions[expected_gap_pct] < 0
-			            && OptionPredictions[liquidity_status] = "PASS"
-			    )
-			VAR ActiveEligible =
+			VAR HasNext =
+			    CALCULATE(
+			        COUNTROWS(OptionPredictions),
+			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE",
+			        OptionPredictions[expected_gap_pct] < 0,
+			        OptionPredictions[liquidity_status] = "PASS"
+			    ) > 0
+			VAR Eligible =
 			    FILTER(
 			        OptionPredictions,
 			        1.0 * OptionPredictions[expected_gap_pct] < 0
 			            && OptionPredictions[liquidity_status] = "PASS"
+			            && (NOT HasNext || OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE")
 			    )
-			VAR Eligible = IF(COUNTROWS(NextEligible) > 0, NextEligible, ActiveEligible)
 			VAR T =
 			    TOPN(
 			        1,
@@ -340,20 +340,20 @@ table _Measures
 		lineageTag: m4000000-0000-0000-0000-000000000009
 
 	measure 'Top Gap Up Display Safe' =
-			VAR NextEligible =
-			    FILTER(
-			        OptionPredictions,
-			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE"
-			            && 1.0 * OptionPredictions[expected_gap_pct] > 0
-			            && OptionPredictions[liquidity_status] = "PASS"
-			    )
-			VAR ActiveEligible =
+			VAR HasNext =
+			    CALCULATE(
+			        COUNTROWS(OptionPredictions),
+			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE",
+			        OptionPredictions[expected_gap_pct] > 0,
+			        OptionPredictions[liquidity_status] = "PASS"
+			    ) > 0
+			VAR Eligible =
 			    FILTER(
 			        OptionPredictions,
 			        1.0 * OptionPredictions[expected_gap_pct] > 0
 			            && OptionPredictions[liquidity_status] = "PASS"
+			            && (NOT HasNext || OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE")
 			    )
-			VAR Eligible = IF(COUNTROWS(NextEligible) > 0, NextEligible, ActiveEligible)
 			VAR T =
 			    TOPN(
 			        1,
@@ -363,24 +363,25 @@ table _Measures
 			    )
 			VAR S = CONCATENATEX(T, OptionPredictions[symbol], "")
 			VAR G = MAXX(T, 1.0 * OptionPredictions[expected_gap_pct])
-			RETURN IF(COUNTROWS(Eligible) = 0, "PENDING", S & " | +" & FORMAT(G, "0.00") & "%")
+			RETURN
+			    IF(COUNTROWS(Eligible) = 0, "PENDING", S & " | +" & FORMAT(G, "0.00") & "%")
 		lineageTag: m4000000-0000-0000-0000-000000000010
 
 	measure 'Top Gap Down Display Safe' =
-			VAR NextEligible =
-			    FILTER(
-			        OptionPredictions,
-			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE"
-			            && 1.0 * OptionPredictions[expected_gap_pct] < 0
-			            && OptionPredictions[liquidity_status] = "PASS"
-			    )
-			VAR ActiveEligible =
+			VAR HasNext =
+			    CALCULATE(
+			        COUNTROWS(OptionPredictions),
+			        OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE",
+			        OptionPredictions[expected_gap_pct] < 0,
+			        OptionPredictions[liquidity_status] = "PASS"
+			    ) > 0
+			VAR Eligible =
 			    FILTER(
 			        OptionPredictions,
 			        1.0 * OptionPredictions[expected_gap_pct] < 0
 			            && OptionPredictions[liquidity_status] = "PASS"
+			            && (NOT HasNext || OptionPredictions[forecast_window] = "NEXT_SESSION_ELIGIBLE")
 			    )
-			VAR Eligible = IF(COUNTROWS(NextEligible) > 0, NextEligible, ActiveEligible)
 			VAR T =
 			    TOPN(
 			        1,
@@ -390,7 +391,8 @@ table _Measures
 			    )
 			VAR S = CONCATENATEX(T, OptionPredictions[symbol], "")
 			VAR G = MINX(T, 1.0 * OptionPredictions[expected_gap_pct])
-			RETURN IF(COUNTROWS(Eligible) = 0, "PENDING", S & " | " & FORMAT(G, "0.00") & "%")
+			RETURN
+			    IF(COUNTROWS(Eligible) = 0, "PENDING", S & " | " & FORMAT(G, "0.00") & "%")
 		lineageTag: m4000000-0000-0000-0000-000000000011
 
 	measure 'Top Raw CE Display' =

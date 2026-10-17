@@ -1,0 +1,13 @@
+flowchart LR
+  OptionPredictions --> LiveSymbols --> UniverseHealth
+  OptionPredictions --> LiquidityPass
+  OptionPredictions --> TopGapMeasures[6 Top Gap measures - ERROR]
+  OptionPredictions --> ConfidenceMeasures
+  ForensicLive --> TopRealCE --> TopActionableCE
+  ForensicLive --> TopRealPE --> TopActionablePE
+  CERank --> AlertCounts[CE/PE Alert Count - Blank]
+  Heartbeat --> HeartbeatDisplays[Status / Symbols / Freshness / Feed]
+  Calibration --> SelfCalKPIs
+  News --> NewsKPIs
+  PaperLog --> PaperLogTable
+  OptionPredictions -->|only relationship| LocalDateTable

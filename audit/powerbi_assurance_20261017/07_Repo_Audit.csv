@@ -1,0 +1,16 @@
+Check_ID,Area,Finding,Observed,Expected,Status,Evidence_ID
+REPO-01,Provenance,origin/main SHA at audit time,518ca5770efc63f5ba2a868a8ee854f1d838baee,recorded,INFO,E-16
+REPO-02,Authority,Repo opened by Power BI Desktop,"C:\AngelFNO_Workstation\repos\angel-fno-scanner on branch feat/cdx-01-to-12-integration, 64 commits behind main, 29 dirty/untracked entries",clean checkout of main,RISK,E-16
+REPO-03,Authority,Opened copy vs main model/report content (line endings normalised),111/111 files identical,all identical,PASS,E-02
+REPO-04,Sprawl,Number of PBIP copies across worktrees,24 copies in 3 content groups,1 authoritative copy,RISK,E-02
+REPO-05,Hygiene,.pbi folder tracked despite .gitignore **/.pbi/,ANGEL_FNO_MONITOR.SemanticModel/.pbi/editorSettings.json,none tracked,RISK,E-16
+REPO-06,Tests,Automated tests covering the Power BI model/report,0 test files,>= 1 contract test,FAIL,E-16
+REPO-07,CI,CI workflows that validate the Power BI project,0 workflows,>= 1 workflow,FAIL,E-16
+REPO-08,Governance claim,Proof ledger P-21 'PowerBI Refresh & Process Safety' = PASS,Command checked process names and .gitignore only; no data freshness or measure check,PASS must include data/refresh evidence,MISLEADING_LABEL,E-19
+REPO-09,Governance claim,tools/build_nasa_82_matrix.py marks 'Stale Predictions Snaps' RESOLVED_TWO_PARTY,data/latest_predictions.json last bot commit 2026-10-09T17:18:03Z; market_bot.yml last run 38441552721 2026-10-13T17:47:53Z schedule completed/failure 5f4c601,resolved = feed is fresh,CONTRADICTED,E-10;E-11
+REPO-10,Security,Secrets embedded in model/report files,none found (pattern scan),none,PASS,E-16
+REPO-11,Security,Repository visibility (model embeds Sheet ID and raw URLs),PUBLIC,private or intentionally public,RISK,E-20
+REPO-12,Security,Google Sheet readable with no login (gviz CSV HTTP 200),7 tabs fetched anonymously,least-privilege access,RISK,E-08
+REPO-13,Template,ANGEL_FNO_MONITOR2.pbit measure set vs current PBIP,"59 measures in template, 59 in PBIP, names identical=True; tables=_Measures,OptionPredictions,News,Calibration,PaperLog,SheetNews,DateTableTemplate_4a4d3f4c-4678-481d-bc36-ae9a317f711c,LocalDateTable_2d59eba7-2d6e-4bb7-aff5-d75e0575aee5,Heartbeat,ForensicLive,CERank",template matches model or is retired,PASS,E-15
+REPO-14,Report,Visual fields that do not resolve to a model column/measure,0 unresolved,0,PASS,E-14
+REPO-15,Report,Visuals total / pages total,76 / 10,n/a,INFO,E-14

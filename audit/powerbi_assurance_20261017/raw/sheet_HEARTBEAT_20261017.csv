@@ -1,0 +1,8 @@
+"Last Ping (IST)","Angel Session Status","Auto-Discovered Symbols","Engine Status","Seconds Since Last Write","Automated Feed Alert","",""
+"2026-10-16 23:40:16","CONNECTED_ANGEL_SMARTAPI","219","ACTIVE_PREDICTION_ENGINE | Cycle #336","0","🟢 HEALTHY (ALL FEEDS ACTIVE)","",""
+"Metric","Value","Benchmark","Component","Protocol","Status","",""
+"Session Auth","CONNECTED_ANGEL_SMARTAPI","ACTIVE","Angel One SmartAPI","TOTP / JWT WebSocket","🟢 HEALTHY","",""
+"Writer age","0s","Clock age, not exchange age","Sheet write timestamp","Daemon loop","🟢 HEALTHY (ALL FEEDS ACTIVE)","",""
+"Self-Calibration Hit Rate","100.00%","Self-Calibration Loop","Reconciliation Engine","Ground Truth Compare","🟢 CALIBRATED","",""
+"Recall @ 10","1","Top 10 Prediction Match","Self-Calibration Loop","Online Weights","🟢 ACTIVE","",""
+"Mean Rank","5.5","Actual Movers Rank","Greeks & News Model","Dynamic Calibration","🟢 HIGH ACCURACY","",""

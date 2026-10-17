@@ -1,0 +1,144 @@
+Object_Type,Table,Object,Data_Type,Source_Class,Source_Locator,Embedded_Rows,Silent_Fallback,Live_RefreshedTime,Live_Rows,Detail,Notes,Evidence_ID
+MODEL_SETTING,,compatibilityLevel,,,,,,,,1702,,E-14
+MODEL_SETTING,,culture,,,,,,,,en-US,,E-14
+MODEL_SETTING,,defaultPowerBIDataSourceVersion,,,,,,,,powerBI_V3,,E-14
+MODEL_SETTING,,sourceQueryCulture,,,,,,,,en-US,,E-14
+PARAMETER,,pProjectId,,,,,,,,"""fno-angel-prod-1790444589""",Power Query parameter; not user-visible in report,E-14
+PARAMETER,,pDataset,,,,,,,,"""fno_predictions""",Power Query parameter; not user-visible in report,E-14
+PARAMETER,,pSheetId,,,,,,,,"""1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs""",Power Query parameter; not user-visible in report,E-14
+PARAMETER,,pTreatSnapshotOffsetAsWallClock,,,,,,,,true,Power Query parameter; not user-visible in report,E-14
+POWER_QUERY_FUNCTION,,SheetCsv,,,,,,,,Google gviz CSV loader (anonymous HTTP),,E-14
+RELATIONSHIP,,OptionPredictions.snapshot_time_ist_corrected -> LocalDateTable_2d59eba7-2d6e-4bb7-aff5-d75e0575aee5.Date,,,,,,,,join=datePartOnly,Only relationship in the model; all other tables are isolated (no cross-filtering),E-14
+TABLE,_Measures,_Measures,,CALCULATED_HELPER,"ROW(""Dummy"", 1)",,NO,29/09/2026 09:49:09 PM,,PQ steps: ,,E-03
+COLUMN,_Measures,Dummy,int64,,,,,,,summarizeBy=sum src=,,E-14
+TABLE,Calibration,Calibration,,EMBEDDED_STATIC_CONSTANT,#table literal inside TMDL,8,NO,29/09/2026 09:51:57 PM,2,PQ steps: Source >Types ,,E-03
+COLUMN,Calibration,calibration_date,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,Calibration,top10_hit_rate,double,,,,,,,summarizeBy=average src=,Default aggregation average on a non-additive field (totals can mislead),E-14
+COLUMN,Calibration,recall_at_10,double,,,,,,,summarizeBy=average src=,,E-14
+COLUMN,Calibration,brier_score,double,,,,,,,summarizeBy=average src=,Default aggregation average on a non-additive field (totals can mislead),E-14
+COLUMN,Calibration,mean_rank,double,,,,,,,summarizeBy=average src=,,E-14
+TABLE,CERank,CERank,,EMBEDDED_STATIC_CONSTANT,DATATABLE literal inside TMDL,216,NO,29/09/2026 11:20:32 PM,216,PQ steps: ,,E-03
+COLUMN,CERank,rank_time_ist,string,,,,,,,summarizeBy= src=,,E-14
+COLUMN,CERank,symbol,string,,,,,,,summarizeBy= src=,,E-14
+COLUMN,CERank,rank_status,string,,,,,,,summarizeBy= src=,,E-14
+COLUMN,CERank,fut_chg_pct,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,CERank,opening_gap_pct,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,CERank,fut_obi,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,CERank,ce_chg_pct,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,CERank,pe_chg_pct,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,CERank,ce_oi,int64,,,,,,,summarizeBy= src=,,E-14
+COLUMN,CERank,pe_oi,int64,,,,,,,summarizeBy= src=,,E-14
+COLUMN,CERank,ce_oi_change,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,CERank,pe_oi_change,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,CERank,ce_obi,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,CERank,atm_pcr,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,CERank,ce_streak,int64,,,,,,,summarizeBy= src=,,E-14
+COLUMN,CERank,pe_streak,int64,,,,,,,summarizeBy= src=,,E-14
+COLUMN,CERank,explanation,string,,,,,,,summarizeBy= src=,,E-14
+TABLE,DateTableTemplate_4a4d3f4c-4678-481d-bc36-ae9a317f711c,DateTableTemplate_4a4d3f4c-4678-481d-bc36-ae9a317f711c,,CALCULATED_DATE_TABLE,"Calendar(Date(2015,1,1), Date(2015,1,1))",,NO,29/09/2026 10:02:52 PM,,PQ steps: ,,E-03
+COLUMN,DateTableTemplate_4a4d3f4c-4678-481d-bc36-ae9a317f711c,Date,dateTime,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,DateTableTemplate_4a4d3f4c-4678-481d-bc36-ae9a317f711c,Year,int64,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,DateTableTemplate_4a4d3f4c-4678-481d-bc36-ae9a317f711c,MonthNo,int64,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,DateTableTemplate_4a4d3f4c-4678-481d-bc36-ae9a317f711c,Month,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,DateTableTemplate_4a4d3f4c-4678-481d-bc36-ae9a317f711c,QuarterNo,int64,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,DateTableTemplate_4a4d3f4c-4678-481d-bc36-ae9a317f711c,Quarter,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,DateTableTemplate_4a4d3f4c-4678-481d-bc36-ae9a317f711c,Day,int64,,,,,,,summarizeBy=none src=,,E-14
+TABLE,ForensicLive,ForensicLive,,EMBEDDED_STATIC_CONSTANT,DATATABLE literal inside TMDL,216,NO,29/09/2026 11:20:33 PM,216,PQ steps: ,,E-03
+COLUMN,ForensicLive,symbol,string,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,time_ist,string,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,fut_ltp,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,fut_chg_pct,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,fut_obi,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,atm_strike,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,ce_contract,string,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,ce_ltp,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,ce_chg_pct,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,ce_oi,int64,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,ce_obi,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,pe_contract,string,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,pe_ltp,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,pe_chg_pct,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,pe_oi,int64,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,atm_pcr,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,forensic_signal,string,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,ce_valid,boolean,,,,,,,summarizeBy= src=,,E-14
+COLUMN,ForensicLive,pe_valid,boolean,,,,,,,summarizeBy= src=,,E-14
+TABLE,Heartbeat,Heartbeat,,EMBEDDED_STATIC_CONSTANT,DATATABLE literal inside TMDL,1,NO,29/09/2026 11:20:32 PM,1,PQ steps: ,,E-03
+COLUMN,Heartbeat,timestamp,string,,,,,,,summarizeBy= src=,,E-14
+COLUMN,Heartbeat,writer_age_sec,double,,,,,,,summarizeBy= src=,,E-14
+COLUMN,Heartbeat,runner_status,string,,,,,,,summarizeBy= src=,,E-14
+COLUMN,Heartbeat,engine_status,string,,,,,,,summarizeBy= src=,,E-14
+COLUMN,Heartbeat,symbols_scanned,int64,,,,,,,summarizeBy= src=,,E-14
+COLUMN,Heartbeat,feed_alert,string,,,,,,,summarizeBy= src=,,E-14
+TABLE,LocalDateTable_2d59eba7-2d6e-4bb7-aff5-d75e0575aee5,LocalDateTable_2d59eba7-2d6e-4bb7-aff5-d75e0575aee5,,CALCULATED_DATE_TABLE,"Calendar(Date(Year(MIN('OptionPredictions'[snapshot_time_ist_corrected])), 1, 1), Date(Year(MAX('OptionPredictions'[snap",,NO,29/09/2026 10:02:52 PM,,PQ steps: ,,E-03
+COLUMN,LocalDateTable_2d59eba7-2d6e-4bb7-aff5-d75e0575aee5,Date,dateTime,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,LocalDateTable_2d59eba7-2d6e-4bb7-aff5-d75e0575aee5,Year,int64,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,LocalDateTable_2d59eba7-2d6e-4bb7-aff5-d75e0575aee5,MonthNo,int64,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,LocalDateTable_2d59eba7-2d6e-4bb7-aff5-d75e0575aee5,Month,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,LocalDateTable_2d59eba7-2d6e-4bb7-aff5-d75e0575aee5,QuarterNo,int64,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,LocalDateTable_2d59eba7-2d6e-4bb7-aff5-d75e0575aee5,Quarter,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,LocalDateTable_2d59eba7-2d6e-4bb7-aff5-d75e0575aee5,Day,int64,,,,,,,summarizeBy=none src=,,E-14
+TABLE,News,News,,EXTERNAL_HTTP_JSON,https://raw.githubusercontent.com/psw2025-cmd/angel-fno-scanner/main/data/market_news.json,,YES,29/09/2026 09:51:58 PM,50,PQ steps: Url >RawBytes >RawJson >Raw0 >Rename >AddDomain >U >H >Keep >Types ,,E-03
+COLUMN,News,symbol,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,News,headline,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,News,severity_level,int64,,,,,,,summarizeBy=average src=,,E-14
+COLUMN,News,sentiment_score,double,,,,,,,summarizeBy=average src=,Default aggregation average on a non-additive field (totals can mislead),E-14
+COLUMN,News,source_domain,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,News,source_url,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,News,published_at,string,,,,,,,summarizeBy=none src=,,E-14
+TABLE,OptionPredictions,OptionPredictions,,EXTERNAL_HTTP_JSON,https://raw.githubusercontent.com/psw2025-cmd/angel-fno-scanner/main/data/latest_predictions.json,,YES,29/09/2026 09:51:58 PM,171,PQ steps: Url >RawBytes >RawJson >Raw >FixSnapshot >T >Wall >WallDT >RawZone >if T >AddSide >ce >pe >AddProbabilitySum >AddProbabilityValid >AddLiquidity >ceoi >peoi >cel >pel >ces >pes >AddForecastWindow >z >h,,E-03
+COLUMN,OptionPredictions,symbol,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,OptionPredictions,ce_win_prob,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,pe_win_prob,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,confidence_pct,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,intensity_score,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,expected_gap_pct,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,gap_direction,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,OptionPredictions,pre_open_conviction_pct,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,target_open_strike,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,OptionPredictions,ce_chg_pct,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,pe_chg_pct,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,ce_oi,int64,,,,,,,summarizeBy=sum src=,,E-14
+COLUMN,OptionPredictions,pe_oi,int64,,,,,,,summarizeBy=sum src=,,E-14
+COLUMN,OptionPredictions,ce_ltp,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,pe_ltp,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,ce_bid_ask_spread,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,pe_bid_ask_spread,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,atm_pcr,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,ce_iv,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,pe_iv,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,ce_delta,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,pe_delta,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,ce_gamma,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,pe_gamma,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,top_news_headline,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,OptionPredictions,news_severity_level,int64,,,,,,,summarizeBy=sum src=,,E-14
+COLUMN,OptionPredictions,snapshot_timestamp,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,OptionPredictions,snapshot_time_ist_corrected,dateTime,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,OptionPredictions,model_side,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,OptionPredictions,probability_sum,double,,,,,,,summarizeBy=sum src=,Default aggregation sum on a non-additive field (totals can mislead),E-14
+COLUMN,OptionPredictions,probability_valid,boolean,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,OptionPredictions,liquidity_status,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,OptionPredictions,forecast_window,string,,,,,,,summarizeBy=none src=,,E-14
+TABLE,PaperLog,PaperLog,,GOOGLE_SHEET_GVIZ_CSV,sheet tab PAPER_ALERT_LOG range A1:K500,,YES,29/09/2026 09:51:59 PM,464,PQ steps: Raw >Rename >Keep >AddEligibility >Types ,,E-03
+COLUMN,PaperLog,entry_time,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,PaperLog,session_date,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,PaperLog,symbol,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,PaperLog,action,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,PaperLog,fut_ltp,double,,,,,,,summarizeBy=average src=,Default aggregation average on a non-additive field (totals can mislead),E-14
+COLUMN,PaperLog,raw_session_change_pct,double,,,,,,,summarizeBy=average src=,Default aggregation average on a non-additive field (totals can mislead),E-14
+COLUMN,PaperLog,note,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,PaperLog,raw_later_session_change_pct,double,,,,,,,summarizeBy=average src=,Default aggregation average on a non-additive field (totals can mislead),E-14
+COLUMN,PaperLog,outcome_filled_at,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,PaperLog,forward_accuracy_eligible,boolean,,,,,,,summarizeBy=none src=,,E-14
+TABLE,SheetNews,SheetNews,,GOOGLE_SHEET_GVIZ_CSV,sheet tab NEWS_LIVE range A2:L240,,YES,29/09/2026 09:51:59 PM,216,PQ steps: Raw >Rename >Keep >Types ,,E-03
+COLUMN,SheetNews,symbol,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,SheetNews,sentiment,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,SheetNews,tone_rating,double,,,,,,,summarizeBy=average src=,,E-14
+COLUMN,SheetNews,source_count,int64,,,,,,,summarizeBy=sum src=,,E-14
+COLUMN,SheetNews,source_agreement_pct,double,,,,,,,summarizeBy=average src=,Default aggregation average on a non-additive field (totals can mislead),E-14
+COLUMN,SheetNews,event,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,SheetNews,headline,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,SheetNews,time_ist,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,SheetNews,nse_filing,string,,,,,,,summarizeBy=none src=,,E-14
+COLUMN,SheetNews,meaning,string,,,,,,,summarizeBy=none src=,,E-14

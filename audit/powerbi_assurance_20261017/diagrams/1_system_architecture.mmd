@@ -1,0 +1,23 @@
+flowchart LR
+  subgraph Producers
+    ANG[Angel One SmartAPI] --> ENG[angel_prediction_engine.py / scanner.py]
+    ENG --> CR[Cloud Run job angel-market-scan-job]
+  end
+  subgraph Stores
+    CR --> BQ[(BigQuery option_predictions_live 219 rows)]
+    CR --> SH[(Google Sheet OPTION_SHEET tabs)]
+    GHA[GitHub Actions market_bot.yml - last run 2026-10-13 failed] -.dead feed.-> GH[(GitHub data/latest_predictions.json - 2026-10-09)]
+  end
+  subgraph PowerBI[Power BI Desktop PID 23416 + msmdsrv 11740]
+    GH -->|Web.Contents| OP[OptionPredictions 171 rows 2026-09-29]
+    GH -->|Web.Contents| NW[News 50 rows]
+    SH -->|gviz CSV| PL[PaperLog 464 rows]
+    SH -->|gviz CSV| SN[SheetNews 216 rows]
+    FZ[Embedded constants Heartbeat ForensicLive CERank Calibration 2026-09-29]
+    OP --> M[59 DAX measures - 6 error]
+    NW --> M
+    PL --> M
+    FZ --> M
+    M --> V[76 visuals on 10 pages]
+  end
+  V --> USER[Owner dashboard]

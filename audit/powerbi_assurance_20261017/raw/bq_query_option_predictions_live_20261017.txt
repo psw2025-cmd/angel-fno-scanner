@@ -1,0 +1,6 @@
+executed_at_utc=2026-10-17T08:58:49.3038860+00:00
+sql=SELECT COUNT(*) AS n, COUNT(DISTINCT symbol) AS syms, CAST(MAX(snapshot_timestamp) AS STRING) AS max_snap FROM `fno-angel-prod-1790444589.fno_predictions.option_predictions_live`
+rows=219
+distinct_symbols=219
+max_snapshot_timestamp=2026-10-16 23:40:16.933483+00
+totalBytesProcessed=3753

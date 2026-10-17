@@ -1,0 +1,27 @@
+{
+  "generated_at_ist": "2026-10-17T14:14:00+05:30",
+  "origin_main": "518ca5770efc63f5ba2a868a8ee854f1d838baee",
+  "tables": 11,
+  "measures": 59,
+  "pages": 10,
+  "visuals": 76,
+  "visuals_depending_on_frozen_tables": 29,
+  "visuals_empty_placeholder": 2,
+  "visuals_with_live_measure_error": 2,
+  "live_error_measures": [
+    "Top Gap Down Display Safe",
+    "Top Gap Down Expected %",
+    "Top Gap Down Symbol",
+    "Top Gap Up Display Safe",
+    "Top Gap Up Expected %",
+    "Top Gap Up Symbol"
+  ],
+  "page_error_cards": 2,
+  "unresolved_fields": 0,
+  "readiness_counts": {
+    "PASS": 4,
+    "FAIL": 13,
+    "PASS WITH RISKS": 3
+  },
+  "overall": "FAIL"
+}
