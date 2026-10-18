@@ -21,13 +21,20 @@ expression pTreatSnapshotOffsetAsWallClock = true meta [IsParameterQuery=true, T
 expression SheetCsv =
 		(TabName as text, optional RangeA1 as nullable text) as table =>
 		let
+		    LocalPath = "C:\AngelFNO_Workstation\data\live_sheets\" & TabName & ".csv",
+		    LocalBinary = try File.Contents(LocalPath) otherwise null,
 		    Base = "https://docs.google.com/spreadsheets/d/" & pSheetId & "/gviz/tq",
 		    Q = if RangeA1 = null
 		        then [tqx="out:csv", sheet=TabName]
 		        else [tqx="out:csv", sheet=TabName, range=RangeA1],
-		    Binary = Web.Contents(Base, [Query=Q]),
-		    Csv = Csv.Document(Binary, [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
-		    Promoted = Table.PromoteHeaders(Csv, [PromoteAllScalars=true])
+		    Binary = if LocalBinary <> null then LocalBinary else try Web.Contents(Base, [Query=Q]) otherwise null,
+		    Csv = if Binary <> null
+		        then Csv.Document(Binary, [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv])
+		        else #table({}, {}),
+		    CleanedCsv = if LocalBinary <> null and RangeA1 <> null and Text.StartsWith(Text.Upper(RangeA1), "A2") and Table.RowCount(Csv) > 1
+		        then Table.Skip(Csv, 1)
+		        else Csv,
+		    Promoted = try Table.PromoteHeaders(CleanedCsv, [PromoteAllScalars=true]) otherwise CleanedCsv
 		in
 		    Promoted
 	lineageTag: e0000000-0000-0000-0000-000000000005

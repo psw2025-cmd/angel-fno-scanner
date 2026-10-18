@@ -50,7 +50,9 @@ table News
 		source =
 				let
 				    Url = "https://raw.githubusercontent.com/psw2025-cmd/angel-fno-scanner/main/data/market_news.json",
-				    RawBytes = try Web.Contents(Url) otherwise null,
+				    LocalFile = "C:\AngelFNO_Workstation\repos\angel-fno-scanner\data\market_news.json",
+				    LocalBytes = try File.Contents(LocalFile) otherwise null,
+				    RawBytes = if LocalBytes <> null then LocalBytes else try Web.Contents(Url) otherwise null,
 				    RawJson = if RawBytes <> null then Json.Document(RawBytes) else {},
 				    Raw0 = if Value.Is(RawJson, type list) then Table.FromRecords(RawJson) else #table({}, {}),
 				    Rename = Table.RenameColumns(
