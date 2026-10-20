@@ -32,6 +32,16 @@ agent_global_rules:
   must_never_do:
         - guess_pr_number_474_475
         - claim_PASS_or_certification_without_fresh_execution_evidence
+        - accept_generic_python_as_scanner_health
+        - substitute_bigquery_for_broker_api
+        - count_entire_table_without_session_date_filter
+        - self_assert_paper_mode_inside_checker
+  anti_shortcut_tripwire_rules:
+    gate1_process: "Verify dedicated universal_supervisor.py/scanner.py PID. Never accept generic python/pythonw daemons."
+    gate2_broker: "Verify live HTTP ping to https://apiconnect.angelone.in and https://api.dhan.co. Never substitute BigQuery."
+    gate3_bigquery: "Verify 219 rows specifically for today's market session via CURRENT_DATE('Asia/Kolkata'). Never count entire table unfiltered."
+    gate4_safety: "Inspect deployed state.json/environment for PAPER_MODE=1 and LIVE_ORDER_AUTHORITY=0, and freshness <= 60 min. Never self-assert inside checker."
+    zero_fake_green: "Turn RED (color 4F) and exit code 1 on any gate failure. All 5 negative control modes must fail closed."
   when_owner_says_fix: "Fix Phase 1 only, give FIX-NOW.bat"
   when_owner_says_achieve_ultimate_goal: "Execute all 4 phases, create missing files, give proof CSVs"
 ---
