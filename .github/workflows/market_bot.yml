@@ -128,7 +128,7 @@ jobs:
                 git rebase --abort || true
                 echo "::error::Snapshot conflicts with newer main; manual reconciliation required"
                 exit 1
-              elif git push origin HEAD:"$branch" --force-with-lease || gh pr create --base main --head "$branch" --title "data: prediction snapshot ${GITHUB_RUN_ID}" --body "Paper snapshot publication."; then
+              elif git push origin HEAD:"$branch"; then
                 gh pr create --base main --head "$branch" --title "data: prediction snapshot ${GITHUB_RUN_ID}" --body "Paper snapshot publication. Required checks must run. This commit is not marked skip ci."
                 pushed=1
                 break
