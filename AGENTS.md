@@ -47,6 +47,10 @@ agent_global_rules:
   when_owner_says_achieve_ultimate_goal: "Execute all 4 phases, create missing files, give proof CSVs"
 ---
 
+# PROJECT START HERE
+
+Read this file completely before any other agent note. The coordination bus is GitHub Issue #3. A dispute is closed only when both sides record `RESOLVED_TWO_PARTY` in `docs/CROSS_AGENT_COORDINATION_V1.md`. `market_bot` is the single-writer for production predictions. Target A is the next-session opening gap. Target B is the call-side contract rank. Target C is the put-side contract rank. The words `100% accuracy` name a goal. They are not a measured result until a prediction stored before the outcome is scored against the later market price.
+
 <!-- OWNER-AUTONOMOUS-COMPLETION-v2 BEGIN -->
 ## Owner goal, autonomous completion, and truthful evidence
 This owner-directed operating contract applies to work in this file's scope. Current explicit owner instructions and platform safety/permission rules take precedence; these rules do not create new permissions.
