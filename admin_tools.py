@@ -85,14 +85,17 @@ def probe_http(url: str, timeout: int = 6) -> dict:
     try:
         with urllib.request.urlopen(req, timeout=timeout, context=ctx) as resp:
             elapsed_ms = round((time.perf_counter() - start) * 1000, 2)
-            return {"status": "PASS", "code": resp.status, "latency_ms": elapsed_ms}
+            return {"status": "UNKNOWN", "transport": "REACHABLE", "authenticated": False,
+                    "code": resp.status, "latency_ms": elapsed_ms,
+                    "scope": "Public HTTP response only; authenticated broker access not tested"}
     except urllib.error.HTTPError as exc:
         elapsed_ms = round((time.perf_counter() - start) * 1000, 2)
-        # Any response from server indicates connectivity
-        return {"status": "PASS", "code": exc.code, "latency_ms": elapsed_ms}
+        return {"status": "FAIL", "transport": "REACHABLE", "authenticated": False,
+                "code": exc.code, "latency_ms": elapsed_ms,
+                "error": "Broker HTTP error; not authenticated account evidence"}
     except Exception as exc:
         elapsed_ms = round((time.perf_counter() - start) * 1000, 2)
-        return {"status": "FAIL", "error": str(exc), "latency_ms": elapsed_ms}
+        return {"status": "UNKNOWN", "error": type(exc).__name__, "latency_ms": elapsed_ms}
 
 
 # -----------------------------------------------------------------------------
@@ -244,7 +247,8 @@ def check_safety() -> dict:
         "PAPER_MODE": paper_mode,
         "LIVE_ORDER_AUTHORITY": live_auth,
         "source": source,
-        "safety_guarantee": "Paper trading enforced; live order authority strictly disabled"
+        "safety_observation": "Safe values observed in selected configuration" if is_safe else "Required safe values missing or unsafe",
+        "runtime_enforcement_verified": False
     }
 
 
@@ -290,9 +294,10 @@ def check_market_clock() -> dict:
 def check_brokers() -> dict:
     angel = probe_http("https://apiconnect.angelone.in")
     dhan = probe_http("https://api.dhan.co")
-    overall = (angel.get("status") == "PASS" and dhan.get("status") == "PASS")
+    status = "FAIL" if any(x.get("status") == "FAIL" for x in (angel, dhan)) else "UNKNOWN"
     return {
-        "status": "PASS" if overall else "FAIL",
+        "status": status,
+        "scope": "Public HTTP reachability only; authenticated account access NOT_PROVEN",
         "endpoints": {
             "Angel One SmartAPI": angel,
             "Dhan API": dhan
@@ -411,6 +416,23 @@ def check_github_repo() -> dict:
 # -----------------------------------------------------------------------------
 # Main Execution & Output Formatting
 # -----------------------------------------------------------------------------
+def summarize_acceptance(host, safety, clock, brokers, cloud, github):
+    """Missing mandatory assessments stay UNKNOWN; raw observations are not health."""
+    known_clock = {"OPEN", "HOLIDAY", "WEEKEND", "BEFORE_OPEN", "AFTER_CLOSE"}
+    checks = {
+        "host_runtime": host.get("status", "UNKNOWN"),
+        "safety_configuration": safety.get("status", "UNKNOWN"),
+        "runtime_safety_enforcement": "PASS" if safety.get("runtime_enforcement_verified") is True else "UNKNOWN",
+        "market_calendar": "PASS" if clock.get("status") in known_clock else "UNKNOWN",
+        "authenticated_brokers": brokers.get("status", "UNKNOWN"),
+        "bigquery": cloud.get("bigquery", {}).get("status", "UNKNOWN"),
+        "sheets": cloud.get("sheets_ssot", {}).get("status", "UNKNOWN"),
+        "github": github.get("status", "UNKNOWN"),
+    }
+    status = "FAIL" if "FAIL" in checks.values() else "PASS" if all(v == "PASS" for v in checks.values()) else "UNKNOWN"
+    return status, checks
+
+
 def main():
     parser = argparse.ArgumentParser(description="Angel F&O Admin Diagnostics & Health Tools")
     parser.add_argument("--json-only", action="store_true", help="Output only structured JSON to stdout")
@@ -442,16 +464,14 @@ def main():
     github_info = check_github_repo()
 
     # Overall health assessment
-    all_pass = (
-        safety_info.get("status") == "PASS" and
-        broker_info.get("status") == "PASS" and
-        gcp_info.get("bigquery", {}).get("status") == "PASS" and
-        gcp_info.get("sheets_ssot", {}).get("status") == "PASS"
-    )
+    overall_status, acceptance = summarize_acceptance(host_info, safety_info, clock_info, broker_info, gcp_info, github_info)
+    all_pass = overall_status == "PASS"
 
     report_data = {
         "timestamp_utc": timestamp_utc,
-        "overall_status": "PASS" if all_pass else "FAIL",
+        "overall_status": overall_status,
+        "mandatory_acceptance": acceptance,
+        "scope": "Administrative diagnostics; not trading-readiness certification",
         "host_runtime": host_info,
         "safety_constraints": safety_info,
         "market_clock": clock_info,
@@ -466,7 +486,8 @@ def main():
     lines.append("        ANGEL F&O - SYSTEM & CLOUD ADMINISTRATION DIAGNOSTICS REPORT           ")
     lines.append("===============================================================================")
     lines.append(f"Timestamp (UTC) : {timestamp_utc}")
-    lines.append(f"Overall Status  : {'PASS (ALL SYSTEMS HEALTHY)' if all_pass else 'FAIL / ATTENTION NEEDED'}")
+    lines.append(f"Overall Status  : {overall_status} (administrative diagnostic scope only)")
+    lines.append("Mandatory checks: " + json.dumps(acceptance, sort_keys=True))
     lines.append("-------------------------------------------------------------------------------")
     lines.append("1. LAPTOP / HOST RUNTIME:")
     lines.append(f"   Hostname      : {host_info['hostname']}")
@@ -494,10 +515,7 @@ def main():
     lines.append("-------------------------------------------------------------------------------")
     lines.append("4. BROKER CONNECTIVITY (LIVE HTTP HANDSHAKE):")
     for name, ep in broker_info.get("endpoints", {}).items():
-        if ep.get("status") == "PASS":
-            lines.append(f"   {name:<20}: PASS [HTTP {ep.get('code')}] ({ep.get('latency_ms')} ms)")
-        else:
-            lines.append(f"   {name:<20}: FAIL [Error: {ep.get('error')}] ({ep.get('latency_ms')} ms)")
+        lines.append(f"   {name:<20}: {ep.get('status')} [HTTP {ep.get('code')}; authenticated access not tested] ({ep.get('latency_ms')} ms)")
     lines.append("-------------------------------------------------------------------------------")
     lines.append("5. GOOGLE CLOUD SERVICES & SHEETS SSOT:")
     lines.append(f"   GCP Project   : {gcp_info['project_id']}")

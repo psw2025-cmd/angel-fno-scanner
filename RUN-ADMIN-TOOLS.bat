@@ -20,7 +20,7 @@ set EXIT_CODE=%ERRORLEVEL%
 echo.
 if %EXIT_CODE% EQU 0 (
     color 2F
-    echo [PASS] ALL ADMINISTRATIVE DIAGNOSTICS PASSED SUCCESSFULLY (100%% GREEN)
+    echo [PASS] Configured administrative acceptance checks passed; not trading certification.
 ) else (
     color 4F
     echo [FAIL] ATTENTION NEEDED - ONE OR MORE CHECKS RETURNED FAILURE OR WARNING
