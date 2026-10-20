@@ -354,6 +354,50 @@ def validate_gate4_safety_and_freshness(env_fixture=None, evidence_fixture=None,
         live_auth = env.get("LIVE_ORDER_AUTHORITY")
         source_label = "environment"
 
+        if (paper_mode is None or live_auth is None) and process_env is None and env_fixture is None:
+            # Check Windows User registry (HKCU\Environment)
+            if sys.platform == "win32":
+                try:
+                    import winreg
+                    with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment") as k:
+                        if paper_mode is None:
+                            try:
+                                val, _ = winreg.QueryValueEx(k, "PAPER_MODE")
+                                paper_mode = str(val)
+                            except FileNotFoundError:
+                                pass
+                        if live_auth is None:
+                            try:
+                                val, _ = winreg.QueryValueEx(k, "LIVE_ORDER_AUTHORITY")
+                                live_auth = str(val)
+                            except FileNotFoundError:
+                                pass
+                    if paper_mode is not None or live_auth is not None:
+                        source_label = "registry:HKCU\\Environment"
+                except Exception:
+                    pass
+
+            # Inspect deployed state.json as required by AGENTS.md
+            if paper_mode is None or live_auth is None:
+                candidate_state_paths = [
+                    Path(r"C:\AngelFNO_Workstation\state.json"),
+                    Path(r"C:\AngelFNO_Workstation\angel-agent-supervisor\state.json"),
+                    REPO_ROOT / "state.json",
+                ]
+                for c_path in candidate_state_paths:
+                    if c_path.exists():
+                        try:
+                            s_data = json.loads(c_path.read_text(encoding="utf-8"))
+                            s_safety = s_data.get("safety", {})
+                            if paper_mode is None and "PAPER_MODE" in s_safety:
+                                paper_mode = str(s_safety["PAPER_MODE"])
+                                source_label = f"deployed_file:{c_path}"
+                            if live_auth is None and "LIVE_ORDER_AUTHORITY" in s_safety:
+                                live_auth = str(s_safety["LIVE_ORDER_AUTHORITY"])
+                                source_label = f"deployed_file:{c_path}"
+                        except Exception:
+                            pass
+
     if paper_mode is None or live_auth is None:
         return {
             "status": "FAIL",
