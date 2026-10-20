@@ -41,7 +41,7 @@ TABLES = [
 
 SHEET_TABS = {
     "FORENSIC_LIVE": ("A1:R500", "UNFORMATTED_VALUE"),
-    "CE_PE_RANK": ("A1:F500", "UNFORMATTED_VALUE"),
+    "CE_PE_RANK": ("A1:AB500", "UNFORMATTED_VALUE"),
     "Formula Checks": ("A1:H40", "FORMULA"),
     "WRITE_PROVENANCE": ("A1:F500", "UNFORMATTED_VALUE"),
     "PUBLICATION_STATUS": ("A1:I5", "UNFORMATTED_VALUE"),
@@ -269,10 +269,18 @@ def check_gate_formulas(formula_rows, sheet_data, sh_obj):
 
                 row_start = int(r1) - 1
                 row_end = int(r2) - 1 if r2 else row_start
+                def column_index(label):
+                    index = 0
+                    for letter in label:
+                        index = index * 26 + ord(letter) - ord('A') + 1
+                    return index - 1
+
+                col_start = column_index(col1)
+                col_end = column_index(col2) if col2 else col_start
                 has_data = False
                 for ri in range(row_start, min(len(data), row_end + 1)):
                     row_vals = data[ri]
-                    if any(str(val).strip() != "" for val in row_vals):
+                    if any(str(val).strip() != "" for val in row_vals[col_start:col_end + 1]):
                         has_data = True
                         break
 
