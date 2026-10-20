@@ -36,11 +36,12 @@ agent_global_rules:
         - substitute_bigquery_for_broker_api
         - count_entire_table_without_session_date_filter
         - self_assert_paper_mode_inside_checker
+        - treat_nse_holiday_or_weekend_as_scanner_failure
   anti_shortcut_tripwire_rules:
-    gate1_process: "Verify dedicated universal_supervisor.py/scanner.py PID. Never accept generic python/pythonw daemons."
+    gate1_process: "Call market_calendar.market_session_state() first. Require a dedicated universal_supervisor.py or scanner.py PID only when status is OPEN (09:15-15:40 IST). Before open, after close, at night, on a weekend, or on a holiday, a missing scanner is expected. Never accept a generic python/pythonw daemon as the scanner."
     gate2_broker: "Verify live HTTP ping to https://apiconnect.angelone.in and https://api.dhan.co. Never substitute BigQuery."
-    gate3_bigquery: "Verify 219 rows specifically for today's market session via CURRENT_DATE('Asia/Kolkata'). Never count entire table unfiltered."
-    gate4_safety: "Inspect deployed state.json/environment for PAPER_MODE=1 and LIVE_ORDER_AUTHORITY=0, and freshness <= 60 min. Never self-assert inside checker."
+    gate3_bigquery: "Call market_calendar.market_session_state() first. Unless status is OPEN, name the clock state and do not treat a missing scanner or today's row count as a failure. When OPEN, verify 219 rows for that session via CURRENT_DATE('Asia/Kolkata'). Never count the entire table unfiltered."
+    gate4_safety: "Inspect deployed state.json/environment for PAPER_MODE=1 and LIVE_ORDER_AUTHORITY=0. Apply the 60-minute freshness limit only when market_session_state() is OPEN. Overnight or closed-market age is not a failure. Never self-assert inside the checker."
     zero_fake_green: "Turn RED (color 4F) and exit code 1 on any gate failure. All 5 negative control modes must fail closed."
   when_owner_says_fix: "Fix Phase 1 only, give FIX-NOW.bat"
   when_owner_says_achieve_ultimate_goal: "Execute all 4 phases, create missing files, give proof CSVs"
@@ -101,17 +102,36 @@ Prove system can generate profit with high accuracy for gap-up high-rise symbols
 ## How Agent Must Achieve Goal by Self-Discovery
 1. Run gh api to list md files - read them live
 2. Run gh pr list - find latest PR (475 or 474) - do not guess
-3. Run bq query to check 219 rows - do not guess
+3. Run bq query to check 219 rows only after market_calendar.session_closure() says the NSE session is open. On a holiday or weekend, name the day and do not guess.
 4. If missing file for Phase 2/3, CREATE it yourself from present repo code
 5. Give 1 file per phase that owner can double-click
 
 ## Permanent Fix for Past 1 Year Loop
 Same 3 locks: run_id, secret, lease. Create 3 permanent BAT files so owner never faces again.
 
+## Operational Rules & SSOT Infrastructure (Configured Baseline; Reverify Each Run)
+1. **Google Sheets SSOT Credentials**:
+   - Master File Inventory ID: `1xyqUcEtXrh1pdJTO2N-UASZf4fssxbq7bfEjOp4LvOY`
+   - Production Options Stream ID: `1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs`
+   - Active Service Account Key: `C:\Users\ADMIN\Downloads\angel_sheets_key.json`
+   - Service Account Identity: `angel-sheets-bot@fno-angel-prod-1790444589.iam.gserviceaccount.com`
+2. **Required Safety Constraints (Verify Effective Values in Each Relevant Runtime)**:
+   - `PAPER_MODE = 1` permanently.
+   - `LIVE_ORDER_AUTHORITY = 0` permanently.
+3. **Background Watchdog Automation**:
+   - Task Name: `\SSOT_MD_Inventory`
+   - Script: `C:\AngelFNO_Workstation\ssot_md_daemon.py --daemon`
+   - Trigger: At Logon + Hourly recurring (every 60 minutes) with automatic exponential retry backoff (5s, 15s, 30s).
+   - Local Outbox CSV: `C:\AngelFNO_Workstation\Master_File_Inventory_Local.csv`
+4. **Visual Analytics & Reporting**:
+   - Plotly Interactive Dashboard: `C:\AngelFNO_Workstation\reports\master_visual_audit.html`
+   - Heatmap Evidence: `C:\AngelFNO_Workstation\reports\inventory_structure_heatmap.png`
+
 ## Autonomous Completion and Evidence Requirement (CODEX-1)
-A FAIL or UNKNOWN is an instruction to investigate and continue working; it is not task completion.
-1. For every mandatory FAIL or UNKNOWN: identify the exact cause and missing evidence; make authorized repairs or obtain evidence through inspection and testing; rerun affected and regression checks until all pass or an external blocker is hit.
-2. Never obtain green by weakening tests, inventing classifications, suppressing errors, or substituting simulated results for live verification.
-3. Distinguish temporary failures from persistent blockers with bounded retries; escalate only when genuine external blockers occur, continuing independent work meanwhile.
-4. Before declaring completion, verify all requirements against final deployed code and produce a self-contained, reproducible evidence package.
-5. Apply this workflow persistently without requiring owner reminders for routine tasks.
+Apply AGY-EVIDENCE-INTEGRITY-v1 in C:\Users\ADMIN\.gemini\config\evidence-integrity\POLICY.md and its RUNBOOK.md for every substantive task.
+1. A FAIL or UNKNOWN is an instruction to investigate and continue working; it is not task completion.
+2. For every mandatory FAIL or UNKNOWN: identify the exact cause and missing evidence; make authorized repairs or obtain evidence through inspection and testing; rerun affected and regression checks until all pass or an external blocker is hit.
+3. Never obtain green by weakening tests, inventing classifications, suppressing errors, or substituting simulated results for live verification.
+4. Distinguish temporary failures from persistent blockers with bounded retries; escalate only when genuine external blockers occur, continuing independent work meanwhile.
+5. Before declaring completion, verify all requirements against final deployed code and produce a self-contained, reproducible evidence package.
+6. Apply this workflow persistently without requiring owner reminders for routine tasks.

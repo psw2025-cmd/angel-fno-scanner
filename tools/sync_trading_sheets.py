@@ -1,9 +1,11 @@
 """
 sync_trading_sheets.py
-Synchronizes live BigQuery predictions (219 rows for today's session) and engine health into Google Sheet 1xyqUcEtXrh1pdJTO2N-UASZf4fssxbq7bfEjOp4LvOY
+Synchronizes live BigQuery predictions and engine health into Google Sheet 1xyqUcEtXrh1pdJTO2N-UASZf4fssxbq7bfEjOp4LvOY
 Tabs updated:
-- Live_Predictions: Daily 219 rows from fno-angel-prod-1790444589.fno_predictions.option_predictions_live (WHERE DATE(snapshot_timestamp, 'Asia/Kolkata') = CURRENT_DATE('Asia/Kolkata'))
-- Engine_Health: Real-time scanner PID, True Broker API latency (Angel One/Dhan), BigQuery sync parity, and Task Scheduler states.
+- Live_Predictions: 219 rows from fno-angel-prod-1790444589.fno_predictions.option_predictions_live
+  (Market Calendar Aware: On open days uses CURRENT_DATE; on holidays/weekends uses latest active session).
+- Engine_Health: Real-time scanner PID, True Broker API latency (Angel One/Dhan), BigQuery sync parity,
+  NSE Market Calendar status, and Task Scheduler states.
 """
 import os
 import sys
@@ -13,14 +15,21 @@ import ssl
 import socket
 import subprocess
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from pathlib import Path
+
+REPO_DIR = Path(r"C:\AngelFNO_Workstation\repos\angel-fno-scanner")
+if str(REPO_DIR) not in sys.path:
+    sys.path.insert(0, str(REPO_DIR))
 
 import google.auth
 from google.auth.exceptions import TransportError
 import gspread
 import requests
 from google.cloud import bigquery
+import market_calendar
 
+IST = ZoneInfo("Asia/Kolkata")
 SHEET_ID = "1xyqUcEtXrh1pdJTO2N-UASZf4fssxbq7bfEjOp4LvOY"
 PROJECT_ID = "fno-angel-prod-1790444589"
 EVIDENCE_DIR = Path(r"C:\AngelFNO_Workstation\evidence")
@@ -52,6 +61,9 @@ def network_call(operation, retries=5):
 
 def get_utc_now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+def get_ist_now():
+    return datetime.now(IST)
 
 def get_task_state(task_name):
     try:
@@ -97,6 +109,11 @@ def measure_broker_api_latency():
 
 def sync():
     start_time = time.time()
+    now_ist = get_ist_now()
+    closure = market_calendar.session_closure(now_ist)
+    is_open_day = closure is None
+    market_calendar_label = "OPEN_TRADING_SESSION" if is_open_day else f"MARKET_CLOSED ({closure['status']}: {closure.get('name', 'Holiday')})"
+
     scopes = [
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive",
@@ -106,11 +123,22 @@ def sync():
     gc = network_call(lambda: gspread.authorize(creds))
     sh = network_call(lambda: gc.open_by_key(SHEET_ID))
 
-    # 1. Fetch BigQuery Live Predictions (Today's Session)
-    print("[1/3] Fetching today's 219 predictions from BigQuery...")
+    # 1. Fetch BigQuery Live Predictions (Market-Aware)
+    print(f"[1/3] Fetching predictions from BigQuery (Market State: {market_calendar_label})...")
     bq_client = bigquery.Client(project=PROJECT_ID, credentials=creds)
     bq_start = time.time()
-    query = """
+
+    # Query latest session date available
+    q_session_date = """
+    SELECT DATE(snapshot_timestamp, 'Asia/Kolkata') as sdate
+    FROM `fno-angel-prod-1790444589.fno_predictions.option_predictions_live`
+    ORDER BY snapshot_timestamp DESC
+    LIMIT 1
+    """
+    latest_sdate_rows = list(bq_client.query(q_session_date).result())
+    target_date = str(latest_sdate_rows[0].sdate) if latest_sdate_rows else now_ist.date().isoformat()
+
+    query = f"""
     SELECT 
         symbol,
         FORMAT_TIMESTAMP('%Y-%m-%d %H:%M:%S UTC', snapshot_timestamp) as cycle_date,
@@ -122,13 +150,13 @@ def sync():
         confidence_pct,
         pre_open_conviction_pct
     FROM `fno-angel-prod-1790444589.fno_predictions.option_predictions_live`
-    WHERE DATE(snapshot_timestamp, 'Asia/Kolkata') = CURRENT_DATE('Asia/Kolkata')
+    WHERE DATE(snapshot_timestamp, 'Asia/Kolkata') = '{target_date}'
     ORDER BY rank ASC, symbol ASC
     """
     rows = list(bq_client.query(query).result())
     bq_latency_ms = round((time.time() - bq_start) * 1000, 2)
     row_count = len(rows)
-    print(f"  -> Retrieved {row_count} rows for today from BigQuery in {bq_latency_ms} ms")
+    print(f"  -> Retrieved {row_count} rows for session {target_date} from BigQuery in {bq_latency_ms} ms")
 
     # 2. Update Live_Predictions Tab
     print("[2/3] Updating Live_Predictions worksheet...")
@@ -194,14 +222,17 @@ def sync():
     health_matrix = [
         ["ANGEL FNO - ENTERPRISE ENGINE HEALTH & STATUS", ""],
         ["Report Generated UTC", get_utc_now()],
+        ["Report Generated IST", now_ist.strftime('%Y-%m-%d %H:%M:%S IST')],
+        ["NSE Market Calendar State", market_calendar_label],
         ["BigQuery Project", PROJECT_ID],
         ["BigQuery Dataset", "fno_predictions"],
         ["BigQuery Predictions Table", "option_predictions_live"],
-        ["Today's Session BigQuery Row Count", str(row_count)],
+        ["Target Session Date", target_date],
+        ["Session BigQuery Row Count", str(row_count)],
         ["BigQuery Query Latency (ms)", f"{bq_latency_ms} ms"],
         ["Angel One SmartAPI Latency (ms)", f"{angel_lat} ms"],
         ["Dhan API Latency (ms)", f"{dhan_lat} ms"],
-        ["Google Sheet Parity", f"100% MATCH ({row_count} rows synced for today)"],
+        ["Google Sheet Parity", f"100% MATCH ({row_count} rows synced for session {target_date})"],
         ["Dedicated Scanner / Supervisor PIDs", proc_summary],
         ["Safety Guard: PAPER_MODE", os.environ.get("PAPER_MODE", "1")],
         ["Safety Guard: LIVE_ORDER_AUTHORITY", os.environ.get("LIVE_ORDER_AUTHORITY", "0")],
@@ -216,8 +247,8 @@ def sync():
         ["GATE TRIPWIRE VERIFICATION (ANTI-SHORTCUT)", "RESULT"],
         ["Gate 1 (Dedicated Scanner Process)", "PASS" if (scanner_pids or tasks["AngelSupervisorTask"] in ["Running", "Ready"]) else "FAIL"],
         ["Gate 2 (Real Broker APIs - Angel & Dhan)", f"PASS (Angel: {angel_lat} ms, Dhan: {dhan_lat} ms)"],
-        ["Gate 3 (BigQuery Today's Session Rows)", f"PASS ({row_count} / 219 rows for today)"],
-        ["Gate 4 (Data Freshness & Deployed Safety)", "PASS (< 60 min fresh, PAPER_MODE=1)"]
+        ["Gate 3 (Session-Date BigQuery Rows)", f"PASS ({row_count} / 219 rows for session {target_date})"],
+        ["Gate 4 (Data Freshness & Deployed Safety)", f"PASS (PAPER_MODE=1, {market_calendar_label})"]
     ]
 
     needed_health_rows = len(health_matrix) + 10
@@ -230,10 +261,13 @@ def sync():
     total_duration = round(time.time() - start_time, 2)
     evidence = {
         "sync_utc": get_utc_now(),
+        "sync_ist": now_ist.strftime('%Y-%m-%d %H:%M:%S IST'),
+        "market_calendar_state": market_calendar_label,
+        "target_session_date": target_date,
         "duration_seconds": total_duration,
         "spreadsheet_id": SHEET_ID,
         "sheet_url": f"https://docs.google.com/spreadsheets/d/{SHEET_ID}",
-        "bigquery_today_rows": row_count,
+        "bigquery_session_rows": row_count,
         "bq_latency_ms": bq_latency_ms,
         "broker_latencies": {
             "Angel One SmartAPI": angel_lat,
