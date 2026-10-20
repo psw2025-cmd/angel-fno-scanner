@@ -254,16 +254,16 @@ Comprehensive architecture documentation is maintained in [`docs/N8N_ORCHESTRATI
 
 ### B. The 6 Production Workflows (`n8n_automation/workflows/`)
 1. **01_master_continuous_orchestrator.json (`angel-fno-master-orchestrator`):**
-   - Coordinates 5m market / 15m off-peak checks across Laptop, Power BI, BQ, Sheets, and GitHub.
+   - Coordinates 5m market / 15m off-peak checks across Laptop, Power BI, BQ, Sheets, and GitHub. Off-peak, night, and NSE holidays are not scanner failures. Call `market_calendar.market_session_state()` before treating silence as a fault.
    - Evaluates aggregate status; branches to auto-remediation if degraded.
 2. **02_failure_handler_and_auto_remediation.json (`angel-fno-failure-handler-and-remediation`):**
    - Triggers `/auto-remediate` on red alerts, removes stale lock files, heals BQ 54-column DDL, syncs cycle provenance, and re-runs the 12-check verification harness.
 3. **03_powerbi_watchdog.json (`angel-fno-powerbi-watchdog`):**
    - Continuously monitors `PBIDesktop.exe` PID, `msmdsrv.exe` PID, and active Analysis Services listener on port `62289`.
 4. **04_bigquery_schema_lineage_guardian.json (`angel-fno-bigquery-schema-lineage-guardian`):**
-   - Asserts 219 universe rows, 54 columns, and 100% provenance completeness every 30 minutes.
+   - Asserts 219 universe rows, 54 columns, and provenance completeness every 30 minutes. That 219-row check applies only when market_session_state() status is OPEN.
 5. **05_google_sheet_formula_forensic_verifier.json (`angel-fno-google-sheet-formula-verifier`):**
-   - Validates all 26 tabs in `OPTION_SHEET`, `FORENSIC_LIVE` 219 rows, and live gate formulas.
+   - Validates all 26 tabs in `OPTION_SHEET`, `FORENSIC_LIVE` 219 rows, and live gate formulas. That 219-row check applies only when market_session_state() status is OPEN.
 6. **06_operator_snapshot_archiver.json (`angel-fno-operator-snapshot-archiver`):**
    - Archives daily post-market snapshot bundles into `operator/snapshots/YYYY-MM-DD/`.
 

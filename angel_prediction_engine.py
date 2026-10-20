@@ -47,7 +47,7 @@ from cloud_status import (
     quote_attempt_covers_day,
     refresh_cloud_paper_view,
 )
-from market_calendar import IST, is_trading_day, local_market_time
+from market_calendar import IST, NSE_HOLIDAYS_2026, is_trading_day, local_market_time
 
 load_env()
 
@@ -192,12 +192,6 @@ def news_dedup_key(item):
     source = str(item.get("source", "")).strip().lower()
     link = str(item.get("source_url") or item.get("link") or "").strip().lower()
     return "::".join((source, link, title))
-
-NSE_HOLIDAYS_2026 = {
-    "2026-01-26", "2026-03-03", "2026-03-26", "2026-03-31", "2026-04-03",
-    "2026-04-14", "2026-05-01", "2026-05-28", "2026-06-26", "2026-09-14",
-    "2026-10-02", "2026-10-20", "2026-11-10", "2026-11-24", "2026-12-25",
-}
 
 def is_market_open(dt=None):
     if dt is None:
@@ -1164,6 +1158,8 @@ def run_ground_truth_reconciliation(current_predictions, actual_top_gainers_cont
     reconciliation = {
         "cycle": cycle,
         "hit_rate_pct": hit_rate,
+        "stored_outcome": False,
+        "forward_hit_rate_label": "Hit rate is not available",
         "recall_at_10": recall_10,
         "mean_rank": mean_rank,
         "hits_count": len(hits),
@@ -1181,7 +1177,10 @@ def run_ground_truth_reconciliation(current_predictions, actual_top_gainers_cont
         cal_state["last_reconciliation"] = reconciliation
         save_calibration_state(cal_state)
 
-    print(f"[CALIBRATION] Cycle #{cycle} | Hit Rate: {hit_rate}% | Recall@10: {recall_10} | Mean Rank: {mean_rank}")
+    print(
+        f"[CALIBRATION] Cycle #{cycle} | Hit rate is not available | "
+        f"Recall@10: {recall_10} | Mean Rank: {mean_rank}"
+    )
     return reconciliation
 
 # =====================================================================
@@ -2362,6 +2361,15 @@ def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, re
 # =====================================================================
 # GOOGLE SHEET SYNC MODULE
 # =====================================================================
+def forward_hit_rate_banner(reconciliation):
+    """A same-cycle overlap is not a stored later outcome, so it is not a hit rate."""
+    if isinstance(reconciliation, dict) and reconciliation.get("stored_outcome") is True:
+        rate = reconciliation.get("hit_rate_pct")
+        if isinstance(rate, (int, float)) and not isinstance(rate, bool):
+            return f"Hit Rate: {rate}%"
+    return "Hit rate is not available"
+
+
 def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_str, next_day_picks=None, sh=None):
     require_authorized_writer()
     require_verified_symbols(p["symbol"] for p in predictions)
@@ -2406,7 +2414,7 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
         hb_rows = [
             ["Metric", "Value", "Benchmark", "Component", "Protocol", "Status"],
             ["Session Auth", "CONNECTED_ANGEL_SMARTAPI", "ACTIVE", "Angel One SmartAPI", "TOTP / JWT WebSocket", "🟢 HEALTHY"],
-            ["Self-Calibration Hit Rate", f"{reconciliation['hit_rate_pct']}%", "Self-Calibration Loop", "Reconciliation Engine", "Ground Truth Compare", "🟢 CALIBRATED"],
+            ["Self-Calibration Hit Rate", forward_hit_rate_banner(reconciliation), "Self-Calibration Loop", "Reconciliation Engine", "Ground Truth Compare", "NOT_A_STORED_OUTCOME"],
             ["Recall @ 10", f"{reconciliation['recall_at_10']}", "Top 10 Prediction Match", "Self-Calibration Loop", "Online Weights", "🟢 ACTIVE"],
             ["Mean Rank", f"{reconciliation['mean_rank']}", "Actual Movers Rank", "Greeks & News Model", "Dynamic Calibration", "🟢 HIGH ACCURACY"]
         ]
@@ -2428,7 +2436,7 @@ def sync_to_google_sheet(predictions, reconciliation, forensic_live_rows, ist_st
 
         pred_rows = [
             ["⚡ DYNAMIC OPTION CE/PE PREDICTION, PRE-MARKET GAP & INTENSITY ENGINE", "", "", "", "", "", "", "", "", "", "", ""],
-            [f"Last Synced: {ist_str} IST", "Broker: CONNECTED (Angel One SmartAPI)", f"F&O Symbols: {len(predictions)}", f"Hit Rate: {reconciliation['hit_rate_pct']}%", f"Recall@10: {reconciliation['recall_at_10']}", f"Mean Rank: {reconciliation['mean_rank']}", "Publication: PENDING_READBACK", "", "", "", "", ""],
+            [f"Last Synced: {ist_str} IST", "Broker: CONNECTED (Angel One SmartAPI)", f"F&O Symbols: {len(predictions)}", forward_hit_rate_banner(reconciliation), f"Recall@10: {reconciliation['recall_at_10']}", f"Mean Rank: {reconciliation['mean_rank']}", "Publication: PENDING_READBACK", "", "", "", "", ""],
             ["", "", "", "", "", "", "", "", "", "", "", ""],
             ["🌅 PRE-MARKET 9:15 AM GAP EXPLOSION PICKS (ADVANCE PREDICTION BEFORE OPEN)", "", "", "", "", "", "", "", "", "", "", ""],
             ["Rank", "Symbol", "Gap Direction", "Expected Opening Gap %", "Pre-Open Conviction %", "Target 9:15 Strike", "Verified Sources", "Top Catalyst / News Filing", "", "", "", ""]
@@ -2702,7 +2710,11 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
             **provenance,
             "timestamp": ts_iso,
             "cycle_number": int(reconciliation["cycle"]),
-            "top10_hit_rate_pct": float(reconciliation["hit_rate_pct"]),
+            "top10_hit_rate_pct": (
+                float(reconciliation["hit_rate_pct"])
+                if reconciliation.get("stored_outcome") is True and reconciliation.get("hit_rate_pct") is not None
+                else None
+            ),
             "recall_at_10": float(reconciliation["recall_at_10"]),
             "mean_rank_of_top10": float(reconciliation["mean_rank"]),
             "predicted_top10": json.dumps(reconciliation.get("hits", [])),

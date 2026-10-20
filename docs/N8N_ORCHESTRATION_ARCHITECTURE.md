@@ -78,7 +78,7 @@ flowchart TD
 - **Webhook Endpoint:** `GET /webhook/orchestrator-run`
 - **Execution Flow:**
   1. Polls `http://127.0.0.1:5680/orchestrator-status`.
-  2. Evaluates aggregate health across Power BI (`HEALTHY`), BigQuery (219 rows with provenance), and local runtime evidence.
+  2. Evaluates aggregate health across Power BI (`HEALTHY`), BigQuery (219 rows with provenance), and local runtime evidence. Freshness applies only while `market_session_state()` is `OPEN` (09:15–15:40 IST). Night and holidays must not start remediation just because the scanner is quiet.
   3. If **HEALTHY**: formats and logs green heartbeat telemetry.
   4. If **ATTENTION_REQUIRED**: routes to automatic remediation endpoint (`/auto-remediate`), followed by post-remediation verification (`/verification-harness`).
 
@@ -106,22 +106,22 @@ flowchart TD
 
 ### Workflow 4: BigQuery Schema & Lineage Guardian (`04_bigquery_schema_lineage_guardian.json`)
 - **Workflow ID:** `angel-fno-bigquery-schema-lineage-guardian`
-- **Cadence:** Every 30 minutes (`*/30 * * * *`).
+- **Cadence:** Every 30 minutes (`*/30 * * * *`). The 219-row check in this workflow applies only when `market_session_state()` status is OPEN.
 - **Webhook Endpoint:** `GET /webhook/bigquery-audit`
 - **Execution Flow:**
   1. Calls `http://127.0.0.1:5680/bigquery`.
-  2. Asserts total universe = 219 symbols in `fno_predictions.option_predictions_live`.
-  3. Asserts 100% provenance completeness: `countif(run_id is not null) == 219`, `countif(git_sha is not null) == 219`.
+  2. Asserts total universe = 219 symbols in `fno_predictions.option_predictions_live`. This 219-row check applies only when `market_session_state()` status is OPEN.
+  3. Asserts provenance completeness: `countif(run_id is not null) == 219`, `countif(git_sha is not null) == 219`. This check applies only when `market_session_state()` status is OPEN.
   4. Emits `SCHEMA_AND_LINEAGE_PERFECT` or triggers Auto-Remediation if drift is detected.
 
 ### Workflow 5: Google Sheets Formula & Provenance Verifier (`05_google_sheet_formula_forensic_verifier.json`)
 - **Workflow ID:** `angel-fno-google-sheet-formula-verifier`
-- **Cadence:** Every 15 minutes (`*/15 * * * *`).
+- **Cadence:** Every 15 minutes (`*/15 * * * *`). The 219-row check in this workflow applies only when `market_session_state()` status is OPEN.
 - **Webhook Endpoint:** `GET /webhook/sheets-verify`
 - **Execution Flow:**
   1. Queries `http://127.0.0.1:5680/sheets`.
   2. Confirms all 26 worksheets exist in Spreadsheet `1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs`.
-  3. Confirms 219 rows in `FORENSIC_LIVE`.
+  3. Confirms 219 rows in `FORENSIC_LIVE`. This 219-row check applies only when `market_session_state()` status is OPEN.
   4. Checks formula integrity on `Formula Checks` tab.
   5. Emits forensic health status.
 
@@ -144,9 +144,9 @@ In accordance with [`AGENTS.md`](../AGENTS.md) Section 5 & 11, critical claims r
 | Subsystem | Primary Validation Path | Independent Peer Validation Path |
 |---|---|---|
 | **Power BI Desktop** | Win32 PID inspection (`PBIDesktop.exe`, `msmdsrv.exe`) | Active TCP listener on Port `62289` via `Get-NetTCPConnection` |
-| **BigQuery Universe** | 219 rows in `fno_predictions.option_predictions_live` | Cross-verification with `FORENSIC_LIVE` (219 rows) in Google Sheets |
+| **BigQuery Universe** | 219 rows in `fno_predictions.option_predictions_live` only when `market_session_state()` status is OPEN | Cross-verification with `FORENSIC_LIVE` (219 rows) in Google Sheets, also only when status is OPEN |
 | **Data Lineage** | 54-column DDL schema with partitioning and clustering | 0 nulls for `run_id`, `git_sha`, `cycle_id` across all 4 BQ tables |
-| **Market Data Freshness** | `HEARTBEAT` timestamp in Google Sheet | Source timestamp age computation (`NOW_IST - SOURCE_TIMESTAMP <= 90s`) |
+| **Market Data Freshness** | `HEARTBEAT` timestamp in Google Sheet | Source timestamp age must be under 90 seconds only when `market_session_state()` status is OPEN (`NOW_IST - SOURCE_TIMESTAMP <= 90s`). Closed, holiday, weekend, before 09:15 IST, and after 15:40 IST do not use this 90-second check. |
 | **AI Fail-Closed Safety** | `PAPER / ANALYZER = ON` configuration flag | `REAL BROKER ORDERS = 0` and zero API order submission endpoints |
 | **Automation Health** | n8n `/healthz` HTTP status 200 | Host listener port 5680 `/health` runtime evidence collector |
 

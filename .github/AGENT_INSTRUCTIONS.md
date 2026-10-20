@@ -70,7 +70,7 @@ A critical finding must **not** be marked resolved by the same agent that implem
 3. disagreements become `DISPUTED` and investigation continues;
 4. only active after-state with compatible timestamps/SHA and independent agreement becomes `RESOLVED_TWO_PARTY`.
 
-Do not use dashboard text, a stored `0s` writer age, self-calibration hit rate, or a green CI badge as sole proof of production health. Compute freshness independently, distinguish market-closed last prints from live data, and keep Target A opening-gap prediction separate from Target B exact CE/PE extreme-gainer prediction.
+Do not use dashboard text, a stored `0s` writer age, self-calibration hit rate, or a green CI badge as sole proof of production health. Compute freshness independently, distinguish market-closed last prints from live data, and keep Target A opening-gap prediction separate from Target B exact CE/PE extreme-gainer prediction. Before calling any file "today's market", call `market_calendar.py` `market_session_state()`. A live scanner and fresh rows are required only when status is `OPEN` (09:15–15:40 IST on a trading day). `BEFORE_OPEN`, `AFTER_CLOSE`, night, `WEEKEND`, and `HOLIDAY` mean a quiet scanner is expected. Do not call that a system failure, and do not call it a green pass.
 
 This coordination rule never authorizes live orders. PAPER/analyzer safety remains mandatory.
 

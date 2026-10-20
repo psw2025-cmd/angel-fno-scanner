@@ -29,6 +29,11 @@ import zipfile
 from collections import Counter, defaultdict
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+from market_calendar import NSE_HOLIDAYS_2026
+
 REPO = Path(__file__).resolve().parent.parent
 OUT_DEFAULT = REPO / "audit" / "powerbi_assurance_20261017"
 OPENED_PBIP_ROOT = Path(r"C:\AngelFNO_Workstation\repos\angel-fno-scanner")
@@ -127,7 +132,7 @@ def weekdays_between(a: dt.datetime, b: dt.datetime) -> int:
     d, n = a.date(), 0
     while d < b.date():
         d += dt.timedelta(days=1)
-        if d.weekday() < 5:
+        if d.weekday() < 5 and d.isoformat() not in NSE_HOLIDAYS_2026:
             n += 1
     return n
 

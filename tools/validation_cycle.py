@@ -21,6 +21,13 @@ def public_error(exc: BaseException) -> str:
     return text[:400]
 
 
+def closed_session_status(market_open, live_ok):
+    """A closed NSE session is not a freshness failure and not a green live pass."""
+    if not market_open:
+        return "SKIPPED_CLOSED"
+    return "PASS" if live_ok else "FAIL"
+
+
 def run_validation() -> int:
     checks = []
 
@@ -79,14 +86,12 @@ def run_validation() -> int:
         quotes, failures = scanner.fetch_chunked(api, tokens)
         from tools.exchange_timestamp import oldest_exchange_timestamp
         oldest = oldest_exchange_timestamp(list(quotes.values())) if quotes else "none"
-        if market_is_open(now) and quotes and not failures:
-            freshness = "PASS"
-        else:
-            freshness = "FAIL"
+        market_open = market_is_open(now)
+        freshness = closed_session_status(market_open, bool(quotes) and not failures)
         add(
             "data_freshness",
             freshness,
-            f"now_ist={now.isoformat()} market_open={market_is_open(now)} oldest_exchange_timestamp={oldest} quote_failures={failures} quotes={len(quotes)}",
+            f"now_ist={now.isoformat()} market_open={market_open} oldest_exchange_timestamp={oldest} quote_failures={failures} quotes={len(quotes)}",
         )
         ranked = []
         for meta in universe.values():
@@ -98,11 +103,11 @@ def run_validation() -> int:
             except Exception:
                 continue
         selected = select_ranked([item for item in ranked if item is not None])
-        ranking_ok = market_is_open(now) and 0 < len(selected) <= 200
+        ranking = closed_session_status(market_open, 0 < len(selected) <= 200)
         add(
             "ranking",
-            "PASS" if ranking_ok else "FAIL",
-            f"ranked_rows={len(selected)} limit=200 market_open={market_is_open(now)}",
+            ranking,
+            f"ranked_rows={len(selected)} limit=200 market_open={market_open}",
         )
     except Exception as exc:
         add("auth_or_market_data", "FAIL", public_error(exc))

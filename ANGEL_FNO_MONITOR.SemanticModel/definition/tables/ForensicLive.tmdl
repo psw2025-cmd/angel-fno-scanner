@@ -1,79 +1,99 @@
 table ForensicLive
+	lineageTag: 4cd3abf5-82d2-4825-b7e8-a3d6557f056d
 
 	column symbol
 		dataType: string
+		lineageTag: 3e3826ba-0ba2-4c14-a415-5b3d2a179d3b
 		sourceColumn: [symbol]
 
 	column time_ist
 		dataType: string
+		lineageTag: 3ee16ba2-0e2f-44a3-95dc-e21a93cf7de2
 		sourceColumn: [time_ist]
 
 	column fut_ltp
 		dataType: double
+		lineageTag: fe9bb84f-22f4-4ccd-8d5b-5296dff6868a
 		sourceColumn: [fut_ltp]
 
 	column fut_chg_pct
 		dataType: double
+		lineageTag: e279bc64-13ef-4d19-bdd6-1c376c2d04f8
 		sourceColumn: [fut_chg_pct]
 
 	column fut_obi
 		dataType: double
+		lineageTag: 557a0e30-fd5d-4186-b093-5fc2d326fc42
 		sourceColumn: [fut_obi]
 
 	column atm_strike
 		dataType: double
+		lineageTag: 15cdd6b5-a389-4d8c-b57a-10d97655ef20
 		sourceColumn: [atm_strike]
 
 	column ce_contract
 		dataType: string
+		lineageTag: cbedae6d-766d-4af1-9b4c-2c1ee39305e4
 		sourceColumn: [ce_contract]
 
 	column ce_ltp
 		dataType: double
+		lineageTag: b47623fa-63f1-4880-9159-3f1a14ca1499
 		sourceColumn: [ce_ltp]
 
 	column ce_chg_pct
 		dataType: double
+		lineageTag: a95b7d11-1689-43ab-8317-d13ebbc6fa62
 		sourceColumn: [ce_chg_pct]
 
 	column ce_oi
 		dataType: int64
+		lineageTag: 263692e1-87d7-4431-b5c6-6b0f2790d147
 		sourceColumn: [ce_oi]
 
 	column ce_obi
 		dataType: double
+		lineageTag: 21d8b370-9c0a-4165-b7b1-db4f40f8f8a8
 		sourceColumn: [ce_obi]
 
 	column pe_contract
 		dataType: string
+		lineageTag: d574ac5f-f7ad-4480-aef6-2a2d90978048
 		sourceColumn: [pe_contract]
 
 	column pe_ltp
 		dataType: double
+		lineageTag: ea15be5e-0410-4ac0-a2f2-f80a613926f7
 		sourceColumn: [pe_ltp]
 
 	column pe_chg_pct
 		dataType: double
+		lineageTag: a7340f98-ed2d-4331-a3d5-9d18c39d2105
 		sourceColumn: [pe_chg_pct]
 
 	column pe_oi
 		dataType: int64
+		lineageTag: 2252f4ba-b22e-4fcb-a876-d05ae4415e56
 		sourceColumn: [pe_oi]
 
 	column atm_pcr
 		dataType: double
+		lineageTag: d5874669-f0d6-4562-a2de-b2685f2904de
 		sourceColumn: [atm_pcr]
 
 	column forensic_signal
 		dataType: string
+		lineageTag: c9bb90b1-6c49-4ddf-9743-cdfc9b551962
 		sourceColumn: [forensic_signal]
 
 	column ce_valid
 		dataType: boolean
+		lineageTag: 07564e78-f015-49f3-b226-24567c68a97c
 		sourceColumn: [ce_valid]
 
 	column pe_valid
 		dataType: boolean
+		lineageTag: 3b73b2e0-deeb-4d9c-9f52-68764ef07bca
 		sourceColumn: [pe_valid]
 
 	partition ForensicLive_Partition = calculated
@@ -320,3 +340,4 @@ table ForensicLive
 				        {"HYUNDAI", "2026-10-18 17:57:46", 1976.6, -0.47, -0.742, 1980.0, "HYUNDAI27OCT261980CE", 32.3, -21.41, 97625, -0.032, "HYUNDAI27OCT261980PE", 37.45, 5.79, 99000, 1.01, "BEARISH PE SURGE [HIGH CONVICTION]", TRUE, TRUE}
 				    }
 				)
+

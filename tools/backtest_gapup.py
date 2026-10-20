@@ -1,25 +1,39 @@
-﻿# tools/backtest_gapup.py - Self-discovers from BigQuery present data
-# This file achieves your ultimate goal Phase 2
-import os
-from google.cloud import bigquery
-client = bigquery.Client(project=os.getenv("BQ_PROJECT_ID","fno-angel-prod-1790444589"))
+﻿"""Gap-up backtest helper.
 
-# Self-discovery: Find what tables exist in your present repo
-query = """
-SELECT cycle_id, symbol, close_price, predicted_gap_pct 
-FROM `fno-angel-prod-1790444589.control.forensic_predictions` 
-WHERE cycle_id >= '2024-01-01' 
-ORDER BY cycle_id DESC LIMIT 1000
+This file does not query BigQuery and does not write a proof CSV.
+Accuracy stays unmeasured until a prediction timestamped before the
+outcome is compared with the later gap. A row count is not accuracy.
+This is not live profit.
 """
-# If predicted_gap_pct not exist, agent will discover actual columns and adapt
-try:
-    df = client.query(query).to_dataframe()
-    df.to_csv("backtest_results.csv", index=False)
-    print("BACKTEST PROOF GENERATED: backtest_results.csv with 1000 rows")
-    print("Next: Calculate accuracy - How many predicted gap >3% actually happened next day")
-except Exception as e:
-    print(f"Self-discovery found missing column: {e}")
-    print("Running discovery query to find actual columns...")
-    disc = client.query("SELECT * FROM `fno-angel-prod-1790444589.control.forensic_predictions` LIMIT 1").to_dataframe()
-    print(disc.columns.tolist())
-    disc.to_csv("discovery_columns.csv", index=False)
+import json
+import sys
+
+
+def measure(rows):
+    usable = []
+    for row in rows or []:
+        if not isinstance(row, dict):
+            continue
+        predicted_at = row.get("predicted_at")
+        outcome_at = row.get("outcome_at")
+        if not predicted_at or not outcome_at or not (str(predicted_at) < str(outcome_at)):
+            continue
+        if row.get("predicted_gap_pct") is None or row.get("actual_gap_pct") is None:
+            continue
+        usable.append(row)
+    return {
+        "status": "NOT_MEASURED" if not usable else "MEASURED_LOCAL_FIXTURE_ONLY",
+        "sample_size": len(usable),
+        "accuracy": None,
+        "note": "No accuracy percent is printed. This is not live profit.",
+    }
+
+
+def main():
+    result = measure([])
+    print(json.dumps(result))
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())

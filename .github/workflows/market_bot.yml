@@ -77,6 +77,22 @@ jobs:
           print("[OK] Production dependencies imported successfully")
           PY
 
+      - name: Read NSE calendar
+        id: nse_calendar
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          from market_calendar import market_session_state
+          state = market_session_state()
+          # Skip publish on a holiday or weekend only. A weekday 16:15 catch-up
+          # is AFTER_CLOSE and must still be allowed to publish.
+          flag = "true" if state.get("status") in ("HOLIDAY", "WEEKEND") else "false"
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as handle:
+              handle.write("closed=%s\n" % flag)
+          print(state.get("summary") or state.get("status"))
+          PY
+
       - name: Test quote & prediction engine math
         run: python -m pytest -v
 
@@ -97,7 +113,7 @@ jobs:
           path: ${{ runner.temp }}/probe_result.json
           if-no-files-found: warn
       - name: Run Single Authoritative Scanner and Prediction Cycle
-        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
+        if: ${{ steps.nse_calendar.outputs.closed != 'true' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run)) }}
         run: |
           set -eo pipefail
           python scanner.py
@@ -107,7 +123,7 @@ jobs:
           python scripts/sync_cycle_provenance_to_bq.py
 
       - name: Commit & Push Updated Snapshots
-        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
+        if: ${{ steps.nse_calendar.outputs.closed != 'true' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run)) }}
         run: |
           set -eo pipefail
           git config --global user.name "github-actions[bot]"

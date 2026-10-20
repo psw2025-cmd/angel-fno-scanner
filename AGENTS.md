@@ -9,9 +9,9 @@ repos:
 ultimate_goal: "Prove system can predict gap-up high-rise symbols BEFORE rise with high accuracy and profit, then start small paper trading"
 phases:
   phase1_daily_stable:
-    goal: "219 rows daily without failure for 30 days"
+    goal: "219 rows on each OPEN session for 30 open sessions. Call market_calendar.market_session_state() first. Count those rows only when status is OPEN (09:15-15:40 IST). A holiday, a weekend, before 09:15 IST, or after 15:40 IST is not a scanner failure."
     fix_file: "FIX-NOW.bat"
-    evidence_command: "bq query --project_id=fno-angel-prod-1790444589 'SELECT DATE(snapshot_timestamp) as cycle_date, COUNT(*) FROM \`fno-angel-prod-1790444589.fno_predictions.option_predictions_live\` GROUP BY cycle_date ORDER BY cycle_date DESC LIMIT 5'"
+    evidence_command: "Call market_calendar.market_session_state() first. If status is not OPEN, name that status and do not treat a missing scanner or today's row count as a failure. Only when status is OPEN, run: bq query --project_id=fno-angel-prod-1790444589 'SELECT DATE(snapshot_timestamp) as cycle_date, COUNT(*) FROM \`fno-angel-prod-1790444589.fno_predictions.option_predictions_live\` GROUP BY cycle_date ORDER BY cycle_date DESC LIMIT 5'"
   phase2_backtest_accuracy:
     goal: "Prove 65%+ accuracy for gap >3% from last 1 year data, show profit per lakh"
     missing_file_to_create: "tools/backtest_gapup.py"
@@ -102,7 +102,7 @@ Prove system can generate profit with high accuracy for gap-up high-rise symbols
 ## How Agent Must Achieve Goal by Self-Discovery
 1. Run gh api to list md files - read them live
 2. Run gh pr list - find latest PR (475 or 474) - do not guess
-3. Run bq query to check 219 rows only after market_calendar.session_closure() says the NSE session is open. On a holiday or weekend, name the day and do not guess.
+3. Call market_calendar.market_session_state() first. This pointer is market_session_state(), not session_closure(). Run the row-count query only when status is OPEN (09:15-15:40 IST). On a holiday, a weekend, BEFORE_OPEN (before 09:15 IST), or AFTER_CLOSE (after 15:40 IST), name that clock state and do not treat a missing scanner or today's row count as a failure.
 4. If missing file for Phase 2/3, CREATE it yourself from present repo code
 5. Give 1 file per phase that owner can double-click
 

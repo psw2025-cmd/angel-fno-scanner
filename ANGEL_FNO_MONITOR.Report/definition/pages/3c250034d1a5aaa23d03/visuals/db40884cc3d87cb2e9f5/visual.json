@@ -1,9 +1,9 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.2.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "db40884cc3d87cb2e9f5",
   "position": {
-    "x": 20,
-    "y": 350,
+    "x": 0,
+    "y": 330,
     "z": 3000,
     "height": 340,
     "width": 1240,
@@ -178,21 +178,16 @@
         "sort": [
           {
             "field": {
-              "Aggregation": {
+              "Column": {
                 "Expression": {
-                  "Column": {
-                    "Expression": {
-                      "SourceRef": {
-                        "Entity": "ForensicLive"
-                      }
-                    },
-                    "Property": "ce_chg_pct"
+                  "SourceRef": {
+                    "Entity": "ForensicLive"
                   }
                 },
-                "Function": 1
+                "Property": "time_ist"
               }
             },
-            "direction": "Descending"
+            "direction": "Ascending"
           }
         ]
       }

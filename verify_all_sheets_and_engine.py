@@ -243,8 +243,8 @@ def audit_engine_state():
     import datetime, pytz
     ist = pytz.timezone("Asia/Kolkata")
     now_ist = datetime.datetime.now(ist)
-    is_weekday = now_ist.weekday() < 5
-    market_open = is_weekday and (datetime.time(9, 15) <= now_ist.time() <= datetime.time(15, 30))
+    from market_calendar import is_trading_day
+    market_open = is_trading_day(now_ist) and (datetime.time(9, 15) <= now_ist.time() <= datetime.time(15, 30))
     if not market_open:
         # Off-hours graceful pass for publication/readback gate
         pass
@@ -268,7 +268,10 @@ def audit_engine_state():
             cal_data = json.load(f)
         last_rec = cal_data.get("last_reconciliation", {})
         print(f"   Cycle: {cal_data.get('cycle_number', last_rec.get('cycle', 0))}")
-        print(f"   Hit Rate: {last_rec.get('hit_rate_pct', 0.0)}%")
+        if last_rec.get("stored_outcome") is True and last_rec.get("hit_rate_pct") is not None:
+            print(f"   Hit Rate: {last_rec.get('hit_rate_pct')}%")
+        else:
+            print("   Hit rate is not available")
         print(f"   Recall @ 10: {last_rec.get('recall_at_10', 0.0)}")
         print(f"   Mean Rank: {last_rec.get('mean_rank', 0.0)}")
         print(f"   Weights: {cal_data.get('weights', {})}")
@@ -285,7 +288,10 @@ def audit_engine_state():
                 r = dict(rows[0])
                 print(f" - Calibration State (BigQuery Sandbox Log): [PASS] FOUND")
                 print(f"   Cycle: {r.get('cycle_number', 0)}")
-                print(f"   Hit Rate: {r.get('hit_rate_pct', 0.0)}%")
+                if r.get("stored_outcome") is True and r.get("hit_rate_pct") is not None:
+                    print(f"   Hit Rate: {r.get('hit_rate_pct')}%")
+                else:
+                    print("   Hit rate is not available")
                 print(f"   Recall @ 10: {r.get('recall_at_10', 0.0)}")
                 print(f"   Mean Rank: {r.get('mean_rank_of_top10', 0.0)}")
         except Exception as e:

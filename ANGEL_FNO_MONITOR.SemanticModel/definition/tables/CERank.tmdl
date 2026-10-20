@@ -1,71 +1,89 @@
 table CERank
+	lineageTag: 0be5bc55-8305-470c-ad8f-ac7c58a3d429
 
 	column rank_time_ist
 		dataType: string
+		lineageTag: b4e6d583-0869-40f3-97a8-dd56d4790aac
 		sourceColumn: [rank_time_ist]
 
 	column symbol
 		dataType: string
+		lineageTag: 153b917f-f908-4164-a745-eab032ec6ca4
 		sourceColumn: [symbol]
 
 	column rank_status
 		dataType: string
+		lineageTag: 86c9a6de-3673-4339-a78c-e7d1ef2fbab3
 		sourceColumn: [rank_status]
 
 	column fut_chg_pct
 		dataType: double
+		lineageTag: 733b899a-83ae-400e-9a22-9e6115fc8a4e
 		sourceColumn: [fut_chg_pct]
 
 	column opening_gap_pct
 		dataType: double
+		lineageTag: a1d02c5d-b410-45fe-a3db-f2bf0524e093
 		sourceColumn: [opening_gap_pct]
 
 	column fut_obi
 		dataType: double
+		lineageTag: a206069c-c065-43f8-897d-05c3918a0586
 		sourceColumn: [fut_obi]
 
 	column ce_chg_pct
 		dataType: double
+		lineageTag: 976ceedd-cb25-42ef-9ed0-20f21316e893
 		sourceColumn: [ce_chg_pct]
 
 	column pe_chg_pct
 		dataType: double
+		lineageTag: b9bd0c2f-a10b-4009-ae7d-20d714cab39e
 		sourceColumn: [pe_chg_pct]
 
 	column ce_oi
 		dataType: int64
+		lineageTag: 9771d4ec-ced2-425d-98ed-b8d523b411b9
 		sourceColumn: [ce_oi]
 
 	column pe_oi
 		dataType: int64
+		lineageTag: 8f2d365d-b4ec-415e-a2d7-80b735fdbe75
 		sourceColumn: [pe_oi]
 
 	column ce_oi_change
 		dataType: double
+		lineageTag: 24de8c6b-2da3-491a-84e9-7fc62de4c126
 		sourceColumn: [ce_oi_change]
 
 	column pe_oi_change
 		dataType: double
+		lineageTag: d5e9af36-ae2a-4da0-8db6-c045b84d9a70
 		sourceColumn: [pe_oi_change]
 
 	column ce_obi
 		dataType: double
+		lineageTag: 233388b0-b132-495c-a49f-9d066d7bbfd3
 		sourceColumn: [ce_obi]
 
 	column atm_pcr
 		dataType: double
+		lineageTag: e5d9fa12-874c-43b4-945b-15b8ff550ef6
 		sourceColumn: [atm_pcr]
 
 	column ce_streak
 		dataType: int64
+		lineageTag: 2c2145fa-be98-425c-bd44-d0ed747c1054
 		sourceColumn: [ce_streak]
 
 	column pe_streak
 		dataType: int64
+		lineageTag: 3f9b65c8-b59a-4483-9bd5-25f2151ec703
 		sourceColumn: [pe_streak]
 
 	column explanation
 		dataType: string
+		lineageTag: 6dd881a0-788e-4d2a-9744-90f509cac222
 		sourceColumn: [explanation]
 
 	partition CERank_Partition = calculated
@@ -307,3 +325,4 @@ table CERank
 				        {"2026-10-18 18:13:43", "RADICO", "MARKET CLOSED", 0.77, 0.0, 0.0, 9.64, -25.83, 19350, 99300, 0.0, 0.0, 0.189, 5.13, 0, 0, "Market closed. Session change is the last Angel print, not a forecast."}
 				    }
 				)
+

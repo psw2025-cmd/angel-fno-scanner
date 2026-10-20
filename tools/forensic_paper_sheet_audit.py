@@ -101,6 +101,12 @@ def run_full_audit(raw_dir=RAW_DIR, report_path=REPORT_PATH):
     os.makedirs(raw_dir, exist_ok=True)
     utc_now = datetime.datetime.now(datetime.timezone.utc)
     ist_now = utc_now + datetime.timedelta(hours=5, minutes=30)
+    try:
+        from market_calendar import market_session_state
+        clock_status = market_session_state(ist_now).get("status")
+    except Exception:
+        clock_status = "UNKNOWN"
+    quiet_clock = clock_status in {"HOLIDAY", "WEEKEND", "BEFORE_OPEN", "AFTER_CLOSE"}
 
     # 1. Ensure files exist
     for s in SHEETS:
@@ -178,7 +184,10 @@ def run_full_audit(raw_dir=RAW_DIR, report_path=REPORT_PATH):
     ps_nl_hash = ps_rows[1][8] if len(ps_rows) > 1 and len(ps_rows[1]) > 8 else ""
     hb_ping = hb_rows[1][0] if len(hb_rows) > 1 and len(hb_rows[1]) > 0 else ""
     session_closed = any('MARKET CLOSED' in str(r) for r in fc_rows)
-    c02_status = "PASS" if session_closed and ps_pub_at else "WARN"
+    if quiet_clock:
+        c02_status = "QUIET"
+    else:
+        c02_status = "PASS" if session_closed and ps_pub_at else "WARN"
     checks['C02'] = {
         'name': 'PUBLICATION_STATUS freshness',
         'status': c02_status,
@@ -450,7 +459,10 @@ def run_full_audit(raw_dir=RAW_DIR, report_path=REPORT_PATH):
         age_min = age_seconds / 60.0
     except:
         age_min = 999.0
-    c19_status = "PASS" if age_min <= 15.0 else "WARN"
+    if quiet_clock:
+        c19_status = "QUIET"
+    else:
+        c19_status = "PASS" if age_min <= 15.0 else "WARN"
     checks['C19'] = {
         'name': 'Heartbeat freshness vs wall clock',
         'status': c19_status,
