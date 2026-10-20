@@ -86,7 +86,8 @@ def get_dedicated_scanner_processes():
             for p in procs:
                 cmd = str(p.get("CommandLine") or "").lower()
                 if "universal_supervisor.py" in cmd or "scanner.py" in cmd or "angel_prediction_engine.py" in cmd:
-                    scanner_pids.append(f"PID {p.get('ProcessId')} ({Path(cmd.split()[1].strip('\"')).name if len(cmd.split()) > 1 else 'scanner'})")
+                    script_name = Path(cmd.split()[1].strip('"')).name if len(cmd.split()) > 1 else 'scanner'
+                    scanner_pids.append(f"PID {p.get('ProcessId')} ({script_name})")
         return scanner_pids
     except Exception:
         return []
