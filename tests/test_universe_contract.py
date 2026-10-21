@@ -44,6 +44,8 @@ def test_scanner_prediction_failure_is_not_false_green(monkeypatch):
     monkeypatch.setattr(scanner, "load_env", lambda: None)
         monkeypatch.setattr(scanner, "market_session_state", lambda *_: {"status": "OPEN", "summary": "test session"})
         monkeypatch.setattr(engine, "market_session_state", lambda *_: {"status": "OPEN", "summary": "test session"})
+
+
     monkeypatch.setattr(scanner, "require_authorized_writer", lambda: None)
     monkeypatch.setattr(scanner, "acquire_cycle_lease", lambda: None)
     monkeypatch.setattr(scanner, "apply_process_provenance", lambda: {"run_id": "test-cycle", "git_sha": "abc1234"})
@@ -110,6 +112,8 @@ def test_fresh_heartbeat_still_runs_one_prediction(monkeypatch):
     monkeypatch.setattr(scanner, "load_env", lambda: None)
         monkeypatch.setattr(scanner, "market_session_state", lambda *_: {"status": "OPEN", "summary": "test session"})
         monkeypatch.setattr(engine, "market_session_state", lambda *_: {"status": "OPEN", "summary": "test session"})
+
+
     monkeypatch.setattr(scanner, "require_authorized_writer", lambda: None)
     monkeypatch.setattr(scanner, "acquire_cycle_lease", lambda: None)
     monkeypatch.setattr(scanner, "apply_process_provenance", lambda: {"run_id": "test-cycle", "git_sha": "abc1234"})

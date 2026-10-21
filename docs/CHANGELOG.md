@@ -835,3 +835,6 @@ Heartbeat cell conflated row count with sync timestamp, corrupting health status
 
 ## 2026-10-21
 - test(fix): mock market session to OPEN, use non-holiday date, remove emoji to pass CI.
+
+## 2026-10-21
+- test(fix): resolved indentation error, updated dates, and cleaned encoding to pass CI.
