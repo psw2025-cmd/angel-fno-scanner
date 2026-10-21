@@ -859,3 +859,6 @@ Heartbeat cell conflated row count with sync timestamp, corrupting health status
 
 ## 2026-10-21
 - test(fix): ultimate time-travel fix.
+
+## 2026-10-21
+- test(fix): injected ultimate time machine to bypass real-world clock.
