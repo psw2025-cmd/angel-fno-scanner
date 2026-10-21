@@ -100,9 +100,16 @@ def assert_truncate_schema_safe(committed_fields, live_fields, load_fields=None,
         raise SchemaGuardError(
             "load schema is narrower than the live table and would drop: " + ", ".join(dropped)
         )
+    def _canon(t: str) -> str:
+        t = (t or "").upper()
+        if t in ("FLOAT", "FLOAT64"):
+            return "FLOAT64"
+        if t in ("INTEGER", "INT64"):
+            return "INT64"
+        return t
     retyped = sorted(
         name for name, live_type in live.items()
-        if name in load and load[name] != live_type
+        if name in load and _canon(load[name]) != _canon(live_type)
     )
     if retyped:
         detail = ", ".join(f"{name} live={live[name]} load={load[name]}" for name in retyped)
