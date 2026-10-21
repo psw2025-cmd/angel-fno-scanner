@@ -60,7 +60,7 @@ def test_scanner_prediction_failure_is_not_false_green(monkeypatch):
 
     monkeypatch.setattr(engine, "run_prediction_pipeline", failed_prediction)
     with pytest.raises(RuntimeError, match="prediction publication failed"):
-        scanner.main()
+        scanner.main(argv=[])
 
 
 def test_partial_publication_preserves_sinks(monkeypatch):
@@ -118,7 +118,7 @@ def test_fresh_heartbeat_still_runs_one_prediction(monkeypatch):
     monkeypatch.setattr(scanner, "refresh_from_forensic", lambda *_: calls.append("refresh"))
     monkeypatch.setattr(scanner, "angel_login", lambda: pytest.fail("duplicate scanner login"))
     monkeypatch.setattr(engine, "run_prediction_pipeline", lambda **_: calls.append("predict"))
-    scanner.main()
+    scanner.main(argv=[])
     assert calls == ["refresh", "predict"]
 
 
