@@ -729,3 +729,53 @@ def test_reconcile_preserves_exact_contract_identity_when_atm_drifts(monkeypatch
     assert "WIN" in result_text
 
 
+def test_late_quote_is_not_called_a_win(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        "angel_prediction_engine.GAP_RECON_HISTORY_PATH",
+        str(tmp_path / "test_gap_recon_late.json"),
+    )
+    monkeypatch.setenv("ALLOW_PRODUCTION_WRITES", "1")
+    monkeypatch.setenv("WRITER_ID", "market_bot")
+    monkeypatch.setenv("RUN_ID", "123456789")
+    monkeypatch.setenv("GIT_SHA", "abcdef1234567890")
+
+    class MockWorksheet:
+        def __init__(self):
+            self.rows = [
+                ["Timestamp", "SessionDate", "Symbol", "Side", "SpotLtp", "ChgPct", "CEContract", "PEContract", "Note", "LaterChg", "FilledAt"],
+                ["2026-10-01 15:20:00", "2026-10-01", "PRESTIGE", "CE", "1482.2", "2.5", "PRESTIGE27OCT261480CE", "", "[OVERNIGHT GAP-UP CE] Action: ALERT | Entry: 50.70 | SL: 43.09 | Target: 76.05", "", ""],
+            ]
+            self.updates = {}
+
+        def get_all_values(self):
+            return self.rows
+
+        def update_cell(self, row, col, val):
+            self.updates[(row, col)] = val
+
+    class MockSpreadsheet:
+        def worksheet(self, name):
+            return mock_ws
+
+    class MockSmartApi:
+        def getLtpData(self, seg, tradingsymbol, token=""):
+            return {"status": True, "data": {"ltp": 85.0}}
+
+    mock_ws = MockWorksheet()
+    from angel_prediction_engine import reconcile_next_day_gap_trades
+    import datetime
+    reconcile_next_day_gap_trades(
+        smartApi=MockSmartApi(),
+        sh=MockSpreadsheet(),
+        bq_client=None,
+        predictions=[{"symbol": "OTHER", "ce_symbol": "OTHER", "pe_symbol": "OTHER", "ce_ltp": 1, "pe_ltp": 1}],
+        ist_str="2026-10-02 09:55:00",
+        ist_now=datetime.datetime(2026, 10, 2, 9, 55, 0),
+    )
+    result_text = mock_ws.updates.get((2, 10))
+    assert result_text is not None
+    assert "+67.65%" in result_text
+    assert "LATE_QUOTE" in result_text
+    assert "WIN" not in result_text
+
+

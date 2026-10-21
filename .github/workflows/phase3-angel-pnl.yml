@@ -68,7 +68,24 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+      - name: Skip paper profit outside the live session
+        id: paper_clock
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          now = datetime.now(ZoneInfo("Asia/Kolkata"))
+          mins = now.hour * 60 + now.minute
+          session_open = 555 <= mins <= 940
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+              handle.write("session_open=" + ("true" if session_open else "false") + "\n")
+          print("PAPER_PROFIT_SESSION_OPEN" if session_open else "PAPER_PROFIT_SESSION_CLOSED", now.isoformat())
+          PY
       - name: Run theoretical read-only PnL (fails closed without original entry premium)
+        if: steps.paper_clock.outputs.session_open == 'true'
         env:
           FORCE_INTRADAY: ${{ inputs.force_intraday }}
         run: |
@@ -78,10 +95,10 @@ jobs:
             python run_phase3_pnl.py --push
           fi
       - name: Update and push factual paper dashboard
-        if: success()
+        if: success() && steps.paper_clock.outputs.session_open == 'true'
         run: python update_phase4_dashboard.py
       - name: Upload report when available
-        if: always()
+        if: always() && steps.paper_clock.outputs.session_open == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: phase3-pnl-evidence

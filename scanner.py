@@ -395,14 +395,18 @@ def build_chain_quotes(universe, future_quotes, option_quotes, each_side):
     return quotes
 
 
-def run_prediction_with_retry(attempts=3, force_pre_close=False):
+def run_prediction_with_retry(attempts=3, force_pre_close=False, reconcile_morning=False):
     from angel_prediction_engine import run_prediction_pipeline
 
     last_error = None
     for attempt in range(1, attempts + 1):
         try:
             print(f"[INFO] Prediction cycle attempt {attempt}/{attempts}...")
-            return run_prediction_pipeline(bypass_market_check=True, force_pre_close=force_pre_close)
+            return run_prediction_pipeline(
+                bypass_market_check=True,
+                force_pre_close=force_pre_close,
+                reconcile_morning=reconcile_morning,
+            )
         except Exception as exc:
             last_error = exc
             if attempt >= attempts:
@@ -659,10 +663,16 @@ def main():
         print("[INFO] Invoking Option CE/PE Prediction & Rating Pipeline...")
         from market_calendar import is_trading_day
         _now = now_ist()
+        _mins = _now.hour * 60 + _now.minute
         _catchup = is_trading_day(_now) and not market_is_open(_now) and _now.hour >= 15
+        # 09:15-10:30 IST. A slightly late morning job can still score.
+        # After 10:30 the quote is not treated as the open.
+        _morning = is_trading_day(_now) and 555 <= _mins <= 630
         if _catchup:
             print(f"[INFO] EOD catch-up mode: forcing pre-close journaling at {_now.strftime('%H:%M IST')}")
-        run_prediction_with_retry(force_pre_close=_catchup)
+        if _morning:
+            print(f"[INFO] Morning score window at {_now.strftime('%H:%M IST')}")
+        run_prediction_with_retry(force_pre_close=_catchup, reconcile_morning=_morning)
 
 
 if __name__ == "__main__":
