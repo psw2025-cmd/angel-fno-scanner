@@ -832,3 +832,6 @@ Heartbeat cell conflated row count with sync timestamp, corrupting health status
 ## 2026-10-21
 - Fix 4 failing tests in run-scanner CI: updated page count 10->11 (new Market Clock page), added market_session_state=OPEN mock in test_reconcile_preserves_exact_contract_identity_when_atm_drifts, passed argv=[] to scanner.main() in test_universe_contract.py.
 
+
+## 2026-10-21
+- test(fix): mock market session to OPEN, use non-holiday date, remove emoji to pass CI.

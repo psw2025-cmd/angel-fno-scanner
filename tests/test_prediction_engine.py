@@ -662,7 +662,7 @@ def test_reconcile_preserves_exact_contract_identity_when_atm_drifts(monkeypatch
         def __init__(self):
             self.rows = [
                 ["Timestamp", "SessionDate", "Symbol", "Side", "SpotLtp", "ChgPct", "CEContract", "PEContract", "Note", "LaterChg", "FilledAt"],
-                ["2026-10-01 15:20:00", "2026-10-01", "PRESTIGE", "CE", "1482.2", "2.5", "PRESTIGE27OCT261480CE", "", "[OVERNIGHT GAP-UP CE] Action: ALERT | Entry: â‚¹50.70 | SL: â‚¹43.09 | Target: â‚¹76.05", "", ""]
+                ["2026-10-21 15:20:00", "2026-10-21", "PRESTIGE", "CE", "1482.2", "2.5", "PRESTIGE27OCT261480CE", "", "[OVERNIGHT GAP-UP CE] Action: ALERT | Entry: â‚¹50.70 | SL: â‚¹43.09 | Target: â‚¹76.05", "", ""]
             ]
             self.updates = {}
 
