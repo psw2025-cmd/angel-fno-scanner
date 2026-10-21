@@ -850,3 +850,6 @@ Heartbeat cell conflated row count with sync timestamp, corrupting health status
 
 ## 2026-10-21
 - test(fix): bulletproof line-by-line mock injection.
+
+## 2026-10-21
+- test(fix): surgical line injection and date fixes.
