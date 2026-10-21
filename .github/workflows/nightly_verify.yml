@@ -22,7 +22,10 @@ jobs:
         # (same dependency set as PR Tests). Without it pytest exits 2 (collection error).
         run: pip install -r requirements.txt -r relay/requirements.txt pytest
       - name: Run unified verification suite
-        run: python tools/verify_all.py
+        run: |
+          git status --porcelain
+          git checkout -- .
+          python tools/verify_all.py
       - name: Upload verification report artifact
         uses: actions/upload-artifact@v4
         if: always()
