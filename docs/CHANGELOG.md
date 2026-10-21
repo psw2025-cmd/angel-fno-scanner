@@ -1,6 +1,21 @@
 # Changelog
 
-## 2026-10-15 - Preflight guard: Formula Checks must keep the 200-row rank contract
+## 2026-10-21 - Market-bot tests follow the open session and an ASCII entry note
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED
+**Evidence:** workflow run 39642813982 on `feat/cdx-01-to-12-integration` failed four tests. Commit 09b5bab then replaced `tests/test_prediction_engine.py` with the text `PLACEHOLDER`.
+
+### What changed
+- Restored the prediction-engine tests and kept them ASCII.
+- Illiquid rating is checked by the stable `ILLIQUID / WIDE SPREAD [AVOID]` text. The production rating still carries its existing warning mark.
+- The reconcile fixture note uses `Entry: 50.70`, which the existing `Entry:` parser accepts, so the frozen contract still scores `+67.65%`.
+- `test_universe_contract.py` pins `scanner.now_ist` to 2026-10-21 10:30 IST so a closed-session `SystemExit(0)` is not reported as a healthy prediction.
+
+### Why
+After 15:40 IST, `scanner.main` correctly stays quiet. The two universe tests were calling that path on the wall clock and treating silence as success. The reconcile note used a corrupted rupee sign, so the entry price parsed as zero and the outcome became `NO DATA`.
+
+### Rollback
+Revert this commit. No schema, sheet, or broker change.
 
 **Status:** IMPLEMENTED_NOT_DEPLOYED (tooling only)
 **Evidence:** after GATE-06/07 were corrected, the sheet was rewritten back to the retired 216-row formulas by a non-repo writer (Drive revision 2026-10-15T09:55:54Z by the shared service account, right after the foreign BigQuery writer stopped). Re-applied and verified (GATE-06 200/200, OVERALL 0 failed gates).

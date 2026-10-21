@@ -5,6 +5,15 @@ import pytest
 from universe_contract import require_verified_symbols, select_verified_universe, verified_symbols
 
 
+def _pin_open_session(monkeypatch, scanner):
+    """scanner.main exits 0 after 15:40 IST. These tests exercise the open session."""
+    import datetime
+    from zoneinfo import ZoneInfo
+
+    moment = datetime.datetime(2026, 10, 21, 10, 30, tzinfo=ZoneInfo("Asia/Kolkata"))
+    monkeypatch.setattr(scanner, "now_ist", lambda: moment)
+
+
 def test_new_listing_cannot_silently_change_reviewed_universe():
     discovered = dict.fromkeys(verified_symbols(), object())
     discovered["UNREVIEWED"] = object()
@@ -54,6 +63,7 @@ def test_scanner_prediction_failure_is_not_false_green(monkeypatch):
     monkeypatch.setattr(scanner, "angel_login", lambda: object())
     monkeypatch.setattr(scanner, "run_angel_loop", lambda *_: None)
     monkeypatch.setattr(scanner.time, "sleep", lambda _: None)
+    _pin_open_session(monkeypatch, scanner)
 
     def failed_prediction(**_):
         raise RuntimeError("prediction publication failed")
@@ -118,6 +128,7 @@ def test_fresh_heartbeat_still_runs_one_prediction(monkeypatch):
     monkeypatch.setattr(scanner, "refresh_from_forensic", lambda *_: calls.append("refresh"))
     monkeypatch.setattr(scanner, "angel_login", lambda: pytest.fail("duplicate scanner login"))
     monkeypatch.setattr(engine, "run_prediction_pipeline", lambda **_: calls.append("predict"))
+    _pin_open_session(monkeypatch, scanner)
     scanner.main(argv=[])
     assert calls == ["refresh", "predict"]
 
