@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-21 - Night scanner check tells the truth, and one failure ticket
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED
+**Evidence:** local `python -m pytest -q` on this branch: 411 passed. The prior red run is 39642813982, step "Test quote & prediction engine math", 4 failed. A GitHub rerun is still required before this is called green on the branch.
+
+### What changed
+- angel_prediction_engine.py: the illiquid and divergent ratings use the ASCII text `[WARNING]` so the label matches the test and does not depend on an emoji.
+- tests/test_prediction_engine.py: the overnight reconcile fixture uses a plain entry price, `50.70`, so a broken currency character cannot become `NO DATA`.
+- tests/test_universe_contract.py: the two scanner tests freeze an OPEN session. A real night run still stays quiet after 15:40 IST.
+- .github/workflows/market_bot.yml: side-branch pushes no longer start the bot. A real scan from a side branch is refused. A failure updates the one open ticket instead of opening a copy. `PAPER_MODE=1` and `LIVE_ORDER_AUTHORITY=0` stay set.
+
 ## 2026-10-15 - Preflight guard: Formula Checks must keep the 200-row rank contract
 
 **Status:** IMPLEMENTED_NOT_DEPLOYED (tooling only)

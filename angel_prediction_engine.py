@@ -646,14 +646,14 @@ def compute_market_confirmation(sentiment_score, fut_pct, fut_obi, ce_pct, pe_pc
         if (fut_pct > 0.2 or fut_obi > 0.08) and ce_pct >= pe_pct:
             return "🟢 BULLISH_CONFIRMED"
         elif fut_pct < -0.5 or ce_pct < pe_pct:
-            return "⚠️ PRICED_IN_OR_DIVERGENT"
+            return "[WARNING] PRICED_IN_OR_DIVERGENT"
         else:
             return "🟡 BULLISH_PENDING_FLOW"
     if sentiment_score < -0.15:
         if (fut_pct < -0.2 or fut_obi < -0.08) and pe_pct >= ce_pct:
             return "🔴 BEARISH_CONFIRMED"
         elif fut_pct > 0.5 or pe_pct < ce_pct:
-            return "⚠️ PRICED_IN_OR_DIVERGENT"
+            return "[WARNING] PRICED_IN_OR_DIVERGENT"
         else:
             return "🟡 BEARISH_PENDING_FLOW"
     return "NEUTRAL_FLOW"
@@ -919,7 +919,7 @@ def compute_pre_market_gap(
     if is_illiquid:
         return {
             "expected_gap_pct": 0.0,
-            "gap_direction": "⚠️ ILLIQUID [AVOID]",
+            "gap_direction": "[WARNING] ILLIQUID [AVOID]",
             "pre_open_conviction": 35.0,
             "target_strike": "AVOID - ILLIQUID",
             "catalyst_count": 0,
@@ -1981,7 +1981,7 @@ def compute_prediction_and_rating(
     )
 
     if is_illiquid:
-        rating = "⚠️ ILLIQUID / WIDE SPREAD [AVOID]"
+        rating = "[WARNING] ILLIQUID / WIDE SPREAD [AVOID]"
         confidence_pct = round(min(confidence_pct * 0.40, 40.0), 1)
         intensity_score = min(intensity_score, 20)
         # Heavily penalize rank metric so illiquid symbols get Rank > 180
