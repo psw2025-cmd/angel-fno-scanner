@@ -828,3 +828,7 @@ Heartbeat cell conflated row count with sync timestamp, corrupting health status
 - Committed pending changes from feat/cdx-01-to-12-integration.
 - Excluded 8 files with non-ASCII characters pending cleanup: apply_patches.py, data_tabs_00_to_10.py, data_tabs_11_to_25.py, data_tabs_26_to_39.py, data_tabs_m01_to_m15.py, fix_infrastructure.py, forensic_verifier.py, tools/check_downstream.py.
 
+
+## 2026-10-21
+- Fix 4 failing tests in run-scanner CI: updated page count 10->11 (new Market Clock page), added market_session_state=OPEN mock in test_reconcile_preserves_exact_contract_identity_when_atm_drifts, passed argv=[] to scanner.main() in test_universe_contract.py.
+

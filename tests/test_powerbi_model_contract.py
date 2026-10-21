@@ -1,4 +1,4 @@
-"""Contract tests for the Power BI project (ANGEL_FNO_MONITOR).
+﻿"""Contract tests for the Power BI project (ANGEL_FNO_MONITOR).
 
 These tests read the TMDL/PBIR files only. They do not need Power BI Desktop.
 They protect against defects found in the 2026-10-17 production assurance audit
@@ -90,7 +90,7 @@ def test_all_visual_fields_resolve_to_model_objects():
 
 def test_report_has_ten_pages_and_pages_exist_on_disk():
     report = pbi.parse_report(REPORT_DIR)
-    assert len(report["pages"]) == 10
+    assert len(report["pages"]) == 11
     assert all(p["name"] != "MISSING_PAGE_FILE" for p in report["pages"])
 
 
