@@ -31,7 +31,18 @@ def _type(field) -> str:
         raw = field.get("type") or field.get("field_type") or ""
     else:
         raw = getattr(field, "field_type", None) or getattr(field, "type", "")
-    return str(raw).upper()
+    # BigQuery's schema API uses legacy names (FLOAT, INTEGER, BOOLEAN,
+    # RECORD) while JSON/load contracts may use Standard SQL aliases.
+    # Canonicalize only documented equivalent types; genuine drift still fails.
+    normalized = str(raw).strip().upper()
+    return {
+        "FLOAT64": "FLOAT",
+        "INT64": "INTEGER",
+        "BOOL": "BOOLEAN",
+        "STRUCT": "RECORD",
+        "DECIMAL": "NUMERIC",
+        "BIGDECIMAL": "BIGNUMERIC",
+    }.get(normalized, normalized)
 
 
 def field_map(fields) -> dict[str, str]:
