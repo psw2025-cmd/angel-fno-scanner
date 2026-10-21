@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-21 - Daily bot stays on the weekday clock and keeps one failure ticket
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED
+**Evidence:** workflow file only. No prediction rows were written. Paper mode stays 1. Live orders stay 0.
+
+### What changed
+- .github/workflows/market_bot.yml: the bot no longer starts because a file changed. It starts at 09:15 and 16:15 IST on weekdays, or when someone deliberately runs a dry check. A real scan from a side branch is refused. A failure updates the one open ticket instead of opening a copy.
+
 ## 2026-10-21 - One India clock, news catalyst, and a safe live-table repair
 
 **Commit:** Pending HEAD
