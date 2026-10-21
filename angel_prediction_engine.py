@@ -40,7 +40,7 @@ from credentials import (
 from writer_guard import append_sheet_provenance, build_provenance, require_authorized_writer
 from sheet_grid import write_grid
 from publication import publish_outputs
-from market_calendar import IST, is_trading_day, local_market_time
+from market_calendar import IST, is_trading_day, local_market_time, market_session_state
 
 load_env()
 
@@ -154,55 +154,54 @@ def news_dedup_key(item):
     link = str(item.get("source_url") or item.get("link") or "").strip().lower()
     return "::".join((source, link, title))
 
-NSE_HOLIDAYS_2026 = {
-    "2026-01-26", "2026-03-03", "2026-03-26", "2026-03-31", "2026-04-03",
-    "2026-04-14", "2026-05-01", "2026-05-28", "2026-06-26", "2026-09-14",
-    "2026-10-02", "2026-10-20", "2026-11-10", "2026-11-24", "2026-12-25",
-}
+def _clock(dt=None):
+    if dt is None:
+        dt = get_ist_time()
+    return market_session_state(dt)
+
 
 def is_market_open(dt=None):
-    if dt is None:
-        dt = get_ist_time()
-    dt = local_market_time(dt)
-    if not is_trading_day(dt):
-        return False
-    if dt.date().isoformat() in NSE_HOLIDAYS_2026:
-        return False
-    mins = dt.hour * 60 + dt.minute
-    return 555 <= mins <= 940  # 9:15 AM (555 mins) to 3:40 PM (940 mins)
+    return _clock(dt)["status"] == "OPEN"
+
 
 def is_pre_market_time(dt=None):
-    if dt is None:
-        dt = get_ist_time()
-    dt = local_market_time(dt)
-    if not is_trading_day(dt):
+    state = _clock(dt)
+    if state["status"] != "BEFORE_OPEN":
         return False
-    if dt.date().isoformat() in NSE_HOLIDAYS_2026:
-        return False
-    mins = dt.hour * 60 + dt.minute
-    return 480 <= mins < 555  # 8:00 AM to 9:15 AM
+    return 480 <= state["minute_of_day"] < 555
+
 
 def is_pre_close_time(dt=None):
-    if dt is None:
-        dt = get_ist_time()
-    dt = local_market_time(dt)
-    if not is_trading_day(dt):
-        return False
-    if dt.date().isoformat() in NSE_HOLIDAYS_2026:
-        return False
-    mins = dt.hour * 60 + dt.minute
-    return 900 <= mins <= 940  # 15:00 to 15:40 IST (3:00 PM to 3:40 PM)
+    return _clock(dt)["phase"] == "PRE_CLOSE"
+
 
 def is_morning_reconcile_time(dt=None):
-    if dt is None:
-        dt = get_ist_time()
-    dt = local_market_time(dt)
-    if not is_trading_day(dt):
-        return False
-    if dt.date().isoformat() in NSE_HOLIDAYS_2026:
-        return False
-    mins = dt.hour * 60 + dt.minute
-    return 555 <= mins <= 585  # 09:15 to 09:45 IST
+    return _clock(dt)["phase"] == "OPENING_SCORE"
+
+
+def catalyst_from_note(note):
+    """Keep the headline that was stored with the advance pick. Do not invent one."""
+    match = re.search(r"Catalyst:\s*([^|]+)", note or "")
+    if not match:
+        return ""
+    return re.sub(r"\s+", " ", match.group(1)).strip()[:100]
+
+
+def unseen_gap_picks(picks, existing_keys):
+    """Skip a contract that is already stored as a pending overnight pick."""
+    fresh = []
+    seen = set(existing_keys or ())
+    for pick in picks or []:
+        key = (
+            str(pick.get("symbol", "")).strip().upper(),
+            str(pick.get("side", "")).strip().upper(),
+            str(pick.get("contract_symbol", "")).strip().upper(),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        fresh.append(pick)
+    return fresh
 
 # =====================================================================
 # GOOGLE CLOUD & BIGQUERY CLIENT SETUP
@@ -1346,8 +1345,34 @@ def journal_pre_close_paper_trades(sh, bq_client, gap_picks, ist_str, ist_now):
         table_ref = dataset_ref.table("next_day_gap_predictions")
         table = bq_client.get_table(table_ref)
 
+        existing = set()
+        try:
+            already = bq_client.query(
+                f"""
+                SELECT symbol, side, contract_symbol
+                FROM `{BQ_PROJECT_ID}.{BQ_DATASET_ID}.next_day_gap_predictions`
+                WHERE target_date = @target_date AND outcome = 'PENDING_OPEN'
+                """,
+                job_config=bigquery.QueryJobConfig(query_parameters=[
+                    bigquery.ScalarQueryParameter("target_date", "STRING", target_date_iso),
+                ]),
+            )
+            for row in already.result():
+                existing.add((
+                    str(row.symbol or "").strip().upper(),
+                    str(row.side or "").strip().upper(),
+                    str(row.contract_symbol or "").strip().upper(),
+                ))
+        except Exception as read_error:
+            print(f"[WARN] Could not read existing gap picks, so no new rows were appended: {read_error}")
+            return
+        fresh_picks = unseen_gap_picks(all_picks, existing)
+        if not fresh_picks:
+            print("[INFO] Overnight gap picks are already stored. No duplicate rows appended.")
+            return
+
         bq_rows = []
-        for c in all_picks:
+        for c in fresh_picks:
             bq_rows.append({
                 **build_provenance(ist_str),
                 "prediction_date": session_date,
@@ -1478,6 +1503,7 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
                     "actual_open_ltp": open_ltp,
                     "actual_return_pct": ret_pct,
                     "outcome": outcome,
+                    "news_catalyst": catalyst_from_note(note),
                     "reconciled_at_ist": ist_str
                 })
 
@@ -1522,7 +1548,7 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
                         "stop_loss_ltp": 0.0,
                         "target_ltp": 0.0,
                         "rationale": f"RECONCILIATION RESULT: {res['outcome']} ({res['actual_return_pct']:+.2f}%)",
-                        "news_catalyst": "",
+                        "news_catalyst": res.get("news_catalyst", ""),
                         "dollar_gamma": 0.0,
                         "actual_open_ltp": res["actual_open_ltp"],
                         "actual_return_pct": res["actual_return_pct"],

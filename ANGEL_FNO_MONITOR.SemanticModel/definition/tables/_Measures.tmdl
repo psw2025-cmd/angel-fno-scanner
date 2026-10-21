@@ -488,6 +488,52 @@ table _Measures
 			RETURN IF(ISBLANK(X), "NO DATA", X)
 		lineageTag: m4000000-0000-0000-0000-000000000024
 
+	measure 'Market Minute' = HOUR(NOW()) * 60 + MINUTE(NOW())
+		formatString: 0
+		lineageTag: m5000000-0000-0000-0000-000000000001
+
+	measure 'Market Day Status' =
+			VAR ClockYear = YEAR(NOW())
+			VAR DayKey = FORMAT(NOW(), "yyyy-mm-dd")
+			VAR Hit = LOOKUPVALUE(MarketCalendar[day_status], MarketCalendar[session_date], DayKey)
+			RETURN IF(ClockYear <> 2026, "UNKNOWN", IF(ISBLANK(Hit), "UNKNOWN", Hit))
+		lineageTag: m5000000-0000-0000-0000-000000000002
+
+	measure 'Market Phase' =
+			VAR Day = [Market Day Status]
+			VAR M = [Market Minute]
+			VAR OpenStart = MIN(MarketCalendar[open_start_minute])
+			VAR ScoreEnd = MIN(MarketCalendar[open_score_end_minute])
+			VAR PreClose = MIN(MarketCalendar[pre_close_start_minute])
+			VAR CloseEnd = MIN(MarketCalendar[close_end_minute])
+			RETURN
+			    IF(
+			        Day <> "TRADING",
+			        Day,
+			        IF(
+			            OR(ISBLANK(OpenStart), OR(ISBLANK(ScoreEnd), OR(ISBLANK(PreClose), ISBLANK(CloseEnd)))),
+			            "UNKNOWN",
+			            IF(
+			                M < OpenStart,
+			                "BEFORE_OPEN",
+			                IF(
+			                    M <= ScoreEnd,
+			                    "OPENING_SCORE",
+			                    IF(M < PreClose, "SESSION", IF(M <= CloseEnd, "PRE_CLOSE", "AFTER_CLOSE"))
+			                )
+			            )
+			        )
+			    )
+		lineageTag: m5000000-0000-0000-0000-000000000003
+
+	measure 'Market Scanner Expected' = IF([Market Phase] IN {"OPENING_SCORE", "SESSION", "PRE_CLOSE"}, "YES", "NO")
+		lineageTag: m5000000-0000-0000-0000-000000000004
+
+	measure 'Paper Catalyst Count' =
+			COUNTROWS(FILTER(PaperLog, LEN(TRIM(PaperLog[news_catalyst] & "")) > 0))
+		formatString: 0
+		lineageTag: m5000000-0000-0000-0000-000000000005
+
 	column Dummy
 		dataType: int64
 		isHidden

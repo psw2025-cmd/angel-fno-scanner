@@ -1,0 +1,36 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.2.0/schema.json",
+  "name": "b11c10c4a11c10c4a000",
+  "position": {
+    "x": 20,
+    "y": 15,
+    "z": 0,
+    "height": 70,
+    "width": 1240,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "India session clock. 09:15-09:45 scores the open. 15:00-15:40 stores tomorrow's paper picks. 15:40 is still open. 15:41 is closed. A year other than 2026 stays UNKNOWN. This page is not a profit.",
+                    "textStyle": {
+                      "fontFamily": "Segoe UI",
+                      "fontSize": "14pt"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

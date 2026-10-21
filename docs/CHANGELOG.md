@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-10-21 - One India clock, news catalyst, and a safe live-table repair
+
+**Commit:** Pending HEAD
+
+### What changed
+- market_calendar.py: Each minute is one answer: holiday, weekend, before 09:15, opening score 09:15-09:45, session, pre-close 15:00-15:40, or after 15:40. A year other than 2026 stays unknown.
+- angel_prediction_engine.py and gainers.py: Both clocks use that one answer. The second holiday list is gone.
+- A morning score keeps the news headline that was saved with the advance pick.
+- A retry does not append the same pending contract to next_day_gap_predictions again. The 21 Oct run had stored each of 8 picks three times. The 16 later copies were deleted. 8 pending rows for 22 Oct remain. Backup: next_day_gap_predictions_backup_20261021_121800_dedupe.
+- The monitor has a Market Clock page. Its day list is data/nse_session_days_2026.json, generated from the same calendar. Paper notes expose the stored catalyst.
+- Live option_predictions_live had source_timestamp as STRING and was missing cycle_id and data_freshness_status. Run 39594326514 refused the save. BigQuery will not convert STRING to TIMESTAMP in place. The repair copies the table, and only when that time column is empty it drops the empty column and adds a TIMESTAMP column, first on the copy and then on the live table.
+
+### Evidence
+- tests/test_market_session_state.py covers Dussehra, the weekend, 09:14, 09:15, 15:40, 15:41, 15 Jan 2026, an unreviewed year, and the monitor day file.
+- tests/test_runtime_safety.py checks that the engine asks the shared clock, and that the clock still opens at 09:15 and closes at 15:40.
+- tests/test_repair_option_predictions_schema.py refuses a retype when the time column holds values.
+
+### Rollback
+Restore the backup clone named in the repair receipt over the live table. Do not drop that backup for 24 hours. A direct STRING conversion is not the rollback, because BigQuery rejected it.
+
+---
+
 ## 2026-10-21 - Use the Google key for the paper lock and ignore penny gainer spikes
 
 **Commit:** Pending HEAD

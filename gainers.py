@@ -11,7 +11,7 @@ import math
 from dataclasses import dataclass
 from datetime import date, datetime, time
 from typing import Iterable, Mapping, Sequence
-from market_calendar import is_trading_day, local_market_time
+from market_calendar import NSE_HOLIDAYS_2026, market_session_state
 
 DISCOUNT_RATE = 0.065
 YEAR_SECONDS = 365.25 * 24 * 60 * 60
@@ -250,21 +250,8 @@ def parse_expiry(value) -> date | None:
     return None
 
 
-NSE_HOLIDAYS_2026 = {
-    "2026-01-26", "2026-03-03", "2026-03-26", "2026-03-31", "2026-04-03",
-    "2026-04-14", "2026-05-01", "2026-05-28", "2026-06-26", "2026-09-14",
-    "2026-10-02", "2026-10-20", "2026-11-10", "2026-11-24", "2026-12-25",
-}
-
-
 def market_is_open(now: datetime) -> bool:
-    local = local_market_time(now)
-    if not is_trading_day(local):
-        return False
-    if local.date().isoformat() in NSE_HOLIDAYS_2026:
-        return False
-    minutes = local.hour * 60 + local.minute
-    return (9 * 60 + 15) <= minutes <= (15 * 60 + 40)
+    return market_session_state(now)["status"] == "OPEN"
 
 
 def resolve_prev_close(ltp: float | None, close: float | None, net_change: float | None, gain_percent: float | None) -> tuple[float | None, str]:
