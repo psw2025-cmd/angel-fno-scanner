@@ -1289,6 +1289,14 @@ def journal_pre_close_paper_trades(sh, bq_client, gap_picks, ist_str, ist_now):
     all_picks = gap_picks.get("top_ce_picks", []) + gap_picks.get("top_pe_picks", [])
     if not all_picks:
         return
+    from gainers import tradable_paper_premium
+    tradable_picks = [c for c in all_picks if tradable_paper_premium(c.get("entry_ltp"))]
+    skipped = len(all_picks) - len(tradable_picks)
+    if skipped:
+        print(f"[INFO] Skipped {skipped} sub-2 rupee gainer picks. Percent spikes on those contracts are not paper profit.")
+    all_picks = tradable_picks
+    if not all_picks:
+        return
 
     # 1. Google Sheets PAPER_ALERT_LOG
     try:
