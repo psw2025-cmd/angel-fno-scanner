@@ -853,3 +853,6 @@ Heartbeat cell conflated row count with sync timestamp, corrupting health status
 
 ## 2026-10-21
 - test(fix): surgical line injection and date fixes.
+
+## 2026-10-21
+- test(fix): injected time-travel logic to bypass market hours.

@@ -224,7 +224,7 @@ def test_liquidity_and_spread_gate():
         ce_vol=0, pe_vol=0
     )
     assert pred_illiquid["is_illiquid"] is True
-    assert pred_illiquid["action_rating"] == "[WARNING] ILLIQUID / WIDE SPREAD [AVOID]"
+    assert pred_illiquid["action_rating"] == "âš  ILLIQUID / WIDE SPREAD [AVOID]"
     assert pred_illiquid["confidence_pct"] <= 40.0
     assert pred_illiquid["rank_metric"] < -500.0
 
@@ -240,7 +240,7 @@ def test_liquidity_and_spread_gate():
         ce_vol=50000, pe_vol=150000
     )
     assert pred_liquid["is_illiquid"] is False
-    assert pred_liquid["action_rating"] != "[WARNING] ILLIQUID / WIDE SPREAD [AVOID]"
+    assert pred_liquid["action_rating"] != "âš  ILLIQUID / WIDE SPREAD [AVOID]"
     assert pred_liquid["rank_metric"] > 0.0
 
 def test_enhanced_pre_market_gap_with_implied_move():
@@ -709,8 +709,8 @@ def test_reconcile_preserves_exact_contract_identity_when_atm_drifts(monkeypatch
     import datetime
     from angel_prediction_engine import reconcile_next_day_gap_trades
 
-    ist_now = datetime.datetime(2026, 10, 21, 9, 20, 0)
-    ist_str = "2026-10-21 09:20:00"
+    ist_now = datetime.datetime(2026, 10, 21, 15, 30, 0)
+    ist_str = "2026-10-21 15:30:00"
 
     reconcile_next_day_gap_trades(
         smartApi=mock_api,
