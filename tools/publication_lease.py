@@ -12,6 +12,7 @@ import re
 from zoneinfo import ZoneInfo
 
 from google.cloud import bigquery
+from google.oauth2 import service_account
 
 IST = ZoneInfo("Asia/Kolkata")
 LIVE_ORDER_FLAGS = (
@@ -206,8 +207,19 @@ def _query_params(lock_key: str, writer_id: str, execution_id: str, lease_second
 
 
 def _client():
-    project = (os.getenv("BQ_PROJECT_ID") or "fno-angel-prod-1790444589").strip()
-    return bigquery.Client(project=project)
+    """Use the same service-account key as the sheets writer. Do not fall through to ADC."""
+    from credentials import resolve_service_account_info
+
+    info = resolve_service_account_info()
+    if not info:
+        raise PublicationLeaseError(
+            "publication lease has no Google service-account credentials"
+        )
+    project = (
+        os.getenv("BQ_PROJECT_ID") or info.get("project_id") or "fno-angel-prod-1790444589"
+    ).strip()
+    creds = service_account.Credentials.from_service_account_info(info)
+    return bigquery.Client(project=project, credentials=creds)
 
 
 def remember_lease(lease: dict | None) -> None:

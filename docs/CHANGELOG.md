@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-21 - Use the Google key for the paper lock and ignore penny gainer spikes
+
+**Commit:** Pending HEAD
+
+### What changed
+- tools/publication_lease.py: The paper lock now uses the service-account key. It no longer asks for a missing Google default login.
+- gainers.py and angel_prediction_engine.py: Advance paper picks must cost at least 2 rupees. A Moneycontrol percent spike on a cheaper contract is kept out of the paper book.
+- market_bot.yml: A real manual run gets 30 minutes. A dry run stays at 5 minutes. The scheduled run stays long enough to cover the session.
+
+### Evidence
+- The 21 Oct 16:33 IST prediction run failed in publication_lease.py because bigquery.Client had no credentials. Run 39589123498.
+- New tests cover the service-account client and the gainer-page score.
+
+---
+
 ## 2026-10-21 - Score the morning quote and skip a closed paper entry
 
 **Commit:** Pending HEAD

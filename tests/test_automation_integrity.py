@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_market_bot_runs_short_repeating_cycles_without_cancel():
     text = (ROOT / ".github/workflows/market_bot.yml").read_text(encoding="utf-8-sig")
     assert "cron: '45 3 * * 1-5'" in text
-    assert "github.event_name == 'schedule' && '24300' || '300'" in text
+    assert "github.event_name == 'schedule' && '24300' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run && '1800' || '300')" in text
     assert "timeout-minutes: 420" in text
     assert "cancel-in-progress: false" in text  # concurrency cancel-in-progress false is intentional for single_writer to prevent kill collisions
 

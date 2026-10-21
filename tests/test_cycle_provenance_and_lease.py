@@ -117,3 +117,60 @@ def test_lease_script_is_transactional_and_names_the_lock_table():
     assert "COMMIT TRANSACTION" in sql
     assert "placeOrder" not in sql
     assert "cloudrun-image-v1" not in sql
+
+
+def test_lease_client_uses_the_service_account_key(monkeypatch):
+    import json
+    from tools import publication_lease
+
+    monkeypatch.setenv("BQ_PROJECT_ID", "fno-angel-prod-1790444589")
+    monkeypatch.setenv("SHEETS_KEY_JSON", json.dumps({
+        "type": "service_account",
+        "project_id": "fno-angel-prod-1790444589",
+        "client_email": "angel-sheets-bot@fno-angel-prod-1790444589.iam.gserviceaccount.com",
+    }))
+    seen = {}
+
+    def fake_creds(info):
+        seen["info"] = info
+        return "creds"
+
+    def fake_client(project, credentials=None):
+        seen["project"] = project
+        seen["credentials"] = credentials
+        return "client"
+
+    monkeypatch.setattr(
+        publication_lease.service_account.Credentials,
+        "from_service_account_info",
+        staticmethod(fake_creds),
+    )
+    monkeypatch.setattr(publication_lease.bigquery, "Client", fake_client)
+    assert publication_lease._client() == "client"
+    assert seen["credentials"] == "creds"
+    assert seen["project"] == "fno-angel-prod-1790444589"
+
+
+def test_lease_client_refuses_a_missing_key(monkeypatch):
+    from tools.publication_lease import PublicationLeaseError, _client
+
+    monkeypatch.delenv("SHEETS_KEY_JSON", raising=False)
+    monkeypatch.delenv("GOOGLE_APPLICATION_CREDENTIALS", raising=False)
+    monkeypatch.setattr("credentials.DEFAULT_KEY_PATHS", [])
+    with pytest.raises(PublicationLeaseError, match="no Google service-account"):
+        _client()
+
+
+def test_gainer_page_score_keeps_penny_spikes_out_of_profit():
+    from gainers import score_gainer_page
+
+    picks = [{"symbol": "TCS", "side": "CE"}, {"symbol": "WIPRO", "side": "CE"}]
+    actual = [
+        {"symbol": "TCS", "side": "CE", "last": 38.10},
+        {"symbol": "WIPRO", "side": "CE", "last": 1.90},
+        {"symbol": "SAIL", "side": "CE", "last": 0.10},
+    ]
+    scored = score_gainer_page(picks, actual)
+    assert scored["page_matches"] == 2
+    assert scored["tradable_matches"] == 1
+    assert scored["penny_page_rows"] == 2

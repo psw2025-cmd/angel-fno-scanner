@@ -17,6 +17,52 @@ DISCOUNT_RATE = 0.065
 YEAR_SECONDS = 365.25 * 24 * 60 * 60
 GAINER_ROW_LIMIT = 200
 MIN_PREMIUM = 2.0
+
+
+def tradable_paper_premium(entry_ltp) -> bool:
+    """A Moneycontrol percent spike below 2 rupees is not a paper profit.
+
+    The public gainers page ranks any option by percent. A 0.10 rupee contract
+    can show +900% and still be too small to buy. Advance paper picks must
+    clear this premium before they are saved.
+    """
+    try:
+        return float(entry_ltp) >= MIN_PREMIUM
+    except (TypeError, ValueError):
+        return False
+
+
+def score_gainer_page(picks, actual_rows) -> dict:
+    """Compare advance picks with a later gainers-page list.
+
+    picks and actual_rows use symbol and side. Penny actuals stay in the page
+    count. They are not counted as tradable matches.
+    """
+    wanted = set()
+    for pick in picks:
+        symbol = str(pick.get("symbol") or "").strip().upper()
+        side = str(pick.get("side") or "").strip().upper()
+        if symbol and side in ("CE", "PE"):
+            wanted.add((symbol, side))
+    page = []
+    tradable = []
+    for row in actual_rows:
+        symbol = str(row.get("symbol") or "").strip().upper()
+        side = str(row.get("side") or row.get("option_type") or "").strip().upper()
+        if not symbol or side not in ("CE", "PE"):
+            continue
+        page.append((symbol, side))
+        if tradable_paper_premium(row.get("last") or row.get("ltp") or row.get("entry_ltp")):
+            tradable.append((symbol, side))
+    matched = [item for item in page if item in wanted]
+    tradable_matched = [item for item in tradable if item in wanted]
+    return {
+        "advance_picks": len(wanted),
+        "page_rows": len(page),
+        "page_matches": len(matched),
+        "tradable_matches": len(tradable_matched),
+        "penny_page_rows": len(page) - len(tradable),
+    }
 MIN_VOLUME = 100_000
 MIN_OPEN_INTEREST = 5_000
 HIGH_MOMENTUM_GAIN = 25.0

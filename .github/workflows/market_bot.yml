@@ -46,7 +46,7 @@ jobs:
       SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
       SHEET_ID: ${{ secrets.SHEET_ID }}
       BQ_PROJECT_ID: ${{ secrets.BQ_PROJECT_ID }}
-      MAX_RUNTIME_SECONDS: ${{ github.event_name == 'schedule' && '24300' || '300' }}
+      MAX_RUNTIME_SECONDS: ${{ github.event_name == 'schedule' && '24300' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run && '1800' || '300') }}
       ALLOW_PRODUCTION_WRITES: ${{ github.event_name == 'schedule' && '1' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run && '1' || '0') }}
       WRITER_ID: market_bot
       PAPER_MODE: '1'
