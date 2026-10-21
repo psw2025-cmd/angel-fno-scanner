@@ -1,0 +1,11 @@
+Metric_ID,Metric_Name,Current_Value,Target_Value,Unit,Measurement_Method,Status
+CBL01,Total Architectural Nodes,219,8 Domain Clusters,Nodes,"Count of all distinct components, tables, sheets, and secrets",BASELINE_RECORDED
+CBL02,Total Network Interconnects,"3,066",48 Encapsulated Edges,Edges,Full N*(N-1)/2 possible peer-to-peer communication paths,BASELINE_RECORDED
+CBL03,Active Production Secrets,7,0 Standing Keys (WIF),Secrets,Count of credentials stored in GCP Secret Manager and GitHub,MIGRATION_PLANNED
+CBL04,End-to-End Pipeline Steps,8,4 Streamlined Stages,Steps,Count of pipeline execution stages from cron to Google Sheets,STANDARDIZED
+CBL05,Disparate Storage Sinks,3,1 Warehouse (BigQuery),Sinks,"BigQuery, Google Sheets, Local CSV file replicas",BUFFERED_PARITY
+CBL06,Execution Environments,4,2 Standard Environments,Runtimes,"Cloud Run, GitHub Actions, Local Windows, WSL2 Ubuntu",COORDINATED
+CBL07,Local Listening Ports,3,2 Dedicated Ports,Ports,"Port 8766 (Watchdog), Port 5678 (n8n), Port 5680 (Listener)",VERIFIED_ACTIVE
+CBL08,Scan Cycle P99 Latency,165,60,Seconds,End-to-end execution time of morning scan cycle,WITHIN_BUDGET
+CBL09,Cognitive Domain Load,8,3 Core Domains,Domains,"Broker API, Cloud Compute, Storage, Sheets, Local SRE, CI/CD, WSL2, AI",ABSTRACTED_IN_V2
+CBL10,Master Library Coverage,55,55,Tabs,Master Reference Library tabs covering 100% of audit requirements,COMPLETE_V2

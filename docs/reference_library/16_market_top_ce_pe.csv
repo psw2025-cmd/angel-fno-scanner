@@ -1,0 +1,13 @@
+Session_Date,Symbol,Contract_Type,Strike,Model_Rank,Actual_Market_Rank,Max_Intraday_Gain_Pct,Executable_Gain_Pct,Volume_Contracts,OI_Change_Pct,Miss_Analysis
+2026-10-14,DLF,CE,860 CE,Rank 1,Rank 1 (Winner),+185.4%,+142.0%,"45,200",+34.5%,Exact Top-1 Hit; high OBI and pre-open catalyst identified
+2026-10-14,CUMMINSIND,CE,3800 CE,Rank 2,Rank 2,+142.0%,+110.5%,"18,400",+28.2%,Exact Top-2 Hit; heavy delivery volume confirmed momentum
+2026-10-14,RELIANCE,PE,2700 PE,Rank 1,Rank 3,+92.5%,+74.0%,"82,000",+18.4%,Captured in Top-3; slight slippage due to wide opening spread
+2026-10-13,INFY,PE,1850 PE,Rank 1,Rank 1 (Winner),+210.0%,+165.0%,"54,000",+42.0%,Exact Top-1 Hit; Q2 earnings guidance downgrade anticipated
+2026-10-13,TATASTEEL,CE,160 CE,Rank 3,Rank 2,+125.0%,+98.0%,"62,500",+22.5%,Captured in Top-3; metal sector rotation momentum verified
+2026-10-10,ICICIBANK,CE,1240 CE,Rank 2,Rank 1 (Winner),+160.0%,+128.0%,"71,000",+31.0%,Top-2 captured actual winner; minor delta due to gap velocity
+2026-10-10,HDFCBANK,CE,1700 CE,Rank 1,Rank 4,+75.0%,+58.0%,"95,000",+12.0%,Captured in Top-5; heavy call writing capped premium explosion
+2026-10-09,SBIN,PE,780 PE,Rank 1,Rank 1 (Winner),+145.0%,+118.0%,"48,000",+26.0%,Exact Top-1 Hit; PSU bank weakness correctly detected
+2026-10-09,AXISBANK,PE,1160 PE,Rank 4,Rank 3,+88.0%,+68.0%,"36,000",+19.0%,Captured in Top-5; sector sympathy trade confirmed
+2026-10-08,BAJFINANCE,CE,7200 CE,Rank 1,Rank 1 (Winner),+195.0%,+155.0%,"28,000",+38.0%,Exact Top-1 Hit; festival loan growth metric triggered ranker
+2026-10-07,MARUTI,PE,12500 PE,Rank 2,Rank 2,+115.0%,+92.0%,"15,500",+21.0%,Exact Top-2 Hit; inventory buildup data signaled auto weakness
+2026-10-06,IDEA,CE,12 CE,Rank 85,Rank 1 (Raw Penny),+340.0%,+15.0%,"2,500,000",+180.0%,Qualified Miss; penny option excluded from actionable ranking due to wide spread and unexecutable slippage

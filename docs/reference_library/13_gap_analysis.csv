@@ -1,0 +1,9 @@
+Gap_ID,Requirement_Area,Audit_Finding,Prescribed_Remediation,Severity,Status
+GAP01,Reference Library Truncations,255 claimed rows missing across 12 tabs in initial master workbook,Regenerate complete library with 100% of rows populated and verified,P0,DONE (Remediated)
+GAP02,Neural Network Architecture Data,Image 1 needs node and edge primitives that were missing from workbook,"Add PSW_Node_Registry, PSW_Edge_Registry, PSW_Cluster_Map, PSW_Centrality_Scores, PSW_Force_Layout",P0,DONE (Remediated)
+GAP03,Control Room Dashboard Data,"Image 2 8-panel banner needs trace paths, latency matrix, bottlenecks, simplification data","Add PSW_Trace_Paths, PSW_Latency_Matrix, PSW_Bottleneck_Registry, PSW_Complexity_Baseline, etc.",P0,DONE (Remediated)
+GAP04,Missing SRE Columns in Existing Tabs,"10 existing tabs lacked critical SRE metrics (Latency_P50, Brier_Score, Image_Example, etc.)",Inject all Group 8 columns into respective existing tab schemas,P1,DONE (Remediated)
+GAP05,Workload Identity Federation,Static service account JSON key stored in GitHub Secrets poses rotation overhead,Configure GCP WIF pool and provider for keyless GitHub Actions OIDC auth,P1,IN-PROGRESS (Phase 2)
+GAP06,BigQuery Atomic Fencing Lease,writer_guard.py relies on local lease checks rather than database transaction locks,Deploy fno_predictions.transaction_write_lock table in BigQuery,P1,IN-PROGRESS (Phase 2)
+GAP07,Dormant Agent Memory Ingestion,BigQuery agent_memory and agent_scoreboard tables have schemas but 0 rows,Connect post-market reconciliation script to write daily model scorecards to BQ,P2,NOT-STARTED (Phase 3)
+GAP08,OpenTelemetry Correlation Propagation,run_id not yet carried across all 8 pipeline hops from Cloud Scheduler to Sheets,Implement trace context injection in Cloud Run Job entrypoint,P2,NOT-STARTED (Phase 3)

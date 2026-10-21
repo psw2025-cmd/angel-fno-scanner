@@ -1,0 +1,21 @@
+Fact_ID,Category,Fact_Key,Verified_Value,Verification_Command,Source_Authority,Last_Verified_IST
+FACT01,Repository,Git Remote URL,https://github.com/psw2025-cmd/angel-fno-scanner.git,git remote -v,Git Remote Config,2026-10-14 22:30 IST
+FACT02,Repository,Default Branch,main,git rev-parse --abbrev-ref origin/HEAD,GitHub API,2026-10-14 22:30 IST
+FACT03,Repository,Verified HEAD SHA,0e80b18b79f069df1c9813b1e210ef5472ee1a29,git rev-parse HEAD,Local Git HEAD,2026-10-14 22:30 IST
+FACT04,Cloud,GCP Project ID,fno-angel-prod-1790444589,gcloud config get-value project,GCP Resource Manager,2026-10-14 22:30 IST
+FACT05,Cloud,GCP Primary Region,asia-south1 (Mumbai),gcloud config get-value run/region,GCP Cloud Run Config,2026-10-14 22:30 IST
+FACT06,Database,BigQuery Dataset,fno_predictions,bq ls fno-angel-prod-1790444589,BigQuery Metadata,2026-10-14 22:30 IST
+FACT07,Spreadsheet,Google Sheet ID,1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs,gspread sheet metadata fetch,Google Drive API,2026-10-14 22:30 IST
+FACT08,Spreadsheet,Google Sheet Title,OPTION_SHEET,gspread sheet title fetch,Google Drive API,2026-10-14 22:30 IST
+FACT09,Cloud Run,Production Job Name,angel-market-scan-job,gcloud run jobs list --region=asia-south1,GCP Cloud Run API,2026-10-14 22:30 IST
+FACT10,Scheduler,Morning Cron Job,angel-scan-0915 (15 9 * * 1-5),gcloud scheduler jobs list,GCP Cloud Scheduler,2026-10-14 22:30 IST
+FACT11,Scheduler,Pre-Close Cron Job,angel-scan-1450 (50 14 * * 1-5),gcloud scheduler jobs list,GCP Cloud Scheduler,2026-10-14 22:30 IST
+FACT12,Identity,Service Account Email,angel-sheets-bot@fno-angel-prod-1790444589.iam.gserviceaccount.com,gcloud iam service-accounts list,GCP IAM,2026-10-14 22:30 IST
+FACT13,Identity,Cloud Admin User,warghade2012@gmail.com,gcloud auth list,GCP IAM,2026-10-14 22:30 IST
+FACT14,Identity,GitHub Account,psw2025-cmd,gh auth status,GitHub CLI,2026-10-14 22:30 IST
+FACT15,Security,Production Secrets Count,7 Enabled Secrets,gcloud secrets list,GCP Secret Manager,2026-10-14 22:30 IST
+FACT16,Trading Universe,F&O Stock Underlyings,219 Symbols (NSE F&O),SELECT COUNT(*) FROM option_predictions_live,SmartAPI Universe,2026-10-14 22:30 IST
+FACT17,Safety,Live Order Authority,OFF (Real Orders = 0),assert settings.LIVE_ORDER == False,Trading Safety Lock,2026-10-14 22:30 IST
+FACT18,Safety,Paper Mode Status,ON (Simulated Paper Execution),assert settings.PAPER_MODE == True,Trading Safety Lock,2026-10-14 22:30 IST
+FACT19,Local Host,24/7 Watchdog Port,Port 8766 (PID 7252/8528),Test-NetConnection -Port 8766,Local Windows Listener,2026-10-14 22:30 IST
+FACT20,Local Host,WSL2 Ubuntu Distribution,Ubuntu-24.04 (WSL 2 Running),wsl -l -v,Windows Subsystem for Linux,2026-10-14 22:30 IST

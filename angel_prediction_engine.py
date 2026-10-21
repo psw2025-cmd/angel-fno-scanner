@@ -43,11 +43,14 @@ from writer_guard import append_sheet_provenance, build_provenance, require_auth
 from sheet_grid import write_grid
 from publication import publish_outputs
 from cloud_status import (
+    default_ledger_path,
     option_exit_recorded,
     quote_attempt_covers_day,
     refresh_cloud_paper_view,
+    rows_from_gap_payload,
+    upsert_paper_ledger,
 )
-from market_calendar import IST, NSE_HOLIDAYS_2026, is_trading_day, local_market_time
+from market_calendar import IST, NSE_HOLIDAYS_2026, is_trading_day, local_market_time, market_session_state
 
 load_env()
 
@@ -1321,12 +1324,31 @@ def journal_pre_close_paper_trades(sh, bq_client, gap_picks, ist_str, ist_now):
     """
     require_authorized_writer()
     session_date = ist_str[:10]
+    if market_session_state(ist_now).get("status") != "OPEN":
+        print("[INFO] Pre-close journal skipped because the session is not OPEN.")
+        return
     next_day = ist_now.date() + datetime.timedelta(days=1 if ist_now.weekday() < 4 else 3)
     target_date_iso = next_day.isoformat()
 
     all_picks = gap_picks.get("top_ce_picks", []) + gap_picks.get("top_pe_picks", [])
     if not all_picks:
         return
+    try:
+        ledger_rows = rows_from_gap_payload(
+            {
+                "timestamp_ist": ist_str,
+                "top_ce_picks": gap_picks.get("top_ce_picks", []),
+                "top_pe_picks": gap_picks.get("top_pe_picks", []),
+            },
+            run_id=os.getenv("RUN_ID", ""),
+        )
+        if ledger_rows:
+            wrote = upsert_paper_ledger(default_ledger_path(), ledger_rows)
+            print(f"[OK] Simulated paper ledger rows written: {wrote}. Fills are simulated. No broker order.")
+        else:
+            print("[INFO] No saved signal had an entry price. The paper ledger was left unchanged.")
+    except Exception as e:
+        print(f"[WARN] Paper ledger was not updated: {e}")
 
     # 1. Google Sheets PAPER_ALERT_LOG
     try:
@@ -1425,6 +1447,9 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
     """
     require_authorized_writer()
     session_date = ist_str[:10]
+    if market_session_state(ist_now).get("status") != "OPEN":
+        print("[INFO] Outcome reconcile skipped because the session is not OPEN. No outcome was guessed.")
+        return []
     reconciled_results = []
     try:
         ws_paper = sh.worksheet("PAPER_ALERT_LOG")
@@ -1454,6 +1479,9 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
             trade_date = r[1]
             sym = r[2].strip().upper()
             side = r[3].strip().upper()
+            if str(trade_date).strip()[:10] >= session_date:
+                print(f"[INFO] {sym} {side} has no later session yet. Outcome left blank.")
+                continue
             contract = (r[6] if side == "CE" else r[7]).strip().upper()
             note = r[8]
 
@@ -1996,8 +2024,15 @@ def compute_prediction_and_rating(
 # FULL EXECUTION PIPELINE
 # =====================================================================
 def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, reconcile_morning=False):
-    require_authorized_writer()
+    os.environ["PAPER_MODE"] = "1"
+    os.environ["LIVE_ORDER_AUTHORITY"] = "0"
     ist_now = get_ist_time()
+    session = market_session_state(ist_now)
+    if session.get("status") != "OPEN":
+        print(session.get("summary") or session.get("status"))
+        print("[INFO] Not an open session. No prediction was written. PAPER_MODE=1 LIVE_ORDER_AUTHORITY=0.")
+        return [], {"stored_outcome": False, "hit_rate_pct": None, "hits_count": 0}, {}
+    require_authorized_writer()
     ist_str = ist_now.strftime("%Y-%m-%d %H:%M:%S")
     print(f"\n=======================================================")
     print(f"[{ist_str}] STARTING ADVANCED PREDICTION & CALIBRATION PIPELINE")
@@ -2743,32 +2778,39 @@ def sync_to_bigquery(predictions, news_rows, reconciliation, ist_dt):
 # MAIN ENTRYPOINT
 # =====================================================================
 def main():
+    os.environ["PAPER_MODE"] = "1"
+    os.environ["LIVE_ORDER_AUTHORITY"] = "0"
     bypass_market_check = "--run-once" in sys.argv or "--verify" in sys.argv
     force_pre_close = "--force-pre-close" in sys.argv
     reconcile_morning = "--reconcile-gap" in sys.argv
 
     if bypass_market_check or force_pre_close or reconcile_morning:
-        print("[MODE] Direct Live Execution (bypassing market-hour sleeps)...")
+        state = market_session_state()
+        if state.get("status") != "OPEN":
+            print(state.get("summary") or state.get("status"))
+            print("[INFO] Writer stays quiet. PAPER_MODE=1 LIVE_ORDER_AUTHORITY=0. No orders.")
+            return
+        print("[MODE] Open session. One prediction cycle. Paper only.")
         run_prediction_pipeline(
             bypass_market_check=True,
             force_pre_close=force_pre_close,
             reconcile_morning=reconcile_morning
         )
-        print("[SUCCESS] Live Execution Cycle Completed!")
+        print("[SUCCESS] Open-session cycle finished. PAPER_MODE=1 LIVE_ORDER_AUTHORITY=0.")
         return
 
-    print("[MODE] Automated Indian Market Production Daemon (09:15 - 15:30 IST)...")
+    print("[MODE] Paper writer waits for the open session (09:15-15:40 IST).")
     while True:
         try:
             now = get_ist_time()
-            if is_market_open(now) or is_pre_market_time(now):
+            state = market_session_state(now)
+            if state.get("status") == "OPEN":
                 run_prediction_pipeline(bypass_market_check=False)
                 time.sleep(45)
             else:
-                print(f"[{now.strftime('%Y-%m-%d %H:%M:%S')} IST] Market closed. Executing baseline verification sync...")
-                run_prediction_pipeline(bypass_market_check=True)
-                print("[INFO] Baseline sync complete. Standing by for next market session...")
-                time.sleep(1800)
+                print(state.get("summary") or state.get("status"))
+                print("[INFO] Writer stays quiet. No prediction was written.")
+                time.sleep(60)
         except KeyboardInterrupt:
             print("[INFO] Daemon stopped by user.")
             break

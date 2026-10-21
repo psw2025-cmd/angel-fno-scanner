@@ -1,0 +1,9 @@
+Cluster_ID,Cluster_Name,Node_List,Cluster_Color,Boundary_Type,Description
+C01,Market Ingestion & Auth,"N04, N05, N23",#FF5733,External Broker Gateway,"SmartAPI authentication, quote WebSocket streaming, and news sentiment ingestion"
+C02,Cloud Compute & Model Engine,"N01, N02, N03, N06, N07",#33FF57,Serverless Compute Zone,"Cloud Schedulers, Cloud Run container, Prediction Engine, and Writer Guard fence"
+C03,Enterprise Data Warehouse,"N08, N09, N10, N11",#3357FF,Managed Storage Boundary,"BigQuery live, history, paper trades, and transaction write lock tables"
+C04,Public Presentation & Sheets,"N12, N13, N14",#F3FF33,Google Workspace Boundary,"Google Drive OPTION_SHEET, PAPER_ALERT_LOG, and live HEARTBEAT presentation tabs"
+C05,Local SRE & Watchdog Daemons,"N19, N20, N21, N24",#FF33F3,Host Workstation Boundary,"Windows port 8766 watchdog daemon, universal supervisor, WSL relay, and CSV buffer"
+C06,Security & Secret Management,"N15, N16",#33FFF0,IAM & Vault Boundary,GCP Secret Manager storing 7 production secrets and angel-sheets-bot robot identity
+C07,CI/CD & Source Governance,"N17, N18, N25",#8E44AD,GitHub Control Plane,"psw2025-cmd repository main branch, GitHub Actions CI workflows, and Issue #3 bus"
+C08,Linux Orchestration & n8n,"N21, N22",#E67E22,WSL2 Isolated Subsystem,"Ubuntu-24.04 environment running Docker engine, Sysbox sandbox, and n8n workflows"

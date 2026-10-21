@@ -1,0 +1,26 @@
+Node_ID,Node_Name,Node_Type,Layer,Criticality_Score,Weight,Degree,Status,Description
+N01,cloud_scheduler_0915,Scheduler,Trigger,0.95,0.85,3,Active,Cloud Scheduler firing opening market scan at 09:15 IST
+N02,cloud_scheduler_1450,Scheduler,Trigger,0.90,0.80,3,Active,Cloud Scheduler firing pre-close paper trade scan at 14:50 IST
+N03,cloud_run_scan_job,Compute,Execution,1.00,1.00,12,Active,Primary Cloud Run container executing scanner.py and prediction engine
+N04,angel_smartapi_auth,Broker API,Ingestion,1.00,0.95,6,Active,Angel One OpenAPI gateway providing session auth and TOTP validation
+N05,angel_market_feed,Market Data,Ingestion,1.00,0.98,8,Active,Real-time quote and WebSocket market feed for 219 F&O underlyings
+N06,angel_prediction_engine,Model Engine,Algorithmic,0.95,0.92,7,Active,"Core prediction engine computing OBI, PCR, and ranking CE/PE options"
+N07,writer_guard_fence,Security/Lock,Governance,0.98,0.90,5,Active,Single-writer authority guard verifying lease tokens before write
+N08,bq_option_predictions_live,Database Table,Storage,0.95,0.90,5,Active,BigQuery live snapshot table storing current session ranked options
+N09,bq_option_predictions_history,Database Table,Storage,0.85,0.80,3,Active,Day-partitioned historical warehouse table storing all past predictions
+N10,bq_paper_trades_live,Database Table,Storage,0.90,0.82,4,Active,Active paper trades table tracking open simulated positions and targets
+N11,bq_transaction_write_lock,Database Table,Storage,0.98,0.88,4,Active,Atomic distributed lease table preventing concurrent writer split-brain
+N12,sheet_option_sheet_master,Spreadsheet,Presentation,0.92,0.86,6,Active,Master Google Spreadsheet OPTION_SHEET in Google Drive
+N13,sheet_paper_alert_log,Sheet Tab,Presentation,0.90,0.84,4,Active,Public paper trade journal tab with morning reconciliation columns
+N14,sheet_heartbeat,Sheet Tab,Presentation,0.88,0.78,3,Active,Live telemetry heartbeat tab updated every 60-90 seconds
+N15,gcp_secret_manager,Security,Infrastructure,0.98,0.92,8,Active,GCP Secret Manager storing all 7 production credentials securely
+N16,service_account_sheets_bot,IAM Identity,Security,0.95,0.88,6,Active,Robot identity angel-sheets-bot@fno-angel-prod... executing cloud writes
+N17,github_repo_main,Source Code,DevOps,0.90,0.85,6,Active,psw2025-cmd/angel-fno-scanner repository main protected branch
+N18,github_actions_ci,CI/CD,DevOps,0.85,0.78,4,Active,"GitHub Actions workflows (market_bot.yml, nightly_verify.yml)"
+N19,local_watchdog_8766,Daemon,Local SRE,0.80,0.75,4,Active,Local Windows watchdog daemon (PID 7252/8528) serving port 8766
+N20,local_supervisor_7308,Daemon,Local SRE,0.85,0.78,4,Active,Universal Supervisor daemon (PID 7308) managing self-healing recovery
+N21,wsl2_relay_bridge,Networking,Local SRE,0.75,0.70,4,Active,"wsl-relay.exe (PID 9684) bridging ports 5678, 5680, 8080 to Windows"
+N22,wsl2_n8n_engine,Orchestrator,Automation,0.78,0.72,5,Active,n8n workflow automation engine running in Ubuntu-24.04 on port 5678
+N23,news_catalyst_scanner,Market Data,Ingestion,0.75,0.68,3,Active,Web and filing scraper identifying corporate announcements and sentiment
+N24,offline_paper_trades_csv,Local File,Storage,0.70,0.65,3,Active,data/paper_trades.csv offline replica and rate limit buffer
+N25,github_issue_3_bus,Control Plane,Governance,0.92,0.85,5,Active,Canonical cross-agent coordination bus (Issue #3) reconciling truth

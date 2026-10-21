@@ -1,0 +1,11 @@
+Target_ID,Architecture_Domain,Current_State,Target_Architecture,Reduction_Factor,Implementation_Phase
+TGT01,Identity & Secrets,Static JSON keys stored in GitHub Secrets,Keyless Workload Identity Federation (WIF OIDC),100% Elimination of Static Keys,Phase 2 (Cloud Hardening)
+TGT02,Distributed Concurrency,writer_guard local file lock & checks,BigQuery atomic transaction_write_lock lease table,Mathematically Proven Mutual Exclusion,Phase 2 (Cloud Hardening)
+TGT03,End-to-End Tracing,Independent timestamps in different logs,OpenTelemetry correlation run_id propagated across all hops,100% Deterministic Traceability,Phase 2 (Cloud Hardening)
+TGT04,Market Quote Ingestion,Sequential polling of 219 underlyings (38s),Connection pooled parallel quote streaming (<15s),60% Reduction in Scan Duration,Phase 3 (Optimization)
+TGT05,Spreadsheet Publishing,Direct gspread cell updates with backoff,Buffered asynchronous micro-batch queue,Zero 429 Quota Rate Limit Errors,Phase 2 (Cloud Hardening)
+TGT06,Continuous Learning,Manual inspection of historical tables,Automated daily council table ingestion in BigQuery,100% Autonomous Weight Recalibration,Phase 3 (Optimization)
+TGT07,Local Watchdog Daemon,Windows python script running in background,Systemd auto-restarting service in WSL2 Linux,Survives Windows Workstation Reboots,Phase 3 (Optimization)
+TGT08,Visual Reference Library,40 tabs with 255 claimed rows truncated,55 tabs fully populated with zero truncations,100% Audit Compliance & Ground Truth,Phase 1 (Completed Now)
+TGT09,Liquidity Quality Gate,Simple LTP > ₹2.0 filter,Full 5-layer market depth & bid-ask spread gate,Zero Unexecutable Penny False Winners,Phase 2 (Cloud Hardening)
+TGT10,Disaster Recovery,Manual ad-hoc Colab replay scripts,Automated weekly compressed parquet snapshot to Drive,Zero Data Loss Guarantee,Phase 3 (Optimization)

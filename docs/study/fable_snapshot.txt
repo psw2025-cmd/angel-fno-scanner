@@ -1,0 +1,35 @@
+﻿
+===== SYSTEMINFO =====
+Host Name:                 DESKTOP-DM6NHPI
+OS Name:                   Microsoft Windows 10 Pro
+OS Version:                10.0.19045 N/A Build 19045
+System Locale:             en-gb;English (United Kingdom)
+Time Zone:                 (UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi
+Total Physical Memory:     16,276 MB
+Available Physical Memory: 1,301 MB
+===== GCLOUD CONFIG =====
+account = warghade2012@gmail.com
+disable_usage_reporting = True
+project = fno-angel-prod-1790444589
+python.exe : 
+===== PROJECTS =====
+PROJECT_ID                  NAME                   PROJECT_NUMBER  ENVIRONMENT
+===== GIT STATUS =====
+On branch docs/trigger-reference
+Your branch is ahead of 'origin/docs/trigger-reference' by 4 commits.
+===== GIT BRANCHES =====
+===== GIT LOG =====
+===== CLOUD RUN =====
+python.exe : Listed 0 items.
+===== SCHEDULERS =====
+python.exe : ERROR: (gcloud.scheduler.jobs.list) Please use the location flag to manually specify a location.
+===== BIGQUERY =====
+===== PYTHON =====
+Python 3.12.10
+===== REPO TREE =====
+===== FULL TERMINAL LOG =====
+python.exe : 
+python.exe : ERROR: (gcloud.scheduler.jobs.list) Please use the location flag to manually specify a location.
+python.exe : Listed 0 items.
+
+

@@ -1,0 +1,933 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Angel FNO · Evidence Operations</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #101719;
+            --side: #151f20;
+            --surface: #1b2627;
+            --surface2: #202d2e;
+            --line: #344344;
+            --ink: #edf2ef;
+            --muted: #9bacaa;
+            --green: #70c9a0;
+            --amber: #e9b967;
+            --red: #e27e75;
+            --blue: #83b8cd;
+            --accent: #95cdb1;
+            --mono: Consolas, 'Courier New', monospace
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font: 14px/1.45 'Segoe UI', sans-serif
+        }
+
+        button,
+        input {
+            font: inherit
+        }
+
+        button {
+            cursor: pointer;
+            color: inherit
+        }
+
+        .app {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 238px 1fr
+        }
+
+        .side {
+            background: var(--side);
+            border-right: 1px solid var(--line);
+            padding: 18px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px
+        }
+
+        .brand {
+            padding: 8px 12px 16px;
+            border-bottom: 1px solid var(--line)
+        }
+
+        .brand strong {
+            font: 700 19px Georgia, serif;
+            display: block
+        }
+
+        .brand small {
+            color: var(--muted)
+        }
+
+        .nav {
+            display: grid;
+            gap: 4px
+        }
+
+        .nav button {
+            background: transparent;
+            border: 0;
+            text-align: left;
+            padding: 10px 12px;
+            border-radius: 5px;
+            color: var(--muted)
+        }
+
+        .nav button:hover,
+        .nav button.active {
+            background: var(--surface2);
+            color: var(--ink)
+        }
+
+        .nav button.active {
+            box-shadow: inset 3px 0 var(--accent)
+        }
+
+        .safety {
+            margin-top: auto;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 5px;
+            color: var(--muted);
+            font-size: 12px
+        }
+
+        .main {
+            min-width: 0
+        }
+
+        .top {
+            min-height: 62px;
+            padding: 12px 22px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--line);
+            background: #141d1e;
+            position: sticky;
+            top: 0;
+            z-index: 2
+        }
+
+        .identity {
+            min-width: 0
+        }
+
+        .identity strong {
+            font-size: 14px
+        }
+
+        .identity small {
+            display: block;
+            color: var(--muted);
+            font-family: var(--mono);
+            overflow-wrap: anywhere
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        .btn {
+            border: 1px solid var(--line);
+            background: var(--surface);
+            border-radius: 4px;
+            padding: 7px 11px
+        }
+
+        .btn:hover {
+            border-color: var(--accent)
+        }
+
+        .btn.primary {
+            background: #2b483b;
+            border-color: #4f806b
+        }
+
+        .btn.danger {
+            border-color: #9b554e;
+            color: #ffd5d0
+        }
+
+        .page {
+            padding: 22px;
+            max-width: 1600px;
+            margin: auto
+        }
+
+        .view {
+            display: none
+        }
+
+        .view.active {
+            display: block
+        }
+
+        .heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 12px;
+            margin: 0 0 18px
+        }
+
+        .heading h1 {
+            font: 700 25px Georgia, serif;
+            margin: 0
+        }
+
+        .heading p {
+            color: var(--muted);
+            margin: 4px 0 0
+        }
+
+        .grid {
+            display: grid;
+            gap: 12px
+        }
+
+        .stats {
+            grid-template-columns: repeat(4, minmax(130px, 1fr));
+            margin-bottom: 18px
+        }
+
+        .stat,
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 5px
+        }
+
+        .stat {
+            padding: 14px
+        }
+
+        .stat label {
+            display: block;
+            color: var(--muted);
+            font-size: 12px
+        }
+
+        .stat strong {
+            display: block;
+            font-size: 21px;
+            margin-top: 4px
+        }
+
+        .panel {
+            padding: 16px;
+            margin-bottom: 14px
+        }
+
+        .panel h2 {
+            font-size: 15px;
+            margin: 0 0 12px
+        }
+
+        .panel h3 {
+            font-size: 13px;
+            margin: 0 0 8px
+        }
+
+        .split {
+            grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr)
+        }
+
+        .three {
+            grid-template-columns: repeat(3, minmax(0, 1fr))
+        }
+
+        .status-row {
+            display: grid;
+            grid-template-columns: minmax(150px, 1fr) 90px 90px 95px minmax(140px, 1fr);
+            gap: 9px;
+            align-items: center;
+            padding: 9px 3px;
+            border-bottom: 1px solid var(--line)
+        }
+
+        .status-row:last-child {
+            border-bottom: 0
+        }
+
+        .status {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em
+        }
+
+        .status.PASS,
+        .status.FRESH,
+        .status.OK {
+            color: var(--green)
+        }
+
+        .status.FAIL,
+        .status.ERROR,
+        .status.BLOCKED,
+        .status.STALE {
+            color: var(--red)
+        }
+
+        .status.UNKNOWN,
+        .status.DISABLED {
+            color: var(--amber)
+        }
+
+        .muted {
+            color: var(--muted)
+        }
+
+        .mono {
+            font-family: var(--mono);
+            font-size: 12px;
+            overflow-wrap: anywhere
+        }
+
+        .flow {
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+            overflow: auto;
+            padding: 12px 2px
+        }
+
+        .flow-node {
+            min-width: 145px;
+            max-width: 190px;
+            padding: 12px;
+            border: 1px solid var(--line);
+            background: var(--surface2);
+            border-radius: 5px
+        }
+
+        .flow-node strong {
+            display: block;
+            font-size: 12px
+        }
+
+        .flow-node small {
+            display: block;
+            color: var(--muted);
+            margin-top: 5px
+        }
+
+        .flow-arrow {
+            align-self: center;
+            color: var(--muted);
+            font-size: 18px
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px
+        }
+
+        .chip {
+            border: 1px solid var(--line);
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            color: var(--muted)
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap
+        }
+
+        .grow {
+            flex: 1
+        }
+
+        .search {
+            background: #101719;
+            border: 1px solid var(--line);
+            color: var(--ink);
+            border-radius: 4px;
+            padding: 8px 10px;
+            min-width: 180px
+        }
+
+        .list {
+            display: grid;
+            gap: 5px;
+            max-height: 570px;
+            overflow: auto
+        }
+
+        .item {
+            background: transparent;
+            border: 1px solid transparent;
+            text-align: left;
+            padding: 9px;
+            border-radius: 4px
+        }
+
+        .item:hover,
+        .item.selected {
+            background: var(--surface2);
+            border-color: var(--line)
+        }
+
+        .item strong {
+            display: block
+        }
+
+        .item small {
+            color: var(--muted)
+        }
+
+        .code {
+            white-space: pre-wrap;
+            overflow: auto;
+            max-height: 520px;
+            background: #0b1112;
+            border: 1px solid var(--line);
+            padding: 12px;
+            border-radius: 4px;
+            font: 12px/1.5 var(--mono)
+        }
+
+        .table-wrap {
+            overflow: auto
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid var(--line);
+            vertical-align: top
+        }
+
+        th {
+            color: var(--muted);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            background: var(--surface)
+        }
+
+        .incident {
+            border-left: 3px solid var(--amber);
+            padding: 10px 12px;
+            background: var(--surface2);
+            margin-bottom: 7px;
+            cursor: pointer
+        }
+
+        .incident.high,
+        .incident.critical {
+            border-left-color: var(--red)
+        }
+
+        .incident.low {
+            border-left-color: var(--blue)
+        }
+
+        .incident.selected {
+            outline: 1px solid var(--accent)
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 8px;
+            font-size: 12px
+        }
+
+        .detail-grid dt {
+            color: var(--muted)
+        }
+
+        .detail-grid dd {
+            margin: 0;
+            overflow-wrap: anywhere
+        }
+
+        .banner {
+            padding: 10px 12px;
+            border: 1px solid #806537;
+            background: #29271e;
+            border-radius: 4px;
+            color: #ecd39f;
+            margin-bottom: 13px
+        }
+
+        .banner.error {
+            border-color: #8c504c;
+            background: #2c2020;
+            color: #ffd5d0
+        }
+
+        .login {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            background: var(--bg)
+        }
+
+        .login-box {
+            max-width: 410px;
+            width: 100%;
+            padding: 24px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 6px
+        }
+
+        .login-box h1 {
+            font: 700 24px Georgia, serif;
+            margin: 0 0 9px
+        }
+
+        .login-box p {
+            color: var(--muted)
+        }
+
+        .login-box input {
+            width: 100%;
+            margin: 12px 0
+        }
+
+        .hidden {
+            display: none !important
+        }
+
+        .notice {
+            padding: 8px 0;
+            color: var(--muted);
+            font-size: 12px
+        }
+
+        .bar {
+            height: 6px;
+            background: #2c3838;
+            border-radius: 4px;
+            overflow: hidden
+        }
+
+        .bar span {
+            display: block;
+            height: 100%;
+            background: var(--accent)
+        }
+
+        .bar.warn span {
+            background: var(--amber)
+        }
+
+        .bar.bad span {
+            background: var(--red)
+        }
+
+        .small {
+            font-size: 12px
+        }
+
+        .footer {
+            padding: 12px 0;
+            color: var(--muted);
+            font-size: 11px
+        }
+
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px
+        }
+
+        .flow-svg {
+            width: 100%;
+            height: 320px;
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            background: #111a1b
+        }
+
+        .badge {
+            display: inline-block;
+            border: 1px solid var(--line);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            color: var(--muted)
+        }
+
+        @media(max-width:850px) {
+            .app {
+                grid-template-columns: 1fr
+            }
+
+            .side {
+                position: sticky;
+                top: 0;
+                z-index: 3;
+                padding: 8px;
+                border-right: 0;
+                border-bottom: 1px solid var(--line)
+            }
+
+            .brand {
+                display: none
+            }
+
+            .nav {
+                display: flex;
+                overflow: auto
+            }
+
+            .nav button {
+                white-space: nowrap;
+                padding: 8px
+            }
+
+            .safety {
+                display: none
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, minmax(120px, 1fr))
+            }
+
+            .split,
+            .three,
+            .section-grid {
+                grid-template-columns: 1fr
+            }
+
+            .status-row {
+                grid-template-columns: 1fr 78px 78px;
+            }
+
+            .status-row .source-time,
+            .status-row .source-note {
+                display: none
+            }
+
+            .top {
+                position: relative;
+                padding: 10px
+            }
+
+            .page {
+                padding: 14px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <section id="login" class="login">
+        <div class="login-box">
+            <h1>Angel FNO Evidence Dashboard</h1>
+            <p id="authMessage">Checking your Windows session…</p>
+            <p class="notice">This service binds to loopback and authorizes browser processes owned by the same Windows
+                user. Remote access is disabled.</p><button id="retryAuth" class="btn primary" type="button">Retry
+                identity check</button>
+            <div id="loginError" class="notice"></div>
+        </div>
+    </section>
+    <div id="app" class="app hidden">
+        <aside class="side">
+            <div class="brand"><strong>ANGEL FNO</strong><small>Evidence Operations · PAPER only</small></div>
+            <nav class="nav" id="nav">
+                <button data-view="overview" class="active">Operations overview</button><button
+                    data-view="system">Layered system flow</button><button data-view="repository">Repository
+                    explorer</button><button data-view="dependencies">Dependency paths</button><button
+                    data-view="history">Change history</button><button data-view="live">Live
+                    observations</button><button data-view="incidents">Incidents & blockers</button><button
+                    data-view="integrity">Data integrity</button><button data-view="solutions">Solution
+                    inspector</button><button data-view="exports">Evidence exports</button>
+            </nav>
+            <div class="safety">Private local dashboard<br>Read-only collectors · no broker orders<br><span
+                    id="collectorStamp">Waiting for first observation</span></div>
+        </aside>
+        <main class="main">
+            <header class="top">
+                <div class="identity"><strong id="viewTitle">Operations overview</strong><small
+                        id="repoIdentity">Repository identity loading…</small></div>
+                <div class="actions"><span id="overallBadge" class="badge">UNKNOWN</span><button id="refreshButton"
+                        class="btn">Refresh evidence</button></div>
+            </header>
+            <div class="page">
+                <section class="view active" id="view-overview">
+                    <div class="heading">
+                        <div>
+                            <h1>Observed system state</h1>
+                            <p id="observedAt">No observation loaded.</p>
+                        </div>
+                    </div>
+                    <div id="banner"></div>
+                    <div class="grid stats">
+                        <div class="stat"><label>Local / remote SHA</label><strong id="shaMatch">UNKNOWN</strong></div>
+                        <div class="stat"><label>Latest workflow</label><strong id="workflowStat">UNKNOWN</strong></div>
+                        <div class="stat"><label>Open incidents</label><strong id="incidentCount">UNKNOWN</strong></div>
+                        <div class="stat"><label>Evidence coverage</label><strong id="coverageStat">UNKNOWN</strong>
+                        </div>
+                    </div>
+                    <div class="grid split">
+                        <article class="panel">
+                            <h2>Source and collector state</h2>
+                            <div id="sourceRows"></div>
+                        </article>
+                        <article class="panel">
+                            <h2>Recent failures / blockers</h2>
+                            <div id="overviewIncidents"></div>
+                        </article>
+                    </div>
+                    <article class="panel">
+                        <h2>Layered data path</h2>
+                        <div id="overviewFlow" class="flow"></div>
+                        <div class="notice">Relationships are labeled by evidence type; a configured edge is not proof
+                            of live traffic.</div>
+                    </article>
+                </section>
+                <section class="view" id="view-system">
+                    <div class="heading">
+                        <div>
+                            <h1>Layered system flow</h1>
+                            <p>Observed process state is separate from configured topology.</p>
+                        </div>
+                    </div>
+                    <article class="panel">
+                        <h2>Configured repository layers</h2>
+                        <div id="systemFlow" class="flow"></div>
+                    </article>
+                    <div class="grid split">
+                        <article class="panel">
+                            <h2>Runtime processes</h2>
+                            <div id="processRows"></div>
+                        </article>
+                        <article class="panel">
+                            <h2>Coverage gaps</h2>
+                            <div id="gapRows"></div>
+                        </article>
+                    </div>
+                </section>
+                <section class="view" id="view-repository">
+                    <div class="heading">
+                        <div>
+                            <h1>Repository explorer</h1>
+                            <p>Tracked files only; unsupported analysis is labeled explicitly.</p>
+                        </div>
+                    </div>
+                    <div class="grid split">
+                        <article class="panel">
+                            <div class="row"><input id="treeSearch" class="search grow"
+                                    placeholder="Search tracked paths"><span id="treeCount" class="badge">0</span></div>
+                            <div id="treeList" class="list"></div>
+                        </article>
+                        <article class="panel">
+                            <h2 id="fileTitle">Select a file</h2>
+                            <div id="fileMeta" class="notice"></div>
+                            <pre id="fileSource" class="code">Source is not loaded.</pre>
+                        </article>
+                    </div>
+                </section>
+                <section class="view" id="view-dependencies">
+                    <div class="heading">
+                        <div>
+                            <h1>Dependency and call paths</h1>
+                            <p>Bounded, lazily loaded static graph. Edges are source-derived and approximate.</p>
+                        </div><input id="graphSearch" class="search" placeholder="Filter nodes">
+                    </div>
+                    <article class="panel">
+                        <div id="graphSummary" class="notice"></div>
+                        <div id="graphList" class="list"></div>
+                        <div id="graphDetail" class="notice"></div>
+                    </article>
+                </section>
+                <section class="view" id="view-history">
+                    <div class="heading">
+                        <div>
+                            <h1>Change history</h1>
+                            <p>Co-change is correlation, not causal impact.</p>
+                        </div>
+                    </div>
+                    <div class="grid split">
+                        <article class="panel">
+                            <h2>Hotspots by commit count</h2>
+                            <div id="hotspots"></div>
+                        </article>
+                        <article class="panel">
+                            <h2>Files changing together</h2>
+                            <div id="coupling"></div>
+                        </article>
+                    </div>
+                    <article class="panel">
+                        <h2>Recent commits</h2>
+                        <div id="commits" class="list"></div>
+                    </article>
+                </section>
+                <section class="view" id="view-live">
+                    <div class="heading">
+                        <div>
+                            <h1>Live observations</h1>
+                            <p>Each row carries health, freshness, collection result, and source time.</p>
+                        </div>
+                    </div>
+                    <article class="panel">
+                        <div class="status-row muted">
+                            <strong>Source</strong><strong>Health</strong><strong>Freshness</strong><strong
+                                class="source-time">Collected</strong><strong class="source-note">Evidence</strong>
+                        </div>
+                        <div id="liveRows"></div>
+                    </article>
+                    <article class="panel">
+                        <h2>Persisted observation history</h2>
+                        <div id="snapshotHistory" class="list"></div>
+                    </article>
+                </section>
+                <section class="view" id="view-incidents">
+                    <div class="heading">
+                        <div>
+                            <h1>Incidents and blockers</h1>
+                            <p>Observed impact is separated from suspected impact.</p>
+                        </div>
+                    </div>
+                    <div class="grid split">
+                        <article class="panel">
+                            <h2>Current issue register</h2>
+                            <div id="incidentList" class="list"></div>
+                        </article>
+                        <article class="panel">
+                            <h2>Issue evidence</h2>
+                            <div id="incidentDetail">
+                                <div class="notice">Select an issue to inspect.</div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+                <section class="view" id="view-integrity">
+                    <div class="heading">
+                        <div>
+                            <h1>Data integrity</h1>
+                            <p>Access, parity, provenance, and freshness are independent checks.</p>
+                        </div>
+                    </div>
+                    <div id="integrityCards" class="section-grid"></div>
+                </section>
+                <section class="view" id="view-solutions">
+                    <div class="heading">
+                        <div>
+                            <h1>Agent solution inspector</h1>
+                            <p>Proposal only. This dashboard does not repair, deploy, trade, or write production data.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="grid split">
+                        <article class="panel">
+                            <h2>Issues</h2>
+                            <div id="solutionList" class="list"></div>
+                        </article>
+                        <article class="panel">
+                            <h2>Evidence and proposed sequence</h2>
+                            <div id="solutionDetail">
+                                <div class="notice">Select an issue.</div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+                <section class="view" id="view-exports">
+                    <div class="heading">
+                        <div>
+                            <h1>Evidence export center</h1>
+                            <p>Exports are redacted, timestamped, locally persisted, and checksummed.</p>
+                        </div>
+                    </div>
+                    <div class="grid split">
+                        <article class="panel">
+                            <h2>Choose issue package</h2>
+                            <div id="exportIssues" class="list"></div>
+                        </article>
+                        <article class="panel">
+                            <h2>Latest export</h2>
+                            <div id="exportResult">
+                                <div class="notice">No export created in this session.</div>
+                            </div>
+                        </article>
+                        <article class="panel">
+                            <h2>Export history</h2>
+                            <div id="exportHistory" class="list"></div>
+                        </article>
+                        <article class="panel">
+                            <h2>Export history</h2>
+                            <div id="exportHistory" class="list"></div>
+                        </article>
+                    </div>
+                </section>
+                <div class="footer">No live broker order authority. Cloud/Sheets reads are disabled in this build;
+                    missing coverage is shown as UNKNOWN. <span id="footerIdentity"></span></div>
+            </div>
+        </main>
+    </div>
+    <script>
+        const $ = s => document.querySelector(s); const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        let snapshot = null, selectedIssue = null, selectedFile = null, graph = null, activeView = 'overview';
+        async function api(path, opts = {}) { const r = await fetch(path, { credentials: 'same-origin', cache: 'no-store', ...opts, headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) } }); if (r.status === 401) { showLogin(); throw new Error('AUTH_REQUIRED') } const data = await r.json().catch(() => ({ error: 'INVALID_RESPONSE' })); if (!r.ok) throw new Error(data.error || `HTTP_${r.status}`); return data }
+        function showLogin() { $('#app').classList.add('hidden'); $('#login').classList.remove('hidden'); $('#authMessage').textContent = 'Windows identity could not be verified for this browser process. Use the local dashboard from the signed-in Windows account.'; }
+        function healthClass(v) { return ['PASS', 'FAIL', 'UNKNOWN'].includes(v) ? v : 'UNKNOWN' }
+        function setBadge(el, value) { el.textContent = value || 'UNKNOWN'; el.className = 'status ' + healthClass(value) }
+        function panel(title, body) { const d = document.createElement('article'); d.className = 'panel'; const h = document.createElement('h2'); h.textContent = title; d.append(h, body); return d }
+        function showView(name) { activeView = name; document.querySelectorAll('.view').forEach(x => x.classList.toggle('active', x.id === `view-${name}`)); document.querySelectorAll('.nav button').forEach(x => x.classList.toggle('active', x.dataset.view === name)); $('#viewTitle').textContent = document.querySelector(`.nav button[data-view="${name}"]`).textContent; if (name === 'repository') loadTree(); if (name === 'dependencies') loadGraph(); if (name === 'history') loadHistory(); if (name === 'live') loadHistory(); if (name === 'incidents') renderIncidents(); if (name === 'solutions') renderSolutions(); if (name === 'exports') renderExports() }
+        function statusRow(x) { return `<div class="status-row"><strong>${esc(x.source || x.id || 'Source')}</strong><span class="status ${esc(healthClass(x.health))}">${esc(x.health || 'UNKNOWN')}</span><span class="status ${esc(x.freshness || 'UNKNOWN')}">${esc(x.freshness || 'UNKNOWN')}</span><span class="source-time mono">${esc(x.collected_at || x.observed_at || x.source_timestamp || 'UNKNOWN')}</span><span class="source-note muted">${esc(x.evidence || x.error || x.note || '')}</span></div>` }
+        function renderOverview() { if (!snapshot) return; const r = snapshot.repository || {}, g = snapshot.github || {}, inc = snapshot.incidents || [], cov = snapshot.coverage || []; $('#repoIdentity').textContent = `${r.branch || 'UNKNOWN'} · ${r.local_sha || 'UNKNOWN'} · origin/main ${r.origin_main_sha || 'UNKNOWN'}`; $('#footerIdentity').textContent = `Observed ${snapshot.observed_at || 'UNKNOWN'} · runtime SHA ${r.runtime_sha || 'UNKNOWN'}`; $('#observedAt').textContent = `Observed at ${snapshot.observed_at || 'UNKNOWN'} · deployed/runtime SHA ${r.runtime_sha_status || 'UNKNOWN'}`; $('#shaMatch').textContent = r.local_matches_origin_main === true ? 'MATCH' : r.local_matches_origin_main === false ? 'DIFF' : 'UNKNOWN'; const latest = (g.workflow_runs || [])[0]; $('#workflowStat').textContent = latest ? `${latest.workflowName}: ${latest.conclusion || latest.status}` : 'UNKNOWN'; $('#incidentCount').textContent = String(inc.length); const known = cov.filter(x => x.collection === 'OK').length; $('#coverageStat').textContent = `${known}/${cov.length}`; $('#overallBadge').textContent = inc.some(x => x.severity === 'critical') ? 'FAIL' : cov.some(x => x.health === 'FAIL') ? 'FAIL' : cov.some(x => x.health === 'UNKNOWN') ? 'UNKNOWN' : 'PASS'; $('#banner').innerHTML = (r.dirty === true ? '<div class="banner">Local worktree is dirty. It is not modified by this dashboard.</div>' : '') + (g.collection === 'ERROR' ? `<div class="banner error">GitHub collection failed: ${esc(g.error)}</div>` : ''); $('#sourceRows').innerHTML = cov.map(statusRow).join(''); $('#overviewIncidents').innerHTML = inc.slice(0, 5).map(issueButton).join('') || '<div class="notice">No issue records observed. This is not a “zero risk” claim.</div>'; $('#overviewFlow').innerHTML = systemFlow(snapshot); }
+        function systemFlow(s) { const nodes = [['Git working tree', s.repository?.local_sha, 'SOURCE_DERIVED'], ['GitHub Actions', s.github?.collection, s.RUNTIME_OBSERVED ? 'RUNTIME_OBSERVED' : 'RUNTIME_OBSERVED'], ['Local telemetry file', s.telemetry?.freshness, 'RUNTIME_OBSERVED'], ['Supervisor tasks', s.supervisor?.updated, 'RUNTIME_OBSERVED'], ['BigQuery', s.coverage?.find(x => x.source === 'bigquery_live')?.collection, 'UNKNOWN'], ['Google Sheets', s.coverage?.find(x => x.source === 'google_sheets_live')?.collection, 'UNKNOWN']]; return nodes.map((n, i) => `<div class="flow-node"><span class="badge">${esc(n[2])}</span><strong>${esc(n[0])}</strong><small>${esc(n[1] || 'UNKNOWN')}</small></div>${i < nodes.length - 1 ? '<div class="flow-arrow">›</div>' : ''}`).join('') }
+        function renderSystem() { if (!snapshot) return; $('#systemFlow').innerHTML = systemFlow(snapshot); const procs = snapshot.runtime?.processes || []; $('#processRows').innerHTML = procs.length ? procs.map(p => `<div class="status-row"><strong>${esc(p.name)}</strong><span class="mono">PID ${esc(p.pid)}</span><span class="source-time">${esc(p.started)}</span></div>`).join('') : '<div class="notice">Process collector unavailable; state UNKNOWN.</div>'; $('#gapRows').innerHTML = (snapshot.coverage || []).filter(x => x.health === 'UNKNOWN' || x.collection === 'BLOCKED' || x.collection === 'DISABLED').map(statusRow).join('') || '<div class="notice">No explicit coverage gaps.</div>' }
+        async function loadTree() { try { const q = $('#treeSearch').value || ''; const d = await api('/api/v1/repository/tree?q=' + encodeURIComponent(q) + '&limit=400'); $('#treeCount').textContent = `${d.count} / ${d.total_matching}${d.truncated ? '+' : ''}`; $('#treeList').innerHTML = d.entries.map(e => `<button class="item ${selectedFile === e.path ? 'selected' : ''}" data-file="${esc(e.path)}"><strong>${esc(e.path)}</strong><small>${esc(e.kind)} · ${e.size_bytes} bytes · ${e.supported_analysis ? 'analyzed' : 'unsupported'}</small></button>`).join(''); $('#treeList').querySelectorAll('[data-file]').forEach(b => b.onclick = () => loadFile(b.dataset.file)) } catch (e) { $('#treeList').textContent = e.message } }
+        async function loadFile(path) { selectedFile = path; try { const d = await api('/api/v1/repository/file?path=' + encodeURIComponent(path)); $('#fileTitle').textContent = d.path; $('#fileMeta').textContent = `${d.analysis} · SHA ${d.repository_sha || 'UNKNOWN'} · source view redacts credential-like strings`; $('#fileSource').textContent = d.source; loadTree() } catch (e) { $('#fileTitle').textContent = 'File unavailable'; $('#fileMeta').textContent = e.message; $('#fileSource').textContent = '' } }
+        async function loadGraph() { try { graph = await api('/api/v1/repository/graph'); $('#graphSummary').textContent = `${graph.nodes.length} bounded nodes / ${graph.edges.length} edges · ${graph.files_parsed}/${graph.files_seen} Python files parsed · ${graph.unsupported} unsupported · SOURCE_DERIVED only`; renderGraph() } catch (e) { $('#graphSummary').textContent = e.message } }
+        function renderGraph() { if (!graph) return; const q = ($('#graphSearch').value || '').toLowerCase(); const nodes = graph.nodes.filter(n => n.id.toLowerCase().includes(q)).slice(0, 120); const ids = new Set(nodes.map(n => n.id)); const degree = {}; for (const e of graph.edges) { degree[e.from] = (degree[e.from] || 0) + 1; degree[e.to] = (degree[e.to] || 0) + 1 } nodes.sort((a, b) => (degree[b.id] || 0) - (degree[a.id] || 0)); $('#graphList').innerHTML = nodes.map(n => `<button class="item" data-node="${esc(n.id)}"><strong>${esc(n.id)}</strong><small>${esc(n.kind)} · ${esc(n.source)} · ${degree[n.id] || 0} observed source edges</small></button>`).join(''); $('#graphList').querySelectorAll('[data-node]').forEach(b => b.onclick = () => { const id = b.dataset.node; const edges = graph.edges.filter(e => e.from === id || e.to === id).slice(0, 30); $('#graphDetail').innerHTML = `<strong>${esc(id)}</strong><div class="notice">${edges.map(e => `${esc(e.relationship)}: ${esc(e.from)} → ${esc(e.to)} [${esc(e.source)}]`).join('<br>') || 'No resolved source edge.'}</div>` }) }
+        async function loadHistory() { try { const d = await api('/api/v1/history?limit=250'); $('#hotspots').innerHTML = (d.history?.hotspots || []).slice(0, 30).map(x => `<div class="status-row"><span>${esc(x.path)}</span><strong>${x.commits}</strong><span class="badge">${esc(x.relationship)}</span></div>`).join('') || '<div class="notice">No history collected.</div>'; $('#coupling').innerHTML = (d.history?.coupling || []).slice(0, 30).map(x => `<div class="status-row"><span>${esc(x.left)}</span><span>↔</span><span>${esc(x.right)}</span><strong>${x.cochange_commits}</strong></div>`).join('') || '<div class="notice">No co-change data.</div>'; $('#commits').innerHTML = (d.history?.commits || []).slice(0, 60).map(c => `<div class="item"><strong class="mono">${esc(c.sha.slice(0, 12))} · ${esc(c.committed_at)}</strong><small>${esc(c.paths.slice(0, 6).join(', '))}${c.paths.length > 6 ? ' …' : ''}</small></div>`).join('') } catch (e) { $('#hotspots').textContent = e.message } }
+        function renderLive() { if (!snapshot) return; $('#liveRows').innerHTML = (snapshot.coverage || []).map(x => `<div class="status-row"><strong>${esc(x.source)}</strong><span class="status ${esc(healthClass(x.health))}">${esc(x.health)}</span><span class="status ${esc(x.freshness)}">${esc(x.freshness)}</span><span class="source-time mono">${esc(x.collection)}</span><span class="source-note muted">${esc(x.evidence)}</span></div>`).join(''); api('/api/v1/history?limit=20').then(d => { $('#snapshotHistory').innerHTML = (d.snapshots || []).slice(-20).reverse().map(x => `<div class="item"><strong>${esc(x.observed_at)}</strong><small>repo ${esc(x.repository?.local_sha || 'UNKNOWN')} · ${esc(x.incidents?.length ?? 0)} incidents</small></div>`).join('') }).catch(() => { }) }
+        function issueButton(i) { return `<div class="incident ${esc(i.severity)} ${selectedIssue === i.issue_id ? 'selected' : ''}" data-issue="${esc(i.issue_id)}"><strong>${esc(i.title)}</strong><div class="small">${esc(i.severity)} · ${esc(i.last_seen)}</div><div class="small muted">${esc(i.observed_impact)}</div></div>` }
+        function detailHtml(i) { const pairs = [['Severity', i.severity], ['First seen', i.first_seen], ['Last seen', i.last_seen], ['Observation window', i.observation_window], ['Repository SHA', i.repository_sha], ['Runtime SHA', i.runtime_sha_if_known], ['Reproduction', i.reproduction_status], ['Root cause', i.root_cause_status], ['Observed impact', i.observed_impact], ['Suspected impact', i.suspected_impact], ['Affected entities', (i.affected_entities || []).join(', ')], ['Evidence', (i.evidence_references || []).join(', ')], ['Hypotheses', (i.competing_hypotheses || []).join(' · ')], ['Prerequisites', (i.prerequisite_steps || []).join(' · ')], ['Proposed correction', i.proposed_correction], ['Verification', (i.verification_tests || []).join(' · ')], ['Rollback', i.rollback], ['Approval', i.approval_requirements], ['Unknowns', (i.remaining_unknowns || []).join(' · ')]]; return `<dl class="detail-grid">${pairs.map(p => `<dt>${esc(p[0])}</dt><dd>${esc(p[1] || 'UNKNOWN')}</dd>`).join('')}</dl>` }
+        function renderIncidents() { const issues = snapshot?.incidents || []; $('#incidentList').innerHTML = issues.map(issueButton).join('') || '<div class="notice">No active issue observed. UNKNOWN sources remain listed in coverage.</div>'; $('#incidentList').querySelectorAll('[data-issue]').forEach(b => b.onclick = () => selectIssue(b.dataset.issue, 'incidentDetail')); if (selectedIssue) { const i = issues.find(x => x.issue_id === selectedIssue); if (i) $('#incidentDetail').innerHTML = detailHtml(i) } }
+        function renderSolutions() { const issues = snapshot?.incidents || []; $('#solutionList').innerHTML = issues.map(issueButton).join('') || '<div class="notice">No issue package is currently available.</div>'; $('#solutionList').querySelectorAll('[data-issue]').forEach(b => b.onclick = () => selectIssue(b.dataset.issue, 'solutionDetail')); if (selectedIssue) { const i = issues.find(x => x.issue_id === selectedIssue); if (i) $('#solutionDetail').innerHTML = detailHtml(i) } }
+        function renderExports() { const issues = snapshot?.incidents || []; $('#exportIssues').innerHTML = issues.map(i => `<button class="item" data-export="${esc(i.issue_id)}"><strong>${esc(i.title)}</strong><small>${esc(i.issue_id)} · ${esc(i.severity)}</small></button>`).join('') || '<div class="notice">No issue to export.</div>'; $('#exportIssues').querySelectorAll('[data-export]').forEach(b => b.onclick = () => exportIssue(b.dataset.export)); api('/api/v1/exports').then(d => { $('#exportHistory').innerHTML = (d.exports || []).slice().reverse().map(x => `<div class="item"><a href="${esc(x.download_url)}"><strong>${esc(x.issue_id)}</strong></a><small>${esc(x.created_at)} · ${esc(x.package)}</small></div>`).join('') || '<div class="notice">No packages exported yet.</div>' }).catch(e => { $('#exportHistory').textContent = e.message }) }
+        function selectIssue(id, target) { selectedIssue = id; const i = (snapshot?.incidents || []).find(x => x.issue_id === id); if (i) $('#' + target).innerHTML = detailHtml(i); renderIncidents(); renderSolutions() }
+        async function exportIssue(id) { try { const d = await api('/api/v1/issues/export', { method: 'POST', body: JSON.stringify({ issue_id: id }) }); $('#exportResult').innerHTML = `<strong>${esc(d.package)}</strong><div class="notice">${esc(d.files.join(', '))}</div><a class="btn" href="${esc(d.download_url)}">Download ZIP</a><div class="notice">SHA-256 manifest created; package stored outside the repository.</div>`; renderExports() } catch (e) { $('#exportResult').textContent = e.message } }
+        function renderIntegrity() { if (!snapshot) return; const items = [...(snapshot.coverage || []), { source: 'Local working tree', health: snapshot.repository?.dirty === false ? 'PASS' : snapshot.repository?.dirty === true ? 'UNKNOWN' : 'UNKNOWN', freshness: 'FRESH', collection: 'OK', evidence: 'git status --porcelain' }, { source: 'Notebook outputs', health: 'UNKNOWN', freshness: 'UNKNOWN', collection: 'NOT_COLLECTED', evidence: 'Notebook not executed by this dashboard' }]; $('#integrityCards').innerHTML = items.map(x => `<article class="panel"><h2>${esc(x.source)}</h2><div class="row"><span class="status ${esc(healthClass(x.health))}">Health ${esc(x.health)}</span><span class="status ${esc(x.freshness)}">${esc(x.freshness)}</span><span class="badge">${esc(x.collection)}</span></div><p class="notice">${esc(x.evidence || '')}</p></article>`).join('') }
+        function renderAll() { renderOverview(); renderSystem(); renderLive(); renderIntegrity(); renderIncidents(); renderSolutions(); renderExports() }
+        async function refresh(force = false) { $('#refreshButton').disabled = true; try { snapshot = await api(force ? '/api/v1/refresh' : '/api/v1/overview', force ? { method: 'POST', body: '{}' } : {}); renderAll() } catch (e) { $('#banner').innerHTML = `<div class="banner error">Observation refresh failed: ${esc(e.message)}. Last successful observation is retained as historical, not current.</div>` } finally { $('#refreshButton').disabled = false } }
+        async function checkWindowsIdentity() { try { const s = await api('/api/v1/auth/status'); if (s.authenticated) { $('#login').classList.add('hidden'); $('#app').classList.remove('hidden'); $('#authMessage').textContent = 'Windows identity verified.'; await refresh() } else { $('#authMessage').textContent = 'Windows identity could not be verified for this browser process. Start the dashboard under your signed-in Windows account and use http://127.0.0.1:8765/.' } } catch (e) { $('#authMessage').textContent = 'Dashboard API is unavailable. Start ops_dashboard\\run_dashboard.ps1 on this PC.' } }
+        $('#retryAuth').onclick = checkWindowsIdentity;
+        $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) showView(b.dataset.view) });
+        $('#refreshButton').onclick = () => refresh(true);
+        $('#treeSearch').addEventListener('input', () => { clearTimeout(window.treeTimer); window.treeTimer = setTimeout(loadTree, 250) }); $('#graphSearch').addEventListener('input', renderGraph);
+        checkWindowsIdentity();
+        setInterval(() => { if (!$('#app').classList.contains('hidden')) refresh(false) }, 15000);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,9 @@
+SLO_ID,SLO_Name,Target_SLI_Pct,Current_SLI_Pct,Error_Budget_Total_Minutes,Budget_Remaining_Minutes,Burn_Rate_1h,Burn_Rate_6h,Status
+SLO01,Morning Scan Cycle Timeliness (09:15-09:18 IST),99.0%,99.5%,43.2 min/mo,41.5 min,0.0x (Normal),0.1x (Normal),HEALTHY
+SLO02,F&O Universe Ingestion Completeness (>=216 symbols),99.9%,100.0%,4.3 min/mo,4.3 min,0.0x (Normal),0.0x (Normal),HEALTHY
+SLO03,Single-Writer Mutual Exclusion Integrity,100.0%,100.0%,0.0 min/mo,0.0 min,0.0x (Normal),0.0x (Normal),HEALTHY
+SLO04,Trading Safety Lock Enforcement (Real Orders = 0),100.0%,100.0%,0.0 min/mo,0.0 min,0.0x (Normal),0.0x (Normal),HEALTHY
+SLO05,Google Sheet Telemetry Freshness (<90s in market),98.0%,98.8%,86.4 min/mo,82.0 min,0.2x (Normal),0.3x (Normal),HEALTHY
+SLO06,SmartAPI Broker Session Availability,99.5%,99.8%,21.6 min/mo,20.8 min,0.1x (Normal),0.1x (Normal),HEALTHY
+SLO07,BigQuery Table Publication Success Rate,99.9%,100.0%,4.3 min/mo,4.3 min,0.0x (Normal),0.0x (Normal),HEALTHY
+SLO08,Paper Trade Reconciliation Accuracy Rate,99.0%,99.2%,43.2 min/mo,42.0 min,0.0x (Normal),0.1x (Normal),HEALTHY

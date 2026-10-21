@@ -1,0 +1,16 @@
+Source_Service,Target_Service,Protocol,Latency_P50_ms,Latency_P90_ms,Latency_P99_ms,SLA_Threshold_ms,Status
+Cloud Scheduler,Cloud Run Job,HTTPS POST,240,380,850,2000,HEALTHY
+Cloud Run Container,Secret Manager,gRPC,85,120,220,1000,HEALTHY
+Cloud Run Container,SmartAPI Auth Gateway,HTTPS REST,350,480,850,3000,HEALTHY
+Cloud Run Container,SmartAPI Market Quotes,HTTPS / WebSocket,32000,45000,78000,90000,HEALTHY
+Cloud Run Container,BigQuery Lock Table,gRPC / SQL,180,260,450,1500,HEALTHY
+Cloud Run Container,BigQuery option_predictions_live,gRPC TableData,2800,3800,8200,15000,HEALTHY
+Cloud Run Container,BigQuery history partition,gRPC Append,3200,4400,9500,20000,HEALTHY
+Cloud Run Container,Google Sheets API (FORENSIC),HTTPS REST,12000,16500,28000,45000,HEALTHY
+Cloud Run Container,Google Sheets API (HEARTBEAT),HTTPS REST,450,650,1200,3000,HEALTHY
+Local Watchdog 8766,Google Sheet HEARTBEAT,HTTPS GET,650,920,1600,5000,HEALTHY
+Local Watchdog 8766,Local HTTP Server 8766,Loopback TCP,4,8,18,100,HEALTHY
+Local Supervisor 7308,GCP Cloud Run API,HTTPS gcloud,1800,2600,4500,10000,HEALTHY
+WSL2 Relay Bridge,WSL2 n8n Workflow Port 5678,TCP Socket,2,5,12,50,HEALTHY
+WSL2 n8n Engine,SmartAPI Auth,HTTPS REST,380,510,920,3000,HEALTHY
+GitHub Actions Runner,Cloud Run Job Deploy,Cloud Build API,68000,95000,145000,300000,HEALTHY

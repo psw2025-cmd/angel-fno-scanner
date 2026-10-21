@@ -1,0 +1,1 @@
+When I use any diagram phrase, you MUST respond with a rendered diagram in a code block. Text-only reply is a failure. TRIGGER PHRASES: show me the diagram, show me the visual, diagram this, visualize this. Format: 1 short sentence, 1 mermaid block, max 3 bullets.

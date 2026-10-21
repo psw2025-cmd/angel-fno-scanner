@@ -1,0 +1,113 @@
+{
+  "apiVersion": "serving.knative.dev/v1",
+  "kind": "Service",
+  "metadata": {
+    "annotations": {
+      "run.googleapis.com/build-base-image": "us-central1-docker.pkg.dev/serverless-runtimes/google-24/run/universal:public-image-next",
+      "run.googleapis.com/build-enable-automatic-updates": "false",
+      "run.googleapis.com/build-environment-variables": "{\"GOOGLE_ENTRYPOINT\":\"python scanner.py\"}",
+      "run.googleapis.com/build-id": "2b4fee2f-f733-4d0d-9f14-1ca16b79590e",
+      "run.googleapis.com/build-image-uri": "us-central1-docker.pkg.dev/fno-angel-prod-1790444589/cloud-run-source-deploy/angel-fno-scanner",
+      "run.googleapis.com/build-name": "projects/114681475817/locations/us-central1/builds/2b4fee2f-f733-4d0d-9f14-1ca16b79590e",
+      "run.googleapis.com/build-source-location": "gs://run-sources-fno-angel-prod-1790444589-us-central1/services/angel-fno-scanner/1791821416.1805-d3551292c3f34202bc8f8ca519de0b93.zip#1791821423308984",
+      "run.googleapis.com/client-name": "gcloud",
+      "run.googleapis.com/client-version": "587.0.0",
+      "run.googleapis.com/ingress": "all",
+      "run.googleapis.com/ingress-status": "all",
+      "run.googleapis.com/maxScale": "20",
+      "run.googleapis.com/operation-id": "409e2a3a-daa2-4faf-9b3f-5e0cca0bf083",
+      "run.googleapis.com/urls": "[\"https://angel-fno-scanner-114681475817.us-central1.run.app\"]",
+      "serving.knative.dev/creator": "warghade2012@gmail.com",
+      "serving.knative.dev/lastModifier": "warghade2012@gmail.com"
+    },
+    "creationTimestamp": "2026-10-12T10:48:31.554807Z",
+    "generation": 3,
+    "labels": {
+      "cloud.googleapis.com/location": "us-central1"
+    },
+    "name": "angel-fno-scanner",
+    "namespace": "114681475817",
+    "resourceVersion": "AAZdpvTt80g",
+    "selfLink": "/apis/serving.knative.dev/v1/namespaces/114681475817/services/angel-fno-scanner",
+    "uid": "3aab344d-142d-477f-8579-d4c020e4fd98"
+  },
+  "spec": {
+    "template": {
+      "metadata": {
+        "annotations": {
+          "autoscaling.knative.dev/maxScale": "1",
+          "run.googleapis.com/client-name": "gcloud",
+          "run.googleapis.com/client-version": "587.0.0",
+          "run.googleapis.com/startup-cpu-boost": "true"
+        },
+        "labels": {
+          "client.knative.dev/nonce": "xwvibxtnfc",
+          "run.googleapis.com/startupProbeType": "Default"
+        }
+      },
+      "spec": {
+        "containerConcurrency": 80,
+        "containers": [
+          {
+            "image": "us-central1-docker.pkg.dev/fno-angel-prod-1790444589/cloud-run-source-deploy/angel-fno-scanner@sha256:4f3d2876541bf01c5a0fd0a2432d514c077574b8cc072eb3e8844b315e646d46",
+            "ports": [
+              {
+                "containerPort": 8080,
+                "name": "http1"
+              }
+            ],
+            "resources": {
+              "limits": {
+                "cpu": "1000m",
+                "memory": "512Mi"
+              }
+            },
+            "startupProbe": {
+              "failureThreshold": 1,
+              "periodSeconds": 240,
+              "tcpSocket": {
+                "port": 8080
+              },
+              "timeoutSeconds": 240
+            }
+          }
+        ],
+        "serviceAccountName": "114681475817-compute@developer.gserviceaccount.com",
+        "timeoutSeconds": 300
+      }
+    },
+    "traffic": [
+      {
+        "latestRevision": true,
+        "percent": 100
+      }
+    ]
+  },
+  "status": {
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-12T16:11:55.097003Z",
+        "message": "Container import failed.",
+        "reason": "ContainerImageImportFailed",
+        "status": "False",
+        "type": "Ready"
+      },
+      {
+        "lastTransitionTime": "2026-10-12T16:11:55.030741Z",
+        "message": "Container import failed.",
+        "reason": "ContainerImageImportFailed",
+        "status": "False",
+        "type": "ConfigurationsReady"
+      },
+      {
+        "lastTransitionTime": "2026-10-12T16:11:55.097003Z",
+        "message": "Container import failed.",
+        "reason": "ContainerImageImportFailed",
+        "status": "False",
+        "type": "RoutesReady"
+      }
+    ],
+    "latestCreatedRevisionName": "angel-fno-scanner-00003-hr6",
+    "observedGeneration": 3
+  }
+}

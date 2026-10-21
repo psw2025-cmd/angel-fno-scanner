@@ -1,0 +1,11 @@
+Queue_ID,Initiative_Name,Target_Domain,Expected_Impact,Effort_Hours,ROI_Score,Priority,Status,Target_Cycle
+OPT01,Parallel Connection-Pooled Quote Fetching,Market Ingestion,Reduces scan duration from 72s to <25s,6,9.2,P1,PLANNED,Cycle 8
+OPT02,BigQuery Atomic Fencing Lease Table,Concurrency,Mathematically eliminates split-brain risk under network partition,4,9.5,P0,PLANNED,Cycle 8
+OPT03,Workload Identity Federation (WIF OIDC),Security,Eliminates all standing long-lived service account keys in GitHub,3,9.0,P1,PLANNED,Cycle 8
+OPT04,OpenTelemetry End-to-End Tracing (run_id),Observability,Enables sub-second pinpointing of multi-service latency drift,8,8.8,P1,PLANNED,Cycle 9
+OPT05,Automated Council Table Ingestion in BQ,Machine Learning,Activates genuine continuous reinforcement learning from market winners,8,8.5,P2,PLANNED,Cycle 10
+OPT06,Market Depth Liquidity Gate Integration,Execution Quality,Eliminates illiquid penny option false winners from actionable picks,4,8.7,P1,PLANNED,Cycle 9
+OPT07,Google Sheets Buffered Micro-Batch Queue,Reliability,Guarantees zero 429 quota exhaustion even during intraday spikes,3,8.2,P2,PLANNED,Cycle 9
+OPT08,Systemd Watchdog Service Migration in WSL2,Local Workstation,Ensures 24/7 host monitoring survives Windows workstation reboots,2,8.0,P2,PLANNED,Cycle 10
+OPT09,Automated Parquet Cold Storage Backup to Drive,Business Continuity,Provides weekly disaster recovery snapshots immune to cloud project loss,4,8.4,P2,PLANNED,Cycle 11
+OPT10,D3.js / WebGL Force-Directed Neural Map UI,Visual Observability,Renders live 219-node interactive topology in browser at 60 FPS,12,7.8,P3,PLANNED,Cycle 12

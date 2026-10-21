@@ -1,0 +1,200 @@
+{
+  "scope": "Verify complete cross-source coverage, role classification, fault recovery, live sheet synchronization, 4-point tripwire gates, and negative controls for AngelFNO",
+  "limitations": [
+    "Covers workstation Markdown, specified GitHub repos (angel-fno-scanner, Genesis_System3), service account Drive and GCS bucket",
+    "Paper trading safety enforced (PAPER_MODE=1, LIVE_ORDER_AUTHORITY=0); live market trading disabled"
+  ],
+  "subject_files": [
+    "tools/audit_contract_checks.py",
+    "tools/verify_codex1_gates.py",
+    "tools/sync_trading_sheets.py",
+    "ops_dashboard/server.py",
+    "ops_dashboard/index.html",
+    "config/fno_canonical_universe_219.json",
+    "AGENTS.md",
+    "tests/test_verify_codex1_gates.py"
+  ],
+  "requirements": [
+    {
+      "id": "R1_COVERAGE",
+      "description": "Complete cross-source coverage manifest (Workstation, GitHub, Drive, GCS) verified with zero unexplained missing items",
+      "mandatory": true
+    },
+    {
+      "id": "R2_CLASSIFICATION",
+      "description": "Correct classification with separate Production/Test/Archive/Backup roles, 0 Unknowns, and fixtures excluded from Production",
+      "mandatory": true
+    },
+    {
+      "id": "R3_RECOVERY",
+      "description": "Working recovery and resilience: network retry backoff, durable queue, restart, single-instance guard, and scheduled task config",
+      "mandatory": true
+    },
+    {
+      "id": "R4_SYNCHRONIZATION",
+      "description": "Verified cryptographic synchronization: Local CSV and Google Sheet exact SHA-256 match and row parity",
+      "mandatory": true
+    },
+    {
+      "id": "R5_SAFETY",
+      "description": "Effective safety settings enforced: PAPER_MODE=1 and LIVE_ORDER_AUTHORITY=0",
+      "mandatory": true
+    },
+    {
+      "id": "R6_TRIPWIRE_GATES",
+      "description": "Strict 4-point pre-flight tripwire verification (Dedicated process PID, True Broker handshake, Session & canonical universe 219 rows, Deployed safety & freshness)",
+      "mandatory": true
+    },
+    {
+      "id": "R7_NEGATIVE_CONTROLS",
+      "description": "Negative control test suite exercising real validator paths for Ready-only, generic python, broker outage, universe mismatch, and unsafe environments",
+      "mandatory": true
+    }
+  ],
+  "checks": [
+    {
+      "id": "C1_COVERAGE",
+      "requirement_ids": [
+        "R1_COVERAGE"
+      ],
+      "kind": "integration_test",
+      "argv": [
+        "C:\\AngelFNO_Workstation\\.ssot_venv\\Scripts\\python.exe",
+        "tools/audit_contract_checks.py",
+        "--check",
+        "coverage"
+      ],
+      "cwd": ".",
+      "timeout": 60,
+      "expected_exit": 0,
+      "assertion": {
+        "type": "json_equals",
+        "path": "result",
+        "expected": "PASS"
+      }
+    },
+    {
+      "id": "C2_CLASSIFICATION",
+      "requirement_ids": [
+        "R2_CLASSIFICATION"
+      ],
+      "kind": "integration_test",
+      "argv": [
+        "C:\\AngelFNO_Workstation\\.ssot_venv\\Scripts\\python.exe",
+        "tools/audit_contract_checks.py",
+        "--check",
+        "classification"
+      ],
+      "cwd": ".",
+      "timeout": 60,
+      "expected_exit": 0,
+      "assertion": {
+        "type": "json_equals",
+        "path": "result",
+        "expected": "PASS"
+      }
+    },
+    {
+      "id": "C3_RECOVERY",
+      "requirement_ids": [
+        "R3_RECOVERY"
+      ],
+      "kind": "integration_test",
+      "argv": [
+        "C:\\AngelFNO_Workstation\\.ssot_venv\\Scripts\\python.exe",
+        "tools/audit_contract_checks.py",
+        "--check",
+        "recovery"
+      ],
+      "cwd": ".",
+      "timeout": 60,
+      "expected_exit": 0,
+      "assertion": {
+        "type": "json_equals",
+        "path": "result",
+        "expected": "PASS"
+      }
+    },
+    {
+      "id": "C4_SYNCHRONIZATION",
+      "requirement_ids": [
+        "R4_SYNCHRONIZATION"
+      ],
+      "kind": "integration_test",
+      "argv": [
+        "C:\\AngelFNO_Workstation\\.ssot_venv\\Scripts\\python.exe",
+        "tools/audit_contract_checks.py",
+        "--check",
+        "sync"
+      ],
+      "cwd": ".",
+      "timeout": 120,
+      "expected_exit": 0,
+      "assertion": {
+        "type": "json_equals",
+        "path": "result",
+        "expected": "PASS"
+      }
+    },
+    {
+      "id": "C5_SAFETY",
+      "requirement_ids": [
+        "R5_SAFETY"
+      ],
+      "kind": "integration_test",
+      "argv": [
+        "C:\\AngelFNO_Workstation\\.ssot_venv\\Scripts\\python.exe",
+        "tools/audit_contract_checks.py",
+        "--check",
+        "safety"
+      ],
+      "cwd": ".",
+      "timeout": 60,
+      "expected_exit": 0,
+      "assertion": {
+        "type": "json_equals",
+        "path": "result",
+        "expected": "PASS"
+      }
+    },
+    {
+      "id": "C6_TRIPWIRE_GATES",
+      "requirement_ids": [
+        "R6_TRIPWIRE_GATES"
+      ],
+      "kind": "integration_test",
+      "argv": [
+        "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.venv\\Scripts\\python.exe",
+        "tools/verify_codex1_gates.py",
+        "--json"
+      ],
+      "cwd": ".",
+      "timeout": 60,
+      "expected_exit": 0,
+      "assertion": {
+        "type": "json_equals",
+        "path": "overall",
+        "expected": "PASS"
+      }
+    },
+    {
+      "id": "C7_NEGATIVE_CONTROLS",
+      "requirement_ids": [
+        "R7_NEGATIVE_CONTROLS"
+      ],
+      "kind": "unit_test",
+      "argv": [
+        "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.venv\\Scripts\\python.exe",
+        "-m",
+        "unittest",
+        "tests/test_verify_codex1_gates.py"
+      ],
+      "cwd": ".",
+      "timeout": 60,
+      "expected_exit": 0,
+      "assertion": {
+        "type": "exit_only"
+      }
+    }
+  ]
+}

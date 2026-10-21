@@ -1,0 +1,268 @@
+﻿===== DEEP STUDY CURATED INPUT =====
+
+
+===== systeminfo.txt =====
+
+Host Name:                 DESKTOP-DM6NHPI
+OS Name:                   Microsoft Windows 10 Pro
+OS Version:                10.0.19045 N/A Build 19045
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Standalone Workstation
+OS Build Type:             Multiprocessor Free
+Registered Owner:          ADMIN
+Registered Organization:   
+Product ID:                00330-80000-00000-AA610
+Original Install Date:     22/09/2026, 07:12:27 PM
+System Boot Time:          14/10/2026, 12:35:59 AM
+System Manufacturer:       Dell Inc.
+System Model:              Inspiron 5559
+System Type:               x64-based PC
+Processor(s):              1 Processor(s) Installed.
+                           [01]: Intel64 Family 6 Model 78 Stepping 3 GenuineIntel ~2301 Mhz
+BIOS Version:              Dell Inc. 1.9.0, 07/09/2020
+Windows Directory:         C:\Windows
+System Directory:          C:\Windows\system32
+Boot Device:               \Device\HarddiskVolume1
+System Locale:             en-gb;English (United Kingdom)
+Input Locale:              00004009
+Time Zone:                 (UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi
+Total Physical Memory:     16,276 MB
+Available Physical Memory: 1,301 MB
+Virtual Memory: Max Size:  45,401 MB
+Virtual Memory: Available: 12,541 MB
+Virtual Memory: In Use:    32,860 MB
+Page File Location(s):     C:\pagefile.sys
+Domain:                    WORKGROUP
+Logon Server:              \\DESKTOP-DM6NHPI
+Hotfix(s):                 11 Hotfix(s) Installed.
+                           [01]: KB5066130
+                           [02]: KB5022502
+                           [03]: KB5011048
+                           [04]: KB5015684
+                           [05]: KB5033052
+                           [06]: KB5126256
+                           [07]: KB5071959
+                           [08]: KB5014032
+                           [09]: KB5025315
+                           [10]: KB5066790
+                           [11]: KB5071982
+Network Card(s):           4 NIC(s) Installed.
+                           [01]: Realtek PCIe FE Family Controller
+                                 Connection Name: Ethernet
+                                 Status:          Media disconnected
+                           [02]: Intel(R) Dual Band Wireless-AC 3160
+                                 Connection Name: WiFi 2
+                                 DHCP Enabled:    Yes
+                                 DHCP Server:     192.168.1.1
+                                 IP address(es)
+                                 [01]: 192.168.1.6
+                                 [02]: fe80::c548:203c:bf7d:f97
+                                 [03]: 2401:4900:88b3:8ebb:71e7:206f:2f4f:8264
+                                 [04]: 2401:4900:88b3:8ebb:b074:41b7:960a:40c7
+                           [03]: Hyper-V Virtual Ethernet Adapter
+                                 Connection Name: vEthernet (WSL)
+                                 DHCP Enabled:    No
+                                 IP address(es)
+                                 [01]: 172.28.208.1
+                                 [02]: fe80::ca82:d58:c1bf:a7a
+                           [04]: Bluetooth Device (Personal Area Network)
+                                 Connection Name: Bluetooth Network Connection
+                                 Status:          Media disconnected
+Hyper-V Requirements:      A hypervisor has been detected. Features required for Hyper-V will not be displayed.
+
+
+===== gcloud_config.txt =====
+[accessibility]
+screen_reader = False
+[core]
+account = warghade2012@gmail.com
+disable_usage_reporting = True
+project = fno-angel-prod-1790444589
+python.exe : 
+At C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.ps1:120 char:3
++   & "$exe_path" $run_args_array
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Your active configuration is: [default]
+
+
+===== gcloud_projects.txt =====
+PROJECT_ID                  NAME                   PROJECT_NUMBER  ENVIRONMENT
+aitradingautomation         AITradingAutomation    418955536239
+automatic-bliss-426518-j0   My First Project       1051943713548
+fno-angel-prod-1790444589   FNO Angel Production   114681475817
+fno-mumbai-0926-1750        FNO Live Mumbai        263241541764
+gen-lang-client-0013409353  Gemini Project         450733958960
+genesisdriveuploader        GenesisDriveUploader   1048694463659
+googly-cooler-kszp9                                911537066268
+piping-job-intel            Piping-Job-Intel       246478244794
+potent-bloom-279221         My First Project       386182193854
+system3-openalgo-safe       system3-openalgo-safe  802404398783
+
+
+===== git_status.txt =====
+On branch docs/trigger-reference
+Your branch is ahead of 'origin/docs/trigger-reference' by 4 commits.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   .dockerignore
+	modified:   .github/workflows/market_bot.yml
+	modified:   Dockerfile.cloudrun
+	modified:   angel_prediction_engine.py
+	modified:   docs/trigger_reference.csv
+	modified:   paper_log.py
+	modified:   requirements.txt
+	modified:   scanner.py
+	modified:   tests/test_publication_integrity.py
+	modified:   tests/test_single_writer_architecture.py
+	modified:   tests/test_snapshot_push_failure.py
+	modified:   tests/test_universe_contract.py
+	modified:   writer_guard.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.cursorignore
+	.gcloudignore
+	1_Full_Project_Map.txt
+	2_Duplicate_Report.txt
+	Dockerfile
+	apply_patches.py
+	build_complete_55_tab_library.py
+	cloud_status.py
+	cloudbuild.validation.yaml
+	data_tabs_00_to_10.py
+	data_tabs_11_to_25.py
+	data_tabs_26_to_39.py
+	data_tabs_m01_to_m15.py
+	docs/AUTONOMOUS_SYSTEM_AUDIT_20261014.md
+	docs/DIAGRAM_FIRST_PROMPT.txt
+	docs/MASTER_CONTRACT.txt
+	docs/TAB_ANALYSIS_AND_GAPS.md
+	docs/cross_verification.csv
+	docs/diagram_types.csv
+	docs/migration-asia-south1/
+	docs/reference_library/
+	docs/trigger_phrases.csv
+	docs/truth_enforcement.csv
+	docs/truth_rules.csv
+	export_complete_55_tab_catalogs.py
+	fix_infrastructure.py
+	forensic_verifier.py
+	ops_dashboard/
+	proof-output/
+	tests/test_bq_timeout.py
+	tests/test_container_provenance.py
+	tests/test_cycle_provenance_and_lease.py
+	tests/test_fetch_chunked_resilience.py
+	tests/test_now_ist_aware.py
+	tests/test_ops_dashboard.py
+	tests/test_schema_guard_int64.py
+	tools/cycle_provenance.py
+	tools/live_schema_guard.py
+	tools/publication_lease.py
+	tools/validation_cycle.py
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+
+===== git_remote.txt =====
+origin	https://github.com/psw2025-cmd/angel-fno-scanner.git (fetch) [blob:none]
+origin	https://github.com/psw2025-cmd/angel-fno-scanner.git (push)
+
+
+===== cloudrun_services.txt =====
+python.exe : Listed 0 items.
+At C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.ps1:120 char:3
++   & "$exe_path" $run_args_array
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Listed 0 items.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+
+===== scheduler_jobs.txt =====
+python.exe : ERROR: (gcloud.scheduler.jobs.list) Please use the location flag to manually specify a location.
+At C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.ps1:120 char:3
++   & "$exe_path" $run_args_array
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ERROR: (gcloud....ify a location.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+
+===== bq_datasets.txt =====
+     datasetId     
+ ----------------- 
+  fno_predictions  
+
+
+===== python_version.txt =====
+Python 3.12.10
+
+
+===== issue3_study_summary.md =====
+DEEP STUDY (pre-PHASE-00) - 2026-10-15 ~03:45 IST
+Agent: Cursor (integration agent) | Status: OBSERVED | PAPER=ON, LIVE ORDER AUTHORITY=OFF
+Branch at time of study: docs/trigger-reference (uncommitted changes present). No commits/pushes made.
+
+OBSERVATIONS
+- Code inventory (FunctionDef counts): scanner.py=24, angel_prediction_engine.py=47, writer_guard.py=3
+- schemas/: cross_agent_packet.schema, cycle_status, market_news_sentiment, next_day_gap_predictions, option_predictions_live, prediction_calibration_log (6 files)
+- BigQuery (region-us, last 2 days): 13 failed jobs, all ad-hoc query errors (syntax errors; lookups of nonexistent datasets option_data / option_predictions). None from scanner pipeline.
+- Cloud Run angel-fno-scanner (us-central1): NOT READY. No service URL, no latestReadyRevision. Latest created revision 00003-hr6 Ready=False.
+  - startup-cpu-boost=true on the existing revision (conflicts with free-tier constraint 4)
+  - Artifact Registry repo in use: cloud-run-source-deploy (backlog PHASE-10 assumes "cloudrun")
+- Cloud Scheduler (us-central1): 0 jobs.
+- Google Sheet OPTION_SHEET: 27 tabs (backlog PHASE-12 gate expects 55). No PAPER_LOG tab; has PAPER_ALERT_LOG.
+- NOT RUN: MASTER_AUDIT.txt / RUNTIME_PROOF.txt study (files absent). IMPLEMENTATION_REPORT.md and CODEX_IMPLEMENTATION_BACKLOG.md also absent from workspace.
+- Backlog script defect: credentials.gspread_client() does not exist; use gspread.service_account_from_dict(credentials.load_service_account()).
+
+RISKS FOUND IN BACKLOG
+- PHASE-00 `git add -A` would stage .venv, .tmp.driveupload, __pycache__, proof-output, evidence folders.
+- Region ambiguity: backlog targets us-central1; docs/migration-asia-south1/ exists.
+
+Raw Cloud Run JSON deliberately not posted (may contain env/project details).
+NEXT: waiting on owner for region + missing artifacts before PHASE-00.
+
+
+===== MASTER_AUDIT KEY LINES =====
+
+===== SYSTEMINFO =====
+Host Name:                 DESKTOP-DM6NHPI
+OS Name:                   Microsoft Windows 10 Pro
+OS Version:                10.0.19045 N/A Build 19045
+System Locale:             en-gb;English (United Kingdom)
+Time Zone:                 (UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi
+Total Physical Memory:     16,276 MB
+Available Physical Memory: 1,301 MB
+===== GCLOUD CONFIG =====
+account = warghade2012@gmail.com
+disable_usage_reporting = True
+project = fno-angel-prod-1790444589
+python.exe : 
+===== PROJECTS =====
+PROJECT_ID                  NAME                   PROJECT_NUMBER  ENVIRONMENT
+===== GIT STATUS =====
+On branch docs/trigger-reference
+Your branch is ahead of 'origin/docs/trigger-reference' by 4 commits.
+===== GIT BRANCHES =====
+===== GIT LOG =====
+===== CLOUD RUN =====
+python.exe : Listed 0 items.
+===== SCHEDULERS =====
+python.exe : ERROR: (gcloud.scheduler.jobs.list) Please use the location flag to manually specify a location.
+===== BIGQUERY =====
+===== PYTHON =====
+Python 3.12.10
+===== REPO TREE =====
+===== FULL TERMINAL LOG =====
+python.exe : 
+python.exe : ERROR: (gcloud.scheduler.jobs.list) Please use the location flag to manually specify a location.
+python.exe : Listed 0 items.
+
+

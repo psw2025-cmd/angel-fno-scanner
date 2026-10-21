@@ -1,0 +1,67 @@
+[
+  {
+    "err": "Aggregate function COUNT(*) not allowed in SELECT without FROM clause at [1:8]", 
+    "job_id": "bqjob_r1b2514020de899e0_000001a13844249f_1", 
+    "state": "DONE"
+  }, 
+  {
+    "err": "Not found: Dataset fno-angel-prod-1790444589:option_predictions was not found in location US", 
+    "job_id": "bqjob_r64da1ab6c4bbde13_000001a13844914b_1", 
+    "state": "DONE"
+  }, 
+  {
+    "err": "Syntax error: Unexpected end of script at [1:7]", 
+    "job_id": "bqjob_r589aa8ef4f9912ea_000001a13a67cc88_1", 
+    "state": "DONE"
+  }, 
+  {
+    "err": "Syntax error: Unclosed string literal at [1:139]", 
+    "job_id": "bqjob_r198233f772fb035e_000001a13a68ed19_1", 
+    "state": "DONE"
+  }, 
+  {
+    "err": "Syntax error: Unexpected end of script at [1:7]", 
+    "job_id": "bqjob_r49c5852e26d1a609_000001a137f52a40_1", 
+    "state": "DONE"
+  }, 
+  {
+    "err": "Syntax error: Unexpected end of script at [1:7]", 
+    "job_id": "bqjob_r4ecdb6a671af794b_000001a137f6fc82_1", 
+    "state": "DONE"
+  }, 
+  {
+    "err": "Syntax error: Unexpected end of script at [1:7]", 
+    "job_id": "bqjob_r5211476c9f586a2a_000001a137f8f212_1", 
+    "state": "DONE"
+  }, 
+  {
+    "err": "Not found: Dataset fno-angel-prod-1790444589:option_data was not found in location US", 
+    "job_id": "ef9e0cdf-5c3f-462e-a31c-ef5ff24ab427", 
+    "state": "DONE"
+  }, 
+  {
+    "err": "Not found: Dataset fno-angel-prod-1790444589:option_data was not found in location US", 
+    "job_id": "f07d1b02-ce89-4276-a5aa-07ed5e9b5b55", 
+    "state": "DONE"
+  }, 
+  {
+    "err": "Not found: Dataset fno-angel-prod-1790444589:option_data was not found in location US", 
+    "job_id": "d2389891-6b8c-4405-9340-11ec07c5882e", 
+    "state": "DONE"
+  }, 
+  {
+    "err": "Not found: Dataset fno-angel-prod-1790444589:option_data was not found in location US", 
+    "job_id": "d0efb133-8112-49c5-81da-e98500f04e57", 
+    "state": "DONE"
+  }, 
+  {
+    "err": "Syntax error: Unexpected \"\\\" at [1:1]", 
+    "job_id": "bqjob_r830247c020a7f00_000001a134f8f6df_1", 
+    "state": "DONE"
+  }, 
+  {
+    "err": "Syntax error: Unexpected keyword NO at [1:86]", 
+    "job_id": "bqjob_r7d80d41a6d088fa1_000001a133c4bc64_1", 
+    "state": "DONE"
+  }
+]

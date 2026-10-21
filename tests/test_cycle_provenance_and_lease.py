@@ -63,6 +63,14 @@ def test_live_order_flag_refuses_the_lease(monkeypatch):
         assert_paper_publisher()
 
 
+def test_live_order_authority_one_refuses_the_lease(monkeypatch):
+    monkeypatch.delenv("ALLOW_LIVE_BROKER_ORDERS", raising=False)
+    monkeypatch.setenv("PAPER_MODE", "1")
+    monkeypatch.setenv("LIVE_ORDER_AUTHORITY", "1")
+    with pytest.raises(PublicationLeaseError, match="LIVE_ORDER_AUTHORITY"):
+        assert_paper_publisher()
+
+
 def test_second_publisher_is_blocked_and_expired_writer_is_fenced(monkeypatch):
     monkeypatch.delenv("ALLOW_LIVE_BROKER_ORDERS", raising=False)
     monkeypatch.delenv("PLACE_REAL_ORDERS", raising=False)

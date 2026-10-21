@@ -1,0 +1,36 @@
+Edge_ID,From_Node,To_Node,Edge_Type,Protocol,Direction,RPM,Latency_ms,Error_Rate_Pct,Weight_Formula
+E01,cloud_scheduler_0915,cloud_run_scan_job,Trigger,HTTP POST,Uni,0.01,350,0.01%,Criticality * (1 / Latency)
+E02,cloud_scheduler_1450,cloud_run_scan_job,Trigger,HTTP POST,Uni,0.01,350,0.01%,Criticality * (1 / Latency)
+E03,cloud_run_scan_job,gcp_secret_manager,Auth,gRPC / Secret API,Bi,0.10,120,0.00%,Criticality * RPM
+E04,cloud_run_scan_job,angel_smartapi_auth,Auth,HTTPS REST,Bi,0.05,450,0.05%,Criticality * (1 / Latency)
+E05,angel_smartapi_auth,angel_market_feed,Session Grant,Bearer JWT,Uni,0.05,80,0.00%,RPM * Criticality
+E06,cloud_run_scan_job,angel_market_feed,Market Ingestion,WebSocket / REST,Bi,12.50,1200,0.20%,Data Volume * RPM
+E07,cloud_run_scan_job,news_catalyst_scanner,Sentiment Fetch,HTTPS REST,Bi,0.20,850,0.50%,Sentiment Weight * RPM
+E08,cloud_run_scan_job,angel_prediction_engine,Model Compute,Internal Python,Bi,0.05,45000,0.00%,Compute Intensity * Criticality
+E09,angel_prediction_engine,writer_guard_fence,Lease Check,Internal Call,Bi,0.05,50,0.00%,Criticality * 1.5
+E10,writer_guard_fence,bq_transaction_write_lock,Acquire Lock,gRPC / SQL,Bi,0.05,250,0.01%,Lock Safety * RPM
+E11,writer_guard_fence,cloud_run_scan_job,Authorized Token,Token Return,Uni,0.05,20,0.00%,Authorization Grant
+E12,cloud_run_scan_job,bq_option_predictions_live,Batch Write,gRPC BigQuery,Uni,0.05,3500,0.02%,Data Rows * Criticality
+E13,cloud_run_scan_job,bq_option_predictions_history,Append Archive,gRPC BigQuery,Uni,0.05,4200,0.02%,Archive Rows * Criticality
+E14,cloud_run_scan_job,service_account_sheets_bot,Identity Impersonate,OAuth2,Uni,0.05,90,0.00%,Security Auth
+E15,service_account_sheets_bot,sheet_option_sheet_master,Sync Payload,HTTPS REST (gspread),Uni,2.50,14000,0.15%,Sheet RPM / 60 Quota
+E16,sheet_option_sheet_master,sheet_paper_alert_log,Subsheet Write,Spreadsheet API,Uni,0.10,1200,0.05%,Journal Volume
+E17,sheet_option_sheet_master,sheet_heartbeat,Pulse Update,Spreadsheet API,Uni,1.00,600,0.05%,Heartbeat Frequency
+E18,cloud_run_scan_job,bq_paper_trades_live,Paper Trade Journal,gRPC BigQuery,Uni,0.05,1800,0.01%,Paper Volume
+E19,cloud_run_scan_job,offline_paper_trades_csv,Local Buffer,File I/O,Uni,0.05,15,0.00%,Local Buffer Speed
+E20,github_repo_main,github_actions_ci,Push Trigger,Git Webhook,Uni,0.02,150,0.00%,CI Cadence
+E21,github_actions_ci,cloud_run_scan_job,Container Deploy,Cloud Build / Deploy,Uni,0.01,120000,0.10%,Deployment Weight
+E22,local_watchdog_8766,sheet_heartbeat,Poll Heartbeat,HTTPS GET,Bi,0.20,850,0.10%,SRE Monitoring RPM
+E23,local_watchdog_8766,local_supervisor_7308,Report Status,IPC Socket,Bi,0.20,10,0.00%,Supervisor Liveness
+E24,local_supervisor_7308,cloud_run_scan_job,Health Probe,gcloud CLI,Bi,0.05,2200,0.05%,Supervisor Audit
+E25,wsl2_relay_bridge,wsl2_n8n_engine,Port Proxy,TCP Socket,Bi,5.00,5,0.00%,Bridge Bandwidth
+E26,wsl2_n8n_engine,angel_smartapi_auth,Morning Ping,HTTPS REST,Bi,0.02,420,0.05%,Workflow Health
+E27,wsl2_n8n_engine,sheet_heartbeat,Verify Pulse,HTTPS GET,Bi,0.05,750,0.05%,Workflow Audit
+E28,github_issue_3_bus,github_repo_main,State Reconciliation,GitHub API,Bi,0.10,650,0.00%,Multi-Agent Bus
+E29,local_supervisor_7308,github_issue_3_bus,Post Evidence Packet,gh CLI / REST,Uni,0.02,1200,0.00%,Evidence Posting
+E30,angel_prediction_engine,bq_option_predictions_live,Schema Lineage,Schema Contract,Bi,0.05,30,0.00%,Schema Lineage Guard
+E31,cloud_run_scan_job,github_issue_3_bus,Incident Alert,GitHub API,Uni,0.01,800,0.00%,Incident Dispatch
+E32,local_watchdog_8766,offline_paper_trades_csv,Dedupe Check,File Read,Bi,0.20,12,0.00%,Local Reconcile
+E33,service_account_sheets_bot,sheet_paper_alert_log,Reconcile Morning,Spreadsheet API,Bi,0.02,2500,0.05%,Reconcile Outcome
+E34,bq_transaction_write_lock,writer_guard_fence,Lease Release,Lock Expiry,Uni,0.05,10,0.00%,Lock Timeout
+E35,cloud_run_scan_job,cloud_run_scan_job,Self-Loop Feedback,Memory Feedback,Uni,0.05,5,0.00%,Bayesian Recalibration

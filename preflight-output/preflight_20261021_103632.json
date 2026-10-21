@@ -1,0 +1,204 @@
+{
+  "evidence": {
+    "collected_at_utc": "2026-10-21T10:36:32.617866+00:00",
+    "git": {
+      "head": "d0a1156ef149ffb16388d5aef18ea4c1d13e05aa",
+      "remote_main": "45b374dc272c83bb5d56a6ac00b536a714f567b6"
+    },
+    "job": {
+      "image": "asia-south1-docker.pkg.dev/fno-angel-prod-1790444589/cloud-run-source-deploy/scanner@sha256:2c42562256d8d17bfadf5730959b4ede01f71d1a0f98f8f0acb4eec2e7d2d3cc",
+      "timeout_seconds": 25200,
+      "env": {
+        "WRITER_ID": "market_bot",
+        "ALLOW_PRODUCTION_WRITES": "1",
+        "MAX_RUNTIME_SECONDS": "24300",
+        "ANGEL_CYCLE_METADATA_FILE": "/tmp/cycle_metadata.json",
+        "ANGEL_REQUIRE_EXCHANGE_TIME": "1",
+        "ANGEL_MARKET_SESSION": "EOD",
+        "RUN_ID": "cloudrun-mumbai",
+        "PLATFORM_TIMEOUT_SECONDS": "14400"
+      },
+      "executions": [
+        {
+          "name": "angel-market-scan-job-rbtbg",
+          "running": 0,
+          "succeeded": 0,
+          "failed": 1
+        },
+        {
+          "name": "angel-market-scan-job-p6mnk",
+          "running": 0,
+          "succeeded": 0,
+          "failed": 1
+        },
+        {
+          "name": "angel-market-scan-job-q8hv4",
+          "running": 0,
+          "succeeded": 0,
+          "failed": 1
+        }
+      ]
+    },
+    "scheduler": {
+      "angel-market-scan-mumbai": "ENABLED",
+      "angel-market-scan-mumbai-preclose": "PAUSED"
+    },
+    "bigquery": {
+      "columns": [
+        "ce_theta",
+        "positive_prob",
+        "gap_direction",
+        "negative_prob",
+        "expected_gap_pct",
+        "news_sentiment_score",
+        "pe_vega",
+        "pe_theta",
+        "already_priced_in_prob",
+        "pe_gamma",
+        "expected_move_band",
+        "top_news_headline",
+        "pe_delta",
+        "ce_oi",
+        "pe_oi_change_pct",
+        "target_open_strike",
+        "pe_oi",
+        "news_impact_rating",
+        "pe_chg_pct",
+        "ce_delta",
+        "pe_ltp",
+        "action_rating",
+        "ce_bid_ask_spread",
+        "max_pain",
+        "ce_vega",
+        "ce_gamma",
+        "rank",
+        "pre_open_conviction_pct",
+        "intensity_score",
+        "ce_iv",
+        "pe_win_prob",
+        "ce_win_prob",
+        "snapshot_timestamp",
+        "ce_chg_pct",
+        "ce_ltp",
+        "atm_pcr",
+        "symbol",
+        "confidence_pct",
+        "pe_bid_ask_spread",
+        "expiry",
+        "directional_bias",
+        "news_source_tier",
+        "pe_iv",
+        "spot_ltp",
+        "ce_oi_change_pct",
+        "atm_strike",
+        "market_confirmation",
+        "news_severity_level",
+        "run_id",
+        "git_sha",
+        "writer_id",
+        "source_timestamp"
+      ],
+      "last_modified_ms": "1792535548386",
+      "git_sha_nonnull": 0,
+      "n": 219,
+      "syms": 219
+    },
+    "github_secrets": {
+      "repo": [
+        "ANGEL_API_KEY",
+        "ANGEL_CLIENT_CODE",
+        "ANGEL_PIN",
+        "ANGEL_TOTP_SEED",
+        "BQ_PROJECT_ID",
+        "GEMINI_API_KEY",
+        "SHEETS_KEY_JSON",
+        "SHEET_ID"
+      ],
+      "env": {
+        "copilot": [],
+        "gcp-secret-migration": [],
+        "github-pages": [],
+        "phase2-paper": []
+      }
+    },
+    "sheet": {
+      "gates": {
+        "GATE ID": "STATUS",
+        "GATE-01": "PASS",
+        "GATE-02": "MARKET CLOSED",
+        "GATE-03": "PASS",
+        "GATE-04": "PASS",
+        "GATE-05": "PASS",
+        "OVERALL": "MARKET CLOSED - alerts are not live",
+        "GATE-06": "PASS",
+        "GATE-07": "PASS",
+        "RANK": "RANK LAYER PASS"
+      },
+      "gate06_formula": "=COUNTA(CE_PE_RANK!A5:A204)&\" / 200\" =IF(COUNTA(CE_PE_RANK!A5:A204)=200,\"PASS\",\"FAIL\")",
+      "gate07_formula": "=COUNTIF(CE_PE_RANK!U5:U204,\"HIGH MOMENTUM\") =IF(C3=\"MARKET CLOSED\",IF(N(C11)=0,\"PASS\",\"FAIL\"),\"SESSION OPEN\")"
+    }
+  },
+  "checks": [
+    {
+      "check": "git_head_recorded",
+      "status": "PASS",
+      "detail": "head=d0a1156ef149 remote_main=45b374dc272c"
+    },
+    {
+      "check": "job_image_digest_pinned",
+      "status": "PASS",
+      "detail": "/scanner@sha256:2c42562256d8d17bfadf5730959b4ede01f71d1a0f98f8f0acb4eec2e7d2d3cc"
+    },
+    {
+      "check": "runtime_budget_below_platform_timeout",
+      "status": "PASS",
+      "detail": "MAX_RUNTIME_SECONDS=24300 timeout=25200"
+    },
+    {
+      "check": "git_sha_env_not_placeholder",
+      "status": "PASS",
+      "detail": "unset; image bakes SOURCE_COMMIT"
+    },
+    {
+      "check": "running_executions",
+      "status": "PASS",
+      "detail": "none"
+    },
+    {
+      "check": "scheduler_states_recorded",
+      "status": "PASS",
+      "detail": "{\"angel-market-scan-mumbai\": \"ENABLED\", \"angel-market-scan-mumbai-preclose\": \"PAUSED\"}"
+    },
+    {
+      "check": "provenance_columns_present",
+      "status": "FAIL",
+      "detail": "missing=cycle_id,data_freshness_status"
+    },
+    {
+      "check": "universe_complete",
+      "status": "PASS",
+      "detail": "rows=219 symbols=219 expected=219"
+    },
+    {
+      "check": "rows_have_git_sha",
+      "status": "FAIL",
+      "detail": "git_sha non-null 0/219"
+    },
+    {
+      "check": "env_secrets_not_shadowing_repo",
+      "status": "PASS",
+      "detail": "no environment secret shadows a repo secret"
+    },
+    {
+      "check": "sheet_gates",
+      "status": "PASS",
+      "detail": "no failing gates"
+    },
+    {
+      "check": "formula_checks_contract",
+      "status": "PASS",
+      "detail": "GATE-06/07 use the 200-row rank contract"
+    }
+  ],
+  "overall": "FAIL"
+}

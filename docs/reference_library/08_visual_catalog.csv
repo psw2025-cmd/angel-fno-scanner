@@ -1,0 +1,66 @@
+ID,View_Name,Category,What_It_Shows,Trigger_Phrase,Node_Count,Edge_Count,Render_Mode,Priority_Rank,Effort_Hours,Source
+VC01,Full Architecture Topology,Architecture,"Complete Cloud Run, BigQuery, Google Sheets and GitHub topology",Show me the full graph,24,48,Mermaid Flowchart,1,2,GLOBAL
+VC02,Neural Brain Anatomy,Mental Model,Cognitive map linking scanner components to brain regions,Show me the neural map,18,32,Mermaid Flowchart,2,4,USER
+VC03,Real-Time Telemetry ECG,Live Telemetry,"Stream pulse, heartbeat latency, and Angel broker connectivity",Show me the status,12,16,HTML / Canvas,1,3,PROJECT
+VC04,Spider Web Distributed Trace,Observability,Trace context run_id propagating from cron to BQ cells,Show me the spider web,35,70,Mermaid Graph,2,4,AGENT
+VC05,Quantum Writer Guard Sequence,Concurrency,"Fencing tokens, lease acquisition, and atomic publication lock",Show me the quantum guard,8,14,Mermaid Sequence,1,4,AGENT
+VC06,Order Book Imbalance (OBI) Heatmap,Trading Alpha,Real-time buying vs selling pressure across 219 F&O underlyings,Show me the heatmap,219,0,Heatmap Matrix,3,3,PROJECT
+VC07,Extreme Surge CE/PE Radar,Trading Alpha,Top 100 CE and Top 100 PE momentum and moneyness scatter,Show me the scatter,200,0,Scatter Radar,2,3,PROJECT
+VC08,BigQuery Schema Lineage Mesh,Data Quality,Field-by-field lineage from OpenAPI ticks to BQ column types,Show me the lineage,42,64,Mermaid ERD,2,2,GLOBAL
+VC09,Automated Self-Learning Loop,Automation,09:15 open reconcile -> intraday scan -> 15:20 paper journal,Show me the self healing loop,14,22,Mermaid StateDiagram,1,4,AGENT
+VC10,System Failure Blast Radius,SRE Resiliency,"Component failure isolation, circuit breakers, and fallback paths",Show me the blast radius,28,45,Mermaid Flowchart,2,3,GLOBAL
+VC11,Cloud Run Job Lifecycle,Cloud Infrastructure,"Cold start, container launch, task execution, and exit state",Show me the container lifecycle,8,12,Mermaid StateDiagram,1,2,GLOBAL
+VC12,Cloud Scheduler Cron Mesh,Cloud Infrastructure,"Cron schedules for 09:15 open, 14:50 journal, and 15:35 close",Show me the scheduler mesh,6,9,Mermaid Flowchart,2,2,PROJECT
+VC13,GCP Secret Manager Injection,Security,Runtime secret mounting into Cloud Run environment variables,Show me secret injection,10,15,Mermaid Sequence,1,2,GLOBAL
+VC14,BigQuery Table Partition Mesh,Data Engineering,Day-partitioned option_predictions_history and clustering,Show me BQ partitions,8,12,Mermaid ClassDiagram,2,2,PROJECT
+VC15,Google Sheets 60 RPM Throttling,Data Engineering,Token bucket rate limiter preventing Sheets API 429 quota errors,Show me sheets rate limit,6,10,Mermaid Flowchart,1,3,PROJECT
+VC16,SmartAPI Auto-Refresh Flow,Authentication,"Session check, TOTP generation, JWT renewal, and feed token sync",Show me session refresh,7,11,Mermaid Sequence,1,2,PROJECT
+VC17,Paper Trade Morning Reconciliation,Trading Operations,"09:15 next-day open quote fetch, PnL scoring, and Sheet write",Show me paper reconcile,9,14,Mermaid Sequence,1,3,PROJECT
+VC18,GitHub Actions CI/CD Pipeline,DevOps,"Linting, 262 pytest unit checks, Docker build, and GCP push",Show me CI/CD pipeline,12,18,Mermaid Flowchart,2,2,GLOBAL
+VC19,Docker Multi-Stage Build Architecture,DevOps,"Base python alpine layer, pip wheel builder, and final runner",Show me docker build,5,8,Mermaid Flowchart,2,2,GLOBAL
+VC20,WSL2 Ubuntu Port Relay Bridge,Local Workstation,"Windows host to WSL2 Linux socket proxy (5678, 5680, 8080)",Show me wsl bridge,8,12,Mermaid Flowchart,2,3,PROJECT
+VC21,Python Process Memory Profiler,Performance,"Heap allocation, pandas dataframe memory, and GC collection",Show me memory profiler,10,14,Flame Graph / Plot,3,3,PROJECT
+VC22,CPU Dual-Core Distribution,Hardware,Core 0 vs Core 1 load balancing on Intel Core i3-6100U,Show me cpu load,4,6,Bar Chart,3,2,PROJECT
+VC23,Local TCP Listener Matrix,Networking,"Listening ports: 8766 (watchdog), 5678 (n8n), 5680 (listener)",Show me listening ports,7,10,Matrix Grid,2,2,PROJECT
+VC24,OpenTelemetry Span Tree,Observability,Root span scan_session down to quote_fetch and sheet_update,Show me span tree,16,24,Mermaid Gantt,2,4,GLOBAL
+VC25,Circuit Breaker State Machine,SRE Resiliency,"Closed (healthy), Open (tripped), Half-Open (probing) transitions",Show me circuit breaker,3,6,Mermaid StateDiagram,1,2,GLOBAL
+VC26,Monotonic Fencing Counter,Concurrency,Strict monotonically increasing transaction token validation,Show me fencing counter,5,8,Mermaid Sequence,1,3,AGENT
+VC27,Cross-Region Latency Map,Networking,Network latency: Local Laptop -> Mumbai (asia-south1) -> US,Show me region latency,6,10,Mermaid Graph,2,2,GLOBAL
+VC28,Bayesian Factor Recalibration,Machine Learning,Prior factor weights + market outcome -> posterior factor weights,Show me Bayesian loop,8,12,Mermaid Flowchart,1,4,PROJECT
+VC29,Option Moneyness Bell Curve,Quantitative Finance,"Distribution of strikes from deep ITM, ATM, to deep OTM",Show me moneyness curve,50,0,Bell Curve Plot,3,2,PROJECT
+VC30,Option Greeks Sensitivity Surface,Quantitative Finance,"3D mesh of Delta, Gamma, Theta, and Vega across DTE and IV",Show me Greeks surface,80,120,3D Surface Plot,3,4,PROJECT
+VC31,Dollar-Gamma Squeeze Exposure,Trading Alpha,Aggregated market-maker gamma pin risk across index strikes,Show me gamma exposure,40,0,Bar Chart,2,3,PROJECT
+VC32,Max Pain Settlement Pinning,Trading Alpha,Option strike with minimum total payout at upcoming weekly expiry,Show me max pain,30,0,Bar Chart,2,2,PROJECT
+VC33,Intraday Volatility Cone,Quantitative Finance,Historical vs realized vs implied volatility bounds,Show me volatility cone,20,0,Cone Plot,3,3,PROJECT
+VC34,Put-Call Ratio (PCR) Sentiment Gauge,Trading Alpha,Volume PCR and Open Interest PCR directional sentiment gauge,Show me PCR gauge,5,4,Gauge Meter,2,2,PROJECT
+VC35,News Catalyst Sentiment Scatter,Market Intelligence,Headline publication timestamp vs underlying price jump,Show me news scatter,60,0,Scatter Plot,2,3,PROJECT
+VC36,Sector Rotation Momentum Wheel,Trading Alpha,Relative strength and momentum across NSE Nifty sectors,Show me sector wheel,12,18,Polar Radar,2,3,PROJECT
+VC37,Market Depth Liquidity Waterfall,Execution Quality,Bid/Ask volume levels across top 5 order book layers,Show me liquidity depth,10,15,Waterfall Chart,2,2,PROJECT
+VC38,Slippage Decay Impact Curve,Execution Quality,Modeled execution fill price vs theoretical mid-market quote,Show me slippage curve,15,0,Decay Curve Plot,2,2,PROJECT
+VC39,Daily Option Capture Ratio Funnel,Performance Evaluation,Total universe -> Ranked top 100 -> Actionable picks -> Winners,Show me capture funnel,6,8,Funnel Chart,2,2,PROJECT
+VC40,Model Hit Rate 30-Day Moving Average,Model Governance,Rolling accuracy percentage for CE and PE extreme surge ranking,Show me hit rate MA,30,0,Line Chart,1,3,PROJECT
+VC41,GCP Quota Consumption Burn Rate,FinOps,API call quota and cloud compute seconds consumed vs budget,Show me quota burn,8,12,Gauge Meter,2,2,GLOBAL
+VC42,Cloud Incident Blast Containment,SRE Resiliency,Isolation zones preventing single API errors from polluting BQ,Show me blast containment,14,20,Mermaid Flowchart,1,3,GLOBAL
+VC43,Database Read/Write IOPS Graph,Data Engineering,BigQuery query slots and Sheet write transactions per minute,Show me IOPS graph,12,18,Time Series Plot,2,2,PROJECT
+VC44,Service Account IAM Binding Graph,Security,Roles and resource access for angel-sheets-bot and admin users,Show me IAM bindings,10,16,Mermaid Graph,1,2,GLOBAL
+VC45,Canary Deployment Validation Split,DevOps,95% stable production scanner vs 5% candidate scanner run,Show me canary split,8,12,Mermaid Flowchart,2,3,GLOBAL
+VC46,Backup and Disaster Recovery Flow,Business Continuity,Automated snapshots of BigQuery tables to Google Drive cold store,Show me disaster recovery,7,10,Mermaid Sequence,2,2,PROJECT
+VC47,End-of-Day Journal Ledger Mesh,Trading Operations,"Consolidated trade ledger across Sheet, CSV, and BigQuery",Show me ledger mesh,9,15,Mermaid Flowchart,1,2,PROJECT
+VC48,Weekend Model Retraining Loop,Machine Learning,Saturday batch retraining on historical BigQuery outcome ledgers,Show me retrain loop,11,16,Mermaid StateDiagram,2,4,PROJECT
+VC49,Live WebSocket Feed State Machine,Market Ingestion,"WebSocket connection, subscription, tick unpack, and disconnect",Show me websocket states,6,10,Mermaid StateDiagram,2,3,PROJECT
+VC50,Cross-Agent Coordination Bus (Issue #3),Governance,AGY CLI local evidence packet submission and ChatGPT review,Show me coordination bus,8,14,Mermaid Sequence,1,2,GLOBAL
+VC51,Force-Directed Neural Network (Image 1),Dense Architecture,"219 nodes, 3,066 edges force-simulated topology with glowing hubs",Show me image 1 network,219,3066,D3 Force Simulation,1,5,USER
+VC52,Multi-Panel SRE Control Room (Image 2),Observability,"8-panel operational control room with telemetry, tracing, and health",Show me image 2 control room,64,128,HTML5 Control Dashboard,1,5,USER
+VC53,Systematic Request Path Trace (Panel 2),Observability,Hop-by-hop distributed trace from Cloud Scheduler to Sheet cell,Show me path tracing,16,24,Waterfall Timeline,1,3,USER
+VC54,Diagnostic Testing Matrix (Panel 3),Quality Assurance,Automated pre-flight assertions executed across 40 patterns,Show me diagnostic testing,40,80,Status Matrix Table,1,3,USER
+VC55,Error Node Anomaly Heatmap (Panel 4),SRE Resiliency,"Matrix of failing services, timeout nodes, and error frequencies",Show me error nodes,24,48,Heatmap Matrix,1,3,USER
+VC56,Workflow Simplification Protocol (Panel 5),Architecture,Before vs after comparison showing 219 nodes abstracted to 8 groups,Show me workflow simplification,16,28,Side-by-Side Schematic,1,4,USER
+VC57,Simplified Pipeline Schematic (Panel 6),Architecture,Streamlined 4-stage end-to-end pipeline view for cognitive ease,Show me simplified schematic,8,12,Mermaid Flowchart LR,1,2,USER
+VC58,Automated Checks & Compliance (Panel 7),Governance,Real-time compliance scoreboard verifying 20 truth rules,Show me automated checks,20,40,Scoreboard Card Grid,1,2,USER
+VC59,Final Output & Logging Stream (Panel 8),Observability,Live rolling log feed with structured JSON events and alerts,Show me logging feed,10,15,Live Log Terminal,1,3,USER
+VC60,Continuous Optimization Engine,SRE Optimization,"Backlog of high-ROI performance, latency, and cost improvements",Show me optimization engine,15,22,Priority Queue Matrix,1,3,USER
+VC61,Service SLO Error Budget Burn Rate,SRE Reliability,"1-hour, 6-hour, and 30-day error budget burn sparklines",Show me slo burn rate,8,12,Sparkline Gauges,1,3,USER
+VC62,Hourly Component Load Matrix,Capacity Planning,24-hour heatmap of request counts per hour across all 8 clusters,Show me hourly load,24,8,Hourly Heatmap,2,3,USER
+VC63,Cross-Region Latency & Skew Matrix,Networking,"Ping latency, clock drift, and API response skew across regions",Show me latency matrix,6,15,Interconnect Matrix,2,3,USER
+VC64,Cluster Segmentation Chord Diagram,Network Topology,Circular relationship chord diagram showing traffic between 8 clusters,Show me cluster chords,8,28,D3 Chord Diagram,2,4,USER
+VC65,Centrality Hub Ranking Leaderboard,Network Topology,Top 15 most connected and critical system hubs ranked by score,Show me centrality ranking,15,0,Horizontal Bar Chart,1,2,USER

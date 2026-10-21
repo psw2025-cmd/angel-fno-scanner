@@ -1,0 +1,9 @@
+Cycle_ID,Session_Date,Factor_Name,Weight_Before,Weight_After,Weight_Delta_Before,Weight_Delta_After,Recalibration_Reason,Validation_Status
+CYC01,2026-10-14,Order Book Imbalance (OBI),0.25,0.28,+0.00,+0.03,OBI showed highest predictive power in morning gap continuation (+185% DLF),FORWARD_VALIDATED
+CYC02,2026-10-14,Put-Call Ratio (PCR) Velocity,0.20,0.18,+0.00,-0.02,PCR was slightly lagging during fast morning sector rotation,FORWARD_VALIDATED
+CYC03,2026-10-13,Implied Volatility (IV) Skew,0.15,0.17,+0.00,+0.02,IV skew accurately signaled put demand prior to INFY downgrade,FORWARD_VALIDATED
+CYC04,2026-10-13,Delivery Volume Multiple,0.15,0.15,+0.00,+0.00,Volume multiple met baseline expectation; no weight adjustment,BASELINE_MAINTAINED
+CYC05,2026-10-10,Pre-Open News Catalyst Score,0.10,0.12,+0.00,+0.02,Verified corporate filing timestamps preceded morning gap surge,FORWARD_VALIDATED
+CYC06,2026-10-10,Distance to Max Pain,0.05,0.04,+0.00,-0.01,Max pain pinning has lower explanatory value on Monday/Tuesday sessions,FORWARD_VALIDATED
+CYC07,2026-10-09,Sector Relative Strength (RS),0.05,0.06,+0.00,+0.01,PSU Bank index relative weakness provided strong secondary confirmation,FORWARD_VALIDATED
+CYC08,2026-10-08,Penny Option Liquidity Gate,N/A (Gate),Active (>₹2.0),Filter=OFF,Filter=ON,Eliminated penny options with >10% spread from dominating actionable ranking,GATE_ENFORCED

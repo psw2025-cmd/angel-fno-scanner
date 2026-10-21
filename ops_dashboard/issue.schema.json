@@ -1,0 +1,132 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://angel-fno-scanner.local/schemas/agent-issue-1.0.0.json",
+    "title": "Agent-ready evidence issue package",
+    "type": "object",
+    "required": [
+        "issue_id",
+        "severity",
+        "first_seen",
+        "last_seen",
+        "observation_window",
+        "repository_sha",
+        "runtime_sha_if_known",
+        "affected_entities",
+        "source_references",
+        "evidence_references",
+        "reproduction_status",
+        "root_cause_status",
+        "competing_hypotheses",
+        "observed_impact",
+        "suspected_impact",
+        "prerequisite_steps",
+        "proposed_correction",
+        "verification_tests",
+        "rollback",
+        "approval_requirements",
+        "remaining_unknowns"
+    ],
+    "properties": {
+        "issue_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,95}$"
+        },
+        "title": {
+            "type": "string"
+        },
+        "severity": {
+            "enum": [
+                "critical",
+                "high",
+                "medium",
+                "low",
+                "info"
+            ]
+        },
+        "first_seen": {
+            "type": "string"
+        },
+        "last_seen": {
+            "type": "string"
+        },
+        "observation_window": {
+            "type": "string"
+        },
+        "repository_sha": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "runtime_sha_if_known": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "affected_entities": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "source_references": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "evidence_references": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "reproduction_status": {
+            "type": "string"
+        },
+        "root_cause_status": {
+            "type": "string"
+        },
+        "competing_hypotheses": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "observed_impact": {
+            "type": "string"
+        },
+        "suspected_impact": {
+            "type": "string"
+        },
+        "prerequisite_steps": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "proposed_correction": {
+            "type": "string"
+        },
+        "verification_tests": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "rollback": {
+            "type": "string"
+        },
+        "approval_requirements": {
+            "type": "string"
+        },
+        "remaining_unknowns": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        }
+    },
+    "additionalProperties": false
+}

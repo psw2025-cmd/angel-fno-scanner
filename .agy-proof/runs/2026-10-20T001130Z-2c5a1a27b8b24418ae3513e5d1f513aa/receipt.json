@@ -1,0 +1,240 @@
+{
+  "schema": 1,
+  "policy": "AGY-EVIDENCE-INTEGRITY-v1",
+  "session": "9b5811b5-770f-4469-ae52-733cb608823e",
+  "turn": "7734adb6975044eebab5a56eef7a0eb4",
+  "run_id": "4e3fdc14cd924e3ebcfa5473b2631147",
+  "observed_utc": "2026-10-20T00:11:40Z",
+  "workspace": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner",
+  "scope": "Verify complete cross-source coverage, role classification, fault recovery, and live sheet synchronization for AngelFNO SSOT",
+  "limitations": [
+    "Covers workstation Markdown, specified GitHub repos (angel-fno-scanner, Genesis_System3), service account Drive and GCS bucket",
+    "Paper trading safety enforced (PAPER_MODE=1, LIVE_ORDER_AUTHORITY=0); live market trading disabled"
+  ],
+  "gate_sha256": "b27c10c10947dfd816bd1a6f28adf72034aeb90b978a7d8b8aa2de2049bda944",
+  "policy_sha256": "aa5f6a625e84c65a1245ba0c88c974e41ae747e2a33d0b7c59b34dec3d86eea4",
+  "contract": {
+    "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\contract.json",
+    "sha256": "e7e5f6f2ff1750fbacfa9829c8d070aff10210064bf68250230c2c5028e79fdf"
+  },
+  "subjects": [
+    {
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\tools\\audit_contract_checks.py",
+      "sha256": "4e549bd4d562f69df08368759cbec628fd2fe3b26fdccfc8742b98908a93e995"
+    }
+  ],
+  "subjects_unchanged_during_checks": true,
+  "artifacts": [
+    {
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-20T001130Z-2c5a1a27b8b24418ae3513e5d1f513aa\\0.stdout.txt",
+      "sha256": "647615d4ab1794bbc212c0b59f3e3355bed31065cff619884ca815677180c55f"
+    },
+    {
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-20T001130Z-2c5a1a27b8b24418ae3513e5d1f513aa\\0.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-20T001130Z-2c5a1a27b8b24418ae3513e5d1f513aa\\1.stdout.txt",
+      "sha256": "8bd23bfef30ff4b7e26ede56a9ee4173d640720d3d71c0e9428c010bce625355"
+    },
+    {
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-20T001130Z-2c5a1a27b8b24418ae3513e5d1f513aa\\1.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-20T001130Z-2c5a1a27b8b24418ae3513e5d1f513aa\\2.stdout.txt",
+      "sha256": "ad52ce73acd6608df32951fc48a20a9588ab5697f7309dd31a93c2daf8217fda"
+    },
+    {
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-20T001130Z-2c5a1a27b8b24418ae3513e5d1f513aa\\2.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-20T001130Z-2c5a1a27b8b24418ae3513e5d1f513aa\\3.stdout.txt",
+      "sha256": "2c2a52a9abb3f0beedd7e4b1f8a4351d731f80cc691c8689e3c6acd1b5a034c2"
+    },
+    {
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-20T001130Z-2c5a1a27b8b24418ae3513e5d1f513aa\\3.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-20T001130Z-2c5a1a27b8b24418ae3513e5d1f513aa\\4.stdout.txt",
+      "sha256": "0a7dad61eaee2178ac9b0c4129a10ebebc8c4d97bae0902f9b6c0f8b4917f7de"
+    },
+    {
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-20T001130Z-2c5a1a27b8b24418ae3513e5d1f513aa\\4.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R1_COVERAGE",
+      "description": "Complete cross-source coverage manifest (Workstation, GitHub, Drive, GCS) verified with zero unexplained missing items",
+      "mandatory": true,
+      "result": "PASS"
+    },
+    {
+      "id": "R2_CLASSIFICATION",
+      "description": "Correct classification with separate Production/Test/Archive/Backup roles, 0 Unknowns, and fixtures excluded from Production",
+      "mandatory": true,
+      "result": "PASS"
+    },
+    {
+      "id": "R3_RECOVERY",
+      "description": "Working recovery and resilience: network retry backoff, durable queue, restart, single-instance guard, and scheduled task config",
+      "mandatory": true,
+      "result": "PASS"
+    },
+    {
+      "id": "R4_SYNCHRONIZATION",
+      "description": "Verified cryptographic synchronization: Local CSV and Google Sheet exact SHA-256 match and row parity",
+      "mandatory": true,
+      "result": "PASS"
+    },
+    {
+      "id": "R5_SAFETY",
+      "description": "Effective safety settings enforced: PAPER_MODE=1 and LIVE_ORDER_AUTHORITY=0",
+      "mandatory": true,
+      "result": "PASS"
+    }
+  ],
+  "checks": [
+    {
+      "id": "C1_COVERAGE",
+      "requirement_ids": [
+        "R1_COVERAGE"
+      ],
+      "kind": "integration_test",
+      "argv": [
+        "C:\\AngelFNO_Workstation\\.ssot_venv\\Scripts\\python.exe",
+        "tools/audit_contract_checks.py",
+        "--check",
+        "coverage"
+      ],
+      "cwd": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner",
+      "started_utc": "2026-10-20T00:11:30Z",
+      "elapsed_seconds": 1.031,
+      "exit_code": 0,
+      "assertion": {
+        "type": "json_equals",
+        "path": "result",
+        "expected": "PASS"
+      },
+      "observation": {
+        "actual": "PASS",
+        "expected": "PASS"
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "C2_CLASSIFICATION",
+      "requirement_ids": [
+        "R2_CLASSIFICATION"
+      ],
+      "kind": "integration_test",
+      "argv": [
+        "C:\\AngelFNO_Workstation\\.ssot_venv\\Scripts\\python.exe",
+        "tools/audit_contract_checks.py",
+        "--check",
+        "classification"
+      ],
+      "cwd": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner",
+      "started_utc": "2026-10-20T00:11:31Z",
+      "elapsed_seconds": 1.094,
+      "exit_code": 0,
+      "assertion": {
+        "type": "json_equals",
+        "path": "result",
+        "expected": "PASS"
+      },
+      "observation": {
+        "actual": "PASS",
+        "expected": "PASS"
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "C3_RECOVERY",
+      "requirement_ids": [
+        "R3_RECOVERY"
+      ],
+      "kind": "integration_test",
+      "argv": [
+        "C:\\AngelFNO_Workstation\\.ssot_venv\\Scripts\\python.exe",
+        "tools/audit_contract_checks.py",
+        "--check",
+        "recovery"
+      ],
+      "cwd": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner",
+      "started_utc": "2026-10-20T00:11:32Z",
+      "elapsed_seconds": 1.14,
+      "exit_code": 0,
+      "assertion": {
+        "type": "json_equals",
+        "path": "result",
+        "expected": "PASS"
+      },
+      "observation": {
+        "actual": "PASS",
+        "expected": "PASS"
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "C4_SYNCHRONIZATION",
+      "requirement_ids": [
+        "R4_SYNCHRONIZATION"
+      ],
+      "kind": "integration_test",
+      "argv": [
+        "C:\\AngelFNO_Workstation\\.ssot_venv\\Scripts\\python.exe",
+        "tools/audit_contract_checks.py",
+        "--check",
+        "sync"
+      ],
+      "cwd": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner",
+      "started_utc": "2026-10-20T00:11:33Z",
+      "elapsed_seconds": 5.219,
+      "exit_code": 0,
+      "assertion": {
+        "type": "json_equals",
+        "path": "result",
+        "expected": "PASS"
+      },
+      "observation": {
+        "actual": "PASS",
+        "expected": "PASS"
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "C5_SAFETY",
+      "requirement_ids": [
+        "R5_SAFETY"
+      ],
+      "kind": "integration_test",
+      "argv": [
+        "C:\\AngelFNO_Workstation\\.ssot_venv\\Scripts\\python.exe",
+        "tools/audit_contract_checks.py",
+        "--check",
+        "safety"
+      ],
+      "cwd": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner",
+      "started_utc": "2026-10-20T00:11:38Z",
+      "elapsed_seconds": 1.141,
+      "exit_code": 0,
+      "assertion": {
+        "type": "json_equals",
+        "path": "result",
+        "expected": "PASS"
+      },
+      "observation": {
+        "actual": "PASS",
+        "expected": "PASS"
+      },
+      "result": "PASS"
+    }
+  ],
+  "overall": "PASS",
+  "integrity_signature": "d2599ea6b75fd93f2e298c511be44c4c2580c915b572bf26f34f7e47a8a413a1"
+}

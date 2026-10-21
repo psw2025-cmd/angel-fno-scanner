@@ -1,0 +1,57 @@
+{
+    "schema_version": "1.0.0",
+    "updated_at": null,
+    "verdict": "INCOMPLETE",
+    "steps": [
+        {
+            "id": "discovery",
+            "status": "PASS",
+            "detail": "Current main, permission policy, existing monitor, telemetry, GitHub workflow source and repository contracts inspected."
+        },
+        {
+            "id": "false_green_retirement",
+            "status": "PASS",
+            "detail": "Static legacy monitor replaced with a bridge; fake healthy defaults and webhook action removed from served UI."
+        },
+        {
+            "id": "local_evidence_api",
+            "status": "RUNNING",
+            "detail": "Loopback-only Windows-SID-authenticated server; read-only local/GitHub collectors; cloud data collectors disabled."
+        },
+        {
+            "id": "dashboard_views",
+            "status": "RUNNING",
+            "detail": "Ten linked views implemented; awaiting frontend/browser validation."
+        },
+        {
+            "id": "issue_export",
+            "status": "RUNNING",
+            "detail": "Versioned issue schema and local redacted package writer implemented; awaiting tests."
+        },
+        {
+            "id": "unit_validation",
+            "status": "NOT_STARTED",
+            "detail": "Isolated fixture tests not yet run."
+        },
+        {
+            "id": "browser_accessibility",
+            "status": "NOT_STARTED",
+            "detail": "Real browser screenshots and responsive/accessibility verification pending."
+        },
+        {
+            "id": "cloud_integrations",
+            "status": "BLOCKED",
+            "detail": "No approved bounded BigQuery/Sheets collector configuration and query-cost envelope established."
+        },
+        {
+            "id": "deployment",
+            "status": "BLOCKED",
+            "detail": "No resolved authorized Vercel/hosting target or approval; dashboard remains local-only."
+        },
+        {
+            "id": "production_verdict",
+            "status": "INCOMPLETE",
+            "detail": "No deployed runtime identity or independent peer verification; no production-ready claim."
+        }
+    ]
+}

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import csv
 import datetime as dt
+import json
 import os
 import re
 from pathlib import Path
@@ -69,6 +70,48 @@ def _positive(value) -> bool:
         return float(value) > 0
     except (TypeError, ValueError):
         return False
+
+
+def _has_time(value) -> bool:
+    return bool(str(value or "").strip())
+
+
+def attempt_order(order=None) -> dict:
+    """Paper guard used by the runner. It never opens a broker connection."""
+    paper = os.environ.get("PAPER_MODE")
+    live = os.environ.get("LIVE_ORDER_AUTHORITY")
+    allowed = paper == "1" and live == "0"
+    return {
+        "sent": False,
+        "url_called": False,
+        "status": "PAPER_NO_SEND" if allowed else "REFUSED",
+        "PAPER_MODE": paper,
+        "LIVE_ORDER_AUTHORITY": live,
+        "ignored_order": order is not None,
+    }
+
+
+def _number(value):
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if number != number:
+        return None
+    return number
+
+
+def simulated_pnl(entry, exit_price, quantity, fees):
+    """Long-option result only when entry, exit, size, and fees are all real numbers."""
+    entry_n = _number(entry)
+    exit_n = _number(exit_price)
+    qty_n = _number(quantity)
+    fee_n = _number(fees)
+    if entry_n is None or exit_n is None or qty_n is None or fee_n is None:
+        return ""
+    if entry_n <= 0 or exit_n <= 0 or qty_n <= 0 or fee_n < 0:
+        return ""
+    return f"{((exit_n - entry_n) * qty_n) - fee_n:.2f}"
 
 
 def _symbol_ok(symbol: str) -> bool:
@@ -166,8 +209,8 @@ def ledger_rows_from_alerts(values: Sequence[Sequence], run_id: str = "") -> lis
             "exit_price": exit_match.group(1) if closed else "",
             "stop_loss": stop_match.group(1) if stop_match else "",
             "take_profit": target_match.group(1) if target_match else "",
-            "status": "CLOSED" if closed else "OPEN",
-            "source_run_id": str(run_id or ""),
+            "status": "SIMULATED_CLOSED" if closed else "SIMULATED",
+            "source_run_id": "simulated:" + str(run_id or ""),
         })
         rows.append(row)
     return rows
@@ -196,8 +239,13 @@ def apply_exit_updates(rows: Sequence[dict], reconciled: Sequence[dict]) -> list
             continue
         current["exit_price"] = str(result["actual_open_ltp"])
         current["exit_time"] = str(result.get("reconciled_at_ist") or "")
-        current["status"] = "CLOSED"
-        current["realized_pnl"] = ""
+        current["status"] = "SIMULATED_CLOSED"
+        current["realized_pnl"] = simulated_pnl(
+            current.get("entry_price"),
+            current.get("exit_price"),
+            current.get("quantity"),
+            current.get("fees"),
+        )
         by_id[key] = current
     return list(by_id.values())
 
@@ -212,7 +260,12 @@ def _read_ledger(path: Path) -> list[dict]:
             if not raw:
                 continue
             row = {key: str(raw.get(key) or "") for key in LEDGER_HEADER}
-            if row.get("trade_id") and _symbol_ok(row.get("symbol", "")) and _positive(row.get("entry_price")):
+            if (
+                row.get("trade_id")
+                and _symbol_ok(row.get("symbol", ""))
+                and _positive(row.get("entry_price"))
+                and _has_time(row.get("entry_time"))
+            ):
                 rows.append(row)
         return rows
 
@@ -224,16 +277,29 @@ def _write_ledger(path: Path, rows: Sequence[dict]) -> None:
         writer = csv.DictWriter(handle, fieldnames=LEDGER_HEADER, lineterminator="\n")
         writer.writeheader()
         for row in ordered:
-            if not _symbol_ok(row.get("symbol", "")) or not _positive(row.get("entry_price")):
+            if (
+                not _symbol_ok(row.get("symbol", ""))
+                or not _positive(row.get("entry_price"))
+                or not _has_time(row.get("entry_time"))
+            ):
                 continue
             safe = {key: row.get(key, "") for key in LEDGER_HEADER}
-            if safe.get("status") == "CLOSED" and not _positive(safe.get("exit_price")):
-                safe["status"] = "OPEN"
+            if _positive(safe.get("exit_price")):
+                safe["status"] = "SIMULATED_CLOSED"
+            else:
+                safe["status"] = "SIMULATED"
                 safe["exit_price"] = ""
                 safe["exit_time"] = ""
-            safe["realized_pnl"] = ""
-            safe["quantity"] = ""
-            safe["fees"] = ""
+            safe["realized_pnl"] = simulated_pnl(
+                safe.get("entry_price"),
+                safe.get("exit_price"),
+                safe.get("quantity"),
+                safe.get("fees"),
+            )
+            if not _positive(safe.get("quantity")):
+                safe["quantity"] = ""
+            if _number(safe.get("fees")) is None:
+                safe["fees"] = ""
             writer.writerow(safe)
 
 
@@ -241,9 +307,13 @@ def upsert_paper_ledger(path, updates: Sequence[dict]) -> int:
     """Merge real rows into the ledger. Refuses placeholder rows and priceless exits."""
     incoming = []
     for row in updates or []:
-        if not _symbol_ok(row.get("symbol", "")) or not _positive(row.get("entry_price")):
+        if (
+            not _symbol_ok(row.get("symbol", ""))
+            or not _positive(row.get("entry_price"))
+            or not _has_time(row.get("entry_time"))
+        ):
             continue
-        if str(row.get("status", "")).upper() == "CLOSED" and not _positive(row.get("exit_price")):
+        if str(row.get("status", "")).upper() in ("CLOSED", "SIMULATED_CLOSED") and not _positive(row.get("exit_price")):
             continue
         incoming.append(row)
     if not incoming:
@@ -254,24 +324,29 @@ def upsert_paper_ledger(path, updates: Sequence[dict]) -> int:
     for row in incoming:
         current = by_id.get(row["trade_id"])
         if current is None:
-            by_id[row["trade_id"]] = {
-                key: ("" if key in ("quantity", "fees", "realized_pnl") else row.get(key, ""))
-                for key in LEDGER_HEADER
-            }
+            by_id[row["trade_id"]] = {key: row.get(key, "") for key in LEDGER_HEADER}
             stored = by_id[row["trade_id"]]
+            stored["source_run_id"] = stored.get("source_run_id") or "simulated"
+            if not str(stored.get("source_run_id")).startswith("simulated"):
+                stored["source_run_id"] = "simulated:" + str(stored.get("source_run_id"))
             if not _positive(stored.get("exit_price")):
-                stored["status"] = "OPEN"
+                stored["status"] = "SIMULATED"
                 stored["exit_price"] = ""
                 stored["exit_time"] = ""
             else:
-                stored["status"] = "CLOSED"
+                stored["status"] = "SIMULATED_CLOSED"
             changed += 1
             continue
         if _positive(row.get("exit_price")) and row.get("status") == "CLOSED":
             current["exit_price"] = str(row["exit_price"])
             current["exit_time"] = str(row.get("exit_time") or "")
-            current["status"] = "CLOSED"
-            current["realized_pnl"] = ""
+            current["status"] = "SIMULATED_CLOSED"
+            current["realized_pnl"] = simulated_pnl(
+                current.get("entry_price"),
+                current.get("exit_price"),
+                current.get("quantity"),
+                current.get("fees"),
+            )
             changed += 1
     if changed:
         _write_ledger(target, list(by_id.values()))
@@ -279,7 +354,82 @@ def upsert_paper_ledger(path, updates: Sequence[dict]) -> int:
 
 
 def default_ledger_path() -> Path:
-    return Path(__file__).resolve().parent / "data" / "paper_trades.csv"
+    """The one paper ledger. Fills written here are simulated."""
+    return Path(__file__).resolve().parent / "paper_ledger.csv"
+
+
+def rows_from_gap_payload(payload, run_id: str = "") -> list[dict]:
+    """One simulated row per saved signal that already has an entry price.
+
+    Size and fees stay blank unless the saved signal itself carries them.
+    No exit price is invented, so realized P&L stays blank.
+    """
+    if not isinstance(payload, dict):
+        return []
+    stamped = str(payload.get("timestamp_ist") or payload.get("prediction_generated_at") or "").strip()
+    session = stamped[:10]
+    rows = []
+    picks = list(payload.get("top_ce_picks") or []) + list(payload.get("top_pe_picks") or [])
+    for pick in picks:
+        if not isinstance(pick, dict):
+            continue
+        symbol = str(pick.get("symbol") or "").strip().upper()
+        side = str(pick.get("side") or "").strip().upper()
+        if not _symbol_ok(symbol) or side not in ("CE", "PE") or not _positive(pick.get("entry_ltp")):
+            continue
+        contract = str(pick.get("contract_symbol") or pick.get("forecast_contract") or "").strip().upper()
+        quantity = pick.get("lotsize", pick.get("quantity", ""))
+        fees = pick.get("fees", "") if "fees" in pick else ""
+        row = {key: "" for key in LEDGER_HEADER}
+        row.update({
+            "trade_id": trade_key(session, symbol, side, contract),
+            "symbol": symbol,
+            "option_type": side,
+            "strike": "" if pick.get("strike") in (None, "") else str(pick.get("strike")),
+            "expiry": str(pick.get("expiry") or ""),
+            "entry_time": stamped,
+            "entry_price": str(pick.get("entry_ltp")),
+            "quantity": str(quantity) if _positive(quantity) else "",
+            "stop_loss": str(pick.get("stop_loss_ltp")) if _positive(pick.get("stop_loss_ltp")) else "",
+            "take_profit": str(pick.get("target_ltp")) if _positive(pick.get("target_ltp")) else "",
+            "fees": str(fees) if "fees" in pick and _number(fees) is not None else "",
+            "status": "SIMULATED",
+            "source_run_id": "simulated:" + str(run_id or payload.get("run_id") or "saved-signal"),
+        })
+        rows.append(row)
+    return rows
+
+
+def record_saved_gap_signals(source=None, path=None, run_id: str = "") -> dict:
+    """Append saved signals that already contain an entry price. Writes nothing if they do not."""
+    source_path = Path(source) if source else Path(__file__).resolve().parent / "data" / "next_day_gap_predictions.json"
+    target = Path(path) if path else default_ledger_path()
+    if not source_path.is_file():
+        return {
+            "written": 0,
+            "signals_with_entry": 0,
+            "ledger": str(target),
+            "reason": "saved signal file is absent",
+            "fill": "simulated",
+        }
+    payload = json.loads(source_path.read_text(encoding="utf-8"))
+    rows = rows_from_gap_payload(payload, run_id=run_id)
+    if not rows:
+        return {
+            "written": 0,
+            "signals_with_entry": 0,
+            "ledger": str(target),
+            "reason": "no entry price",
+            "fill": "simulated",
+        }
+    written = upsert_paper_ledger(target, rows)
+    return {
+        "written": written,
+        "signals_with_entry": len(rows),
+        "ledger": str(target),
+        "reason": "simulated rows use the saved entry price only",
+        "fill": "simulated",
+    }
 
 
 def _overnight_facts(values: Sequence[Sequence]) -> dict:

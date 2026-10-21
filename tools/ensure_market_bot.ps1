@@ -34,12 +34,12 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw 'gh run list failed'
     }
-    $runs = @($raw | ConvertFrom-Json)
+    $runs = ConvertFrom-Json -InputObject ($raw -join [Environment]::NewLine)
     $cutoff = [DateTime]::UtcNow.AddMinutes(-20)
 
     $recent = @($runs | Where-Object {
         $_.status -in @('queued','in_progress','waiting','pending') -or
-        ([DateTime]::Parse($_.createdAt).ToUniversalTime() -ge $cutoff)
+        (($(if ($_.createdAt -is [DateTime]) { $_.createdAt.ToUniversalTime() } else { [DateTimeOffset]::Parse([string]$_.createdAt, [Globalization.CultureInfo]::InvariantCulture).UtcDateTime })) -ge $cutoff)
     })
 
     if ($recent.Count -gt 0) {

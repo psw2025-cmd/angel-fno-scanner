@@ -1,0 +1,151 @@
+ID,Category,Trigger,Produces,Format,When_To_Use,Example,Source
+D01,Diagram,Show me the diagram,Best-fit visual (agent chooses type),Mermaid code,Default for any visual request,Cloud Run deployment architecture,USER
+D02,Diagram,Show me the sequence,Timeline with actors and order,Mermaid sequenceDiagram,Step ordering or race conditions,market_bot.yml step chain,USER
+D03,Diagram,Show me the architecture,Component boxes and connections,Mermaid flowchart TD,System design or data flow,Scanner + BQ + Sheets topology,USER
+D04,Diagram,Show me the state machine,Circles and transition arrows,Mermaid stateDiagram,Lifecycle or retry logic,Scanner 401 re-login path,USER
+D05,Diagram,Show me the decision tree,Diamond decision nodes,Mermaid flowchart,FMEA or what-if branching,Writer guard failure modes,USER
+D06,Diagram,Show me the timeline,Timestamped bars or sequence,Mermaid gantt or sequence,Scheduling or drift over time,State drift after push failure,USER
+D07,Diagram,Show me the data flow,Data objects as nodes,Mermaid flowchart LR,Producer to consumer mapping,local JSON vs BigQuery vs Sheets,USER
+D08,Diagram,Show me the dependency graph,Directed graph nodes and edges,Mermaid graph,Module imports or coupling,scanner.py import tree,USER
+D09,Diagram,Show me the heatmap,Colored matrix,Markdown table,Resource limits or RPM budgets,Google Sheets 60 RPM chart,USER
+D10,Diagram,Show me the before after,Two side-by-side diagrams,Mermaid x2,Proposed changes comparison,Cloud Scheduler placeholder vs real,USER
+D11,Diagram,Show me the ASCII version,Boxes in plain text,ASCII art,Terminal or plain text environments,Quick topology sketch,USER
+D12,Diagram,Show me the Graphviz version,DOT language source,Graphviz DOT,Complex hierarchical routing,System call tree,USER
+D13,Diagram,Show me the Gantt,Horizontal schedule bars,Mermaid gantt,Task scheduling and duration analysis,Scan cycle timing breakdown,USER
+D14,Diagram,Show me the ERD,Entity relationship schema,Mermaid erDiagram,Relational database foreign key design,fno_predictions table schema,USER
+D15,Diagram,Show me the C4 container,Container-level system diagram,Mermaid C4Container,Cloud Run and microservice container architecture,Angel FNO container setup,USER
+S01,Script,Make it strict PASS FAIL,Binary gate script,PowerShell 5.1,Pre-deployment verification,pre_impl_gate.ps1,AGENT
+S02,Script,Any warning equals fail,Zero-tolerance checker,PowerShell 5.1,Deployment readiness assertion,Strict pre-flight gate,AGENT
+S03,Script,Hash triage,Dedupe file copies by SHA256,PowerShell 5.1,When many copies exist on disk,scanner.py 44 copies found,AGENT
+S04,Script,Show me all X,Enumerate matching files,PowerShell 5.1,Discovery or inventory across drives,Finding writer_guard.py copies,AGENT
+S05,Script,Diff these files,Side-by-side file comparison,PowerShell,Family A vs Family B comparison,canonical vs repair scanner.py,AGENT
+S06,Script,Run and capture,Command with output logged to file,PowerShell,When command output may be long,gcloud command execution logging,AGENT
+S07,Script,Full C drive search,dir /s /b traversal,cmd + PowerShell,When file location is completely unknown,Find scanner.py across entire disk,AGENT
+S08,Script,Extract with line numbers,5-padded line numbers format,PowerShell,Precise line citations for code review,scanner.py line 435 citation,AGENT
+S09,Script,Save output to temp,Write files to timestamped directory,PowerShell,Evidence collection & reproducibility,angel_evidence_20261012 folder,AGENT
+S10,Script,Show me the checks,Explicit PASS or FAIL per item,PowerShell,Multi-assertion diagnostic output,100x verify diagnostic suite,AGENT
+C01,Cloud,What secrets exist,Names only (never values),gcloud format table,Security audit and inventory,7 secrets in GCP Secret Manager,GLOBAL
+C02,Cloud,What APIs enabled,Enabled/disabled services matrix,gcloud services list,Pre-deployment capability check,8 APIs needed for Cloud Run,GLOBAL
+C03,Cloud,What service accounts,Email plus display name,gcloud iam list,Permission and writer identity check,angel-sheets-bot found,GLOBAL
+C04,Cloud,Migration workflow,One-time GitHub Actions YAML,YAML workflow,Moving secrets securely without leaks,GitHub to GCP secret migration,GLOBAL
+C05,Cloud,OIDC setup,Workload Identity Federation,gcloud + YAML,Keyless CI/CD authentication,WIF for GitHub Actions,GLOBAL
+C06,Cloud,Describe the job,Full Cloud Run Job spec,gcloud run jobs describe,Runtime verification of job spec,angel-market-scan-job details,GLOBAL
+C07,Cloud,Scheduler URL,Real endpoint not placeholder,gcloud scheduler update,Replacing invalid placeholder URLs,your-cloud-run-url to real URI,GLOBAL
+C08,Cloud,Build and push image,Docker + gcloud builds submit,gcloud CLI,Deploying scanner container,gcloud builds submit scanner:v1,GLOBAL
+X01,Security,Show names not values,Redacted enumeration table,Markdown table,Safe reporting in chats and logs,Environment variable listing,GLOBAL
+X02,Security,Safe migration,Values never printed to stdout,SecureString / Pipe,Copying credentials securely,.env to GCP Secret Manager,GLOBAL
+X03,Security,Revoke temporary role,IAM remove-iam-policy-binding,gcloud CLI,Restoring least-privilege post-deploy,Revoke secretmanager.admin role,GLOBAL
+X04,Security,Least privilege grant,Grant only necessary permissions,gcloud CLI,Setting tight role boundaries,secretmanager.secretAccessor role,GLOBAL
+X05,Security,Audit access log,Cloud Audit Log filter query,gcloud logging read,Forensics and access verification,Secret access history audit,GLOBAL
+A01,Advanced,Show me the spider web,Distributed trace topology,Mermaid graph,End-to-end full pipeline visibility,Scanner trace from cron to BQ row,AGENT
+A02,Advanced,Show me the neuron,Event flow between decoupled services,Mermaid flowchart,Decoupling publishers and consumers,Pub/Sub event chain proposal,AGENT
+A03,Advanced,Show me the quantum guard,Lease and fencing token design,Mermaid sequence,Replacing honor-system writer guards,BigQuery transaction lease table,AGENT
+A04,Advanced,Show me the full pipeline trace,Correlation ID propagation,Mermaid sequence,Debugging multi-service drift,run_id tracked across 5 steps,AGENT
+A05,Advanced,Show me the self healing loop,Autonomous remediation flow,Mermaid stateDiagram,Automated broker re-login on 401,SmartAPI token refresh flow,AGENT
+A06,Advanced,Show me the chaos test,Fault injection simulation,Mermaid flowchart,Testing resilience against API 500s,Simulating Angel API timeout,AGENT
+A07,Advanced,Show me the circuit breaker,Tripped vs reset states,Mermaid stateDiagram,Protecting downstream Google Sheets quota,60 RPM trip threshold,AGENT
+A08,Advanced,Show me the dead letter queue,Unprocessable record routing,Mermaid flowchart LR,Quarantining malformed ticks,fno_predictions_quarantine flow,AGENT
+A09,Advanced,Show me the canary deployment,Traffic split architecture,Mermaid flowchart,Verifying new ranking logic on 5% symbols,Canary scan comparison,AGENT
+A10,Advanced,Show me the immutable ledger,Append-only prediction audit,Mermaid sequence,Proving forecasts were issued pre-open,BigQuery append verification,AGENT
+A11,Advanced,Show me the backpressure flow,Rate limit buffer dynamics,Mermaid flowchart,Preventing local memory overflow,Producer-consumer queue,AGENT
+A12,Advanced,Show me the multi-agent bus,Issue #3 control plane,Mermaid sequenceDiagram,Reconciling AGY CLI and ChatGPT findings,Canonical Issue #3 packet flow,AGENT
+B01,Brain,Show me the brain,Full brain anatomy diagram,Mermaid flowchart TB,High-level architectural comprehension,Angel FNO neural map,USER
+B02,Brain,Show me the regions,Region to component mapping table,Markdown table,Onboarding new agents or developers,Brain region mapping table,USER
+B03,Brain,Show me the signal flow,Cycle sequence with actors,Mermaid sequence,Debugging end-to-end scan duration,09:15 IST scan signal travel,USER
+B04,Brain,Show me the diseases,Issue to system failure mapping,Markdown table,Prioritizing root-cause fixes,Alzheimer metaphor to stale git,USER
+B05,Brain,Show me the health score,System vitals with current status,Markdown table,Morning pre-flight executive check,"Heartbeat, BP, and latency vitals",USER
+B06,Brain,Show me the cortex,Decision engine architecture,Mermaid flowchart,Inspecting algorithmic ranker layers,angel_prediction_engine.py cortex,USER
+B07,Brain,Show me the hippocampus,Long-term historical memory,Mermaid flowchart,Analyzing BigQuery historical tables,fno_predictions memory store,USER
+B08,Brain,Show me the amygdala,Emergency circuit breaker,Mermaid stateDiagram,Halting paper orders on market crashes,Volatility circuit breaker,USER
+B09,Brain,Show me the sensory nerve,SmartAPI market tick ingestion,Mermaid sequence,Verifying WebSocket / quote streaming,Angel One quote listener,USER
+B10,Brain,Show me the motor nerve,Action execution and sheet publisher,Mermaid flowchart LR,Verifying paper trade journaling,SHEET_GRID publisher,USER
+B11,Brain,Show me the brain stem,24/7 background daemons,Mermaid flowchart,Monitoring watchdog and universal supervisor,chatgpt monitor + supervisor,USER
+B12,Brain,Show me the synapse,Cross-component message protocols,Mermaid sequence,Auditing API schemas and contracts,Pydantic contract schemas,USER
+E01,Engine,Scan 219 symbols,Full universe market run,Python CLI,Executing full production scan,python scanner.py --full,PROJECT
+E02,Engine,Reconcile paper trades,Morning outcome calculation,Python CLI,Scoring yesterday's paper trades at open,python paper_log.py --reconcile,PROJECT
+E03,Engine,Validate schema,Live schema check against BQ,Python CLI,Preventing int-to-float schema drift,python tools/live_schema_guard.py,PROJECT
+E04,Engine,Acquire publication lease,Fencing token lease check,Python CLI,Ensuring single production writer,python tools/publication_lease.py,PROJECT
+E05,Engine,Generate cycle provenance,Run ID and hash generation,Python CLI,Tracking full audit metadata,python tools/cycle_provenance.py,PROJECT
+E06,Engine,Test publication integrity,Mock publication test suite,pytest,Verifying fail-closed write guards,pytest tests/test_publication_integrity.py,PROJECT
+E07,Engine,Test single writer,Race condition test suite,pytest,Ensuring concurrent writers are blocked,pytest tests/test_single_writer_architecture.py,PROJECT
+E08,Engine,Test snapshot failure,Partial write recovery suite,pytest,Asserting partial snapshots fail closed,pytest tests/test_snapshot_push_failure.py,PROJECT
+E09,Engine,Test universe contract,216-219 symbol count assertion,pytest,Asserting no missing stock underlyings,pytest tests/test_universe_contract.py,PROJECT
+E10,Engine,Verify broker session,Check SmartAPI authentication,Python CLI,Asserting valid JWT and feed token,python -c 'import scanner; scanner.check_auth()',PROJECT
+E11,Engine,Verify sheets write quota,Check gspread rate limit,Python CLI,Ensuring API calls are < 60 RPM,python sheet_grid.py --check-quota,PROJECT
+E12,Engine,Simulate 401 token expiry,Trigger auto re-login,Python CLI,Testing automated session recovery,python scanner.py --test-token-refresh,PROJECT
+E13,Engine,Simulate partial universe,Feed 50 symbols only,Python CLI,Verifying scanner rejects partial write,python scanner.py --mock-partial,PROJECT
+E14,Engine,Recalibrate Bayesian weights,Run adaptive weight tuning,Python CLI,Updating ranking weights post-session,python angel_prediction_engine.py --tune,PROJECT
+E15,Engine,Check heartbeat age,Calculate now - last_pulse,PowerShell,Asserting engine is actively ticking,powershell tools/check_heartbeat.ps1,PROJECT
+E16,Engine,Purge duplicate processes,Kill orphan python tasks,PowerShell,Clearing hung background workers,powershell tools/purge_zombies.ps1,PROJECT
+E17,Engine,Run 262 verification suite,Execute full pytest suite,pytest,Nightly regression test run,pytest tests/,PROJECT
+E18,Engine,Validate BQ modified time,Query BigQuery metadata,bq query,Checking actual table modification stamp,bq show --format=prettyjson fno_predictions,PROJECT
+E19,Engine,Run NASA daily proof,Execute read-only verification,GitHub Actions,Generating immutable daily evidence,gh workflow run nasa_daily_proof.yml,PROJECT
+E20,Engine,Run forensic verifier,Full consistency audit,Python CLI,Running deep cross-layer reconciliation,python forensic_verifier.py,PROJECT
+F01,Forensic,Audit BQ metadata,"Table rows, size, timestamps",Python CLI,Deep database inspection,python scratch/audit_bq_metadata.py,AGENT
+F02,Forensic,Inspect quarantine table,List quarantined invalid rows,Python CLI,Reviewing rejected market payloads,python scratch/inspect_quarantine.py,AGENT
+F03,Forensic,Audit workflow runs,List all GitHub Actions status,Python CLI,Auditing CI/CD failure history,python scratch/audit_workflows_and_heartbeat.py,AGENT
+F04,Forensic,Probe n8n sqlite,Direct SQLite database query,Python CLI,Extracting execution logs from WSL2,python scratch/probe_n8n_sqlite.py,AGENT
+F05,Forensic,Inspect paper alert log,Dump Google Sheet alert log,Python CLI,Verifying journal consistency,python scratch/inspect_paper_alert_log.py,AGENT
+F06,Forensic,Inspect council tables,Check agent memory & scoreboard,Python CLI,Verifying autonomous learning tables,python scratch/inspect_council_tables.py,AGENT
+F07,Forensic,Check foreign keys,Cross-table relational check,Python CLI,Detecting orphan predictions,python scratch/check_fks.py,AGENT
+F08,Forensic,Check sample session,Deep dive on specific date,Python CLI,Forensic audit of single trading day,python scratch/check_sample_20261007.py,AGENT
+F09,Forensic,Verify quarantine file,Inspect local fallback quarantine,Python CLI,Checking offline buffer files,python scratch/verify_quarantine_file.py,AGENT
+F10,Forensic,Generate micro level report,Row-by-row discrepancy report,Python CLI,Publishing exhaustive forensic breakdown,python scratch/generate_micro_level_report.py,AGENT
+P01,Project,Scanner entrypoint,Canonical file + SHA256,Text + Hash,Always verify canonical scanner file,repos/angel-fno-scanner/scanner.py,PROJECT
+P02,Project,Prediction engine entrypoint,Model code + SHA256,Text + Hash,Verify prediction algorithm file,angel_prediction_engine.py,PROJECT
+P03,Project,Writer guard entrypoint,Concurrency lock code,Text + Hash,Verify single writer implementation,writer_guard.py,PROJECT
+P04,Project,Paper log entrypoint,Reconciliation logic,Text + Hash,Verify paper trade scoring script,paper_log.py,PROJECT
+P05,Project,Sheet grid entrypoint,Google Sheets updater,Text + Hash,Verify spreadsheet sync script,sheet_grid.py,PROJECT
+P06,Project,Cloud Run Dockerfile,Container spec,Dockerfile,Verify production container build,Dockerfile.cloudrun,PROJECT
+P07,Project,Market bot workflow,Production execution CI,YAML,Verify GitHub Actions execution flow,.github/workflows/market_bot.yml,PROJECT
+P08,Project,Nightly verify workflow,Nightly test CI,YAML,Verify automated test pipeline,.github/workflows/nightly_verify.yml,PROJECT
+P09,Project,Desktop launcher,Quick workstation launcher,PowerShell,Verify local Windows launch script,C:\Users\ADMIN\Desktop\AngelFNO.ps1,PROJECT
+P10,Project,24/7 Watchdog daemon,Local observer daemon,Python,Verify 5-minute health watchdog,C:\Temp\chatgpt desktop visual\chatgpt desktop 24x7 monitor.py,PROJECT
+Q01,Quantum,Show me the lease token,Current BigQuery lease state,Markdown,Verifying active write lease,fno_predictions.transaction_write_lock,AGENT
+Q02,Quantum,Simulate split brain,Two concurrent writers attempt write,PowerShell,Proving second writer is rejected,tools/simulate_split_brain.ps1,AGENT
+Q03,Quantum,Fencing token monotonic check,Monotonically increasing token assertion,Python CLI,Asserting old tokens cannot write,tools/verify_fencing_token.py,AGENT
+Q04,Quantum,Lease timeout expiry,Check automatic lock release,Python CLI,Asserting dead writers release lock in 300s,tools/check_lease_expiry.py,AGENT
+Q05,Quantum,Force lease break,Emergency manual lease break,gcloud / bq,Manual override for deadlocked writes,tools/break_stale_lease.py,AGENT
+R01,Recovery,Auto re-login on 401,Generate fresh JWT via TOTP,Python,Self-healing broker session,SmartConnect.generateSession(),PROJECT
+R02,Recovery,Backoff retry on 429,Exponential backoff with jitter,Python,Self-healing Google Sheets quota,gspread retry decorator,PROJECT
+R03,Recovery,Restore last full snapshot,Roll back partial BigQuery write,Python,Self-healing data integrity,scanner.restore_last_good_snapshot(),PROJECT
+R04,Recovery,Quarantine malformed tick,Move invalid row to dead letter,Python,Preventing pipeline crash on bad data,scanner.quarantine_row(),PROJECT
+R05,Recovery,Restart hung local daemon,Kill PID and relaunch daemon,PowerShell,Self-healing 24/7 monitor,powershell restart_watchdog.ps1,PROJECT
+R06,Recovery,WSL relay restart,Restart WSL2 bridge container,bash,Self-healing n8n port forwarding,wsl --system restart-relay,PROJECT
+R07,Recovery,Re-authenticate gcloud ADC,Refresh Google Cloud token,gcloud CLI,Self-healing GCP credential expiry,gcloud auth application-default login,PROJECT
+R08,Recovery,Rollback model version,Revert to prior Bayesian weights,Python,Self-healing algorithm degradation,angel_prediction_engine.rollback_model(),PROJECT
+R09,Recovery,Purge local cache lock,Remove stale .lock files,PowerShell,Self-healing filesystem concurrency,Remove-Item .lock -Force,PROJECT
+R10,Recovery,Fail closed on missing symbols,Abort write if count < 216,Python,Self-healing production guard,assert symbol_count >= 216,PROJECT
+T01,Truth,Verify zero live orders,Assert LIVE_ORDER_AUTHORITY == OFF,Python,Safety gate check,assert settings.LIVE_ORDER == False,GLOBAL
+T02,Truth,Verify paper trading on,Assert PAPER_MODE == ON,Python,Safety gate check,assert settings.PAPER_MODE == True,GLOBAL
+T03,Truth,Verify exact symbol count,SELECT COUNT(DISTINCT symbol),bq query,Asserting 216-219 stocks present,bq query 'SELECT COUNT(*) FROM option_predictions_live',GLOBAL
+T04,Truth,Verify fresh timestamp,NOW() - updated_at < 90s,PowerShell,Asserting real-time market data,tools/verify_timestamp_freshness.ps1,GLOBAL
+T05,Truth,Verify no secret exposure,Grep repo for plaintext secrets,ripgrep,Security assertion,rg '(ghp_|AIza|eyJh)' repos/,GLOBAL
+T06,Truth,Verify git clean state,git status --porcelain,git CLI,Deployment readiness,git status --porcelain,GLOBAL
+T07,Truth,Verify container digest,docker inspect --format digest,docker CLI,Immutable build assertion,docker inspect scanner:v1,GLOBAL
+T08,Truth,Verify cloud scheduler cron,gcloud scheduler describe,gcloud CLI,Scheduler cadence check,gcloud scheduler jobs describe angel-scan-0915,GLOBAL
+T09,Truth,Verify sheet column headers,Compare sheet row 1 to spec,Python,Google Sheet schema assertion,python sheet_grid.py --check-headers,GLOBAL
+T10,Truth,Verify correlation ID propagation,Trace run_id across 4 log sinks,Python,End-to-end tracing check,python tools/verify_trace_propagation.py,GLOBAL
+T11,Truth,Verify fail-closed on 500,Simulate Angel API outage,pytest,Resilience assertion,pytest tests/test_broker_failure.py,GLOBAL
+T12,Truth,Verify zero lookahead bias,Assert prediction_time < market_open,Python,Model integrity check,assert pred_time < session_open_time,GLOBAL
+T13,Truth,Verify non-zero bid ask,Assert best_bid > 0 and best_ask > 0,Python,Executable liquidity check,assert quote.bid > 0 and quote.ask > 0,GLOBAL
+T14,Truth,Verify no penny option domination,Assert option_ltp >= 2.0,Python,Ranking quality assertion,assert ranked_option.ltp >= 2.0,GLOBAL
+T15,Truth,Verify two independent sources,Compare primary vs peer proof,PowerShell,Master contract rule 4 check,tools/cross_agent_packet.ps1,GLOBAL
+V01,Visual,Show me the full graph,Render full system network topology,Mermaid / D3,Network visibility,Full system architecture graph,USER
+V02,Visual,Show me the neural map,Render cognitive brain mapping,Mermaid,Mental model comprehension,Neural brain layout,USER
+V03,Visual,Show me the status,Render ECG telemetry monitor,HTML / Dashboard,Real-time health check,Port 8766 ECG dashboard,USER
+V04,Visual,Show me the blast radius,Render failure containment map,Mermaid,Resilience visualization,Failure propagation tree,USER
+V05,Visual,Show me the lineage,Render schema lineage from tick to BQ,Mermaid erDiagram,Data provenance,OpenAPI to BQ lineage,USER
+V06,Visual,Show me the latency waterfall,Render hop-by-hop latency spans,Mermaid gantt,Performance tuning,Trace path waterfall,USER
+V07,Visual,Show me the OBI distribution,Render order book imbalance bell curve,Plot,Alpha analysis,OBI histogram,USER
+V08,Visual,Show me the volatility surface,Render strike vs expiry IV surface,3D Plot,Option pricing,IV smile and skew,USER
+V09,Visual,Show me the moneyness scatter,Render delta vs return scatter,Scatter Plot,Trade selection,Moneyness radar,USER
+V10,Visual,Show me the hit rate curve,Render 30-day model accuracy trend,Line Chart,Model validation,Hit rate timeline,USER
+V11,Visual,Show me the control room banner,Render 8-panel SRE operational dashboard,HTML / Grid,Executive control,8-panel control room,USER
+V12,Visual,Show me the force directed graph,Render physics-simulated node layout,D3 / NetworkX,Dense network analysis,Image 1 neural graph,USER
+V13,Visual,Show me the cluster map,Render colored regional clusters,Mermaid / Plot,Domain boundary,8-cluster architecture,USER
+V14,Visual,Show me the bottleneck tree,Render system bottleneck hierarchy,Mermaid TD,Performance optimization,Slowest path hierarchy,USER
+V15,Visual,Show me the abstraction schematic,Render simplified pipeline diagram,Mermaid LR,Cognitive load reduction,Simplified 4-stage pipeline,USER
+V16,Visual,Show me the SLO burn rate,Render error budget consumption curve,Plot,SRE reliability,1h vs 6h burn rate,USER
+V17,Visual,Show me the hourly load matrix,Render RPM heatmap by hour and service,Heatmap,Capacity planning,24-hour service load,USER
+V18,Visual,Show me the centrality ranking,Render top 10 most critical network hubs,Bar Chart,Critical path identification,Betweenness centrality,USER

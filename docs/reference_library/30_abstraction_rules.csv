@@ -1,0 +1,9 @@
+Rule_ID,Group_Name,Collapsed_Nodes_Count,Member_Nodes,Exposed_Interface,Boundary_Protocol,Encapsulation_Benefit
+ABS01,Ingestion Gateway,3,"N04 (Auth), N05 (Quotes), N23 (News)","fetch_market_universe() -> Dict[Symbol, Quote]",Internal SDK / REST,"Hides broker connection pooling, TOTP refresh, and raw WebSocket complexity"
+ABS02,Decision Engine,2,"N06 (Ranker), N25 (Model Weights)",rank_fno_universe(quotes) -> PredictionPayload,In-Memory Pydantic,"Encapsulates OBI, PCR, moneyness calculations, and Bayesian factor tuning"
+ABS03,Fenced Writer Gate,2,"N07 (Guard), N11 (BQ Lease)","execute_authorized_write(payload, lease_token)",CAS Database Token,Guarantees single production writer without exposing distributed lock mechanics
+ABS04,Enterprise Warehouse,3,"N08 (Live), N09 (History), N10 (Paper)",publish_to_warehouse(payload) -> BQ_Receipt,gRPC / BQ API,"Abstracts dataset partitioning, clustering, streaming buffers, and table IDs"
+ABS05,Public Sheet Sync,3,"N12 (Sheet), N13 (Alerts), N14 (Heartbeat)",publish_to_sheet(payload) -> Sheet_Receipt,gspread / REST,"Enforces 60 RPM rate limit safety, backoff retry, and cell formatting internally"
+ABS06,Local SRE Observer,4,"N19 (Watchdog), N20 (Supervisor), N21 (Bridge), N24 (CSV)",get_host_vitals() -> HostHealthReport,HTTP JSON / Port 8766,Exposes single unified health status endpoint without exposing multi-daemon IPC
+ABS07,Security & Identity Vault,2,"N15 (Secret Manager), N16 (Sheets Bot SA)",get_production_credentials() -> SecretsMap,IAM / Secret API,"Ensures zero credential leakage to logs, terminal stdout, or git repositories"
+ABS08,Source & CI Governance,3,"N17 (Repo), N18 (Workflows), N25 (Issue #3)",verify_production_provenance() -> ProvenanceReceipt,Git SHA / GitHub API,"Encapsulates commit verification, branch protection, and two-party peer review"

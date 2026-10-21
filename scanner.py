@@ -705,8 +705,77 @@ def refresh_from_forensic(book, now):
     )
 
 
-def main():
+QUIET_CLOCKS = frozenset({"HOLIDAY", "WEEKEND", "BEFORE_OPEN", "UNKNOWN"})
+
+
+def apply_paper_runtime():
+    """The session process stays in paper mode. A live-order request stops here."""
+    authority = (os.environ.get("LIVE_ORDER_AUTHORITY") or "").strip()
+    paper = (os.environ.get("PAPER_MODE") or "").strip()
+    if authority == "1":
+        raise SystemExit("LIVE_ORDER_AUTHORITY=1 blocked. No broker orders.")
+    if paper == "0":
+        raise SystemExit("PAPER_MODE=0 blocked. Paper session only.")
+    for flag in ("ALLOW_LIVE_BROKER_ORDERS", "PLACE_REAL_ORDERS", "ANGEL_LIVE_ORDERS"):
+        if (os.environ.get(flag) or "").strip() == "1":
+            raise SystemExit(flag + "=1 blocked. No broker orders.")
+    os.environ["PAPER_MODE"] = "1"
+    os.environ["LIVE_ORDER_AUTHORITY"] = "0"
+
+
+def session_plan(now):
+    """OPEN only inside 09:15-15:40 IST on a trading day. Every other clock stays quiet."""
+    from market_calendar import market_session_state
+    state = market_session_state(now)
+    if state.get("status") == "OPEN":
+        return "OPEN", state
+    return "QUIET", state
+
+
+def _clock_from_arg(text):
+    raw = str(text or "").strip()
+    if not raw:
+        return now_ist()
+    parsed = datetime.datetime.fromisoformat(raw)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=IST)
+    return parsed
+
+
+def run_session(now=None, dry_run=False):
+    """Decide the session. A dry run does not log in, write predictions, or place orders."""
+    apply_paper_runtime()
+    moment = now or now_ist()
+    action, state = session_plan(moment)
+    report = {
+        "dry_run": bool(dry_run),
+        "action": action,
+        "status": state.get("status"),
+        "expect_live_scanner": bool(state.get("expect_live_scanner")),
+        "summary": state.get("summary"),
+        "wrote_predictions": False,
+        "orders": 0,
+        "PAPER_MODE": os.environ.get("PAPER_MODE"),
+        "LIVE_ORDER_AUTHORITY": os.environ.get("LIVE_ORDER_AUTHORITY"),
+        "open_branch_reachable": action == "OPEN",
+    }
+    if dry_run or action == "QUIET":
+        print(json.dumps(report))
+    return report
+
+
+def main(argv=None):
+    import argparse
+    parser = argparse.ArgumentParser(description="Existing market_bot scanner session")
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--at", default="", help="ISO datetime. Honoured only with --dry-run.")
+    args = parser.parse_args(argv)
     load_env()
+    if args.at and not args.dry_run:
+        raise SystemExit("A forced clock is only allowed with --dry-run. No live scan was started.")
+    report = run_session(_clock_from_arg(args.at) if args.at else now_ist(), dry_run=args.dry_run)
+    if args.dry_run or report["action"] == "QUIET":
+        raise SystemExit(0)
     if os.getenv("ANGEL_VALIDATION_ONLY") == "1":
         from tools.validation_cycle import run_validation
         raise SystemExit(run_validation())
@@ -728,12 +797,7 @@ def main():
         prediction_ran = bool(run_angel_loop(book, angel_login()))
     if not prediction_ran:
         print("[INFO] Invoking Option CE/PE Prediction & Rating Pipeline...")
-        from market_calendar import is_trading_day
-        _now = now_ist()
-        _catchup = is_trading_day(_now) and not market_is_open(_now) and _now.hour >= 15
-        if _catchup:
-            print(f"[INFO] EOD catch-up mode: forcing pre-close journaling at {_now.strftime('%H:%M IST')}")
-        run_prediction_with_retry(force_pre_close=_catchup)
+        run_prediction_with_retry(force_pre_close=False)
 
 
 if __name__ == "__main__":

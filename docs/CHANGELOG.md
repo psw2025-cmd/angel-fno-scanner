@@ -823,3 +823,8 @@ Heartbeat cell conflated row count with sync timestamp, corrupting health status
 ## 2026-10-10 - Orphan process audit
 - Add ownership-scoped, age-gated orphan-process classification and append-only audit evidence with a deterministic regression test.
 - Inspection only: no process termination, no boot scheduler installed; escalation requires validated PID ownership and separate approval.
+
+## 2026-10-21
+- Committed pending changes from feat/cdx-01-to-12-integration.
+- Excluded 8 files with non-ASCII characters pending cleanup: apply_patches.py, data_tabs_00_to_10.py, data_tabs_11_to_25.py, data_tabs_26_to_39.py, data_tabs_m01_to_m15.py, fix_infrastructure.py, forensic_verifier.py, tools/check_downstream.py.
+

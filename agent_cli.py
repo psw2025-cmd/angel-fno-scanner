@@ -442,6 +442,7 @@ def main():
     parser.add_argument("--verify", action="store_true", help="Run 17-tab forensic audit across Google Sheets, BigQuery and Engine")
     parser.add_argument("--json-only", action="store_true", help="Output only JSON on stdout - no human text")
     parser.add_argument("--export-snapshots", action="store_true", help="Export pre-rendered data snapshots to data/ directory")
+    parser.add_argument("--multibagger-screen", action="store_true", help="Score the saved-history multi-bagger screen. Paper only, no orders.")
     parser.add_argument("--limit", type=int, default=10, help="Result limit (default: 10)")
     parser.add_argument("--format", choices=["human", "json", "markdown"], default="human", help="Output format (human, json, markdown)")
 
@@ -490,6 +491,9 @@ def main():
     elif args.export_snapshots:
         res = export_snapshots()
         format_output(res, args.format, title="Snapshot Export Status")
+    elif args.multibagger_screen:
+        from tools.multibagger_screen import main as run_multibagger_screen
+        raise SystemExit(run_multibagger_screen())
     else:
         parser.print_help()
 

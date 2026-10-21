@@ -1,0 +1,17 @@
+Trace_ID,Span_ID,Hop_Sequence,Source_Component,Target_Component,Operation,Latency_ms,Status,Sample_Timestamp
+TRC-20261014-0915,SPN-01-CRON,1,Cloud Scheduler,Cloud Run Job,HTTP POST trigger invocation,240,OK (200),2026-10-14 09:15:00.120 IST
+TRC-20261014-0915,SPN-02-BOOT,2,Cloud Run Runtime,Container Main,Container cold boot & python import,6150,OK (0),2026-10-14 09:15:06.270 IST
+TRC-20261014-0915,SPN-03-SECM,3,Container Main,Secret Manager,"Fetch 7 production secrets (SMARTAPI, PIN, TOTP)",115,OK (200),2026-10-14 09:15:06.385 IST
+TRC-20261014-0915,SPN-04-AUTH,4,SmartAPI Client,Angel Login API,Generate session JWT via TOTP seed,420,OK (200),2026-10-14 09:15:06.805 IST
+TRC-20261014-0915,SPN-05-FEED,5,SmartAPI Client,Angel Market Feed,Fetch 219 future quotes & option chains,36800,OK (219/219),2026-10-14 09:15:43.605 IST
+TRC-20261014-0915,SPN-06-NEWS,6,News Ingester,Financial Wires,Fetch sentiment & regulatory filings,650,OK (200),2026-10-14 09:15:44.255 IST
+TRC-20261014-0915,SPN-07-PRED,7,Container Main,Prediction Engine,"Compute OBI, PCR, moneyness & rank CE/PE",48200,OK (Ranked),2026-10-14 09:16:32.455 IST
+TRC-20261014-0915,SPN-08-FENC,8,Prediction Engine,Writer Guard,Check publication authority token,35,OK (Valid),2026-10-14 09:16:32.490 IST
+TRC-20261014-0915,SPN-09-LEAS,9,Writer Guard,BigQuery Lock Table,Acquire atomic lease token (CAS),210,OK (Acquired),2026-10-14 09:16:32.700 IST
+TRC-20261014-0915,SPN-10-BQLV,10,BigQuery Client,option_predictions_live,Atomically replace 219 live rows,3150,OK (219 Written),2026-10-14 09:16:35.850 IST
+TRC-20261014-0915,SPN-11-BQHS,11,BigQuery Client,option_predictions_history,Append 219 rows to day partition,3800,OK (Appended),2026-10-14 09:16:39.650 IST
+TRC-20261014-0915,SPN-12-SHTC,12,Container Main,Google Sheets API,Authenticate via SHEETS_KEY_JSON,120,OK (Auth),2026-10-14 09:16:39.770 IST
+TRC-20261014-0915,SPN-13-SHTP,13,gspread Client,OPTION_SHEET,Batch update FORENSIC_LIVE & CE_PE_RANK,14200,OK (Cells Updated),2026-10-14 09:16:53.970 IST
+TRC-20261014-0915,SPN-14-PULSE,14,gspread Client,HEARTBEAT Tab,Write ISO timestamp pulse and status=LIVE,580,OK (Updated),2026-10-14 09:16:54.550 IST
+TRC-20261014-0915,SPN-15-RELE,15,Writer Guard,BigQuery Lock Table,Release active lease token,180,OK (Released),2026-10-14 09:16:54.730 IST
+TRC-20261014-0915,SPN-16-EXIT,16,Container Main,Cloud Run Runtime,Container clean shutdown (Exit Code 0),450,OK (Exit 0),2026-10-14 09:16:55.180 IST

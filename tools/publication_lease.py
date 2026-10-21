@@ -34,6 +34,14 @@ def assert_paper_publisher() -> None:
             raise PublicationLeaseError(
                 f"paper publisher refused live-order flag {flag}"
             )
+    if (os.getenv("LIVE_ORDER_AUTHORITY") or "").strip() == "1":
+        raise PublicationLeaseError(
+            "paper publisher refused LIVE_ORDER_AUTHORITY=1"
+        )
+    if (os.getenv("PAPER_MODE") or "").strip() == "0":
+        raise PublicationLeaseError(
+            "paper publisher refused PAPER_MODE=0"
+        )
 
 
 def cycle_lock_key(now: datetime.datetime | None = None) -> str:

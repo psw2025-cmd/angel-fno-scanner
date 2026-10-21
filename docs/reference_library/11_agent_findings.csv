@@ -1,0 +1,11 @@
+Finding_ID,Discovery_Name,Domain,Finding_Description,Priority,Effort_Hours,Impact_Value,Status
+AF01,Atomic Monotonic Fencing Token,Concurrency,Honor-system writer guards can fail on network partitions; atomic BQ leases prevent split-brain writes,P0,4,Critical,Implemented / Tested
+AF02,OpenTelemetry Correlation ID Propagation,Observability,Passing run_id from Cloud Scheduler down to BQ rows enables 100% deterministic root-cause tracing,P1,6,High,Planned Phase 2
+AF03,Workload Identity Federation (WIF),Security,Keyless OIDC token exchange eliminates high-risk static JSON service account keys in GitHub Secrets,P1,3,High,Roadmap Phase 2
+AF04,Google Sheets 60 RPM Quota Exhaustion,Reliability,Direct write bursts trigger HTTP 429 quota errors; local CSV buffering and batching resolves it,P0,2,Critical,Active / Hardened
+AF05,Float64 vs Int64 Schema Drift,Data Quality,Pydantic rank fields serialized as floats crash BQ strict INTEGER columns; schema guard fixes it,P0,2,Critical,Merged PR #97
+AF06,Watchdog Daemon 300s Polling Loop,Observability,Port 8766 HTTP evidence server provides independent out-of-band truth on host health,P2,1,Medium,Active / Verified
+AF07,WSL2 Sysbox Docker Sandbox,Security,Isolates untrusted execution nodes inside n8n without risking host Windows filesystem compromise,P2,4,Medium,Active / Isolated
+AF08,Multi-Agent Coordination Bus (Issue #3),Governance,Cross-agent evidence packets prevent hallucinated claims and enforce two-party resolution,P0,2,Critical,Active / Governed
+AF09,Timezone Serialization Distortion,Data Quality,Manually adding 5:30 to UTC and serializing with +00:00 causes lookahead prediction scoring errors,P0,2,Critical,Hardened in ZoneInfo
+AF10,Dormant Agent Memory Tables,Machine Learning,BigQuery tables agent_memory and agent_scoreboard exist in schema but need automated ingestion hooks,P2,8,High,Schema Ready / Dormant

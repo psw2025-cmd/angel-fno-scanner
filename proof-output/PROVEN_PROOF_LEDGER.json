@@ -1,0 +1,436 @@
+{
+  "schema_version": "2.5",
+  "kind": "nasa_100year_proof_ledger",
+  "source": "AGY-ChatGPT Unified Autonomy Contract",
+  "policy": "No PASS without executed command and reproducible evidence; BLOCKED for unavailable cloud credentials",
+  "checks": [
+    {
+      "id": "P-01",
+      "name": "No emoji in print",
+      "cmd": "python tools/encoding_source_gate.py; scan stdout for emoji",
+      "status": "PASS",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Static tracked-Python print emoji scan",
+        "details": {
+          "matches": [],
+          "scanned_files": 0
+        }
+      },
+      "fixed_by": "7806d18",
+      "domain": "AGY",
+      "system": "Local"
+    },
+    {
+      "id": "P-02",
+      "name": "Orphans <10",
+      "cmd": "git status --porcelain --untracked-files=normal",
+      "status": "PASS",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Runner checkout only, not local workstation",
+        "details": {
+          "untracked": 0,
+          "changed_total": 0
+        }
+      },
+      "fixed_by": "7806d18",
+      "domain": "AGY",
+      "system": "GitHub"
+    },
+    {
+      "id": "P-03",
+      "name": "Harness <20 active",
+      "cmd": "glob audit/verify_harness_*.json",
+      "status": "FAIL",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Runner checkout only; ignored local files absent",
+        "details": {
+          "harness": 398
+        }
+      },
+      "fixed_by": "7806d18",
+      "domain": "AGY",
+      "system": "Local"
+    },
+    {
+      "id": "P-04",
+      "name": "desktop.ini zero tracked",
+      "cmd": "git ls-files '**/desktop.ini'; inspect filesystem",
+      "status": "PASS",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Tracked files only; ignored workstation desktop.ini may still exist",
+        "details": {
+          "tracked_desktop_ini": []
+        }
+      },
+      "fixed_by": "7806d18",
+      "domain": "AGY",
+      "system": "Local"
+    },
+    {
+      "id": "P-05",
+      "name": "Sheets 219 == BQ 219",
+      "cmd": "pytest tests/test_data_chain.py -k test_data_snapshots_219_universe",
+      "status": "BLOCKED",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Requires authenticated source readback and canonical full SHA-256 artifact",
+        "details": null
+      },
+      "fixed_by": "7806d18",
+      "domain": "ChatGPT",
+      "system": "Sheets"
+    },
+    {
+      "id": "P-06",
+      "name": "Checksum 3f6153d1e221ae43 verified full SHA",
+      "cmd": "python tools/verify_sheets_bq_reconciliation.py",
+      "status": "BLOCKED",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Requires authenticated source readback and canonical full SHA-256 artifact",
+        "details": null
+      },
+      "fixed_by": "7806d18",
+      "domain": "ChatGPT",
+      "system": "BQ"
+    },
+    {
+      "id": "P-07",
+      "name": "pytest permanent test suite",
+      "cmd": "pytest tests/test_encoding_gate.py tests/test_cli_contract.py tests/test_data_chain.py",
+      "status": "FAIL",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Exact observed pytest count; historical 221 is not guaranteed",
+        "details": {
+          "exit": 0,
+          "passed": null,
+          "tail": ""
+        }
+      },
+      "fixed_by": "7806d18",
+      "domain": "AGY",
+      "system": "Local"
+    },
+    {
+      "id": "P-08",
+      "name": "memory_guard EOD threshold 86400",
+      "cmd": "python tools/memory_guard.py",
+      "status": "FAIL",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Requires 6-file proof in output",
+        "details": {
+          "exit": 0,
+          "tail": ""
+        }
+      },
+      "fixed_by": "34af55f",
+      "domain": "ChatGPT",
+      "system": "GitHub"
+    },
+    {
+      "id": "P-09",
+      "name": "healthz 200 n8n local webhook",
+      "cmd": "curl -s http://127.0.0.1:5680/healthz",
+      "status": "BLOCKED",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "No externally accessible N8N_HEALTH_URL; localhost runner is not laptop",
+        "details": null
+      },
+      "fixed_by": "7806d18",
+      "domain": "AGY",
+      "system": "n8n"
+    },
+    {
+      "id": "P-10",
+      "name": "N8N_USER_FOLDER canonical",
+      "cmd": "inspect /home/pritam/n8n-data/.n8n/database.sqlite",
+      "status": "BLOCKED",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Canonical N8N_USER_FOLDER must be read from actual n8n service environment",
+        "details": null
+      },
+      "fixed_by": "7806d18",
+      "domain": "AGY",
+      "system": "n8n"
+    },
+    {
+      "id": "P-11",
+      "name": "No plaintext secrets",
+      "cmd": "secret scan tracked content and credentials.py",
+      "status": "BLOCKED",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Requires secret scanning tracked content, artifacts and Git history; filename grep insufficient",
+        "details": null
+      },
+      "fixed_by": "7806d18",
+      "domain": "ChatGPT",
+      "system": "Cloud"
+    },
+    {
+      "id": "P-12",
+      "name": "Deployment attestation",
+      "cmd": "gh api repos/psw2025-cmd/angel-fno-scanner/commits/main",
+      "status": "BLOCKED",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Signed authenticated cloud /version endpoint unavailable",
+        "details": null
+      },
+      "fixed_by": "7806d18",
+      "domain": "ChatGPT",
+      "system": "GitHub"
+    },
+    {
+      "id": "P-13",
+      "name": "Single-writer lease",
+      "cmd": "inspect market_bot writer guard and docs/AGENT_LOCK.md",
+      "status": "BLOCKED",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Lease fencing and BQ commit marker unavailable",
+        "details": null
+      },
+      "fixed_by": "7806d18",
+      "domain": "AGY",
+      "system": "Local"
+    },
+    {
+      "id": "P-14",
+      "name": "Restore drill exists",
+      "cmd": "inspect tools/self_resolve.ps1 and backup procedures",
+      "status": "BLOCKED",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Actual cold restore and encryption key recovery not executed",
+        "details": null
+      },
+      "fixed_by": "7806d18",
+      "domain": "AGY",
+      "system": "Local"
+    },
+    {
+      "id": "P-15",
+      "name": "Activation attestation desired==observed",
+      "cmd": "compare desired and observed state",
+      "status": "BLOCKED",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Live n8n API desired-vs-observed active flags unavailable",
+        "details": null
+      },
+      "fixed_by": "7806d18",
+      "domain": "AGY",
+      "system": "Local"
+    },
+    {
+      "id": "P-16",
+      "name": "Negative IAM tests",
+      "cmd": "verify fail-closed authorization without credentials",
+      "status": "BLOCKED",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Cloud principal IAM-deny integration test unavailable",
+        "details": null
+      },
+      "fixed_by": "7806d18",
+      "domain": "ChatGPT",
+      "system": "Cloud"
+    },
+    {
+      "id": "P-17",
+      "name": "Cost cap < $10/day",
+      "cmd": "inspect BigQuery sandbox zero-cost query policy",
+      "status": "BLOCKED",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Billing budget/quota access and alert drill unavailable",
+        "details": null
+      },
+      "fixed_by": "7806d18",
+      "domain": "ChatGPT",
+      "system": "BQ"
+    },
+    {
+      "id": "P-18",
+      "name": "Verify 3x deterministic",
+      "cmd": "python agent_cli.py --verify --json-only (3 passes)",
+      "status": "BLOCKED",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Set NASA_ENABLE_CLOUD_VERIFY=1 with scoped cloud credentials to run three verifications",
+        "details": null
+      },
+      "fixed_by": "7806d18",
+      "domain": "AGY",
+      "system": "Local"
+    },
+    {
+      "id": "P-19",
+      "name": "Git worktree safety",
+      "cmd": "git worktree list --porcelain",
+      "status": "PASS",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Runner-only count; multiple legitimate local worktrees need not be defects",
+        "details": {
+          "count": 0
+        }
+      },
+      "fixed_by": "7806d18",
+      "domain": "AGY",
+      "system": "GitHub"
+    },
+    {
+      "id": "P-20",
+      "name": "Branch count hygiene",
+      "cmd": "git branch -r",
+      "status": "PASS",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "Remote branch count; threshold is policy, not intrinsic correctness",
+        "details": {
+          "count": 0
+        }
+      },
+      "fixed_by": "7806d18",
+      "domain": "AGY",
+      "system": "GitHub"
+    },
+    {
+      "id": "P-21",
+      "name": "PowerBI Refresh & Process Safety",
+      "cmd": "Get-Process -Name '*msmdsrv*', '*PBIDesktop*'; inspect .gitignore for .pbi and pbix",
+      "status": "BLOCKED",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "No independent verification implemented for this ledger check",
+        "details": {
+          "check_id": "P-21"
+        }
+      },
+      "fixed_by": "7806d18",
+      "domain": "AGY",
+      "system": "PowerBI"
+    },
+    {
+      "id": "P-22",
+      "name": "Excel cp1252 Binary Safety",
+      "cmd": "pytest tests/test_data_chain.py -k test_excel_and_pbi_safety",
+      "status": "BLOCKED",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "No independent verification implemented for this ledger check",
+        "details": {
+          "check_id": "P-22"
+        }
+      },
+      "fixed_by": "7806d18",
+      "domain": "AGY",
+      "system": "Excel"
+    },
+    {
+      "id": "P-23",
+      "name": "Colab Notebook Emoji & UTF-8 Gate",
+      "cmd": "pytest tests/test_encoding_gate.py",
+      "status": "BLOCKED",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "No independent verification implemented for this ledger check",
+        "details": {
+          "check_id": "P-23"
+        }
+      },
+      "fixed_by": "7806d18",
+      "domain": "AGY",
+      "system": "Colab"
+    },
+    {
+      "id": "P-24",
+      "name": "GCS Cloud Evidence WORM Readback",
+      "cmd": "gsutil ls gs://fno-angel-evidence/",
+      "status": "BLOCKED",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "No independent verification implemented for this ledger check",
+        "details": {
+          "check_id": "P-24"
+        }
+      },
+      "fixed_by": "7806d18",
+      "domain": "ChatGPT",
+      "system": "GCS"
+    },
+    {
+      "id": "P-25",
+      "name": "BigQuery Cost Cap & Quota Guard",
+      "cmd": "python -c \"import credentials; print(credentials.resolve_service_account_info() is not None)\"",
+      "status": "BLOCKED",
+      "timestamp": "2026-10-21T15:17:52.940828+00:00",
+      "source_sha": "",
+      "evidence": {
+        "reason": "No independent verification implemented for this ledger check",
+        "details": {
+          "check_id": "P-25"
+        }
+      },
+      "fixed_by": "7806d18",
+      "domain": "ChatGPT",
+      "system": "BQ"
+    }
+  ],
+  "encoding_safety": {
+    "status": "PASS",
+    "timestamp": "2026-10-09T23:16:06+05:30",
+    "checks": [
+      "tracked_python_syntax",
+      "staged_non_ascii",
+      "cp1252_positive_negative",
+      "cli_help",
+      "argparse_exit_2",
+      "windows_linux_ci",
+      "branch_protection",
+      "agy_routing_preserved"
+    ],
+    "policy": "No PASS without source SHA and executed evidence"
+  },
+  "generated_at_utc": "2026-10-21T15:17:52.940828+00:00",
+  "summary": {
+    "PASS": 5,
+    "FAIL": 3,
+    "BLOCKED": 17,
+    "NOT_RUN": 0
+  }
+}

@@ -1,0 +1,17 @@
+Violation,Reset_Word,Follow_Up_Instruction,Source
+"Agent wrote placeholder (your-cloud-run-url, etc.)",PLACEHOLDER,Re-answer with real production values or write UNKNOWN.,GLOBAL
+Agent assumed file content without reading lines,ASSUMPTION,Read the actual file lines or explicitly mark NOT_READ.,GLOBAL
+Agent invented column or table names,FABRICATION,Verify column names against bq show schema output.,GLOBAL
+Agent marked task OK/PASS without output proof,UNVERIFIED,Show the exact reproducible command output.,GLOBAL
+Agent cited expired or stale data (>5 min old),STALE,Re-run the query or command and provide current timestamp.,GLOBAL
+"Agent used hedging words (should, might, probably)",HEDGE,Replace with definite assertion (is / is not) or UNKNOWN.,GLOBAL
+Agent interpreted non-zero exit code as success,WISHFUL,Exit code non-zero is a failure. Report raw error.,GLOBAL
+Agent skipped a required pipeline or audit step,SKIP,State reason for omission or immediately run the step.,GLOBAL
+Agent truncated long outputs with '...',TRUNCATE,Show full output or head/tail with exact line count.,GLOBAL
+Agent used circular reasoning or self-citation,CIRCULAR,Re-verify using external system tools and command output.,GLOBAL
+Agent replied in text when diagram was requested,DIAGRAM,Mermaid code block only. No explanatory prose.,GLOBAL
+Agent relied on a single source for critical state,SECOND,Execute a second independent command and compare outputs.,GLOBAL
+Agent provided approximate or rounded numbers,EXACT,Provide exact integer count and cite source command.,GLOBAL
+Agent appealed to authority or best practice,AUTHORITY,Cite the exact reproducible code line or terminal output.,GLOBAL
+Agent ran cross-check with fewer than required sources,N-WAY,Re-run cross-verification with at least 3-5 sources.,GLOBAL
+Agent repeated same mistake three times,RESET,Terminate conversation session and reload MASTER_CONTRACT.,GLOBAL

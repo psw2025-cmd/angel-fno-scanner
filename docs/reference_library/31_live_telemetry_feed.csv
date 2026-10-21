@@ -1,0 +1,16 @@
+Metric_ID,Component_Name,Metric_Label,Observed_Value,Unit,Warning_Threshold,Critical_Threshold,Status,Refresh_Interval_sec,Last_Observed_IST
+TEL01,angel_market_feed,F&O Universe Symbols Ingested,219,Symbols,< 216,< 200,HEALTHY,300,2026-10-14 22:30:00 IST
+TEL02,sheet_heartbeat,Google Sheet Heartbeat Age,45,Seconds,> 90,> 180,HEALTHY,60,2026-10-14 22:30:00 IST
+TEL03,local_watchdog_8766,Watchdog Daemon Uptime,28.5,Hours,< 1.0,Process Dead,HEALTHY,300,2026-10-14 22:30:00 IST
+TEL04,local_watchdog_8766,HTTP Server Listener Port 8766,200 OK,HTTP Status,!= 200,Connection Refused,HEALTHY,60,2026-10-14 22:30:00 IST
+TEL05,angel_smartapi_auth,Broker Authentication Status,AUTHENTICATED,Session State,Token Expiring,401 Unauthorized,HEALTHY,300,2026-10-14 22:30:00 IST
+TEL06,writer_guard_fence,Active Publication Lease Holder,angel-market-scan-job,Writer Identity,Split Brain Attempt,Lease Deadlock,HEALTHY,300,2026-10-14 22:30:00 IST
+TEL07,bq_option_predictions_live,Live Predictions Row Count,219,Rows,< 216,< 150,HEALTHY,300,2026-10-14 22:30:00 IST
+TEL08,sheet_paper_alert_log,Total Paper Trades Logged,150,Rows,Schema Mismatch,Sync Failure,HEALTHY,300,2026-10-14 22:30:00 IST
+TEL09,trading_safety_lock,Live Order Authority,OFF (Real Orders = 0),Execution Authority,Order Route Attempt,LIVE_ORDER == True,HEALTHY,300,2026-10-14 22:30:00 IST
+TEL10,trading_safety_lock,Paper Trading Simulation Mode,ON (Active Simulation),Execution Mode,Simulation Inactive,PAPER_MODE == False,HEALTHY,300,2026-10-14 22:30:00 IST
+TEL11,cloud_run_scan_job,Morning Scan Execution Duration,72.4,Seconds,> 120,> 180,HEALTHY,300,2026-10-14 22:30:00 IST
+TEL12,sheet_option_sheet_master,Google Sheets API Rate Consumption,18,RPM,> 45,> 55 (Quota=60),HEALTHY,60,2026-10-14 22:30:00 IST
+TEL13,local_host_cpu,Intel Core i3-6100U CPU Load,24.5%,Percent,> 80%,> 95%,HEALTHY,60,2026-10-14 22:30:00 IST
+TEL14,local_host_ram,Host Workstation Memory Usage,6.2,GB / 16GB,> 13.5 GB,> 15.0 GB,HEALTHY,60,2026-10-14 22:30:00 IST
+TEL15,gcp_secret_manager,Production Secrets Available,7 / 7,Enabled Secrets,< 7,< 5,HEALTHY,300,2026-10-14 22:30:00 IST
