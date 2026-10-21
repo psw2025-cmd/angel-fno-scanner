@@ -42,3 +42,22 @@ def generate_cycle_metadata(quotes, run_id, git_sha, session, *, expected_quotes
         "verified_count": len(quotes), "total": expected_quotes,
         "verification": "Angel One FULL exchFeedTime oldest tick",
     }
+
+
+def require_intraday_freshness(meta, *, now=None):
+    """Fail closed on stale exchange ticks before an OPEN-session sheet write.
+
+    The scheduled job may use EOD for its final publication receipt, but
+    intraday quote writes must always satisfy the tighter OPEN threshold.
+    """
+    from tools.check_freshness import validate
+
+    return validate(
+        meta.get("source_timestamp"),
+        meta.get("run_id"),
+        meta.get("git_sha"),
+        meta.get("cycle_id"),
+        "OPEN",
+        expected=meta,
+        now=now,
+    )
