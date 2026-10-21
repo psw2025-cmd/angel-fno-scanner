@@ -176,6 +176,8 @@ def run_readiness_probe():
                 chk_name = item.get("check")
                 chk_status = item.get("status")
                 checks_summary[chk_name] = chk_status
+                if item.get("detail"):
+                    checks_summary[chk_name + "_detail"] = str(item.get("detail"))[:300]
                 if chk_status == "FAIL":
                     fail_count += 1
                 elif chk_status == "PASS":
@@ -194,7 +196,10 @@ def run_readiness_probe():
     print(f"      Readiness Summary: {pass_count} PASS, {fail_count} FAIL, {other_count} OTHER (NOT_PROVEN/UNKNOWN)")
     for name, st in checks_summary.items():
         if name != "error":
-            print(f"        * {name:<25}: {st}")
+            if name.endswith("_detail"):
+                print(f"          detail {name}: {st}")
+            else:
+                print(f"        * {name:<25}: {st}")
 
     return {
         "status": "PASS" if fail_count == 0 and evidence_valid and proc.returncode == 0 else "FAIL",
