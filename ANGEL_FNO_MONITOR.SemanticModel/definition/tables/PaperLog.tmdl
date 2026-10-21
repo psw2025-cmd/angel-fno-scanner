@@ -45,6 +45,12 @@ table PaperLog
 		summarizeBy: none
 		sourceColumn: note
 
+	column news_catalyst
+		dataType: string
+		lineageTag: p0000000-0000-0000-0000-000000000012
+		summarizeBy: none
+		sourceColumn: news_catalyst
+
 	column raw_later_session_change_pct
 		dataType: double
 		formatString: +0.00"%";-0.00"%";0.00"%"
@@ -92,8 +98,21 @@ table PaperLog
 				        {"entry_time","session_date","symbol","action","fut_ltp","raw_session_change_pct","note","raw_later_session_change_pct","outcome_filled_at"},
 				        MissingField.UseNull
 				    ),
-				    AddEligibility = Table.AddColumn(
+				    AddCatalyst = Table.AddColumn(
 				        Keep,
+				        "news_catalyst",
+				        each
+				            let
+				                N = try Text.From([note]) otherwise "",
+				                P = Text.PositionOf(N, "Catalyst:"),
+				                Rest = if P < 0 then "" else Text.Middle(N, P + 9),
+				                Bar = Text.PositionOf(Rest, "|"),
+				                Cut = if Bar < 0 then Rest else Text.Start(Rest, Bar)
+				            in Text.Trim(Cut),
+				        type text
+				    ),
+				    AddEligibility = Table.AddColumn(
+				        AddCatalyst,
 				        "forward_accuracy_eligible",
 				        each false,
 				        type logical
@@ -108,6 +127,7 @@ table PaperLog
 				            {"fut_ltp", type number},
 				            {"raw_session_change_pct", type number},
 				            {"note", type text},
+				            {"news_catalyst", type text},
 				            {"raw_later_session_change_pct", type number},
 				            {"outcome_filled_at", type text},
 				            {"forward_accuracy_eligible", type logical}

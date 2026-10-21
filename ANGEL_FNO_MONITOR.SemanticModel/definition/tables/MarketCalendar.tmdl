@@ -1,0 +1,78 @@
+table MarketCalendar
+	lineageTag: t0000000-0000-0000-0000-000000000011
+
+	column session_date
+		dataType: string
+		lineageTag: c1000000-0000-0000-0000-000000000001
+		summarizeBy: none
+		sourceColumn: session_date
+
+	column day_status
+		dataType: string
+		lineageTag: c1000000-0000-0000-0000-000000000002
+		summarizeBy: none
+		sourceColumn: day_status
+
+	column name
+		dataType: string
+		lineageTag: c1000000-0000-0000-0000-000000000003
+		summarizeBy: none
+		sourceColumn: name
+
+	column open_start_minute
+		dataType: int64
+		formatString: 0
+		lineageTag: c1000000-0000-0000-0000-000000000004
+		summarizeBy: min
+		sourceColumn: open_start_minute
+
+	column open_score_end_minute
+		dataType: int64
+		formatString: 0
+		lineageTag: c1000000-0000-0000-0000-000000000005
+		summarizeBy: min
+		sourceColumn: open_score_end_minute
+
+	column pre_close_start_minute
+		dataType: int64
+		formatString: 0
+		lineageTag: c1000000-0000-0000-0000-000000000006
+		summarizeBy: min
+		sourceColumn: pre_close_start_minute
+
+	column close_end_minute
+		dataType: int64
+		formatString: 0
+		lineageTag: c1000000-0000-0000-0000-000000000007
+		summarizeBy: min
+		sourceColumn: close_end_minute
+
+	partition MarketCalendar = m
+		mode: import
+		source =
+				let
+				    Url = "https://raw.githubusercontent.com/psw2025-cmd/angel-fno-scanner/main/data/nse_session_days_2026.json",
+				    LocalFile = "C:\AngelFNO_Workstation\repos\angel-fno-scanner\data\nse_session_days_2026.json",
+				    LocalBytes = try File.Contents(LocalFile) otherwise null,
+				    RawBytes = if LocalBytes <> null then LocalBytes else try Web.Contents(Url) otherwise null,
+				    RawJson = if RawBytes <> null then Json.Document(RawBytes) else {},
+				    Raw0 = if Value.Is(RawJson, type list) then Table.FromRecords(RawJson) else #table({}, {}),
+				    Keep = Table.SelectColumns(
+				        Raw0,
+				        {"session_date","day_status","name","open_start_minute","open_score_end_minute","pre_close_start_minute","close_end_minute"},
+				        MissingField.UseNull
+				    ),
+				    Types = Table.TransformColumnTypes(
+				        Keep,
+				        {
+				            {"session_date", type text},
+				            {"day_status", type text},
+				            {"name", type text},
+				            {"open_start_minute", Int64.Type},
+				            {"open_score_end_minute", Int64.Type},
+				            {"pre_close_start_minute", Int64.Type},
+				            {"close_end_minute", Int64.Type}
+				        }
+				    )
+				in
+				    Types
