@@ -36,6 +36,12 @@ def test_paper_safety_and_zero_real_orders():
         assert "orderPlacement" not in code, f"Forbidden live order method found in {script_name}"
         assert "modifyOrder" not in code, f"Forbidden live order method found in {script_name}"
         assert "cancelOrder" not in code, f"Forbidden live order method found in {script_name}"
+    workflow = (ROOT / ".github/workflows/market_bot.yml").read_text(encoding="utf-8")
+    assert "PAPER_MODE: '1'" in workflow
+    assert "LIVE_ORDER_AUTHORITY: '0'" in workflow
+    assert 'test "$PAPER_MODE" = 1' in workflow
+    assert 'test "$LIVE_ORDER_AUTHORITY" = 0' in workflow
+    assert "Refusing to publish onto the locked main copy" in workflow
 
 
 def test_mock_leakage_prevention():
