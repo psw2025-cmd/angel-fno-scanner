@@ -15,14 +15,6 @@ on:
         type: choice
         options: [OPEN, CLOSED, EOD]
         default: EOD
-  push:
-    branches: [main]
-    paths:
-      - 'scanner.py'
-      - 'angel_prediction_engine.py'
-      - 'agent_cli.py'
-      - 'requirements.txt'
-      - '.github/workflows/market_bot.yml'
 
 permissions:
   contents: write
@@ -58,6 +50,12 @@ jobs:
       ANGEL_MARKET_SESSION: EOD
 
     steps:
+      - name: Keep production scans on main
+        if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && inputs.dry_run == false
+        run: |
+          echo "::error::A real scan runs from main on the weekday schedule only. This branch can run a dry check. Paper mode stays on. Live orders stay off."
+          exit 1
+
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -159,14 +157,41 @@ jobs:
             echo "No data changes to commit."
           fi
 
-      - name: Create Issue on Failure
+      - name: Record one open failure ticket
         if: failure()
         uses: actions/github-script@v7
         with:
           script: |
-            github.rest.issues.create({
+            const title = `Workflow Failure: ${context.workflow}`;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const note = [
+              `The workflow **${context.workflow}** failed.`,
+              ``,
+              `Run: ${runUrl}`,
+              `Branch: ${context.ref}`,
+              `Event: ${context.eventName}`,
+              ``,
+              `Paper mode stays on. Live orders stay off. This updates the one open ticket instead of opening another copy.`
+            ].join('\n');
+            const listed = await github.paginate(github.rest.issues.listForRepo, {
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `Workflow Failure: ${context.workflow}`,
-              body: `The workflow **${context.workflow}** failed in run ${context.runId}. Please check the logs.`
+              state: 'open',
+              per_page: 100,
             });
+            const match = listed.find((issue) => issue.title === title);
+            if (match) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: match.number,
+                body: note,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body: note,
+              });
+            }
