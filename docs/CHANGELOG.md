@@ -14,6 +14,7 @@
 
 ### Evidence
 - tests/test_market_session_state.py covers Dussehra, the weekend, 09:14, 09:15, 15:40, 15:41, 15 Jan 2026, an unreviewed year, and the monitor day file.
+- tests/test_runtime_safety.py checks that the engine asks the shared clock, and that the clock still opens at 09:15 and closes at 15:40.
 - tests/test_repair_option_predictions_schema.py refuses a retype when the time column holds values.
 
 ### Rollback

@@ -17,9 +17,13 @@ def test_angel_credentials_have_no_source_defaults():
         assert not re.search(rf'os\.getenv\("{key}",\s*"[^"]+"\)', source)
 
 def test_prediction_engine_uses_current_fno_close():
-    source = (ROOT / "angel_prediction_engine.py").read_text(encoding="utf-8")
-    assert "return 555 <= mins <= 940" in source
-    assert "return 900 <= mins <= 940" in source
+    engine = (ROOT / "angel_prediction_engine.py").read_text(encoding="utf-8")
+    calendar = (ROOT / "market_calendar.py").read_text(encoding="utf-8")
+    assert 'return _clock(dt)["status"] == "OPEN"' in engine
+    assert 'return _clock(dt)["phase"] == "PRE_CLOSE"' in engine
+    assert "OPEN_START = 9 * 60 + 15" in calendar
+    assert "PRE_CLOSE_START = 15 * 60" in calendar
+    assert "CLOSE_END = 15 * 60 + 40" in calendar
 
 
 def test_paper_safety_and_zero_real_orders():
