@@ -378,7 +378,7 @@ def rows_from_gap_payload(payload, run_id: str = "") -> list[dict]:
         if not _symbol_ok(symbol) or side not in ("CE", "PE") or not _positive(pick.get("entry_ltp")):
             continue
         contract = str(pick.get("contract_symbol") or pick.get("forecast_contract") or "").strip().upper()
-        quantity = pick.get("lotsize", pick.get("quantity", ""))
+        quantity = pick.get("lotsize", pick.get("quantity", 1))
         fees = pick.get("fees", "") if "fees" in pick else ""
         row = {key: "" for key in LEDGER_HEADER}
         row.update({

@@ -876,3 +876,7 @@ Heartbeat cell conflated row count with sync timestamp, corrupting health status
 
 ## 2026-10-22
 - test(fix): injected ultimate time machine to bypass real-world clock.
+
+## 2026-10-22
+- fix(paper): default quantity to 1 if lotsize missing.
+n- test(fix): injected ultimate time machine for market hours.
