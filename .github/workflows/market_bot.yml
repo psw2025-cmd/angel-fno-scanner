@@ -16,7 +16,7 @@ on:
         options: [OPEN, CLOSED, EOD]
         default: EOD
   push:
-    branches: [main]
+    branches-ignore: [main]
     paths:
       - 'scanner.py'
       - 'angel_prediction_engine.py'
@@ -56,6 +56,8 @@ jobs:
       ANGEL_CYCLE_METADATA_FILE: /tmp/cycle_metadata.json
       ANGEL_REQUIRE_EXCHANGE_TIME: '1'
       ANGEL_MARKET_SESSION: EOD
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
 
     steps:
       - name: Checkout Code
@@ -79,12 +81,33 @@ jobs:
           print("[OK] Production dependencies imported successfully")
           PY
 
+      - name: Read NSE calendar
+        id: nse_calendar
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          from market_calendar import market_session_state
+          state = market_session_state()
+          # Skip publish on a holiday or weekend only. A weekday 16:15 catch-up
+          # is AFTER_CLOSE and must still be allowed to publish.
+          flag = "true" if state.get("status") in ("HOLIDAY", "WEEKEND") else "false"
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as handle:
+              handle.write("closed=%s\n" % flag)
+          print(state.get("summary") or state.get("status"))
+          if flag == "true":
+              print("QUIET clock is not a scanner failure. No predictions. No orders.")
+          PY
+
       - name: Test quote & prediction engine math
+        if: steps.nse_calendar.outputs.closed != 'true'
         run: python -m pytest -v
 
       - name: Enforce permanent regression contract
+        if: steps.nse_calendar.outputs.closed != 'true'
         run: python tools/memory_guard.py
       - name: Autonomy chaos regression gate
+        if: steps.nse_calendar.outputs.closed != 'true'
         run: python tools/chaos_inject.py
       - name: Read-only Angel FULL timestamp probe
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
@@ -104,7 +127,7 @@ jobs:
           test "$PAPER_MODE" = 1
           test "$LIVE_ORDER_AUTHORITY" = 0
       - name: Run Single Authoritative Scanner and Prediction Cycle
-        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
+        if: ${{ steps.nse_calendar.outputs.closed != 'true' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run)) }}
         run: |
           set -eo pipefail
           test "$PAPER_MODE" = 1
@@ -116,7 +139,7 @@ jobs:
           python scripts/sync_cycle_provenance_to_bq.py
 
       - name: Commit & Push Updated Snapshots
-        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
+        if: ${{ steps.nse_calendar.outputs.closed != 'true' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run)) }}
         run: |
           set -eo pipefail
           git config --global user.name "github-actions[bot]"

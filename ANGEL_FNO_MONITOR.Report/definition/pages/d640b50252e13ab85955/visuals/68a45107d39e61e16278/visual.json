@@ -1,5 +1,5 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.2.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "68a45107d39e61e16278",
   "position": {
     "x": 20,
@@ -159,21 +159,16 @@
         "sort": [
           {
             "field": {
-              "Aggregation": {
+              "Column": {
                 "Expression": {
-                  "Column": {
-                    "Expression": {
-                      "SourceRef": {
-                        "Entity": "ForensicLive"
-                      }
-                    },
-                    "Property": "pe_chg_pct"
+                  "SourceRef": {
+                    "Entity": "ForensicLive"
                   }
                 },
-                "Function": 1
+                "Property": "time_ist"
               }
             },
-            "direction": "Descending"
+            "direction": "Ascending"
           }
         ]
       }

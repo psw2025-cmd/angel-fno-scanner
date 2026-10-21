@@ -150,7 +150,7 @@ def wf_bq():
         http("bq-http", "Inspect BigQuery", "http://127.0.0.1:5680/bigquery", 45000, (-200, 300)),
         code("bq-eval", "Validate BigQuery Lineage", """const d=$input.first().json;
 const now=new Date(); const ist=new Date(now.toLocaleString("en-US",{timeZone:"Asia/Kolkata"}));
-const wd=ist.getDay(); const mins=ist.getHours()*60+ist.getMinutes(); const market=wd>=1&&wd<=5&&mins>=555&&mins<=930;
+const wd=ist.getDay(); const mins=ist.getHours()*60+ist.getMinutes(); const key=ist.getFullYear()+"-"+String(ist.getMonth()+1).padStart(2,"0")+"-"+String(ist.getDate()).padStart(2,"0"); const holidays=new Set(["2026-01-15","2026-01-26","2026-03-03","2026-03-26","2026-03-31","2026-04-03","2026-04-14","2026-05-01","2026-05-28","2026-06-26","2026-09-14","2026-10-02","2026-10-20","2026-11-10","2026-11-24","2026-12-25"]); const market=wd>=1&&wd<=5&&mins>=555&&mins<=940&&!holidays.has(key);
 const lineage=["with_runid","with_sha","with_writer","with_cycle","with_source_ts"].every(k=>Number(d[k])===219)
  && ["run_ids","git_shas","writer_ids","cycle_ids"].every(k=>Number(d[k])===1);
 const universe=Number(d.total_rows)===219 && Number(d.unique_symbols)===219;
@@ -175,7 +175,7 @@ def wf_sheets():
         http("sheet-http", "Inspect OPTION_SHEET", "http://127.0.0.1:5680/sheets", 45000, (-200, 300)),
         code("sheet-eval", "Evaluate Sheets Forensic Integrity", """const d=$input.first().json;
 const now=new Date(); const ist=new Date(now.toLocaleString("en-US",{timeZone:"Asia/Kolkata"}));
-const wd=ist.getDay(); const mins=ist.getHours()*60+ist.getMinutes(); const market=wd>=1&&wd<=5&&mins>=555&&mins<=930;
+const wd=ist.getDay(); const mins=ist.getHours()*60+ist.getMinutes(); const key=ist.getFullYear()+"-"+String(ist.getMonth()+1).padStart(2,"0")+"-"+String(ist.getDate()).padStart(2,"0"); const holidays=new Set(["2026-01-15","2026-01-26","2026-03-03","2026-03-26","2026-03-31","2026-04-03","2026-04-14","2026-05-01","2026-05-28","2026-06-26","2026-09-14","2026-10-02","2026-10-20","2026-11-10","2026-11-24","2026-12-25"]); const market=wd>=1&&wd<=5&&mins>=555&&mins<=940&&!holidays.has(key);
 const universe=Number(d.forensic_live_rows)===219 && Number(d.forensic_live_unique_symbols)===219;
 const formulas=Number(d.formula_error_count)===0 && Number(d.failed_gate_count)===0;
 const published=d.publication_state==="VERIFIED";

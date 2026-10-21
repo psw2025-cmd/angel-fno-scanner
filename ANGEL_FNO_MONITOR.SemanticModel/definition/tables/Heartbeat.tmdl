@@ -1,27 +1,34 @@
 table Heartbeat
+	lineageTag: 0647dec9-fcfc-4ef9-97aa-f77d8de4fddc
 
 	column timestamp
 		dataType: string
+		lineageTag: 1d915f65-0a34-4b6c-abc4-e137d9f58b88
 		sourceColumn: [timestamp]
 
 	column writer_age_sec
 		dataType: double
+		lineageTag: d8a85045-1d66-4be1-a547-fbe9d3d34d53
 		sourceColumn: [writer_age_sec]
 
 	column runner_status
 		dataType: string
+		lineageTag: ca5a9408-19c7-4542-b5be-9ddfca6b715c
 		sourceColumn: [runner_status]
 
 	column engine_status
 		dataType: string
+		lineageTag: 1fefa6f0-76fe-451a-8d1a-53c0bf415811
 		sourceColumn: [engine_status]
 
 	column symbols_scanned
 		dataType: int64
+		lineageTag: 7896af85-c77f-46f1-8d15-5809a00bc202
 		sourceColumn: [symbols_scanned]
 
 	column feed_alert
 		dataType: string
+		lineageTag: 1d2c09be-67f8-487e-808c-eecb1a194f17
 		sourceColumn: [feed_alert]
 
 	partition Heartbeat_Partition = calculated
@@ -34,7 +41,7 @@ table Heartbeat
 				    "symbols_scanned", INTEGER,
 				    "feed_alert", STRING,
 				    {
-				        {"2026-09-29 22:54:05", 0, "CONNECTED_ANGEL_SMARTAPI", "ACTIVE_PREDICTION_ENGINE | Cycle #228", 216, "ðŸŸ¢ HEALTHY (ALL FEEDS ACTIVE)"}
+				        {"2026-10-18 17:57:46", 0.0, "CONNECTED_ANGEL_SMARTAPI", "ACTIVE_PREDICTION_ENGINE | Cycle #346", 219, "HEALTHY (ALL FEEDS ACTIVE)"}
 				    }
 				)
 

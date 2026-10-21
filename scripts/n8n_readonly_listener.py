@@ -39,7 +39,8 @@ except Exception:
     from zoneinfo import ZoneInfo
     IST = ZoneInfo("Asia/Kolkata")
     def is_trading_day(now):
-        return now.astimezone(IST).weekday() < 5
+        # A missing calendar must not treat a weekday holiday as open.
+        return False
 
 
 def _run(cmd, timeout=30):
@@ -216,19 +217,45 @@ def collect_github():
     }
 
 
-def market_is_open_now():
-    now = datetime.now(IST)
+CLOSED_CLOCKS = {"HOLIDAY", "WEEKEND", "BEFORE_OPEN", "AFTER_CLOSE"}
+
+
+def read_market_clock(now=None):
+    now = now or datetime.now(IST)
     try:
-        trading_day = is_trading_day(now)
-    except Exception:
-        trading_day = now.weekday() < 5
-    local_time = now.time().replace(tzinfo=None)
-    return bool(trading_day and dt_time(9, 15) <= local_time <= dt_time(15, 30))
+        from market_calendar import market_session_state
+        state = market_session_state(now)
+        if not isinstance(state, dict) or not state.get("status"):
+            raise RuntimeError("calendar returned no status")
+        return state
+    except Exception as exc:
+        return {
+            "status": "UNKNOWN",
+            "name": "",
+            "date": "",
+            "summary": f"calendar unavailable: {type(exc).__name__}",
+        }
+
+
+def market_is_open_now():
+    return read_market_clock().get("status") == "OPEN"
+
+
+def verdict_for_clock(clock_status, checks_ok, has_errors):
+    """OPEN keeps a real health verdict. A closed clock never reports HEALTHY."""
+    if clock_status == "OPEN":
+        return "HEALTHY" if checks_ok and not has_errors else "ATTENTION_REQUIRED"
+    if clock_status in CLOSED_CLOCKS:
+        if has_errors:
+            return "OUTSIDE_SESSION_WITH_READ_ERRORS"
+        return "OUTSIDE_SESSION_STORED_ROWS"
+    return "ATTENTION_REQUIRED"
 
 
 def build_orchestrator_status():
     now = datetime.now(IST)
-    market_open = market_is_open_now()
+    clock = read_market_clock(now)
+    market_open = clock.get("status") == "OPEN"
     errors = {}
     components = {}
 
@@ -263,15 +290,16 @@ def build_orchestrator_status():
         checks["bq_fresh_during_market"] = isinstance(bq.get("source_age_seconds"), (int, float)) and bq["source_age_seconds"] <= 1200
         checks["sheets_fresh_during_market"] = isinstance(sh.get("heartbeat_age_seconds"), (int, float)) and sh["heartbeat_age_seconds"] <= 1200
         checks["github_market_cycle_recent_or_active"] = gh.get("recent_or_active") is True
-    else:
-        checks["bq_fresh_during_market"] = True
-        checks["sheets_fresh_during_market"] = True
-        checks["github_market_cycle_recent_or_active"] = True
 
-    verdict = "HEALTHY" if not errors and all(checks.values()) else "ATTENTION_REQUIRED"
+    verdict = verdict_for_clock(clock.get("status"), all(checks.values()), bool(errors))
     return {
         "timestamp_ist": now.isoformat(),
         "market_open": market_open,
+        "market_clock_status": clock.get("status"),
+        "market_clock_name": clock.get("name") or "",
+        "market_clock_date": clock.get("date") or "",
+        "row_count_meaning": "live OPEN session" if market_open else "stored rows, not a live session",
+        "freshness_checked": market_open,
         "orchestrator_verdict": verdict,
         "checks": checks,
         "errors": errors,
@@ -283,9 +311,30 @@ def build_orchestrator_status():
 def build_diagnosis():
     status = build_orchestrator_status()
     failed = [name for name, ok in status["checks"].items() if not ok]
+    clock_status = status.get("market_clock_status")
+    if clock_status != "OPEN":
+        return {
+            "status": "OUTSIDE_SESSION",
+            "session_note": "stored rows, not a live session",
+            "timestamp_ist": status["timestamp_ist"],
+            "market_clock_status": clock_status,
+            "market_clock_name": status.get("market_clock_name"),
+            "failed_checks": [],
+            "observed_checks_not_a_live_session": failed,
+            "errors": status["errors"],
+            "recommended_action": (
+                "Market status is " + str(clock_status) + " "
+                + str(status.get("market_clock_name") or "")
+                + ". Stored row counts are not a live session and are not a scanner failure. "
+                "No automatic data mutation was performed."
+            ),
+            "orchestrator_verdict": status["orchestrator_verdict"],
+            "read_only": True,
+        }
     return {
         "status": "PASS" if not failed and not status["errors"] else "FAIL_CLOSED",
         "timestamp_ist": status["timestamp_ist"],
+        "market_clock_status": clock_status,
         "failed_checks": failed,
         "errors": status["errors"],
         "recommended_action": "Repair only the failed component, then re-run verification. No automatic data mutation was performed.",

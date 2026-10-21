@@ -65,19 +65,37 @@ def _source_commit_files() -> list[Path]:
 
 
 def resolve_git_sha() -> str:
-    """Return a real source commit. Never substitute a tag or a fake SHA."""
+    """Return a real source commit. Never substitute a tag or a fake SHA.
+
+    Fails closed when a valid env SHA and a valid baked SOURCE_COMMIT file disagree
+    (a stale-but-valid env value must not silently override the image's real commit).
+    """
+    env_sha = ""
     for key in ("GITHUB_SHA", "GIT_SHA", "SOURCE_COMMIT"):
         candidate = (os.getenv(key) or "").strip().lower()
         if is_real_git_sha(candidate):
-            return candidate
+            env_sha = candidate
+            break
+    file_sha = ""
     for path in _source_commit_files():
         try:
             if path.is_file():
                 candidate = path.read_text(encoding="utf-8").strip().splitlines()[0].strip().lower()
                 if is_real_git_sha(candidate):
-                    return candidate
+                    file_sha = candidate
+                    break
         except OSError:
             continue
+    if env_sha and file_sha:
+        if not (env_sha.startswith(file_sha) or file_sha.startswith(env_sha)):
+            raise RuntimeError(
+                f"GIT_SHA mismatch: env={env_sha[:12]} baked SOURCE_COMMIT={file_sha[:12]}; refusing to publish"
+            )
+        return env_sha if len(env_sha) >= len(file_sha) else file_sha
+    if env_sha:
+        return env_sha
+    if file_sha:
+        return file_sha
     raise RuntimeError(
         "GIT_SHA missing or placeholder; refusing a fake SHA. "
         "Bake SOURCE_COMMIT from git rev-parse at image build."

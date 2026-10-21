@@ -105,6 +105,6 @@ Gate 7 establishes the permanent layered governance model across P0, P1, and P2 
 10. **P1 Independent Dual-Party Verification Gate**: Changes to shared sinks (Sheets, BigQuery, workflows) must be validated independently by both AGY (local host/data) and ChatGPT (remote/cloud).
 
 ### Priority P2 Gates (Monitoring & Long-Term Health)
-11. **P2 Scheduled Drift Detection Gate**: Automated daily workflows (`.github/workflows/nasa-daily-proof.yml`) verify 219 universe parity and table freshness.
+11. **P2 Scheduled Drift Detection Gate**: Automated daily workflows (`.github/workflows/nasa-daily-proof.yml`) verify 219 universe parity and table freshness. Call `market_calendar.market_session_state()` first. A missing scanner, a 60-minute freshness miss, or today's row count is a failure only when status is `OPEN` (09:15–15:40 IST). `HOLIDAY`, `WEEKEND`, `BEFORE_OPEN`, and `AFTER_CLOSE` are quiet on purpose. Do not call that quiet time a failure, and do not call it a green pass.
 12. **P2 Evidence Dashboard Gate**: `docs/LIVE_DASHBOARD_FOR_USER.md` maintains live status tracking all 8 systems (Local, Cloud, PowerBI, Sheets, Excel, Colab, BigQuery, GCS, n8n) with clear proof links.
 

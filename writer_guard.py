@@ -1,6 +1,7 @@
 """Single-writer guard and provenance helpers for production sinks."""
 import datetime
 import os
+import time
 from contextvars import ContextVar
 from zoneinfo import ZoneInfo
 
@@ -56,13 +57,11 @@ def append_sheet_provenance(sh, sink, record_count, source_timestamp):
         "Sink",
         "Record Count",
     ]
-    try:
-        ws = sh.worksheet("WRITE_PROVENANCE")
-    except Exception:
-        ws = sh.add_worksheet(title="WRITE_PROVENANCE", rows="2000", cols="6")
-    if ws.row_values(1) != headers:
-        ws.update(range_name="A1", values=[headers], value_input_option="RAW")
-    ws.append_row(
+    ws = _get_or_create_provenance_sheet(sh)
+    header_row = _with_quota_retry(lambda: ws.row_values(1))
+    if header_row != headers:
+        _with_quota_retry(lambda: ws.update(range_name="A1", values=[headers], value_input_option="RAW"))
+    _with_quota_retry(lambda: ws.append_row(
         [
             provenance["source_timestamp"],
             provenance["run_id"],
@@ -72,5 +71,51 @@ def append_sheet_provenance(sh, sink, record_count, source_timestamp):
             int(record_count),
         ],
         value_input_option="RAW",
-    )
+    ))
     return provenance
+
+
+QUOTA_RETRY_DELAYS = (5, 15, 30, 60)
+_sleep = time.sleep
+
+
+def _is_quota_error(exc):
+    response = getattr(exc, "response", None)
+    if getattr(response, "status_code", None) == 429:
+        return True
+    text = str(exc)
+    return "[429]" in text or "Quota exceeded" in text
+
+
+def _with_quota_retry(fn):
+    """Retry only Sheets quota (429) errors, bounded; everything else propagates."""
+    for delay in QUOTA_RETRY_DELAYS:
+        try:
+            return fn()
+        except Exception as exc:
+            if not _is_quota_error(exc):
+                raise
+            _sleep(delay)
+    return fn()
+
+
+def _get_or_create_provenance_sheet(sh):
+    """Create WRITE_PROVENANCE only when it is genuinely missing.
+
+    A transient API error (for example a 429 on a read) must never be treated
+    as "sheet missing"; that previously crashed the cycle with an
+    "already exists" error from add_worksheet.
+    """
+    import gspread
+
+    title = "WRITE_PROVENANCE"
+    try:
+        return _with_quota_retry(lambda: sh.worksheet(title))
+    except gspread.exceptions.WorksheetNotFound:
+        pass
+    try:
+        return _with_quota_retry(lambda: sh.add_worksheet(title=title, rows="2000", cols="6"))
+    except gspread.exceptions.APIError as exc:
+        if "already exists" not in str(exc):
+            raise
+        return _with_quota_retry(lambda: sh.worksheet(title))

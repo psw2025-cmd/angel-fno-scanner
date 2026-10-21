@@ -22,7 +22,7 @@ def test_audit_sheets_manifest():
 def test_audit_run_and_status_validity():
     checks = run_full_audit()
     assert len(checks) == 20
-    valid_statuses = {"PASS", "FAIL", "WARN", "FAILED-FETCH"}
+    valid_statuses = {"PASS", "FAIL", "WARN", "FAILED-FETCH", "QUIET"}
     for cid, c in checks.items():
         assert c["status"] in valid_statuses, f"Check {cid} returned invalid status {c['status']}"
         assert c["status"] != "pending", f"Check {cid} was left pending!"
