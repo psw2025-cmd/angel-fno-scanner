@@ -57,3 +57,25 @@ def test_future_snapshot_fails_closed():
 def test_no_predictions_gives_zero_not_success_claim():
     r = run([], [row()])
     assert r["exact_matches"] == 0 and r["advance_contracts"] == 0
+
+
+
+def test_different_expiry_is_not_match():
+    observed = row()
+    observed["expiry"] = "2026-10-29"
+    assert run([pick()], [observed])["exact_matches"] == 0
+
+
+def test_strike_mismatch_is_not_match():
+    assert run([pick()], [row(strike=191)])["exact_matches"] == 0
+
+
+def test_malformed_external_row_blocks_entire_snapshot():
+    with pytest.raises((ValueError, KeyError, TypeError)):
+        run([pick()], [{"symbol": "SAIL", "side": "CE", "strike": 190,
+                       "expiry": "2026-10-27", "ltp": "not-a-price"}])
+
+
+def test_post_snapshot_advance_pick_is_not_counted():
+    with pytest.raises(ValueError):
+        run([pick(issued_at="2026-10-21T15:41:00+05:30")], [row()])
