@@ -1,4 +1,4 @@
-﻿import json
+import json
 
 import pytest
 
@@ -41,26 +41,26 @@ def test_scanner_prediction_failure_is_not_false_green(monkeypatch):
     import angel_prediction_engine as engine
     from types import SimpleNamespace
 
-
-
-
-
-
+    monkeypatch.setattr(scanner, "load_env", lambda: None)
+    monkeypatch.setattr(scanner, "require_authorized_writer", lambda: None)
+    monkeypatch.setattr(scanner, "acquire_cycle_lease", lambda: None)
+    monkeypatch.setattr(scanner, "apply_process_provenance", lambda: {"run_id": "test-cycle", "git_sha": "abc1234"})
+    monkeypatch.setattr(scanner, "require_authoritative_sheet_id", lambda sheet_id: sheet_id)
     monkeypatch.setenv("SHEET_ID", "test-only")
-
-
+    monkeypatch.setattr(scanner, "load_service_account", lambda: {})
+    monkeypatch.setattr(scanner.gspread, "service_account_from_dict",
                         lambda _: SimpleNamespace(open_by_key=lambda _: object()))
-
-
-
-
+    monkeypatch.setattr(scanner, "heartbeat_age_seconds", lambda *_: None)
+    monkeypatch.setattr(scanner, "angel_login", lambda: object())
+    monkeypatch.setattr(scanner, "run_angel_loop", lambda *_: None)
+    monkeypatch.setattr(scanner.time, "sleep", lambda _: None)
 
     def failed_prediction(**_):
         raise RuntimeError("prediction publication failed")
 
     monkeypatch.setattr(engine, "run_prediction_pipeline", failed_prediction)
     with pytest.raises(RuntimeError, match="prediction publication failed"):
-        scanner.main(argv=[])
+        scanner.main()
 
 
 def test_partial_publication_preserves_sinks(monkeypatch):
@@ -105,20 +105,20 @@ def test_fresh_heartbeat_still_runs_one_prediction(monkeypatch):
     import angel_prediction_engine as engine
     from types import SimpleNamespace
     calls = []
-
-
-
-
-
+    monkeypatch.setattr(scanner, "load_env", lambda: None)
+    monkeypatch.setattr(scanner, "require_authorized_writer", lambda: None)
+    monkeypatch.setattr(scanner, "acquire_cycle_lease", lambda: None)
+    monkeypatch.setattr(scanner, "apply_process_provenance", lambda: {"run_id": "test-cycle", "git_sha": "abc1234"})
+    monkeypatch.setattr(scanner, "require_authoritative_sheet_id", lambda sheet_id: sheet_id)
     monkeypatch.setenv("SHEET_ID", "test-only")
-
-
+    monkeypatch.setattr(scanner, "load_service_account", lambda: {})
+    monkeypatch.setattr(scanner.gspread, "service_account_from_dict",
                         lambda _: SimpleNamespace(open_by_key=lambda _: object()))
-
-
-
+    monkeypatch.setattr(scanner, "heartbeat_age_seconds", lambda *_: 10)
+    monkeypatch.setattr(scanner, "refresh_from_forensic", lambda *_: calls.append("refresh"))
+    monkeypatch.setattr(scanner, "angel_login", lambda: pytest.fail("duplicate scanner login"))
     monkeypatch.setattr(engine, "run_prediction_pipeline", lambda **_: calls.append("predict"))
-    scanner.main(argv=[])
+    scanner.main()
     assert calls == ["refresh", "predict"]
 
 
