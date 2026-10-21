@@ -49,6 +49,8 @@ jobs:
       MAX_RUNTIME_SECONDS: ${{ github.event_name == 'schedule' && '24300' || '300' }}
       ALLOW_PRODUCTION_WRITES: ${{ github.event_name == 'schedule' && '1' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run && '1' || '0') }}
       WRITER_ID: market_bot
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
       RUN_ID: ${{ github.run_id }}
       GIT_SHA: ${{ github.sha }}
       ANGEL_CYCLE_METADATA_FILE: /tmp/cycle_metadata.json
@@ -96,10 +98,17 @@ jobs:
           name: exchange-timestamp-probe
           path: ${{ runner.temp }}/probe_result.json
           if-no-files-found: warn
+      - name: Keep paper mode on and live orders off
+        run: |
+          set -eo pipefail
+          test "$PAPER_MODE" = 1
+          test "$LIVE_ORDER_AUTHORITY" = 0
       - name: Run Single Authoritative Scanner and Prediction Cycle
         if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
         run: |
           set -eo pipefail
+          test "$PAPER_MODE" = 1
+          test "$LIVE_ORDER_AUTHORITY" = 0
           python scanner.py
           python tools/check_freshness.py --metadata /tmp/cycle_metadata.json --market-session EOD
           python tools/100_year_guard.py --phase pre --metadata /tmp/cycle_metadata.json
@@ -119,6 +128,13 @@ jobs:
             # Never push main and never force-push.
             git commit -m "chore(data): publish daily prediction snapshot for run ${GITHUB_RUN_ID}"
             branch="data/snapshot-${GITHUB_RUN_ID}"
+            case "$branch" in
+              data/snapshot-*) ;;
+              *)
+                echo "::error::Refusing to publish onto the locked main copy"
+                exit 1
+                ;;
+            esac
             pushed=0
             for i in 1 2 3 4 5; do
               echo "Snapshot push attempt $i/5"
