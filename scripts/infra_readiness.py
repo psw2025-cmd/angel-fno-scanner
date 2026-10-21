@@ -81,7 +81,8 @@ def local_checks(audit, offline):
     head = audit.command('git_head', ['git', 'rev-parse', 'HEAD'])
     audit.check('git_head', 'PASS', head)
     dirty = audit.command('git_status', ['git', 'status', '--porcelain'])
-    audit.check('working_tree', 'FAIL' if dirty else 'PASS', 'Dirty' if dirty else 'Clean')
+    audit.check('working_tree', 'FAIL' if dirty else 'PASS',
+                'Clean' if not dirty else 'Dirty: ' + dirty.replace('\n', ' | ')[:300])
     if offline:
         audit.check('current_main', 'UNKNOWN', 'Offline: remote main not queried')
     else:
