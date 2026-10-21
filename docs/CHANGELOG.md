@@ -7,7 +7,7 @@
 ### What changed
 - scanner.py: A trading-day run from 09:15 to 10:30 IST asks the prediction cycle to score overnight paper rows.
 - angel_prediction_engine.py: A quote from 09:15 to 09:45 IST can be WIN, LOSS, or SCRATCH. A later quote keeps the percent and is marked LATE_QUOTE. It does not change the model weights and it is not profit.
-- phase2 and phase3 workflows: After 15:40 IST or before 09:15 IST, the paper receipt and paper-profit steps do not run. A closed session is not a failed trade.
+- .github/workflows/market_bot.yml: Install relay test dependencies before pytest, the same set PR Tests already installs. A missing fastapi package was stopping the daily job before any paper row was written.
 
 ### Evidence
 - pytest: the exact-contract morning score, the late-quote test, and the two clock-window tests passed (4 passed).
