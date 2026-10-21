@@ -1443,12 +1443,19 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
 
             if entry_ltp > 0 and open_ltp > 0:
                 ret_pct = round(((open_ltp - entry_ltp) / entry_ltp) * 100.0, 2)
-                if ret_pct >= 20.0:
-                    outcome = "WIN"
-                elif ret_pct <= -15.0:
-                    outcome = "LOSS"
+                # 09:15-09:45 IST is the opening score. A later quote keeps the
+                # percent, but it is not a win, a loss, or a profit.
+                local_now = local_market_time(ist_now) if ist_now is not None else get_ist_time()
+                opening_sample = 555 <= (local_now.hour * 60 + local_now.minute) <= 585
+                if opening_sample:
+                    if ret_pct >= 20.0:
+                        outcome = "WIN"
+                    elif ret_pct <= -15.0:
+                        outcome = "LOSS"
+                    else:
+                        outcome = "SCRATCH"
                 else:
-                    outcome = "SCRATCH"
+                    outcome = "LATE_QUOTE"
 
                 result_text = f"{ret_pct:+.2f}% ({outcome})"
                 updates_for_sheet.append((row_idx, result_text, ist_str))
@@ -1531,21 +1538,26 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
             wins = sum(1 for r in reconciled_results if r["outcome"] == "WIN")
             losses = sum(1 for r in reconciled_results if r["outcome"] == "LOSS")
             
-            eta = 0.04
-            if wins > losses:
-                current_w["gamma"] = round(current_w.get("gamma", 0.15) * (1.0 + eta), 4)
-                current_w["opt_vel"] = round(current_w.get("opt_vel", 0.20) * (1.0 + eta), 4)
-            elif losses > wins:
-                current_w["opt_vel"] = round(current_w.get("opt_vel", 0.20) * (1.0 - eta), 4)
-                current_w["opt_obi"] = round(current_w.get("opt_obi", 0.15) * (1.0 + eta), 4)
+            local_now = local_market_time(ist_now) if ist_now is not None else get_ist_time()
+            opening_sample = 555 <= (local_now.hour * 60 + local_now.minute) <= 585
+            if opening_sample:
+                eta = 0.04
+                if wins > losses:
+                    current_w["gamma"] = round(current_w.get("gamma", 0.15) * (1.0 + eta), 4)
+                    current_w["opt_vel"] = round(current_w.get("opt_vel", 0.20) * (1.0 + eta), 4)
+                elif losses > wins:
+                    current_w["opt_vel"] = round(current_w.get("opt_vel", 0.20) * (1.0 - eta), 4)
+                    current_w["opt_obi"] = round(current_w.get("opt_obi", 0.15) * (1.0 + eta), 4)
 
-            tot_w = sum(current_w.values())
-            for k in current_w:
-                current_w[k] = round(current_w[k] / tot_w, 4)
+                tot_w = sum(current_w.values())
+                for k in current_w:
+                    current_w[k] = round(current_w[k] / tot_w, 4)
 
-            cal_state["weights"] = current_w
-            save_calibration_state(cal_state)
-            print(f"[CALIBRATION] Overnight gap feedback integrated: {wins} Wins, {losses} Losses. Weights updated.")
+                cal_state["weights"] = current_w
+                save_calibration_state(cal_state)
+                print(f"[CALIBRATION] Overnight gap feedback integrated: {wins} Wins, {losses} Losses. Weights updated.")
+            else:
+                print("[INFO] Late quote stored. It is not used as an opening win or a profit.")
 
             try:
                 hist = []

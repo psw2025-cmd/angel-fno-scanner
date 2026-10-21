@@ -77,7 +77,24 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
       - name: Refresh branch before broker snapshot to minimize non-fast-forward conflicts
         run: git pull --ff-only origin test-framework
+      - name: Skip paper capture outside the live session
+        id: paper_clock
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          now = datetime.now(ZoneInfo("Asia/Kolkata"))
+          mins = now.hour * 60 + now.minute
+          session_open = 555 <= mins <= 940
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+              handle.write("session_open=" + ("true" if session_open else "false") + "\n")
+          print("PAPER_SESSION_OPEN" if session_open else "PAPER_SESSION_CLOSED_NO_ENTRY", now.isoformat())
+          PY
       - name: Generate real Angel read-only paper receipt and push ledger
+        if: steps.paper_clock.outputs.session_open == 'true'
         env:
           ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
           ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
@@ -86,6 +103,7 @@ jobs:
           PYTHONPATH: .
         run: python run_phase2_local.py --push
       - name: Independently validate remote receipt content and prediction digest
+        if: steps.paper_clock.outputs.session_open == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -119,7 +137,7 @@ jobs:
           print('ANGEL_PAPER_REMOTE_VERIFIED',local,digest,r['source_hash'])
           PY
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && steps.paper_clock.outputs.session_open == 'true'
         with:
           name: phase2-angel-paper-evidence
           path: |
