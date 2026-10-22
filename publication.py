@@ -101,13 +101,21 @@ def publish_outputs(sh, bq_client, table_ref, ist_str, sheet_write, bq_write):
     identity = require_authorized_writer()
     cycle_id = f"{identity['run_id']}:{uuid.uuid4().hex}"
     identity["cycle_id"] = cycle_id
+    # The BigQuery transaction is authoritative. A Sheets cell is not an atomic lock.
+    from tools.publication_lease import acquire_production_lease, assert_current_fence, remember_lease
+    remember_lease(None)
+    acquire_production_lease(client=bq_client)
+    assert_current_fence(client=bq_client)
     status = status_worksheet(sh)
     token = ACTIVE_CYCLE.set(cycle_id)
     base = [cycle_id, identity["run_id"], identity["git_sha"], identity["writer_id"], ist_str]
     try:
         write_grid(status, [STATUS_HEADERS, ["PENDING", *base, "", "", ""]])
+        assert_current_fence(client=bq_client)
         expected_rows = sheet_write()
+        assert_current_fence(client=bq_client)
         bq_write()
+        assert_current_fence(client=bq_client)
         digests = verify_outputs(sh, bq_client, table_ref, identity, expected_rows)
         # BQ freshness indicator is advanced only after actual successful readback.
         hb = sh.worksheet("HEARTBEAT")
@@ -121,6 +129,7 @@ def publish_outputs(sh, bq_client, table_ref, ist_str, sheet_write, bq_write):
         expected_rows["OPTION_PREDICTIONS"][1][6] = "Publication: VERIFIED_READBACK"
         # The G2 status change is part of the final matrix digest.
         digests = verify_outputs(sh, bq_client, table_ref, identity, expected_rows)
+        assert_current_fence(client=bq_client)
         write_grid(status, [STATUS_HEADERS, ["VERIFIED", *base, *digests]])
         verify_current_publication(sh, bq_client, table_ref)
         # The ledger is local evidence only; publication readback remains authoritative.
@@ -141,3 +150,4 @@ def publish_outputs(sh, bq_client, table_ref, ist_str, sheet_write, bq_write):
         raise
     finally:
         ACTIVE_CYCLE.reset(token)
+        remember_lease(None)
