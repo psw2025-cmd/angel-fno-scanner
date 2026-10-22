@@ -47,7 +47,8 @@ jobs:
       GIT_SHA: ${{ github.sha }}
       ANGEL_CYCLE_METADATA_FILE: /tmp/cycle_metadata.json
       ANGEL_REQUIRE_EXCHANGE_TIME: '1'
-      ANGEL_MARKET_SESSION: EOD
+      # The morning run must enforce exchange freshness; EOD catch-up uses EOD.
+      ANGEL_MARKET_SESSION: ${{ github.event_name == 'schedule' && github.event.schedule == '45 3 * * 1-5' && 'OPEN' || (github.event_name == 'workflow_dispatch' && inputs.market_session || 'EOD') }}
 
     steps:
       - name: Keep production scans on main
@@ -108,7 +109,7 @@ jobs:
           test "$PAPER_MODE" = 1
           test "$LIVE_ORDER_AUTHORITY" = 0
           python scanner.py
-          python tools/check_freshness.py --metadata /tmp/cycle_metadata.json --market-session EOD
+          python tools/check_freshness.py --metadata /tmp/cycle_metadata.json --market-session "$ANGEL_MARKET_SESSION"
           python tools/100_year_guard.py --phase pre --metadata /tmp/cycle_metadata.json
           python3 agent_cli.py --export-snapshots
           python scripts/sync_cycle_provenance_to_bq.py
