@@ -27,7 +27,7 @@ def test_nonfinite_forecast_rejected(bad):
 
 def test_nonfinite_threshold_rejected():
     a={"RELIANCE":{"verified_open":True,"session_date":"2026-10-16","open_price":101}}
-    with pytest.raises(ValueError, match="Invalid prediction or threshold"):
+    with pytest.raises(ValueError, match="Invalid forecast evidence"):
         evaluate_gap_up([P],a,threshold=float("nan"))
 
 @pytest.mark.parametrize("field", ["sample_count","precision","brier_score","max_drawdown"])
