@@ -15,16 +15,17 @@ def evaluate_gap_up(predictions, actuals, threshold=0.5):
         published=datetime.fromisoformat(p["published_at"].replace("Z","+00:00"))
         if published.tzinfo is None or published.utcoffset() is None:raise ValueError("Publication timestamp must be timezone-aware")
         if published.astimezone(ZoneInfo("Asia/Kolkata")).date()>=date.fromisoformat(p["target_date"]):raise ValueError("Prediction must precede target session in IST")
+        close=float(p["previous_close"])
+        predicted=float(p["predicted_gap_pct"])
+        cutoff=float(threshold)
+        if not all(map(isfinite,(close,predicted,cutoff))) or close<=0:raise ValueError("Invalid forecast evidence")
         a=actuals.get(p["symbol"])
         if not a or not a.get("verified_open"):
             rows.append({"id":pid,"status":"PENDING_ACTUAL"});continue
         if a["session_date"]!=p["target_date"]:raise ValueError("Session mismatch")
-        close=float(p["previous_close"]);opened=float(a["open_price"])
+        opened=float(a["open_price"])
         if not all(map(isfinite,(close,opened))) or min(close,opened)<=0:raise ValueError("Invalid price")
         actual_gap=100*(opened-close)/close
-        predicted=float(p["predicted_gap_pct"])
-        cutoff=float(threshold)
-        if not all(map(isfinite,(predicted,cutoff))):raise ValueError("Invalid prediction or threshold")
         correct=(predicted>=cutoff)==(actual_gap>=cutoff)
         rows.append({"id":pid,"status":"VALIDATED","correct":correct,"actual_gap_pct":round(actual_gap,4)})
     valid=[r for r in rows if r["status"]=="VALIDATED"]
