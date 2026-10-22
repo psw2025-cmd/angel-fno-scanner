@@ -29,3 +29,10 @@ def test_nonfinite_threshold_rejected():
     a={"RELIANCE":{"verified_open":True,"session_date":"2026-10-16","open_price":101}}
     with pytest.raises(ValueError, match="Invalid prediction or threshold"):
         evaluate_gap_up([P],a,threshold=float("nan"))
+
+@pytest.mark.parametrize("field", ["sample_count","precision","brier_score","max_drawdown"])
+@pytest.mark.parametrize("bad", [float("nan"),float("inf"),float("-inf"),True,"invalid"])
+def test_invalid_learning_evidence_rejected(field,bad):
+    m={"sample_count":120,"precision":.7,"brier_score":.1,"max_drawdown":.1,"walk_forward":True,"data_leakage_detected":False}
+    with pytest.raises(ValueError,match="Non-finite or non-numeric"):
+        choose("gap_up",1,2,m,dict(m,**{field:bad}))
