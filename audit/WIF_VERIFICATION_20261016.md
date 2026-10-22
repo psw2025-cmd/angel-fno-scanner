@@ -143,3 +143,29 @@ Evidence:
 CAVEAT (OBSERVED): the NASA ledger content still reports PROOF_SUMMARY {"BLOCKED": 17, "FAIL": 1, "PASS": 7}. The workflow passes because its enforced gates are the cloud upload/readback and the CLI gate; the 17 BLOCKED and 1 FAIL checks are not enforced as failures. Investigation is OPEN.
 
 Package 3: the Formula Checks contract in tools/verify_harness.py now uses the plain hyphen that the live sheet already has (ASCII, per PM-001); the formula is still compared exactly. Regression test: tests/test_formula_contract_ascii.py.
+
+> Historical change record only. Current cloud configuration and subsequent session coverage require fresh independent readback; this addendum does not certify present runtime health.
+
+## Addendum 5 - Package 2 applied (live gap closed), 2026-10-16
+
+OBSERVATION (before): job angel-market-scan-job generation 7, taskTimeout=14400, MAX_RUNTIME_SECONDS=13800 (3h50m); scheduler angel-market-scan-mumbai ENABLED 09:15 IST Mon-Fri, angel-market-scan-mumbai-preclose ENABLED 15:20 IST Mon-Fri. Scanner exits after MAX_RUNTIME_SECONDS, so the 09:15 run ended near 13:05 IST and the 15:20 run was the only cover for the close.
+
+ACTION (owner approved "yes_now"):
+- gcloud run jobs update angel-market-scan-job --region asia-south1 --task-timeout=25200 --update-env-vars=MAX_RUNTIME_SECONDS=24300
+- gcloud scheduler jobs pause angel-market-scan-mumbai-preclose --location asia-south1 (paused, NOT deleted)
+
+REASON: the BigQuery publication lease (paper-cycle:<date>:EOD, 900s) means a second execution while the first is still alive fails with PublicationLeaseError. Keeping the 15:20 job enabled alongside a full-day run would create a daily failed execution. One writer, one run, whole day.
+
+OBSERVATION (after, independent describe): generation 8, taskTimeout=25200, maxRetries=0, MAX_RUNTIME_SECONDS=24300, same service account, same image digest, same env names, Ready=True. angel-market-scan-mumbai ENABLED 15 9 * * 1-5 Asia/Kolkata; angel-market-scan-mumbai-preclose PAUSED.
+
+STATUS: IMPLEMENTED_NOT_DEPLOYED-to-proof. This is a config change, NOT a proven fix. Not RESOLVED_TWO_PARTY until the next trading day shows the 09:15 run alive until market close, no stale gap, lease and publication VERIFIED.
+
+PASS CRITERIA for next trading day (Mon 2026-10-19 IST): one execution starts 09:15; still running at 15:00; ends at or just after 15:30 close (market-closed break) with success; no lease error; HEARTBEAT age <= 90s during session; no 15:20 execution.
+
+ROLLBACK (exact):
+- gcloud run jobs update angel-market-scan-job --region asia-south1 --task-timeout=14400 --update-env-vars=MAX_RUNTIME_SECONDS=13800
+- gcloud scheduler jobs resume angel-market-scan-mumbai-preclose --location asia-south1
+
+COST: Cloud Run job bills for run time (2 CPU / 4Gi). Run time rises from about 3h50m to about 6h15m per trading day (about 1.6x on the job compute). Exact figure to be measured from billing after the first full-day run.
+
+KNOWN LIMITATIONS: a crash mid-day still leaves a gap until the next scheduled start because maxRetries=0 and the only other schedule is paused. Follow-up (Option B): idempotent watchdog trigger that exits 0 when the lease is held, so a crash is covered without failing executions. Weekday staleness alerting is also still missing.
