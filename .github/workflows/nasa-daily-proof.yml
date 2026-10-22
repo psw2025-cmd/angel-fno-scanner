@@ -74,6 +74,31 @@ jobs:
           LIVE_TRADING_ENABLED: 'false'
           NASA_ENABLE_CLOUD_VERIFY: '0'
         run: python tools/nasa_daily_proof.py
+      - name: Enforce complete NASA proof ledger
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, sys
+          path = pathlib.Path("proof-output/PROVEN_PROOF_LEDGER.json")
+          if not path.is_file():
+              sys.exit("NASA_LEDGER_MISSING")
+          try:
+              data = json.loads(path.read_text(encoding="utf-8"))
+              checks = data["checks"]
+              expected = {f"NASA-{n:02d}" for n in range(1, 21)}
+              actual = [item["id"] for item in checks]
+              if len(actual) != len(expected) or set(actual) != expected:
+                  sys.exit("NASA_LEDGER_INCOMPLETE_OR_DUPLICATE")
+              if any(item.get("status") != "PASS" for item in checks):
+                  sys.exit("NASA_LEDGER_NON_PASS")
+              if any(item.get("source_sha") != os.environ["GITHUB_SHA"] for item in checks):
+                  sys.exit("NASA_LEDGER_SHA_MISMATCH")
+              if data.get("summary", {}).get("PASS") != len(expected):
+                  sys.exit("NASA_LEDGER_SUMMARY_MISMATCH")
+          except (KeyError, TypeError, ValueError) as exc:
+              sys.exit(f"NASA_LEDGER_INVALID:{type(exc).__name__}")
+          print("NASA_LEDGER_ALL_20_PASS_EXACT_SHA")
+          PY
       - name: Upload timestamped proof ledger
         if: always()
         uses: actions/upload-artifact@v4
