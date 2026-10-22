@@ -1,13 +1,24 @@
-"""Fail-closed verifier for externally collected GitHub CI receipts.
+"""Fail-closed *structural* checker for GitHub Actions CI receipts.
 
-This module does not fetch GitHub data and cannot certify deployment.
-A receipt is only useful when bound to the expected exact head SHA.
+This module cannot authenticate a GitHub receipt, prove complete pagination, or
+certify deployment. The required workflow/job/step contract is maintained here
+independently of the untrusted receipt being checked.
 """
 import re
 
+# Reviewed against .github/workflows/pr_tests.yml on main (2026-10-23).
+# Never obtain mandatory steps from receipt["required_steps"].
+TRUSTED_REQUIRED_STEPS = {
+    "pytest": (
+        "Run python tools/memory_guard.py",
+        "Run python tools/chaos_inject.py",
+        "Run python -m pytest -q",
+    ),
+}
+
 
 class ReceiptError(ValueError):
-    """The supplied CI receipt does not prove the required checks."""
+    """The supplied receipt cannot establish even structural CI completeness."""
 
 
 def verify_ci_receipt(receipt, expected_sha, required_jobs):
@@ -17,24 +28,48 @@ def verify_ci_receipt(receipt, expected_sha, required_jobs):
         raise ReceiptError("CI receipt does not match exact head")
     if receipt.get("status") != "completed" or receipt.get("conclusion") != "success":
         raise ReceiptError("Workflow is not completed successfully")
-    if not isinstance(required_jobs, (list, tuple)) or not required_jobs or len(set(required_jobs)) != len(required_jobs):
-        raise ReceiptError("Required job names must be unique and nonempty")
+    # Caller may not weaken the trusted contract by supplying fewer jobs.
+    if not isinstance(required_jobs, (tuple, list)) or (
+        len(required_jobs) != len(TRUSTED_REQUIRED_STEPS)
+        or set(required_jobs) != set(TRUSTED_REQUIRED_STEPS)
+    ):
+        raise ReceiptError("Required jobs differ from independently reviewed contract")
     jobs = receipt.get("jobs")
-    if not isinstance(jobs, list):
+    if not isinstance(jobs, list) or not jobs:
         raise ReceiptError("Missing job evidence")
-    for name in required_jobs:
-        matches = [job for job in jobs if isinstance(job, dict) and job.get("name") == name]
-        if len(matches) != 1:
-            raise ReceiptError("Required job missing or duplicated: " + name)
-        job = matches[0]
+    seen = set()
+    for job in jobs:
+        if not isinstance(job, dict) or not isinstance(job.get("name"), str):
+            raise ReceiptError("Invalid job evidence")
+        name = job["name"]
+        if name in seen:
+            raise ReceiptError("Duplicate job evidence: " + name)
+        seen.add(name)
         if job.get("status") != "completed" or job.get("conclusion") != "success":
-            raise ReceiptError("Required job not successfully completed: " + name)
-        required_steps = job.get("required_steps")
-        steps = job.get("steps")
-        if not isinstance(required_steps, list) or not required_steps or not isinstance(steps, list):
-            raise ReceiptError("Required step evidence absent: " + name)
-        for step_name in required_steps:
-            matched = [step for step in steps if isinstance(step, dict) and step.get("name") == step_name]
+            raise ReceiptError("Job not successfully completed: " + name)
+        if "required_steps" in job:
+            raise ReceiptError("Receipt cannot define its own mandatory steps")
+    for name, mandatory_steps in TRUSTED_REQUIRED_STEPS.items():
+        matches = [job for job in jobs if job["name"] == name]
+        if len(matches) != 1:
+            raise ReceiptError("Required job missing: " + name)
+        steps = matches[0].get("steps")
+        if not isinstance(steps, list):
+            raise ReceiptError("Missing step evidence: " + name)
+        names = []
+        for step in steps:
+            if not isinstance(step, dict) or not isinstance(step.get("name"), str):
+                raise ReceiptError("Invalid step evidence: " + name)
+            names.append(step["name"])
+        if len(set(names)) != len(names):
+            raise ReceiptError("Duplicate step names: " + name)
+        for step_name in mandatory_steps:
+            matched = [step for step in steps if step["name"] == step_name]
             if len(matched) != 1 or matched[0].get("status") != "completed" or matched[0].get("conclusion") != "success":
-                raise ReceiptError("Required step not successfully completed: " + str(step_name))
-    return {"head_sha": expected_sha, "required_jobs_verified": list(required_jobs), "status": "CI_RECEIPT_VERIFIED_ONLY"}
+                raise ReceiptError("Required step not successfully completed: " + step_name)
+    return {
+        "head_sha": expected_sha,
+        "required_jobs_verified": list(TRUSTED_REQUIRED_STEPS),
+        "status": "CI_RECEIPT_STRUCTURAL_CHECK_ONLY",
+        "limitations": "Not authenticated, paginated, deployed, or runtime-proven",
+    }
