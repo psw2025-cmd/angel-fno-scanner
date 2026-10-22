@@ -36,3 +36,12 @@ def test_invalid_learning_evidence_rejected(field,bad):
     m={"sample_count":120,"precision":.7,"brier_score":.1,"max_drawdown":.1,"walk_forward":True,"data_leakage_detected":False}
     with pytest.raises(ValueError,match="Non-finite or non-numeric"):
         choose("gap_up",1,2,m,dict(m,**{field:bad}))
+
+def test_r2_metrics_prefix_matches_schema(monkeypatch):
+    import json
+    from pathlib import Path
+    from src.phase5_engine import r2
+    schema=json.loads((Path(__file__).resolve().parents[2]/"src/phase5_engine/schema.json").read_text())
+    source=(Path(__file__).resolve().parents[2]/"src/phase5_engine/r2.py").read_text()
+    for prefix in schema["r2_prefixes"]:
+        assert repr(prefix) in source or ('"'+prefix+'"') in source
