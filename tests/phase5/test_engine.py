@@ -55,7 +55,12 @@ def test_gap_up_schema_matches_evaluator():
     assert "predicted_gap_pct" in schema["prediction_required_by_track"]["gap_up"]
     assert "predicted_return_pct" not in schema["prediction_required_by_track"]["gap_up"]
 
-@pytest.mark.parametrize("published", ["2026-10-15T10:00:00", "2026-10-17T10:00:00+05:30"])
+@pytest.mark.parametrize("published", ["2026-10-15T10:00:00", "2026-10-16T00:01:00+05:30", "2026-10-17T10:00:00+05:30"])
 def test_gap_up_publication_time_fail_closed(published):
-    with pytest.raises(ValueError, match="Publication timestamp|after target date"):
+    with pytest.raises(ValueError, match="Publication timestamp|precede target session"):
         evaluate_gap_up([dict(P,published_at=published)],{})
+
+def test_gap_up_exchange_timezone_boundary():
+    # Previous UTC date can already be the target trading date in India.
+    with pytest.raises(ValueError, match="precede target session"):
+        evaluate_gap_up([dict(P,published_at="2026-10-15T20:00:00+00:00")],{})
