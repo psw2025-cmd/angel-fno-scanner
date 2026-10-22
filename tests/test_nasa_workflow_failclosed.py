@@ -13,9 +13,9 @@ WORKFLOW = ROOT / ".github/workflows/nasa-daily-proof.yml"
 def gate_script():
     source = WORKFLOW.read_text(encoding="utf-8")
     block = source.split("      - name: Enforce complete NASA proof ledger", 1)[1].split("      - name: Upload timestamped proof ledger", 1)[0]
-    match = re.search(r"python - <<'PY'\\n(.*?)\\n          PY", block, re.S)
+    match = re.search(r"python - <<'PY'\n(.*?)\n          PY", block, re.S)
     assert match, "NASA gate script missing"
-    return "\\n".join(line[10:] if line.startswith("          ") else line for line in match.group(1).splitlines())
+    return "\n".join(line[10:] if line.startswith("          ") else line for line in match.group(1).splitlines())
 
 
 def sample():
