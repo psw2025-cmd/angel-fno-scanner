@@ -35,7 +35,10 @@ def _type(field) -> str:
 
 
 def canonical_type(raw: str) -> str:
-    """Normalize BigQuery API and SQL aliases without relaxing type checks."""
+    """Normalize BigQuery API and SQL aliases without relaxing type checks.
+
+    Keep canonicalization consistent for committed, live, and load schemas.
+    """
     normalized = str(raw or "").strip().upper()
     return {
         "FLOAT": "FLOAT64", "FLOAT64": "FLOAT64",
