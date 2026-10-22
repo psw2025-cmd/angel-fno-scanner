@@ -187,7 +187,11 @@ def run_readiness_probe():
         except Exception as e:
             checks_summary["error"] = str(e)
 
-    if proc.returncode != 0:
+    # A nonzero probe exit may be the expected fail-closed result of an UNKNOWN
+    # or NOT_PROVEN check. Preserve the underlying evidence instead of masking
+    # it with a second, misleading generic failure label.
+    checks_summary["probe_exit_code"] = proc.returncode
+    if proc.returncode != 0 and not evidence_valid:
         checks_summary["probe_execution"] = "FAIL"
         fail_count += 1
     if not evidence_valid:
@@ -202,7 +206,7 @@ def run_readiness_probe():
                 print(f"        * {name:<25}: {st}")
 
     return {
-        "status": "PASS" if fail_count == 0 and evidence_valid and proc.returncode == 0 else "FAIL",
+        "status": "PASS" if fail_count == 0 and other_count == 0 and evidence_valid and proc.returncode == 0 else "FAIL",
         "fail_count": fail_count,
         "pass_count": pass_count,
         "other_count": other_count,
@@ -234,7 +238,14 @@ def main():
     if formula_res["status"] != "PASS":
         critical_failures.append("Google Sheet Formula Checks contract drifted from canonical 219/200 rules")
     if readiness_res["status"] != "PASS":
-        critical_failures.append("Infrastructure probe execution or evidence validation failed")
+        unresolved = [name for name, state in readiness_res["checks"].items()
+                      if state in ("UNKNOWN", "NOT_PROVEN")]
+        if unresolved:
+            critical_failures.append("Infrastructure readiness not independently proven: " + ", ".join(unresolved))
+        elif readiness_res["checks"].get("probe_execution") == "FAIL":
+            critical_failures.append("Infrastructure probe execution or evidence validation failed")
+        else:
+            critical_failures.append("Infrastructure readiness failed; inspect named check evidence")
     if readiness_res["fail_count"] > 0:
         # Note: If git is dirty/unpushed, readiness probe working_tree / current_main might show FAIL
         # We separate working_tree from other functional failures
