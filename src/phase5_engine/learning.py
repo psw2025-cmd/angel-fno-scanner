@@ -13,6 +13,10 @@ def choose(track,incumbent,challenger,baseline,trial):
            or not 0 <= m["precision"] <= 1 or not 0 <= m["brier_score"] <= 1
            or not 0 <= m["max_drawdown"] <= 1 for m in (baseline, trial)):
         raise ValueError("Learning metrics outside valid domains")
+    if any(m["walk_forward"] not in (True, False) or not isinstance(m["walk_forward"], bool)
+           or m["data_leakage_detected"] not in (True, False)
+           or not isinstance(m["data_leakage_detected"], bool) for m in (baseline, trial)):
+        raise ValueError("Learning verification flags must be boolean")
     eligible=(trial["sample_count"]>=100 and trial["walk_forward"] is True
               and trial["data_leakage_detected"] is False
               and trial["precision"]>baseline["precision"]
