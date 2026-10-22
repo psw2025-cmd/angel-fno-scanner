@@ -17,7 +17,10 @@ def evaluate_gap_up(predictions, actuals, threshold=0.5):
         close=float(p["previous_close"]);opened=float(a["open_price"])
         if not all(map(isfinite,(close,opened))) or min(close,opened)<=0:raise ValueError("Invalid price")
         actual_gap=100*(opened-close)/close
-        correct=(float(p["predicted_gap_pct"])>=threshold)==(actual_gap>=threshold)
+        predicted=float(p["predicted_gap_pct"])
+        cutoff=float(threshold)
+        if not all(map(isfinite,(predicted,cutoff))):raise ValueError("Invalid prediction or threshold")
+        correct=(predicted>=cutoff)==(actual_gap>=cutoff)
         rows.append({"id":pid,"status":"VALIDATED","correct":correct,"actual_gap_pct":round(actual_gap,4)})
     valid=[r for r in rows if r["status"]=="VALIDATED"]
     return {"track":"gap_up","evaluated":len(valid),"pending":len(rows)-len(valid),"accuracy_pct":round(100*sum(r["correct"] for r in valid)/len(valid),2) if valid else None,"rows":rows}
