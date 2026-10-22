@@ -1,7 +1,7 @@
 import pytest
 from src.phase5_engine.validation import evaluate_gap_up
 from src.phase5_engine.learning import choose
-P={"prediction_id":"p1","track":"gap_up","symbol":"RELIANCE","target_date":"2026-10-16","previous_close":100,"predicted_gap_pct":1}
+P={"published_at":"2026-10-15T10:00:00+05:30","prediction_id":"p1","track":"gap_up","symbol":"RELIANCE","target_date":"2026-10-16","previous_close":100,"predicted_gap_pct":1}
 def test_pending_not_failure():
     r=evaluate_gap_up([P],{})
     assert r["accuracy_pct"] is None and r["pending"]==1
@@ -54,3 +54,8 @@ def test_gap_up_schema_matches_evaluator():
     assert required <= set(dict(P,published_at="2026-10-15T10:00:00+05:30",predicted_return_pct=1,model_version="v1"))
     assert "predicted_gap_pct" in schema["prediction_required_by_track"]["gap_up"]
     assert "predicted_return_pct" not in schema["prediction_required_by_track"]["gap_up"]
+
+@pytest.mark.parametrize("published", ["2026-10-15T10:00:00", "2026-10-17T10:00:00+05:30"])
+def test_gap_up_publication_time_fail_closed(published):
+    with pytest.raises(ValueError, match="Publication timestamp|after target date"):
+        evaluate_gap_up([dict(P,published_at=published)],{})
