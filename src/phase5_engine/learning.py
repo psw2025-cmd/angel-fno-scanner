@@ -9,6 +9,10 @@ def choose(track,incumbent,challenger,baseline,trial):
     numeric=("sample_count","precision","brier_score","max_drawdown")
     if any(isinstance(m[k], bool) or not isinstance(m[k], (int,float)) or not isfinite(m[k]) for m in (baseline,trial) for k in numeric):
         raise ValueError("Non-finite or non-numeric learning evidence")
+    if any(m["sample_count"] < 0 or m["sample_count"] != int(m["sample_count"])
+           or not 0 <= m["precision"] <= 1 or not 0 <= m["brier_score"] <= 1
+           or not 0 <= m["max_drawdown"] <= 1 for m in (baseline, trial)):
+        raise ValueError("Learning metrics outside valid domains")
     eligible=(trial["sample_count"]>=100 and trial["walk_forward"] is True
               and trial["data_leakage_detected"] is False
               and trial["precision"]>baseline["precision"]
