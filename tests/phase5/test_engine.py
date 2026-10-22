@@ -22,7 +22,7 @@ def test_minimum_sample():
 @pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")])
 def test_nonfinite_forecast_rejected(bad):
     a={"RELIANCE":{"verified_open":True,"session_date":"2026-10-16","open_price":101}}
-    with pytest.raises(ValueError, match="Invalid prediction or threshold"):
+    with pytest.raises(ValueError, match="Invalid forecast evidence"):
         evaluate_gap_up([dict(P,predicted_gap_pct=bad)],a)
 
 def test_nonfinite_threshold_rejected():
@@ -64,3 +64,8 @@ def test_gap_up_exchange_timezone_boundary():
     # Previous UTC date can already be the target trading date in India.
     with pytest.raises(ValueError, match="precede target session"):
         evaluate_gap_up([dict(P,published_at="2026-10-15T20:00:00+00:00")],{})
+
+@pytest.mark.parametrize("field,bad", [("previous_close",0),("previous_close",float("nan")),("predicted_gap_pct",float("inf"))])
+def test_invalid_forecast_rejected_before_actual_arrives(field,bad):
+    with pytest.raises(ValueError, match="Invalid forecast evidence"):
+        evaluate_gap_up([dict(P,**{field:bad})],{})
