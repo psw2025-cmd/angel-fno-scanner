@@ -63,6 +63,11 @@ def verify_ci_receipt(receipt, expected_sha, required_jobs):
             names.append(step["name"])
         if len(set(names)) != len(names):
             raise ReceiptError("Duplicate step names: " + name)
+        # A successful job cannot establish clean evidence while the supplied
+        # receipt explicitly reports an unsuccessful additional step.
+        for step in steps:
+            if step.get("conclusion") in ("failure", "cancelled", "timed_out", "action_required"):
+                raise ReceiptError("Unsuccessful observed step: " + step["name"])
         for step_name in mandatory_steps:
             matched = [step for step in steps if step["name"] == step_name]
             if len(matched) != 1 or matched[0].get("status") != "completed" or matched[0].get("conclusion") != "success":
