@@ -115,6 +115,8 @@ jobs:
 
       - name: Commit & Push Updated Snapshots
         if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -eo pipefail
           git config --global user.name "github-actions[bot]"
