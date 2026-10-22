@@ -1,6 +1,7 @@
 """Pure T+1 validation: no relay imports and no order APIs."""
 from math import isfinite
-from datetime import date, datetime, timezone
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 from .config import safety
 
 def evaluate_gap_up(predictions, actuals, threshold=0.5):
@@ -13,7 +14,7 @@ def evaluate_gap_up(predictions, actuals, threshold=0.5):
         if p["track"]!="gap_up":raise ValueError("Wrong evaluation track")
         published=datetime.fromisoformat(p["published_at"].replace("Z","+00:00"))
         if published.tzinfo is None or published.utcoffset() is None:raise ValueError("Publication timestamp must be timezone-aware")
-        if published.astimezone(timezone.utc).date()>date.fromisoformat(p["target_date"]):raise ValueError("Prediction published after target date")
+        if published.astimezone(ZoneInfo("Asia/Kolkata")).date()>=date.fromisoformat(p["target_date"]):raise ValueError("Prediction must precede target session in IST")
         a=actuals.get(p["symbol"])
         if not a or not a.get("verified_open"):
             rows.append({"id":pid,"status":"PENDING_ACTUAL"});continue
