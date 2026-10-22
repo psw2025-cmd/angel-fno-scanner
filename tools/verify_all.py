@@ -14,6 +14,7 @@ Writes report to audit/verify_report.json.
 Exits 0 if all checks pass, non-zero otherwise.
 """
 import datetime
+import tempfile
 import json
 import re
 import subprocess
@@ -143,8 +144,9 @@ def check_formula_contract():
 
 def run_readiness_probe():
     print("\n[5/6] Running infrastructure readiness probe...")
-    out_root = Path(r"C:\temp\verify")
-    out_root.mkdir(parents=True, exist_ok=True)
+    # An isolated output directory binds the evidence to this invocation only.
+    # A shared C:\\temp\\verify could select a stale result from a previous run.
+    out_root = Path(tempfile.mkdtemp(prefix="angel-readiness-"))
 
     cmd = [
         sys.executable,
