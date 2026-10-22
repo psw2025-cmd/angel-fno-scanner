@@ -85,7 +85,7 @@ jobs:
           try:
               data = json.loads(path.read_text(encoding="utf-8"))
               checks = data["checks"]
-              expected = {f"NASA-{n:02d}" for n in range(1, 21)}
+              expected = {f"P-{n:02d}" for n in range(1, 21)}
               actual = [item["id"] for item in checks]
               if len(actual) != len(expected) or set(actual) != expected:
                   sys.exit("NASA_LEDGER_INCOMPLETE_OR_DUPLICATE")
