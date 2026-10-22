@@ -12,7 +12,6 @@
     "published_at",
     "target_date",
     "previous_close",
-    "predicted_return_pct",
     "model_version"
   ],
   "r2_prefixes": [
@@ -24,5 +23,16 @@
     "metrics/"
   ],
   "paper_mode": 1,
-  "live_order_authority": 0
+  "live_order_authority": 0,
+  "prediction_required_by_track": {
+    "gap_up": [
+      "predicted_gap_pct"
+    ],
+    "breakout": [
+      "predicted_return_pct"
+    ],
+    "multibagger": [
+      "predicted_return_pct"
+    ]
+  }
 }
