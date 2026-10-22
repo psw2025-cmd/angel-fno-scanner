@@ -20,7 +20,7 @@ def evaluate_gap_up(predictions, actuals, threshold=0.5):
         cutoff=float(threshold)
         if not all(map(isfinite,(close,predicted,cutoff))) or close<=0:raise ValueError("Invalid forecast evidence")
         a=actuals.get(p["symbol"])
-        if not a or not a.get("verified_open"):
+        if not a or a.get("verified_open") is not True:
             rows.append({"id":pid,"status":"PENDING_ACTUAL"});continue
         if a["session_date"]!=p["target_date"]:raise ValueError("Session mismatch")
         opened=float(a["open_price"])
