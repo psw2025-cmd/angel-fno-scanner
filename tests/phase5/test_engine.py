@@ -45,3 +45,12 @@ def test_r2_metrics_prefix_matches_schema(monkeypatch):
     source=(Path(__file__).resolve().parents[2]/"src/phase5_engine/r2.py").read_text()
     for prefix in schema["r2_prefixes"]:
         assert repr(prefix) in source or ('"'+prefix+'"') in source
+
+def test_gap_up_schema_matches_evaluator():
+    import json
+    from pathlib import Path
+    schema=json.loads((Path(__file__).resolve().parents[2]/"src/phase5_engine/schema.json").read_text())
+    required=set(schema["prediction_required"]) | set(schema["prediction_required_by_track"]["gap_up"])
+    assert required <= set(dict(P,published_at="2026-10-15T10:00:00+05:30",predicted_return_pct=1,model_version="v1"))
+    assert "predicted_gap_pct" in schema["prediction_required_by_track"]["gap_up"]
+    assert "predicted_return_pct" not in schema["prediction_required_by_track"]["gap_up"]
