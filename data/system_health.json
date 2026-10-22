@@ -1,6 +1,6 @@
 {
   "status": "FAIL",
-  "timestamp": "2026-10-22T10:15:28.463760+00:00",
+  "timestamp": "2026-10-22T15:47:38.664341+00:00",
   "sheets_audit": {
     "passed": false,
     "summary": {
@@ -96,7 +96,7 @@
         ],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 2059,
+        "row_count": 2064,
         "col_count": 11
       },
       "NEWS_LIVE": {
@@ -142,28 +142,30 @@
       "option_predictions_live": {
         "exists": true,
         "rows": 219,
-        "size_mb": 0.14,
+        "size_mb": 0.13,
         "columns": 54
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 32403,
-        "size_mb": 31.13,
+        "rows": 32595,
+        "size_mb": 31.23,
         "columns": 26
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 428,
+        "rows": 429,
         "size_mb": 0.29,
         "columns": 16
       }
     }
   },
   "publication": {
-    "passed": false,
+    "passed": true,
     "summary": {
-      "status": "UNVERIFIED",
-      "error_type": "RuntimeError"
+      "cycle_id": "39806853848:60ef13161e164bd2a32c62de47cf0682",
+      "run_id": "39806853848",
+      "git_sha": "32d9b3a34e9ee759185bc6aed1517e0ec83bed6b",
+      "writer_id": "market_bot"
     }
   },
   "engine_state": {
