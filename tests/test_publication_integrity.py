@@ -103,6 +103,10 @@ class BQ:
 
 @pytest.fixture
 def authorized(monkeypatch):
+    # Simulated lease is injected only for the existing offline sink tests.
+    from tools import publication_lease
+    monkeypatch.setattr(publication_lease, 'acquire_production_lease', lambda client=None: {'owner_id': '1|market_bot|12345'})
+    monkeypatch.setattr(publication_lease, 'assert_current_fence', lambda client=None: {'owner_id': '1|market_bot|12345'})
     # test isolation only - prod code uses conditional 0/1
     for k,v in {'ALLOW_PRODUCTION_WRITES':'1','WRITER_ID':'market_bot','RUN_ID':'12345','GIT_SHA':'abc1234'}.items():
         monkeypatch.setenv(k,v)
@@ -263,3 +267,17 @@ def test_holidays_and_utc_session_conversion():
     assert not engine.is_morning_reconcile_time(dt.datetime(2026,10,2,9,20))
     with pytest.raises(RuntimeError,match='unreviewed'):
         is_trading_day(dt.datetime(2027,1,4))
+
+
+def test_denied_lease_prevents_first_sink_write(authorized, monkeypatch):
+    from tools import publication_lease
+    from tools.publication_lease import PublicationLeaseError
+    monkeypatch.setattr(publication_lease, 'acquire_production_lease',
+                        lambda client=None: (_ for _ in ()).throw(PublicationLeaseError('held by competitor')))
+    book, bq = Book(), BQ()
+    invoked = []
+    with pytest.raises(PublicationLeaseError, match='competitor'):
+        publish_outputs(book, bq, 'option_predictions_live', '2026-10-03 08:00:00',
+                        lambda: invoked.append('sheet'), lambda: invoked.append('bq'))
+    assert invoked == []
+    assert 'PUBLICATION_STATUS' not in book.tabs
