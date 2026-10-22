@@ -1,0 +1,2 @@
+# Phase 5 isolated scaffold
+Separate targets: gap-up T+1 open, breakout 5–20 trading days, multibagger 3–12 calendar months. Prediction snapshots are immutable. Do not evaluate long-horizon predictions as next-day misses. Learning requires chronological out-of-sample tests, >=100 observations, and rollback version retention. No Phase 3 relay imports, order routing, or broker login. These workflows are scaffold-only and must fail closed until verified NSE ingestion and R2 storage adapters are implemented.
