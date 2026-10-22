@@ -21,3 +21,4 @@ jobs:
       - name: Fail closed until live Phase5 data adapters verified
         run: |
           echo "PHASE5_SCAFFOLD_ONLY: eod data ingestion and R2 production integration not enabled"
+          exit 1
