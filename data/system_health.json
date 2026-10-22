@@ -1,8 +1,8 @@
 {
-  "status": "PASS",
-  "timestamp": "2026-10-09T17:17:55.282163+00:00",
+  "status": "FAIL",
+  "timestamp": "2026-10-22T10:15:28.463760+00:00",
   "sheets_audit": {
-    "passed": true,
+    "passed": false,
     "summary": {
       "PRE_BREAKOUT_SCANNER": {
         "formula_errors": [],
@@ -43,7 +43,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 1057,
+        "row_count": 1596,
         "col_count": 8
       },
       "Cloud_Automation_Setup": {
@@ -78,14 +78,25 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 142,
+        "row_count": 130,
         "col_count": 5
       },
       "PAPER_ALERT_LOG": {
-        "formula_errors": [],
+        "formula_errors": [
+          [
+            1806,
+            10,
+            "#ERROR!"
+          ],
+          [
+            1808,
+            10,
+            "#ERROR!"
+          ]
+        ],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 1089,
+        "row_count": 2059,
         "col_count": 11
       },
       "NEWS_LIVE": {
@@ -99,7 +110,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 638,
+        "row_count": 1257,
         "col_count": 16
       },
       "NEWS_TYPE_TALLY": {
@@ -131,30 +142,28 @@
       "option_predictions_live": {
         "exists": true,
         "rows": 219,
-        "size_mb": 0.13,
+        "size_mb": 0.14,
         "columns": 54
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 15231,
-        "size_mb": 14.36,
+        "rows": 32403,
+        "size_mb": 31.13,
         "columns": 26
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 290,
-        "size_mb": 0.19,
+        "rows": 428,
+        "size_mb": 0.29,
         "columns": 16
       }
     }
   },
   "publication": {
-    "passed": true,
+    "passed": false,
     "summary": {
-      "cycle_id": "37964439246:ee4deae0a2644083b30b36a4412a72d8",
-      "run_id": "37964439246",
-      "git_sha": "34af55f062f20dadd02dc872ff2350fe32243cb6",
-      "writer_id": "market_bot"
+      "status": "UNVERIFIED",
+      "error_type": "RuntimeError"
     }
   },
   "engine_state": {
