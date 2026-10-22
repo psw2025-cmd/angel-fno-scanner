@@ -36,7 +36,7 @@ def test_integer_run_id_in_committed_schema_is_refused():
     for field in committed:
         if field["name"] == "run_id":
             field["type"] = "INTEGER"
-    with pytest.raises(SchemaGuardError, match="run_id=INTEGER expected STRING"):
+    with pytest.raises(SchemaGuardError, match="run_id=INT64 expected STRING"):
         assert_truncate_schema_safe(committed, _live_from(committed))
 
 
