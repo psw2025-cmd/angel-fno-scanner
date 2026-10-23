@@ -32,9 +32,12 @@ def main():
     runtime = Path(os.environ.get("CLOUD_PAPER_RUNTIME_DIR", "")).resolve()
     if not runtime.is_dir() or git(runtime, "branch", "--show-current") != "test-framework":
         raise RuntimeError("WRITE_GUARD: separate test-framework checkout required")
+    # Prevent the child writer from overriding inherited fail-closed flags via .env.
+    if (runtime / ".env").exists():
+        raise RuntimeError("UNREVIEWED_ENV_FILE_IN_CHILD_RUNTIME")
     # The writer itself retains all its existing branch, broker and PAPER gates.
     env = dict(os.environ, PAPER_MODE="1", LIVE_ORDER_AUTHORITY="0",
-               PAPER_LEDGER_BRANCH="test-framework")
+               REAL_BROKER_ORDERS="0", PAPER_LEDGER_BRANCH="test-framework")
     result = subprocess.run([sys.executable, "run_phase2_local.py"],
                             cwd=runtime, env=env, check=False)
     if result.returncode:
@@ -69,7 +72,8 @@ def main():
         "runtime_sha": git(runtime, "rev-parse", "HEAD"),
         "paper_mode": 1,
         "live_order_authority": 0,
-        "broker_order_executed": False
+        "real_broker_orders": 0,
+        "broker_order_audit": "NOT_PERFORMED"
     }, sort_keys=True) + "\n", encoding="utf-8")
     print("PAPER_RECEIPT_VERIFIED")
     return 0
@@ -79,6 +83,6 @@ if __name__ == "__main__":
         sys.exit(main())
     except Exception as exc:
         PROOF.mkdir(parents=True, exist_ok=True)
-        (PROOF / "status.json").write_text(json.dumps({"status": "FAIL_CLOSED", "error_type": type(exc).__name__, "missing_snapshot_variable_names": [name for name in REQUIRED[:4] if not os.getenv(name)], "paper_mode": os.getenv("PAPER_MODE") == "1", "live_order_authority": os.getenv("LIVE_ORDER_AUTHORITY") == "0"}, sort_keys=True) + "\n", encoding="utf-8")
+        (PROOF / "status.json").write_text(json.dumps({"status": "FAIL_CLOSED", "error_type": type(exc).__name__, "missing_snapshot_variable_names": [name for name in REQUIRED[:4] if not os.getenv(name)], "paper_mode": os.getenv("PAPER_MODE") == "1", "live_order_authority": os.getenv("LIVE_ORDER_AUTHORITY") == "0", "real_broker_orders": os.getenv("REAL_BROKER_ORDERS") == "0"}, sort_keys=True) + "\n", encoding="utf-8")
         print("CLOUD_PAPER_RUNNER_FAIL_CLOSED type=" + type(exc).__name__, file=sys.stderr)
         sys.exit(1)
