@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "incident_id": "PHASE2-RAW-SNAPSHOT-INVALID-JSON-20261024-01",
+  "classification": "REPRODUCED_CODE_PATH_DEFECT_NOT_OBSERVED_IN_LIVE_BROKER_RUN",
+  "scope": "CLOUD_ONLY_PAPER_NO_REAL_ORDERS",
+  "observed_at_utc": "2026-10-23T23:56:35Z",
+  "affected_refs_checked": [
+    "main",
+    "test-framework",
+    "feat/cloud-paper-runner"
+  ],
+  "original_blob_sha": "f1ca7a0005779398a114e488791dd29f5ed029ae",
+  "signal": "run_phase2_local.py raw_path.write_text appends two-character literal backslash+n outside JSON document; json.load(raw_snapshot.json) fails Extra data.",
+  "root_cause": "Double-escaped newline in one raw snapshot serialization expression; other ledger writes use a valid single LF.",
+  "upstream_downstream": "Source writer emits malformed bytes; SHA-256 binds malformed bytes; later JSON parsing of raw evidence fails closed. GitHub main/test-framework parity prevents a main-only patch from silently changing separate runtime.",
+  "severity": "P1_PAPER_EVIDENCE_INTEGRITY_AND_RUNTIME_BLOCKER",
+  "reproduction": {
+    "type": "OFFLINE_NO_NETWORK",
+    "original_expression": "json.dumps(snapshot, sort_keys=True, indent=2, allow_nan=False) + \"\\\\n\"",
+    "result": "json.JSONDecodeError Extra data",
+    "live_occurrence": "NOT_VERIFIED"
+  },
+  "patch": {
+    "path": "run_phase2_local.py",
+    "commit": "325a150eaa78e9d993e1d018688ef261fea9c7e7",
+    "new_blob_sha": "d20858c51a80070f1d13cf1f35b02fe5ac54163d",
+    "behavior": "serialize_raw_snapshot returns one JSON document plus actual LF; writer hashes bytes of the resulting file."
+  },
+  "regression_tests": {
+    "path": "tests/test_phase2_raw_snapshot_json.py",
+    "cases": [
+      "test_roundtrip_through_real_file_and_json_load",
+      "test_exactly_one_real_terminal_newline_not_literal_backslash_n",
+      "test_nonfinite_broker_values_fail_closed"
+    ]
+  },
+  "test_first": {
+    "head_sha": "52db04393bea4d957a4b1bce72a709dc16d73310",
+    "push_run_id": 40042422053,
+    "conclusion": "failure",
+    "failure": "ImportError missing serializer; independent source-expression reproduction yielded JSONDecodeError"
+  },
+  "fixed_head": {
+    "head_sha": "325a150eaa78e9d993e1d018688ef261fea9c7e7",
+    "push_run_id": 40042506856,
+    "conclusion": "success",
+    "checkout_matches_event_sha": true,
+    "focused_tests": "3 PASS",
+    "full_pytest": "366 passed, 3 skipped, 1 warning",
+    "chaos": "6 PASS"
+  },
+  "additional_ci": {
+    "pr_tests_run_id": 40042511114,
+    "encoding_safety_run_id": 40042511068,
+    "both": "success"
+  },
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0,
+    "broker_order_audit": "NOT_PERFORMED"
+  },
+  "deployment": {
+    "main_merged": false,
+    "test_framework_updated": false,
+    "cloud_deployed": false,
+    "actual_serving_sha": "UNVERIFIED",
+    "genuine_feed": "UNVERIFIED",
+    "matured_outcomes": "UNVERIFIED",
+    "cross_system_reconciliation": "UNVERIFIED"
+  },
+  "rollback": "Governed revert of draft PR #176; do not force push or overwrite test-framework.",
+  "reopen_if": [
+    "raw_snapshot.json fails json.load",
+    "literal backslash+n appended to raw JSON",
+    "main and test-framework writer blobs diverge at deployment without parity gate",
+    "cloud receipt certified without independent broker source proof"
+  ],
+  "limitations": [
+    "Test-first red CI reports missing new serializer; separate direct offline evaluation reproduces malformed old expression.",
+    "Three full-suite skips remain; not full mandatory gate closure.",
+    "Main and test-framework still contain original defect until separately governed integration.",
+    "No cloud runtime, broker order audit or independent market source was exercised."
+  ],
+  "operations_advanced": {
+    "1501": "ACTIONED",
+    "1502": "ACTIONED",
+    "1505": "TESTED",
+    "1510": "TESTED",
+    "1511": "ACTIONED",
+    "1512": "ACTIONED",
+    "1513": "TESTED",
+    "1515": "TESTED",
+    "1516": "CI_PASS",
+    "1517": "BLOCKED",
+    "1518": "BLOCKED",
+    "1519": "ACTIONED",
+    "1664": "ACTIONED",
+    "1673": "TESTED",
+    "1909": "ACTIONED"
+  },
+  "next_checkpoint": "Verify final evidence-record head in direct push CI, post Issue #3 CROSS_AGENT_PACKET, and preserve main/test-framework parity blocker until governed merge."
+}
