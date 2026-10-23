@@ -5,6 +5,7 @@ import os
 import shutil
 import subprocess
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 if __package__ in (None, ""):
@@ -35,22 +36,47 @@ def main():
     # Prevent the child writer from overriding inherited fail-closed flags via .env.
     if (runtime / ".env").exists():
         raise RuntimeError("UNREVIEWED_ENV_FILE_IN_CHILD_RUNTIME")
+    # A tracked or prior-session receipt is never proof that this invocation ran.
+    source = runtime / "data" / "paper_ledger" / "receipt.json"
+    before_receipt = source.read_bytes() if source.is_file() else None
+    started_at = datetime.now(timezone.utc)
+    PROOF.mkdir(parents=True, exist_ok=True)
+    (PROOF / "status.json").write_text(json.dumps({
+        "status": "RUNNING_NOT_VERIFIED", "paper_mode": 1,
+        "live_order_authority": 0, "real_broker_orders": 0,
+        "broker_order_audit": "NOT_PERFORMED"
+    }, sort_keys=True) + "\n", encoding="utf-8")
     # The writer itself retains all its existing branch, broker and PAPER gates.
     env = dict(os.environ, PAPER_MODE="1", LIVE_ORDER_AUTHORITY="0",
                REAL_BROKER_ORDERS="0", PAPER_LEDGER_BRANCH="test-framework")
     result = subprocess.run([sys.executable, "run_phase2_local.py"],
                             cwd=runtime, env=env, check=False)
     if result.returncode:
+        (PROOF / "status.json").write_text(json.dumps({
+            "status": "FAIL_CLOSED", "error_type": "CHILD_EXIT_NONZERO",
+            "child_exit_code": result.returncode,
+            "broker_order_audit": "NOT_PERFORMED"
+        }, sort_keys=True) + "\n", encoding="utf-8")
         return result.returncode
-    source = runtime / "data" / "paper_ledger" / "receipt.json"
     if not source.is_file():
         raise RuntimeError("RECEIPT_MISSING")
+    if before_receipt is not None and source.read_bytes() == before_receipt:
+        raise RuntimeError("RECEIPT_NOT_REFRESHED")
     receipt = json.loads(source.read_text(encoding="utf-8"))
     if (receipt.get("paper_mode") != 1 or receipt.get("live_order_authority") != 0
             or receipt.get("status") != "LOCAL_ARTIFACT_ONLY_NOT_INSERTED"):
         raise RuntimeError("RECEIPT_SAFETY_FAILURE")
     from phase2.daily_close import canonical_hash
     payload = json.loads(receipt["bigquery_merge_parameters"]["payload"])
+    try:
+        issued_at = datetime.fromisoformat(payload["created_at"])
+    except (KeyError, TypeError, ValueError) as exc:
+        raise RuntimeError("RECEIPT_TIMESTAMP_INVALID") from exc
+    if issued_at.tzinfo is None or issued_at.utcoffset() is None:
+        raise RuntimeError("RECEIPT_TIMESTAMP_INVALID")
+    if not (started_at <= issued_at.astimezone(timezone.utc)
+            <= datetime.now(timezone.utc) + timedelta(seconds=5)):
+        raise RuntimeError("RECEIPT_NOT_FROM_CURRENT_RUN")
     digest = canonical_hash({k: v for k, v in payload.items() if k != "prediction_hash"})
     if not (digest == receipt["prediction_hash"] == payload["prediction_hash"]
             == receipt["bigquery_merge_parameters"]["hash"]):
