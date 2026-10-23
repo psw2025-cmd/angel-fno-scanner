@@ -2,9 +2,9 @@ name: Cloud PAPER Safety CI
 
 on:
   push:
-    branches: [fix/cloud-paper-third-flag-20261023]
+    branches: [feat/cloud-paper-runner, fix/cloud-paper-third-flag-20261023]
   pull_request:
-    branches: [feat/cloud-paper-runner]
+    branches: [main, feat/cloud-paper-runner]
   workflow_dispatch:
 
 permissions:
