@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import datetime
 
 from gainers import (
@@ -141,6 +142,19 @@ def test_high_momentum_requires_an_open_liquid_quote():
     assert labels["KAYNES29SEP263650CE"] == "HIGH MOMENTUM"
     assert labels["MAHABANK29SEP2685CE"] == "THIN PREMIUM"
     assert sum(1 for row in open_sheet[4:] if row[20] == "HIGH MOMENTUM") == 1
+
+    early_label, early_reason = classify_momentum(
+        replace(liquid, gain_percent=12.0), True, NOW_OPEN
+    )
+    assert early_label == "EARLY WATCH"
+    assert "not a validated forecast or order" in early_reason
+    mature_label, _ = classify_momentum(liquid, True, NOW_OPEN)
+    assert mature_label == "HIGH MOMENTUM"
+
+    assert classify_momentum(replace(liquid, exchange_time="2026-09-25 10:13:29"), True, NOW_OPEN)[0] == "DEGRADED QUOTE"
+    assert classify_momentum(replace(liquid, exchange_time="2026-09-25 10:11:59"), True, NOW_OPEN)[0] == "STALE QUOTE"
+    assert classify_momentum(replace(liquid, exchange_time=""), True, NOW_OPEN)[0] == "UNKNOWN FRESHNESS"
+    assert classify_momentum(replace(liquid, exchange_time="2026-09-25 10:15:01"), True, NOW_OPEN)[0] == "INVALID TIMESTAMP"
 
 
 def test_angel_full_quote_uses_exchange_close_and_depth():

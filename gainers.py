@@ -11,7 +11,7 @@ import math
 from dataclasses import dataclass
 from datetime import date, datetime, time
 from typing import Iterable, Mapping, Sequence
-from market_calendar import NSE_HOLIDAYS_2026, market_session_state
+from market_calendar import IST, NSE_HOLIDAYS_2026, market_session_state
 
 DISCOUNT_RATE = 0.065
 YEAR_SECONDS = 365.25 * 24 * 60 * 60
@@ -32,40 +32,92 @@ def tradable_paper_premium(entry_ltp) -> bool:
         return False
 
 
-def score_gainer_page(picks, actual_rows) -> dict:
-    """Compare advance picks with a later gainers-page list.
+def _exact_contract_key(row: Mapping) -> tuple | None:
+    """Return an exact option identity; never collapse different strikes/expiries."""
+    contract = str(
+        row.get("contract_symbol")
+        or row.get("forecast_contract")
+        or row.get("contract")
+        or row.get("symbol_contract")
+        or ""
+    ).strip().upper()
+    if contract and " " not in contract:
+        return ("CONTRACT", contract)
 
-    picks and actual_rows use symbol and side. Penny actuals stay in the page
-    count. They are not counted as tradable matches.
+    underlying = str(row.get("underlying") or row.get("symbol") or "").strip().upper()
+    side = str(row.get("side") or row.get("option_type") or row.get("type") or "").strip().upper()
+    strike = as_float(row.get("strike"))
+    expiry = parse_expiry(row.get("expiry") or row.get("expiry_date"))
+    if not underlying or side not in ("CE", "PE") or strike is None or strike <= 0 or expiry is None:
+        return None
+    return ("DETAILS", underlying, side, strike, expiry.isoformat())
+
+
+def score_gainer_page(picks, actual_rows) -> dict:
+    """Compare advance picks with later exact-contract outcomes.
+
+    A match requires contract identity (or complete underlying/side/strike/expiry
+    fields). Missing identities remain visible and cannot count as hits. Penny
+    actuals are reported separately from rows with no usable LTP.
     """
     wanted = set()
+    unqualified_picks = 0
     for pick in picks:
-        symbol = str(pick.get("symbol") or "").strip().upper()
-        side = str(pick.get("side") or "").strip().upper()
-        if symbol and side in ("CE", "PE"):
-            wanted.add((symbol, side))
-    page = []
-    tradable = []
-    for row in actual_rows:
-        symbol = str(row.get("symbol") or "").strip().upper()
-        side = str(row.get("side") or row.get("option_type") or "").strip().upper()
+        symbol = str(pick.get("symbol") or pick.get("underlying") or "").strip().upper()
+        side = str(pick.get("side") or pick.get("option_type") or "").strip().upper()
         if not symbol or side not in ("CE", "PE"):
             continue
-        page.append((symbol, side))
-        if tradable_paper_premium(row.get("last") or row.get("ltp") or row.get("entry_ltp")):
-            tradable.append((symbol, side))
-    matched = [item for item in page if item in wanted]
-    tradable_matched = [item for item in tradable if item in wanted]
+        key = _exact_contract_key(pick)
+        if key is None:
+            unqualified_picks += 1
+        else:
+            wanted.add(key)
+
+    page = []
+    tradable = []
+    missing_page_identity = 0
+    penny_page_rows = 0
+    unpriced_page_rows = 0
+    for row in actual_rows:
+        symbol = str(row.get("symbol") or row.get("underlying") or "").strip().upper()
+        side = str(row.get("side") or row.get("option_type") or row.get("type") or "").strip().upper()
+        if not symbol or side not in ("CE", "PE"):
+            continue
+        key = _exact_contract_key(row)
+        page.append(key)
+        if key is None:
+            missing_page_identity += 1
+        ltp = as_float(row.get("last"))
+        if ltp is None:
+            ltp = as_float(row.get("ltp"))
+        if ltp is None:
+            ltp = as_float(row.get("entry_ltp"))
+        if tradable_paper_premium(ltp):
+            tradable.append(key)
+        elif ltp is None or ltp < 0:
+            unpriced_page_rows += 1
+        else:
+            penny_page_rows += 1
+
+    matched = [key for key in page if key is not None and key in wanted]
+    tradable_matched = [key for key in tradable if key is not None and key in wanted]
     return {
-        "advance_picks": len(wanted),
+        "advance_picks": len(wanted) + unqualified_picks,
+        "qualified_advance_picks": len(wanted),
+        "unqualified_advance_picks": unqualified_picks,
         "page_rows": len(page),
+        "unqualified_page_rows": missing_page_identity,
         "page_matches": len(matched),
         "tradable_matches": len(tradable_matched),
-        "penny_page_rows": len(page) - len(tradable),
+        "penny_page_rows": penny_page_rows,
+        "unpriced_page_rows": unpriced_page_rows,
     }
+
+
 MIN_VOLUME = 100_000
 MIN_OPEN_INTEREST = 5_000
 HIGH_MOMENTUM_GAIN = 25.0
+EARLY_WATCH_GAIN = 5.0
 MAX_SPREAD_RATIO = 0.12
 
 
@@ -404,12 +456,43 @@ def contracts_from_forensic(values: Sequence[Sequence], exchange_time_fallback: 
     return quotes
 
 
-def classify_momentum(quote: OptionQuote, market_open: bool) -> tuple[str, str]:
+def _quote_age_seconds(exchange_time: str, now: datetime) -> float | None:
+    text = str(exchange_time or "").strip()
+    if not text:
+        return None
+    parsed = None
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        for fmt in ("%d-%b-%Y %H:%M:%S", "%d-%b-%Y %H:%M:%S.%f", "%d/%m/%Y %H:%M:%S"):
+            try:
+                parsed = datetime.strptime(text, fmt)
+                break
+            except ValueError:
+                continue
+    if parsed is None:
+        return None
+    parsed = parsed.replace(tzinfo=IST) if parsed.tzinfo is None else parsed.astimezone(IST)
+    current = now.replace(tzinfo=IST) if now.tzinfo is None else now.astimezone(IST)
+    return (current - parsed).total_seconds()
+
+
+def classify_momentum(quote: OptionQuote, market_open: bool, now: datetime | None = None) -> tuple[str, str]:
     if not market_open:
         return (
             "MARKET CLOSED",
             "NSE F&O is closed. Gain % is the latest Angel change, not a live alert.",
         )
+    current = now or datetime.now(IST)
+    age_seconds = _quote_age_seconds(quote.exchange_time, current)
+    if age_seconds is None:
+        return ("UNKNOWN FRESHNESS", "Exchange timestamp is missing or unparseable; quote is not a live signal.")
+    if age_seconds < 0:
+        return ("INVALID TIMESTAMP", "Exchange quote timestamp is in the future; quote is not a live signal.")
+    if age_seconds > 180:
+        return ("STALE QUOTE", f"Exchange quote is {age_seconds:.0f}s old; it exceeds the 180s freshness limit.")
+    if age_seconds > 90:
+        return ("DEGRADED QUOTE", f"Exchange quote is {age_seconds:.0f}s old; it exceeds the 90s live threshold.")
     if quote.ltp < MIN_PREMIUM:
         return (
             "THIN PREMIUM",
@@ -430,11 +513,16 @@ def classify_momentum(quote: OptionQuote, market_open: bool) -> tuple[str, str]:
     if quote.gain_percent is not None and quote.gain_percent >= HIGH_MOMENTUM_GAIN:
         return (
             "HIGH MOMENTUM",
-            "Open session, Angel change at least 25%, premium at least ₹2, volume and open interest above the floor.",
+            "Open, fresh liquid quote with at least 25% change; this describes an established move.",
+        )
+    if quote.gain_percent is not None and quote.gain_percent >= EARLY_WATCH_GAIN:
+        return (
+            "EARLY WATCH",
+            "Fresh liquid quote with 5% to under 25% change; paper-monitor only, not a validated forecast or order.",
         )
     return (
         "MEASURED",
-        "Quote passed the liquidity floor and did not reach the 25% change rule.",
+        "Fresh quote passed the liquidity floor and is below the 5% early-watch threshold.",
     )
 
 
@@ -543,7 +631,7 @@ def render_gainer_sheet(quotes: Iterable[OptionQuote], now: datetime, source: st
     high_momentum = 0
     rendered: list[list] = []
     for quote in selected:
-        label, reason = classify_momentum(quote, open_session)
+        label, reason = classify_momentum(quote, open_session, now)
         if label == "HIGH MOMENTUM":
             high_momentum += 1
         intrinsic, time_value, iv, delta, theta = _model_fields(quote, now)
