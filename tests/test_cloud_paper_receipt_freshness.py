@@ -23,9 +23,15 @@ CREDS = {
 }
 
 
-def make_receipt(runtime, captured_at, *, source_captured_at=None, payload_source_at=None):
+def make_receipt(runtime, captured_at, *, source_captured_at=None, payload_source_at=None,
+                 source_kind="ANGEL_SMARTAPI_READONLY_QUOTES_NOT_OFFICIAL_SETTLEMENT",
+                 payload_source_kind=None, quotes=None):
+    # Synthetic fixture shaped like a broker capture; never authentic market evidence.
+    if quotes is None:
+        quotes = [{"contract": {"tradingsymbol": "OFFLINE_TEST_ONLY"},
+                   "quote": {"tradingSymbol": "OFFLINE_TEST_ONLY"}}]
     snapshot = {"captured_at": source_captured_at or captured_at,
-                "source_kind": "TEST_FIXTURE_ONLY"}
+                "source_kind": source_kind, "quotes": quotes}
     raw_path = runtime / "data" / "raw_snapshot.json"
     raw_path.parent.mkdir(parents=True, exist_ok=True)
     raw_bytes = (json.dumps(snapshot, sort_keys=True) + "\n").encode("utf-8")
@@ -33,7 +39,8 @@ def make_receipt(runtime, captured_at, *, source_captured_at=None, payload_sourc
     source_hash = hashlib.sha256(raw_bytes).hexdigest()
     payload = {"created_at": captured_at, "source_timestamp": payload_source_at or captured_at,
                "source_hash": source_hash,
-               "mode": "PAPER", "live_order_authority": 0, "ranking": []}
+               "mode": "PAPER", "live_order_authority": 0, "ranking": [],
+               "provenance": {"source_kind": payload_source_kind or source_kind}}
     digest = canonical_hash(payload)
     payload["prediction_hash"] = digest
     receipt = {
@@ -302,6 +309,43 @@ class CurrentRunReceiptTests(unittest.TestCase):
                              source_captured_at=naive, payload_source_at=naive)
                 return SimpleNamespace(returncode=0)
             with self.assertRaisesRegex(RuntimeError, "RAW_SNAPSHOT_TIMESTAMP_INVALID"):
+                self.run_once(runtime, proof, child)
+
+
+    def test_synthetic_source_kind_cannot_be_certified(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            runtime, proof = root / "runtime", root / "proof"
+            runtime.mkdir()
+            def child(*args, **kwargs):
+                make_receipt(runtime, datetime.now(timezone.utc).isoformat(),
+                             source_kind="TEST_FIXTURE_ONLY")
+                return SimpleNamespace(returncode=0)
+            with self.assertRaisesRegex(RuntimeError, "SOURCE_KIND_NOT_BROKER_READONLY"):
+                self.run_once(runtime, proof, child)
+
+    def test_prediction_provenance_cannot_disagree_with_raw_source_kind(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            runtime, proof = root / "runtime", root / "proof"
+            runtime.mkdir()
+            def child(*args, **kwargs):
+                make_receipt(runtime, datetime.now(timezone.utc).isoformat(),
+                             payload_source_kind="TEST_FIXTURE_ONLY")
+                return SimpleNamespace(returncode=0)
+            with self.assertRaisesRegex(RuntimeError, "SOURCE_KIND_PROVENANCE_MISMATCH"):
+                self.run_once(runtime, proof, child)
+
+    def test_empty_raw_quote_list_cannot_be_certified(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            runtime, proof = root / "runtime", root / "proof"
+            runtime.mkdir()
+            def child(*args, **kwargs):
+                make_receipt(runtime, datetime.now(timezone.utc).isoformat(),
+                             quotes=[])
+                return SimpleNamespace(returncode=0)
+            with self.assertRaisesRegex(RuntimeError, "RAW_SNAPSHOT_QUOTES_MISSING"):
                 self.run_once(runtime, proof, child)
 
 if __name__ == "__main__":
