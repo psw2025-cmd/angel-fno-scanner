@@ -161,16 +161,42 @@ def test_lease_client_refuses_a_missing_key(monkeypatch):
         _client()
 
 
-def test_gainer_page_score_keeps_penny_spikes_out_of_profit():
+def test_gainer_page_score_requires_exact_contract_and_excludes_penny_spikes():
     from gainers import score_gainer_page
 
-    picks = [{"symbol": "TCS", "side": "CE"}, {"symbol": "WIPRO", "side": "CE"}]
-    actual = [
-        {"symbol": "TCS", "side": "CE", "last": 38.10},
-        {"symbol": "WIPRO", "side": "CE", "last": 1.90},
-        {"symbol": "SAIL", "side": "CE", "last": 0.10},
+    picks = [
+        {"symbol": "TCS", "side": "CE", "contract_symbol": "TCS27OCT262780CE"},
+        {"symbol": "TCS", "side": "CE", "contract_symbol": "TCS27OCT262800CE"},
+        {"symbol": "WIPRO", "side": "CE", "contract_symbol": "WIPRO27OCT26450CE"},
     ]
+    actual = iter([
+        {"symbol": "TCS", "side": "CE", "contract_symbol": "TCS27OCT262780CE", "last": 38.10},
+        {"symbol": "TCS", "side": "CE", "contract_symbol": "TCS27OCT262800CE", "last": 50.00},
+        {"symbol": "TCS", "side": "CE", "contract_symbol": "TCS27OCT262820CE", "last": 50.00},
+        {"symbol": "WIPRO", "side": "CE", "contract_symbol": "WIPRO27OCT26450CE", "last": 1.90},
+        {"symbol": "SAIL", "side": "CE", "contract_symbol": "SAIL27OCT26160CE", "last": 0.10},
+        {"symbol": "INFY", "side": "PE", "contract_symbol": "INFY27OCT261500PE"},
+    ])
     scored = score_gainer_page(picks, actual)
-    assert scored["page_matches"] == 2
-    assert scored["tradable_matches"] == 1
+    assert scored["advance_picks"] == 3
+    assert scored["qualified_advance_picks"] == 3
+    assert scored["unqualified_advance_picks"] == 0
+    assert scored["page_rows"] == 6
+    assert scored["page_matches"] == 3
+    assert scored["tradable_matches"] == 2
     assert scored["penny_page_rows"] == 2
+    assert scored["unpriced_page_rows"] == 1
+
+
+def test_gainer_page_score_does_not_guess_missing_contract_identity():
+    from gainers import score_gainer_page
+
+    scored = score_gainer_page(
+        [{"symbol": "TCS", "side": "CE"}],
+        [{"symbol": "TCS", "side": "CE", "contract_symbol": "TCS27OCT262780CE", "last": 38.10}],
+    )
+    assert scored["advance_picks"] == 1
+    assert scored["qualified_advance_picks"] == 0
+    assert scored["unqualified_advance_picks"] == 1
+    assert scored["page_matches"] == 0
+    assert scored["tradable_matches"] == 0
