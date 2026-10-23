@@ -35,9 +35,9 @@ def test_reviewed_ci_step_inventory():
 
 
 @pytest.mark.parametrize("injection", [
-    '      - run: echo "PYTEST_ADDOPTS=-k smoke" >> "$GITHUB_ENV"',
+    '      - run: echo "PYTEST_""ADDOPTS=-k smoke" >> "$GITHUB_ENV"',
     '      - run: echo "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1" >> "$GITHUB_ENV"',
-    '      - name: Hidden setup\n        run: echo "PYTEST_ADDOPTS=-k smoke" >> "$GITHUB_ENV"',
+    '      - name: Hidden setup\n        run: echo "PYTEST_""ADDOPTS=-k smoke" >> "$GITHUB_ENV"',
     '      - uses: malicious/action@v1',
 ])
 def test_extra_unreviewed_step_is_rejected(injection):
