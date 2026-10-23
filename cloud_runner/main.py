@@ -17,6 +17,7 @@ from cloud_runner.health import snapshot
 
 ROOT = Path(__file__).resolve().parents[1]
 PROOF = ROOT / "proof-output" / "cloud-paper"
+CHILD_TIMEOUT_SECONDS = 600  # Bound a stuck child below the 20-minute CI job limit.
 
 def git(root, *args):
     return subprocess.run(["git", *args], cwd=root, check=True,
@@ -58,8 +59,18 @@ def main():
     # The writer itself retains all its existing branch, broker and PAPER gates.
     env = dict(os.environ, PAPER_MODE="1", LIVE_ORDER_AUTHORITY="0",
                REAL_BROKER_ORDERS="0", PAPER_LEDGER_BRANCH="test-framework")
-    result = subprocess.run([sys.executable, "run_phase2_local.py"],
-                            cwd=runtime, env=env, check=False)
+    try:
+        result = subprocess.run([sys.executable, "run_phase2_local.py"],
+                                cwd=runtime, env=env, check=False,
+                                timeout=CHILD_TIMEOUT_SECONDS)
+    except subprocess.TimeoutExpired:
+        # subprocess.run terminates and waits for the direct child on timeout.
+        # No prior successful receipt may survive as current-run evidence.
+        (PROOF / "status.json").write_text(json.dumps({
+            "status": "FAIL_CLOSED", "error_type": "CHILD_TIMEOUT",
+            "child_exit_code": 124, "broker_order_audit": "NOT_PERFORMED"
+        }, sort_keys=True) + "\n", encoding="utf-8")
+        return 124
     if result.returncode:
         (PROOF / "status.json").write_text(json.dumps({
             "status": "FAIL_CLOSED", "error_type": "CHILD_EXIT_NONZERO",
