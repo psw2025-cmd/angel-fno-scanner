@@ -19,6 +19,7 @@ jobs:
     env:
       PAPER_MODE: '1'
       LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
       FEED_MODE: live_smartapi
       ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
       ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}

@@ -8,8 +8,10 @@ REQUIRED = (
 )
 
 def enforce_safety():
-    if os.getenv("PAPER_MODE") != "1" or os.getenv("LIVE_ORDER_AUTHORITY") != "0":
-        raise RuntimeError("PAPER-only authority flags required")
+    if (os.getenv("PAPER_MODE") != "1"
+            or os.getenv("LIVE_ORDER_AUTHORITY") != "0"
+            or os.getenv("REAL_BROKER_ORDERS") != "0"):
+        raise RuntimeError("PAPER-only authority flags required (all three)")
 
 def validate_environment(*, streaming=False):
     enforce_safety()
