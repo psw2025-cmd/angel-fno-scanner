@@ -2,7 +2,7 @@ name: Encoding Safety
 on:
   pull_request:
   push:
-    branches: [main, docs/chatgpt-phase1-independent, feat/phase1-agy]
+    branches: [main, docs/chatgpt-phase1-independent, feat/phase1-agy, fix/ci-evidence-contract-regression-20261023]
   schedule:
     - cron: '30 3 * * *'  # 3:30 UTC daily drift check
   workflow_dispatch:
