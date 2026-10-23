@@ -20,6 +20,11 @@ def assert_required_steps_fail_closed(source):
     # Even if GitHub reports a green job, continue-on-error can mask failures.
     assert not re.search(r"(?m)^\s*continue-on-error\s*:", source), "CI failure tolerance is forbidden"
     assert re.search(r"(?m)^  pytest:\s*$", source), "Required pytest job missing"
+    # A hidden -k/--ignore override can make an unchanged pytest command green
+    # while silently reducing the collected test denominator. Fail closed on
+    # missing, changed, or second workflow-level PYTEST_ADDOPTS assignments.
+    assert source.splitlines().count("  PYTEST_ADDOPTS: '-rs'") == 1, "Reviewed PYTEST_ADDOPTS reporting-only value missing"
+    assert source.count("PYTEST_ADDOPTS") == 1, "Unreviewed PYTEST_ADDOPTS override detected"
     # A job-level if may appear after runs-on, timeout, or other keys.
     # Scope the check to the mandatory job, not unrelated future jobs.
     job_header = re.search(r"(?m)^  pytest: *$", source)
@@ -84,4 +89,27 @@ def test_required_job_if_after_other_keys_is_rejected(anchor, injected):
     assert source.count(anchor) == 1
     modified = source.replace(anchor, anchor + "\n" + injected, 1)
     with pytest.raises(AssertionError, match="Required job is conditional"):
+        assert_required_steps_fail_closed(modified)
+
+
+@pytest.mark.parametrize("payload,anchor", [
+    ("  PYTEST_ADDOPTS: '-rs --ignore=tests'", "  PYTEST_ADDOPTS: '-rs'"),
+    ("    env:\n      PYTEST_ADDOPTS: '-rs --ignore=tests'", "    timeout-minutes: 15"),
+    ("        env:\n          PYTEST_ADDOPTS: '-rs -k no_such_test'", "      - run: python -m pytest -q"),
+    ("    env: {PYTEST_ADDOPTS: '-rs --ignore=tests'}", "    timeout-minutes: 15"),
+])
+def test_pytest_collection_cannot_be_narrowed_by_addopts(payload, anchor):
+    source = WORKFLOW.read_text(encoding="utf-8")
+    if anchor == "  PYTEST_ADDOPTS: '-rs'":
+        modified = source.replace(anchor, payload, 1)
+    else:
+        modified = source.replace(anchor, anchor + "\n" + payload, 1)
+    with pytest.raises(AssertionError, match="PYTEST_ADDOPTS"):
+        assert_required_steps_fail_closed(modified)
+
+
+def test_missing_reviewed_pytest_addopts_is_rejected():
+    source = WORKFLOW.read_text(encoding="utf-8")
+    modified = source.replace("  PYTEST_ADDOPTS: '-rs'\n", "", 1)
+    with pytest.raises(AssertionError, match="PYTEST_ADDOPTS"):
         assert_required_steps_fail_closed(modified)
