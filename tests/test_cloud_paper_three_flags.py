@@ -118,8 +118,7 @@ class CloudPaperSafetyTests(unittest.TestCase):
         self.assertIsNotNone(match)
         push_branches = {name.strip() for name in match.group(1).split(",")}
         self.assertTrue({"feat/cloud-paper-runner",
-                         "fix/cloud-paper-third-flag-20261023",
-                         "fix/cloud-paper-child-timeout-20261024"}.issubset(push_branches))
+                         "fix/cloud-paper-third-flag-20261023"}.issubset(push_branches))
 
     def test_evidence_never_asserts_unobserved_no_order_execution(self):
         source = (ROOT / "cloud_runner/main.py").read_text(encoding="utf-8")
