@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "incident_id": "CLOUD-PAPER-SOURCE-KIND-20261024-01",
+  "classification": "REPRODUCED_CODE_PATH_RISK_NOT_OBSERVED_IN_PRODUCTION",
+  "first_observed_utc": "2026-10-23T23:24:00Z",
+  "signal": "Cloud PAPER accepted hash-consistent raw snapshots without checking source_kind or nonempty quotes; offline synthetic receipt could be labeled PAPER_RECEIPT_VERIFIED.",
+  "root_cause": "Consistency/hash/timestamp gates omitted semantic source_kind and nonempty quotes contract.",
+  "patch": {
+    "path": "cloud_runner/main.py",
+    "commit": "909cac3a801ebd0e01b5e3ec92d6427d1f0231bc",
+    "behavior": "Require reviewed read-only source_kind in raw snapshot and forecast provenance and nonempty quotes; reject synthetic, contradictory, or empty source."
+  },
+  "regression_tests": [
+    {
+      "path": "tests/test_cloud_paper_receipt_freshness.py",
+      "test": "test_synthetic_source_kind_cannot_be_certified"
+    },
+    {
+      "path": "tests/test_cloud_paper_receipt_freshness.py",
+      "test": "test_prediction_provenance_cannot_disagree_with_raw_source_kind"
+    },
+    {
+      "path": "tests/test_cloud_paper_receipt_freshness.py",
+      "test": "test_empty_raw_quote_list_cannot_be_certified"
+    }
+  ],
+  "test_first_commit": "ea959f5bd98f6b63a0a909fa0d7c21418d799640",
+  "test_first_ci": "UNVERIFIED",
+  "focused_tests": "WAITING",
+  "exact_head_ci": "WAITING",
+  "cloud_deployment": "NOT_PERFORMED",
+  "actual_serving_sha": "UNVERIFIED",
+  "genuine_authenticated_broker_feed": "UNVERIFIED",
+  "independently_matured_outcome": "UNVERIFIED",
+  "broker_order_audit": "NOT_PERFORMED",
+  "risk_flags": {
+    "PAPER_MODE": "1",
+    "LIVE_ORDER_AUTHORITY": "0",
+    "REAL_BROKER_ORDERS": "0"
+  },
+  "limitations": [
+    "Source-kind is self-asserted by child, not an authenticated broker receipt.",
+    "Tests use synthetic offline data and cannot prove genuine feed.",
+    "Dependent PR #175 targets isolated PR #174; neither merged or deployed."
+  ],
+  "rollback": "Normal governed revert of isolated PR #175; preserve incident and failed attempts.",
+  "reopen_if": [
+    "PAPER_RECEIPT_VERIFIED is emitted for synthetic source_kind",
+    "Raw/prediction source_kind disagree yet accepted",
+    "Empty raw quotes accepted",
+    "Source-kind fields treated as independent broker authentication proof"
+  ],
+  "next_checkpoint": "Verify exact-head non-skipped CI and negative test-first receipt; update Issue #3 and evaluate cloud deployment only after reviews."
+}
