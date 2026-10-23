@@ -23,3 +23,9 @@ def test_recovery_branch_push_is_checked_on_exact_head(workflow):
     assert "actions/checkout@v5" in source
     # Do not silently override checkout with a PR merge ref on push events.
     assert "refs/pull/" not in source
+
+
+def test_windows_powershell_syntax_is_run_on_windows_ci():
+    source = (ROOT / ".github" / "workflows" / "encoding-safety.yml").read_text(encoding="utf-8")
+    assert "if: runner.os == 'Windows'" in source
+    assert "tests/test_infra_readiness.py::test_windows_powershell_syntax -rs" in source
