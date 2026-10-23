@@ -2,7 +2,7 @@ name: Encoding Safety
 on:
   pull_request:
   push:
-    branches: [main, docs/chatgpt-phase1-independent, feat/phase1-agy]
+    branches: [main, docs/chatgpt-phase1-independent, feat/phase1-agy, fix/ci-evidence-contract-regression-20261023]
   schedule:
     - cron: '30 3 * * *'  # 3:30 UTC daily drift check
   workflow_dispatch:
@@ -18,11 +18,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - run: python -m pip install pytest -r requirements.txt
@@ -30,4 +30,7 @@ jobs:
       - run: python -m pytest -q tests/test_encoding_gate.py tests/test_cli_contract.py tests/test_data_chain.py
         env:
           PYTHONIOENCODING: ""
+      - name: Validate Windows PowerShell syntax
+        if: runner.os == 'Windows'
+        run: python -m pytest -q tests/test_infra_readiness.py::test_windows_powershell_syntax -rs
       - run: python -c "assert '[PASS]'.encode('cp1252') == b'[PASS]'"

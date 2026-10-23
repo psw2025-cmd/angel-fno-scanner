@@ -1,0 +1,31 @@
+"""Guard against reintroducing deprecated Node.js 20 GitHub Actions in active CI gates."""
+from pathlib import Path
+import re
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+
+@pytest.mark.parametrize("workflow", ["pr_tests.yml", "encoding-safety.yml"])
+def test_ci_uses_node24_compatible_action_majors(workflow):
+    source = (ROOT / ".github" / "workflows" / workflow).read_text(encoding="utf-8")
+    actions = re.findall(r"(?m)^\s*-\s*uses:\s*(actions/(?:checkout|setup-python)@\S+)", source)
+    assert "actions/checkout@v5" in actions
+    assert "actions/setup-python@v6" in actions
+    assert all(action in {"actions/checkout@v5", "actions/setup-python@v6"} for action in actions)
+
+
+@pytest.mark.parametrize("workflow", ["pr_tests.yml", "encoding-safety.yml"])
+def test_recovery_branch_push_is_checked_on_exact_head(workflow):
+    """Direct push runs check out their own commit, unlike PR synthetic merge runs."""
+    source = (ROOT / ".github" / "workflows" / workflow).read_text(encoding="utf-8")
+    assert "  push:\n    branches:" in source
+    assert "fix/ci-evidence-contract-regression-20261023" in source
+    assert "actions/checkout@v5" in source
+    # Do not silently override checkout with a PR merge ref on push events.
+    assert "refs/pull/" not in source
+
+
+def test_windows_powershell_syntax_is_run_on_windows_ci():
+    source = (ROOT / ".github" / "workflows" / "encoding-safety.yml").read_text(encoding="utf-8")
+    assert "if: runner.os == 'Windows'" in source
+    assert "tests/test_infra_readiness.py::test_windows_powershell_syntax -rs" in source

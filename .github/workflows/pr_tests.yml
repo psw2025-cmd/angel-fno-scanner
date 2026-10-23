@@ -3,8 +3,12 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main]
+    branches: [main, fix/ci-evidence-contract-regression-20261023]
   workflow_dispatch:
+permissions:
+  contents: read
+env:
+  PYTEST_ADDOPTS: '-rs'
 concurrency:
   group: pr-tests-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -14,8 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - run: pip install -r requirements.txt -r relay/requirements.txt pytest
