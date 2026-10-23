@@ -1,5 +1,6 @@
 """Cloud PAPER orchestration, delegating calculation to reviewed Phase 2 code."""
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -92,6 +93,21 @@ def main():
             or re.fullmatch(r"[0-9a-f]{64}", source_hash) is None
             or receipt.get("source_hash") != source_hash):
         raise RuntimeError("SOURCE_PROVENANCE_MISMATCH")
+    # Bind the signed-off prediction hash to the actual captured broker snapshot
+    # bytes. Internal agreement among receipt/entry/DNA alone is insufficient.
+    raw = runtime / "data" / "raw_snapshot.json"
+    if not raw.is_file():
+        raise RuntimeError("RAW_SNAPSHOT_MISSING")
+    raw_bytes = raw.read_bytes()
+    if hashlib.sha256(raw_bytes).hexdigest() != source_hash:
+        raise RuntimeError("RAW_SNAPSHOT_HASH_MISMATCH")
+    try:
+        raw_snapshot = json.loads(raw_bytes)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise RuntimeError("RAW_SNAPSHOT_INVALID") from exc
+    if (not isinstance(raw_snapshot, dict)
+            or raw_snapshot.get("captured_at") != payload.get("source_timestamp")):
+        raise RuntimeError("RAW_SNAPSHOT_TIMESTAMP_MISMATCH")
     digest = canonical_hash({k: v for k, v in payload.items() if k != "prediction_hash"})
     if not (digest == receipt["prediction_hash"] == payload["prediction_hash"]
             == receipt["bigquery_merge_parameters"]["hash"]):
@@ -109,6 +125,8 @@ def main():
     PROOF.mkdir(parents=True, exist_ok=True)
     for path in (source, entry, dna):
         shutil.copyfile(path, PROOF / path.name)
+    # Preserve the verified bytes rather than re-reading a mutable source file.
+    (PROOF / "raw_snapshot.json").write_bytes(raw_bytes)
     (PROOF / "status.json").write_text(json.dumps({
         "status": "PAPER_RECEIPT_VERIFIED",
         "prediction_hash": digest,
