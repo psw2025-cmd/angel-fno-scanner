@@ -130,6 +130,19 @@ def main():
     if not (started_at <= source_captured_at.astimezone(timezone.utc)
             <= datetime.now(timezone.utc) + timedelta(seconds=5)):
         raise RuntimeError("RAW_SNAPSHOT_NOT_FROM_CURRENT_RUN")
+    # The raw capture must declare the reviewed read-only source and agree
+    # with the forecast provenance. These fields are self-asserted, NOT
+    # independent proof of broker authentication or tick freshness.
+    expected_source_kind = "ANGEL_SMARTAPI_READONLY_QUOTES_NOT_OFFICIAL_SETTLEMENT"
+    if raw_snapshot.get("source_kind") != expected_source_kind:
+        raise RuntimeError("SOURCE_KIND_NOT_BROKER_READONLY")
+    provenance = payload.get("provenance")
+    if (not isinstance(provenance, dict)
+            or provenance.get("source_kind") != expected_source_kind):
+        raise RuntimeError("SOURCE_KIND_PROVENANCE_MISMATCH")
+    quotes = raw_snapshot.get("quotes")
+    if not isinstance(quotes, list) or not quotes:
+        raise RuntimeError("RAW_SNAPSHOT_QUOTES_MISSING")
     digest = canonical_hash({k: v for k, v in payload.items() if k != "prediction_hash"})
     if not (digest == receipt["prediction_hash"] == payload["prediction_hash"]
             == receipt["bigquery_merge_parameters"]["hash"]):
