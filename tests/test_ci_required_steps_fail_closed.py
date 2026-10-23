@@ -20,7 +20,14 @@ def assert_required_steps_fail_closed(source):
     # Even if GitHub reports a green job, continue-on-error can mask failures.
     assert not re.search(r"(?m)^\s*continue-on-error\s*:", source), "CI failure tolerance is forbidden"
     assert re.search(r"(?m)^  pytest:\s*$", source), "Required pytest job missing"
-    assert not re.search(r"(?m)^  pytest:\s*\n\s+if\s*:", source), "Required job is conditional"
+    # A job-level if may appear after runs-on, timeout, or other keys.
+    # Scope the check to the mandatory job, not unrelated future jobs.
+    job_header = re.search(r"(?m)^  pytest: *$", source)
+    assert job_header, "Required pytest job missing"
+    job_tail = source[job_header.end():]
+    next_job = re.search(r"(?m)^  [A-Za-z_][A-Za-z0-9_-]*: *$", job_tail)
+    job_body = job_tail[:next_job.start()] if next_job else job_tail
+    assert not re.search(r"(?m)^    if *:", job_body), "Required job is conditional"
     lines = source.splitlines()
     for command in REQUIRED:
         marker = "      - run: " + command
@@ -64,3 +71,17 @@ def test_required_command_cannot_be_masked_by_shell_fallback():
     source = source.replace("      - run: python -m pytest -q", "      - run: python -m pytest -q || true", 1)
     with pytest.raises(AssertionError):
         assert_required_steps_fail_closed(source)
+
+
+@pytest.mark.parametrize("anchor,injected", [
+    ("    runs-on: ubuntu-latest", "    if: false"),
+    ("    timeout-minutes: 15", "    if: ${{ false }}"),
+    ("    timeout-minutes: 15", "    if : >-\n      false"),
+])
+def test_required_job_if_after_other_keys_is_rejected(anchor, injected):
+    """Job-level if anywhere in pytest job must fail, not only first line."""
+    source = WORKFLOW.read_text(encoding="utf-8")
+    assert source.count(anchor) == 1
+    modified = source.replace(anchor, anchor + "\n" + injected, 1)
+    with pytest.raises(AssertionError, match="Required job is conditional"):
+        assert_required_steps_fail_closed(modified)
