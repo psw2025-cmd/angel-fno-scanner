@@ -23,7 +23,7 @@ CREDS = {
 }
 
 
-def make_receipt(runtime, captured_at, *, source_captured_at=None):
+def make_receipt(runtime, captured_at, *, source_captured_at=None, payload_source_at=None):
     snapshot = {"captured_at": source_captured_at or captured_at,
                 "source_kind": "TEST_FIXTURE_ONLY"}
     raw_path = runtime / "data" / "raw_snapshot.json"
@@ -31,7 +31,7 @@ def make_receipt(runtime, captured_at, *, source_captured_at=None):
     raw_bytes = (json.dumps(snapshot, sort_keys=True) + "\n").encode("utf-8")
     raw_path.write_bytes(raw_bytes)
     source_hash = hashlib.sha256(raw_bytes).hexdigest()
-    payload = {"created_at": captured_at, "source_timestamp": captured_at,
+    payload = {"created_at": captured_at, "source_timestamp": payload_source_at or captured_at,
                "source_hash": source_hash,
                "mode": "PAPER", "live_order_authority": 0, "ranking": []}
     digest = canonical_hash(payload)
@@ -260,6 +260,48 @@ class CurrentRunReceiptTests(unittest.TestCase):
                              source_captured_at=old)
                 return SimpleNamespace(returncode=0)
             with self.assertRaisesRegex(RuntimeError, "RAW_SNAPSHOT_TIMESTAMP_MISMATCH"):
+                self.run_once(runtime, proof, child)
+
+
+    def test_stale_source_timestamp_even_with_fresh_receipt_fails_closed(self):
+        # The prior guard only compared raw captured_at with payload source_timestamp.
+        # Both could agree on an old snapshot while created_at was current.
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            runtime, proof = root / "runtime", root / "proof"
+            runtime.mkdir()
+            stale = (datetime.now(timezone.utc) - timedelta(days=2)).isoformat()
+            def child(*args, **kwargs):
+                make_receipt(runtime, datetime.now(timezone.utc).isoformat(),
+                             source_captured_at=stale, payload_source_at=stale)
+                return SimpleNamespace(returncode=0)
+            with self.assertRaisesRegex(RuntimeError, "RAW_SNAPSHOT_NOT_FROM_CURRENT_RUN"):
+                self.run_once(runtime, proof, child)
+
+    def test_future_source_timestamp_even_with_fresh_receipt_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            runtime, proof = root / "runtime", root / "proof"
+            runtime.mkdir()
+            future = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
+            def child(*args, **kwargs):
+                make_receipt(runtime, datetime.now(timezone.utc).isoformat(),
+                             source_captured_at=future, payload_source_at=future)
+                return SimpleNamespace(returncode=0)
+            with self.assertRaisesRegex(RuntimeError, "RAW_SNAPSHOT_NOT_FROM_CURRENT_RUN"):
+                self.run_once(runtime, proof, child)
+
+    def test_naive_source_timestamp_even_with_fresh_receipt_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            runtime, proof = root / "runtime", root / "proof"
+            runtime.mkdir()
+            naive = datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
+            def child(*args, **kwargs):
+                make_receipt(runtime, datetime.now(timezone.utc).isoformat(),
+                             source_captured_at=naive, payload_source_at=naive)
+                return SimpleNamespace(returncode=0)
+            with self.assertRaisesRegex(RuntimeError, "RAW_SNAPSHOT_TIMESTAMP_INVALID"):
                 self.run_once(runtime, proof, child)
 
 if __name__ == "__main__":
