@@ -25,9 +25,31 @@
     }
   ],
   "test_first_commit": "ea959f5bd98f6b63a0a909fa0d7c21418d799640",
-  "test_first_ci": "UNVERIFIED",
-  "focused_tests": "WAITING",
-  "exact_head_ci": "WAITING",
+  "test_first_ci": {
+    "run_id": 40039590218,
+    "head_sha": "481e3a3528f2da94419d1b2787adaa536bc76604",
+    "conclusion": "failure",
+    "pytest": "3 failed, 330 passed, 3 skipped",
+    "isolated_tests": "11 PASS",
+    "chaos": "6 PASS"
+  },
+  "focused_tests": {
+    "isolated_unittest": "11 PASS",
+    "pytest": "333 passed, 3 skipped, 15 subtests passed",
+    "skips": [
+      "BigQuery credentials",
+      "external Colab contract",
+      "Windows compatibility on Ubuntu"
+    ]
+  },
+  "exact_head_ci": {
+    "run_id": 40039690892,
+    "head_sha": "7a985ae567fd5edac2b85e57bcf911eca7189b0c",
+    "conclusion": "success",
+    "checkout_matches_event_sha": true,
+    "pytest": "333 passed, 3 skipped",
+    "chaos": "6 PASS"
+  },
   "cloud_deployment": "NOT_PERFORMED",
   "actual_serving_sha": "UNVERIFIED",
   "genuine_authenticated_broker_feed": "UNVERIFIED",
@@ -50,5 +72,12 @@
     "Empty raw quotes accepted",
     "Source-kind fields treated as independent broker authentication proof"
   ],
-  "next_checkpoint": "Verify exact-head non-skipped CI and negative test-first receipt; update Issue #3 and evaluate cloud deployment only after reviews."
+  "next_checkpoint": "Reverify CI after this evidence-record commit; independent broker feed, serving SHA, outcomes and cross-system truth remain blocked.",
+  "encoding_safety": {
+    "run_id": 40039695635,
+    "head_sha": "7a985ae567fd5edac2b85e57bcf911eca7189b0c",
+    "conclusion": "success",
+    "ubuntu": "success",
+    "windows": "success"
+  }
 }
