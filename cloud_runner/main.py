@@ -2,6 +2,7 @@
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -84,6 +85,13 @@ def main():
     if not (started_at <= issued_at.astimezone(timezone.utc)
             <= datetime.now(timezone.utc) + timedelta(seconds=5)):
         raise RuntimeError("RECEIPT_NOT_FROM_CURRENT_RUN")
+    # All three artifacts must refer to the same broker snapshot provenance.
+    # This is consistency validation, not proof that the snapshot was live.
+    source_hash = payload.get("source_hash")
+    if (not isinstance(source_hash, str)
+            or re.fullmatch(r"[0-9a-f]{64}", source_hash) is None
+            or receipt.get("source_hash") != source_hash):
+        raise RuntimeError("SOURCE_PROVENANCE_MISMATCH")
     digest = canonical_hash({k: v for k, v in payload.items() if k != "prediction_hash"})
     if not (digest == receipt["prediction_hash"] == payload["prediction_hash"]
             == receipt["bigquery_merge_parameters"]["hash"]):
@@ -94,7 +102,9 @@ def main():
         raise RuntimeError("LINKED_EVIDENCE_MISSING")
     for path in (entry, dna):
         data = json.loads(path.read_text(encoding="utf-8"))
-        if data.get("prediction_hash") != digest or not exact_paper_flags(data):
+        if (data.get("prediction_hash") != digest
+                or data.get("source_hash") != source_hash
+                or not exact_paper_flags(data)):
             raise RuntimeError("LINKED_EVIDENCE_INVALID")
     PROOF.mkdir(parents=True, exist_ok=True)
     for path in (source, entry, dna):
