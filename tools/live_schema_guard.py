@@ -34,6 +34,19 @@ def _type(field) -> str:
     return str(raw).upper()
 
 
+def canonical_type(raw: str) -> str:
+    """Normalize BigQuery API and SQL aliases without relaxing type checks.
+
+    Keep canonicalization consistent for committed, live, and load schemas.
+    """
+    normalized = str(raw or "").strip().upper()
+    return {
+        "FLOAT": "FLOAT64", "FLOAT64": "FLOAT64",
+        "INTEGER": "INT64", "INT64": "INT64",
+        "BOOLEAN": "BOOL", "BOOL": "BOOL",
+    }.get(normalized, normalized)
+
+
 def field_map(fields) -> dict[str, str]:
     mapped = {}
     for field in fields or []:
@@ -42,7 +55,7 @@ def field_map(fields) -> dict[str, str]:
             raise SchemaGuardError("schema field is missing a name")
         if name in mapped:
             raise SchemaGuardError(f"duplicate schema field {name}")
-        mapped[name] = _type(field)
+        mapped[name] = canonical_type(_type(field))
     return mapped
 
 
@@ -100,16 +113,9 @@ def assert_truncate_schema_safe(committed_fields, live_fields, load_fields=None,
         raise SchemaGuardError(
             "load schema is narrower than the live table and would drop: " + ", ".join(dropped)
         )
-    def _canon(t: str) -> str:
-        t = (t or "").upper()
-        if t in ("FLOAT", "FLOAT64"):
-            return "FLOAT64"
-        if t in ("INTEGER", "INT64"):
-            return "INT64"
-        return t
     retyped = sorted(
         name for name, live_type in live.items()
-        if name in load and _canon(load[name]) != _canon(live_type)
+        if name in load and load[name] != live_type
     )
     if retyped:
         detail = ", ".join(f"{name} live={live[name]} load={load[name]}" for name in retyped)
