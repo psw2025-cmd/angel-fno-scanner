@@ -113,7 +113,13 @@ class CloudPaperSafetyTests(unittest.TestCase):
     def test_safety_ci_persists_after_peer_integration(self):
         workflow = (ROOT / ".github/workflows/cloud-paper-safety-ci.yml").read_text(encoding="utf-8")
         self.assertIn("branches: [main, feat/cloud-paper-runner]", workflow)
-        self.assertIn("branches: [feat/cloud-paper-runner, fix/cloud-paper-third-flag-20261023]", workflow)
+        push_section = workflow.split("  push:", 1)[1].split("  pull_request:", 1)[0]
+        match = re.search(r"branches:\\s*\\[([^\\]]+)\\]", push_section)
+        self.assertIsNotNone(match)
+        push_branches = {name.strip() for name in match.group(1).split(",")}
+        self.assertTrue({"feat/cloud-paper-runner",
+                         "fix/cloud-paper-third-flag-20261023",
+                         "fix/cloud-paper-child-timeout-20261024"}.issubset(push_branches))
 
     def test_evidence_never_asserts_unobserved_no_order_execution(self):
         source = (ROOT / "cloud_runner/main.py").read_text(encoding="utf-8")
