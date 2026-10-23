@@ -20,6 +20,13 @@ def git(root, *args):
     return subprocess.run(["git", *args], cwd=root, check=True,
                           capture_output=True, text=True).stdout.strip()
 
+def exact_paper_flags(data):
+    """JSON safety flags must be integer 1/0, never Python bool equivalents."""
+    return (type(data.get("paper_mode")) is int
+            and data["paper_mode"] == 1
+            and type(data.get("live_order_authority")) is int
+            and data["live_order_authority"] == 0)
+
 def main():
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
@@ -63,7 +70,7 @@ def main():
     if before_receipt is not None and source.read_bytes() == before_receipt:
         raise RuntimeError("RECEIPT_NOT_REFRESHED")
     receipt = json.loads(source.read_text(encoding="utf-8"))
-    if (receipt.get("paper_mode") != 1 or receipt.get("live_order_authority") != 0
+    if (not exact_paper_flags(receipt)
             or receipt.get("status") != "LOCAL_ARTIFACT_ONLY_NOT_INSERTED"):
         raise RuntimeError("RECEIPT_SAFETY_FAILURE")
     from phase2.daily_close import canonical_hash
@@ -87,7 +94,7 @@ def main():
         raise RuntimeError("LINKED_EVIDENCE_MISSING")
     for path in (entry, dna):
         data = json.loads(path.read_text(encoding="utf-8"))
-        if data.get("prediction_hash") != digest or data.get("paper_mode") != 1 or data.get("live_order_authority") != 0:
+        if data.get("prediction_hash") != digest or not exact_paper_flags(data):
             raise RuntimeError("LINKED_EVIDENCE_INVALID")
     PROOF.mkdir(parents=True, exist_ok=True)
     for path in (source, entry, dna):
