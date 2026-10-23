@@ -91,6 +91,11 @@ class CloudPaperSafetyTests(unittest.TestCase):
         self.assertIn("PAPER_MODE: '1'", workflow)
         self.assertIn("LIVE_ORDER_AUTHORITY: '0'", workflow)
 
+    def test_safety_ci_persists_after_peer_integration(self):
+        workflow = (ROOT / ".github/workflows/cloud-paper-safety-ci.yml").read_text(encoding="utf-8")
+        self.assertIn("branches: [main, feat/cloud-paper-runner]", workflow)
+        self.assertIn("branches: [feat/cloud-paper-runner, fix/cloud-paper-third-flag-20261023]", workflow)
+
     def test_evidence_never_asserts_unobserved_no_order_execution(self):
         source = (ROOT / "cloud_runner/main.py").read_text(encoding="utf-8")
         self.assertIn('"broker_order_audit": "NOT_PERFORMED"', source)
