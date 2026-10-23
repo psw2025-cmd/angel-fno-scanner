@@ -114,7 +114,7 @@ class CloudPaperSafetyTests(unittest.TestCase):
         workflow = (ROOT / ".github/workflows/cloud-paper-safety-ci.yml").read_text(encoding="utf-8")
         self.assertIn("branches: [main, feat/cloud-paper-runner]", workflow)
         push_section = workflow.split("  push:", 1)[1].split("  pull_request:", 1)[0]
-        match = re.search(r"branches:\\s*\\[([^\\]]+)\\]", push_section)
+        match = re.search(r"branches:\s*\[([^\]]+)\]", push_section)
         self.assertIsNotNone(match)
         push_branches = {name.strip() for name in match.group(1).split(",")}
         self.assertTrue({"feat/cloud-paper-runner",
