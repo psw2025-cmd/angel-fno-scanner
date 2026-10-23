@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "incident_id": "CLOUD-PAPER-CHILD-TIMEOUT-20261024-01",
+  "classification": "REPRODUCED_OFFLINE_CODE_PATH_RISK_NOT_OBSERVED_PRODUCTION",
+  "first_observed_utc": "2026-10-23T22:11:40Z",
+  "signal": "Phase 2 child subprocess.run lacked timeout; stuck child can hold runner and leave RUNNING_NOT_VERIFIED",
+  "root_cause": "Unbounded child wait; missing timeout failure transition",
+  "patch": {
+    "path": "cloud_runner/main.py",
+    "behavior": "timeout=600; on TimeoutExpired write FAIL_CLOSED CHILD_TIMEOUT child_exit_code=124, return 124",
+    "direct_child_only": true
+  },
+  "regression_tests": [
+    {
+      "path": "tests/test_cloud_paper_three_flags.py",
+      "test": "CloudPaperSafetyTests.test_stuck_child_times_out_and_records_fail_closed",
+      "mode": "OFFLINE_MOCK_NO_NETWORK"
+    }
+  ],
+  "test_first": {
+    "commit": "a239082a5f2498756c491af689a72f0845bd9bb2",
+    "workflow_run": 40032003965,
+    "conclusion": "failure",
+    "expected_timeout_test_error": true,
+    "other_failure": "brittle branch-list test"
+  },
+  "patch_commit": "8a4d93c151167ea71c44151d02ff94427c1693ee",
+  "verified_intermediate": {
+    "commit": "701346bf4cb53c35f446b20b64c74b8540dcf06c",
+    "workflow_run": 40032191751,
+    "conclusion": "success",
+    "pytest_passed": 330,
+    "pytest_skipped": 3,
+    "isolated_unittest_passed": 11,
+    "chaos_passed": 6,
+    "scope": "EXACT_HEAD_CI_ONLY"
+  },
+  "safety": {
+    "PAPER_MODE": "1",
+    "LIVE_ORDER_AUTHORITY": "0",
+    "REAL_BROKER_ORDERS": "0",
+    "broker_order_audit": "NOT_PERFORMED"
+  },
+  "gates": {
+    "deployed": "BLOCKED",
+    "serving_sha": "UNVERIFIED",
+    "genuine_feed": "UNVERIFIED",
+    "matured_outcome": "UNVERIFIED",
+    "independent_broker_order_audit": "UNVERIFIED",
+    "cross_system_reconciliation": "UNVERIFIED",
+    "next_session_recurrence": "WAITING"
+  },
+  "limitations": [
+    "subprocess.run timeout kills direct child, descendant process-tree cleanup unproven",
+    "no genuine cloud runtime execution",
+    "three unrelated integration/platform skips remain"
+  ],
+  "reopen_if": [
+    "child wall time exceeds 600 seconds without FAIL_CLOSED",
+    "timeout leaves status RUNNING_NOT_VERIFIED",
+    "orphan descendant survives",
+    "lease not released",
+    "scheduler misses next eligible session"
+  ],
+  "rollback": "normal governed revert of dependent PR #174, preserve failed attempts",
+  "canonical_issue": "https://github.com/psw2025-cmd/angel-fno-scanner/issues/3",
+  "dependent_pr": "https://github.com/psw2025-cmd/angel-fno-scanner/pull/174"
+}

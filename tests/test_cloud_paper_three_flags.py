@@ -74,6 +74,25 @@ class CloudPaperSafetyTests(unittest.TestCase):
             self.assertEqual(kwargs["env"]["LIVE_ORDER_AUTHORITY"], "0")
             self.assertEqual(kwargs["env"]["PAPER_LEDGER_BRANCH"], "test-framework")
 
+    def test_stuck_child_times_out_and_records_fail_closed(self):
+        """A hung child must not hold the scheduler indefinitely or leave RUNNING status."""
+        with tempfile.TemporaryDirectory() as tmp:
+            proof = Path(tmp) / "proof"
+            with patch.dict(os.environ, {**FLAGS, **FAKE_CREDS, "CLOUD_PAPER_RUNTIME_DIR": tmp}, clear=True):
+                with patch.object(sys, "argv", ["cloud_runner/main.py", "--once"]):
+                    with patch.object(cloud_main, "PROOF", proof):
+                        with patch.object(cloud_main, "git", return_value="test-framework"):
+                            with patch.object(cloud_main.subprocess, "run",
+                                              side_effect=cloud_main.subprocess.TimeoutExpired(
+                                                  cmd=["python", "run_phase2_local.py"], timeout=600)) as run:
+                                self.assertEqual(cloud_main.main(), 124)
+                                self.assertEqual(run.call_args.kwargs["timeout"], 600)
+            status = json.loads((proof / "status.json").read_text(encoding="utf-8"))
+            self.assertEqual(status["status"], "FAIL_CLOSED")
+            self.assertEqual(status["error_type"], "CHILD_TIMEOUT")
+            self.assertEqual(status["child_exit_code"], 124)
+            self.assertEqual(status["broker_order_audit"], "NOT_PERFORMED")
+
     def test_child_env_file_override_is_rejected_before_execution(self):
         with tempfile.TemporaryDirectory() as tmp:
             (Path(tmp) / ".env").write_text("REAL_BROKER_ORDERS=1\n", encoding="utf-8")
@@ -94,7 +113,12 @@ class CloudPaperSafetyTests(unittest.TestCase):
     def test_safety_ci_persists_after_peer_integration(self):
         workflow = (ROOT / ".github/workflows/cloud-paper-safety-ci.yml").read_text(encoding="utf-8")
         self.assertIn("branches: [main, feat/cloud-paper-runner]", workflow)
-        self.assertIn("branches: [feat/cloud-paper-runner, fix/cloud-paper-third-flag-20261023]", workflow)
+        push_section = workflow.split("  push:", 1)[1].split("  pull_request:", 1)[0]
+        match = re.search(r"branches:\s*\[([^\]]+)\]", push_section)
+        self.assertIsNotNone(match)
+        push_branches = {name.strip() for name in match.group(1).split(",")}
+        self.assertTrue({"feat/cloud-paper-runner",
+                         "fix/cloud-paper-third-flag-20261023"}.issubset(push_branches))
 
     def test_evidence_never_asserts_unobserved_no_order_execution(self):
         source = (ROOT / "cloud_runner/main.py").read_text(encoding="utf-8")
