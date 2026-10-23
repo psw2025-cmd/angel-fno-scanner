@@ -108,6 +108,17 @@ def main():
     if (not isinstance(raw_snapshot, dict)
             or raw_snapshot.get("captured_at") != payload.get("source_timestamp")):
         raise RuntimeError("RAW_SNAPSHOT_TIMESTAMP_MISMATCH")
+    # Hash equality and timestamp equality alone can certify a replayed snapshot.
+    # The Phase 2 child captures its broker snapshot after this invocation starts.
+    try:
+        source_captured_at = datetime.fromisoformat(raw_snapshot["captured_at"])
+    except (KeyError, TypeError, ValueError) as exc:
+        raise RuntimeError("RAW_SNAPSHOT_TIMESTAMP_INVALID") from exc
+    if source_captured_at.tzinfo is None or source_captured_at.utcoffset() is None:
+        raise RuntimeError("RAW_SNAPSHOT_TIMESTAMP_INVALID")
+    if not (started_at <= source_captured_at.astimezone(timezone.utc)
+            <= datetime.now(timezone.utc) + timedelta(seconds=5)):
+        raise RuntimeError("RAW_SNAPSHOT_NOT_FROM_CURRENT_RUN")
     digest = canonical_hash({k: v for k, v in payload.items() if k != "prediction_hash"})
     if not (digest == receipt["prediction_hash"] == payload["prediction_hash"]
             == receipt["bigquery_merge_parameters"]["hash"]):
