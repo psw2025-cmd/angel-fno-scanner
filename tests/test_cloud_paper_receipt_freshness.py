@@ -2,6 +2,7 @@
 
 No broker connection, network request, or real order is made by these tests.
 """
+import hashlib
 import json
 import os
 import sys
@@ -22,9 +23,16 @@ CREDS = {
 }
 
 
-def make_receipt(runtime, captured_at):
+def make_receipt(runtime, captured_at, *, source_captured_at=None):
+    snapshot = {"captured_at": source_captured_at or captured_at,
+                "source_kind": "TEST_FIXTURE_ONLY"}
+    raw_path = runtime / "data" / "raw_snapshot.json"
+    raw_path.parent.mkdir(parents=True, exist_ok=True)
+    raw_bytes = (json.dumps(snapshot, sort_keys=True) + "\n").encode("utf-8")
+    raw_path.write_bytes(raw_bytes)
+    source_hash = hashlib.sha256(raw_bytes).hexdigest()
     payload = {"created_at": captured_at, "source_timestamp": captured_at,
-               "source_hash": "a" * 64,
+               "source_hash": source_hash,
                "mode": "PAPER", "live_order_authority": 0, "ranking": []}
     digest = canonical_hash(payload)
     payload["prediction_hash"] = digest
@@ -214,6 +222,45 @@ class CurrentRunReceiptTests(unittest.TestCase):
                         return SimpleNamespace(returncode=0)
                     with self.assertRaisesRegex(RuntimeError, "SOURCE_PROVENANCE_MISMATCH"):
                         self.run_once(runtime, proof, child)
+
+
+    def test_missing_raw_snapshot_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            runtime, proof = root / "runtime", root / "proof"
+            runtime.mkdir()
+            def child(*args, **kwargs):
+                make_receipt(runtime, datetime.now(timezone.utc).isoformat())
+                (runtime / "data" / "raw_snapshot.json").unlink()
+                return SimpleNamespace(returncode=0)
+            with self.assertRaisesRegex(RuntimeError, "RAW_SNAPSHOT_MISSING"):
+                self.run_once(runtime, proof, child)
+
+    def test_raw_snapshot_bytes_must_match_prediction_source_hash(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            runtime, proof = root / "runtime", root / "proof"
+            runtime.mkdir()
+            def child(*args, **kwargs):
+                make_receipt(runtime, datetime.now(timezone.utc).isoformat())
+                path = runtime / "data" / "raw_snapshot.json"
+                path.write_bytes(path.read_bytes() + b"tampered")
+                return SimpleNamespace(returncode=0)
+            with self.assertRaisesRegex(RuntimeError, "RAW_SNAPSHOT_HASH_MISMATCH"):
+                self.run_once(runtime, proof, child)
+
+    def test_raw_snapshot_capture_time_must_match_prediction_source_time(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            runtime, proof = root / "runtime", root / "proof"
+            runtime.mkdir()
+            old = (datetime.now(timezone.utc) - timedelta(days=2)).isoformat()
+            def child(*args, **kwargs):
+                make_receipt(runtime, datetime.now(timezone.utc).isoformat(),
+                             source_captured_at=old)
+                return SimpleNamespace(returncode=0)
+            with self.assertRaisesRegex(RuntimeError, "RAW_SNAPSHOT_TIMESTAMP_MISMATCH"):
+                self.run_once(runtime, proof, child)
 
 if __name__ == "__main__":
     unittest.main()
