@@ -24,12 +24,14 @@ CREDS = {
 
 def make_receipt(runtime, captured_at):
     payload = {"created_at": captured_at, "source_timestamp": captured_at,
+               "source_hash": "a" * 64,
                "mode": "PAPER", "live_order_authority": 0, "ranking": []}
     digest = canonical_hash(payload)
     payload["prediction_hash"] = digest
     receipt = {
         "status": "LOCAL_ARTIFACT_ONLY_NOT_INSERTED", "paper_mode": 1,
         "live_order_authority": 0, "prediction_hash": digest,
+        "source_hash": payload["source_hash"],
         "bigquery_merge_parameters": {
             "payload": json.dumps(payload, sort_keys=True), "hash": digest,
         },
@@ -39,7 +41,8 @@ def make_receipt(runtime, captured_at):
     ledger.mkdir(parents=True, exist_ok=True)
     dna.mkdir(parents=True, exist_ok=True)
     (ledger / "receipt.json").write_text(json.dumps(receipt), encoding="utf-8")
-    evidence = {"prediction_hash": digest, "paper_mode": 1, "live_order_authority": 0}
+    evidence = {"prediction_hash": digest, "source_hash": payload["source_hash"],
+                "paper_mode": 1, "live_order_authority": 0}
     (ledger / ("entry_" + digest + ".json")).write_text(json.dumps(evidence), encoding="utf-8")
     (dna / ("dna_" + digest + ".json")).write_text(json.dumps(evidence), encoding="utf-8")
     return digest
@@ -159,6 +162,58 @@ class CurrentRunReceiptTests(unittest.TestCase):
                     with self.assertRaisesRegex(RuntimeError, "LINKED_EVIDENCE_INVALID"):
                         self.run_once(runtime, proof, child)
 
+
+
+    def test_receipt_source_hash_must_match_prediction_payload(self):
+        # A valid prediction hash must not mask a contradictory receipt source.
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            runtime, proof = root / "runtime", root / "proof"
+            runtime.mkdir()
+            def child(*args, **kwargs):
+                make_receipt(runtime, datetime.now(timezone.utc).isoformat())
+                path = runtime / "data" / "paper_ledger" / "receipt.json"
+                receipt = json.loads(path.read_text(encoding="utf-8"))
+                receipt["source_hash"] = "b" * 64
+                path.write_text(json.dumps(receipt), encoding="utf-8")
+                return SimpleNamespace(returncode=0)
+            with self.assertRaisesRegex(RuntimeError, "SOURCE_PROVENANCE_MISMATCH"):
+                self.run_once(runtime, proof, child)
+
+    def test_linked_evidence_source_hash_must_match_prediction_payload(self):
+        for name, folder in (("entry", "paper_ledger"), ("dna", "anomaly_logs")):
+            with self.subTest(linked=name):
+                with tempfile.TemporaryDirectory() as temp:
+                    root = Path(temp)
+                    runtime, proof = root / "runtime", root / "proof"
+                    runtime.mkdir()
+                    def child(*args, **kwargs):
+                        digest = make_receipt(runtime, datetime.now(timezone.utc).isoformat())
+                        filename = ("entry_" if name == "entry" else "dna_") + digest + ".json"
+                        path = runtime / "data" / folder / filename
+                        evidence = json.loads(path.read_text(encoding="utf-8"))
+                        evidence["source_hash"] = "b" * 64
+                        path.write_text(json.dumps(evidence), encoding="utf-8")
+                        return SimpleNamespace(returncode=0)
+                    with self.assertRaisesRegex(RuntimeError, "LINKED_EVIDENCE_INVALID"):
+                        self.run_once(runtime, proof, child)
+
+    def test_missing_or_invalid_source_hash_fails_closed(self):
+        for value in (None, "", "not-a-sha256"):
+            with self.subTest(value=value):
+                with tempfile.TemporaryDirectory() as temp:
+                    root = Path(temp)
+                    runtime, proof = root / "runtime", root / "proof"
+                    runtime.mkdir()
+                    def child(*args, **kwargs):
+                        make_receipt(runtime, datetime.now(timezone.utc).isoformat())
+                        path = runtime / "data" / "paper_ledger" / "receipt.json"
+                        receipt = json.loads(path.read_text(encoding="utf-8"))
+                        receipt["source_hash"] = value
+                        path.write_text(json.dumps(receipt), encoding="utf-8")
+                        return SimpleNamespace(returncode=0)
+                    with self.assertRaisesRegex(RuntimeError, "SOURCE_PROVENANCE_MISMATCH"):
+                        self.run_once(runtime, proof, child)
 
 if __name__ == "__main__":
     unittest.main()
