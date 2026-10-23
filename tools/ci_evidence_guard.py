@@ -49,6 +49,8 @@ def verify_ci_receipt(receipt, expected_sha, required_jobs):
             raise ReceiptError("Job not successfully completed: " + name)
         if "required_steps" in job:
             raise ReceiptError("Receipt cannot define its own mandatory steps")
+    if seen != set(TRUSTED_REQUIRED_STEPS):
+        raise ReceiptError("Unreviewed job evidence outside trusted workflow contract")
     for name, mandatory_steps in TRUSTED_REQUIRED_STEPS.items():
         matches = [job for job in jobs if job["name"] == name]
         if len(matches) != 1:
@@ -63,10 +65,10 @@ def verify_ci_receipt(receipt, expected_sha, required_jobs):
             names.append(step["name"])
         if len(set(names)) != len(names):
             raise ReceiptError("Duplicate step names: " + name)
-        # A successful job cannot establish clean evidence while the supplied
-        # receipt explicitly reports an unsuccessful additional step.
+        # Every observed step must have a terminal, acceptable outcome.
+        # Optional skipped/neutral steps are allowed; incomplete evidence is not.
         for step in steps:
-            if step.get("conclusion") in ("failure", "cancelled", "timed_out", "action_required"):
+            if step.get("status") != "completed" or step.get("conclusion") not in ("success", "skipped", "neutral"):
                 raise ReceiptError("Unsuccessful observed step: " + step["name"])
         for step_name in mandatory_steps:
             matched = [step for step in steps if step["name"] == step_name]
