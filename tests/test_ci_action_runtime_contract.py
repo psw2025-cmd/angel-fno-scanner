@@ -12,3 +12,14 @@ def test_ci_uses_node24_compatible_action_majors(workflow):
     assert "actions/checkout@v5" in actions
     assert "actions/setup-python@v6" in actions
     assert all(action in {"actions/checkout@v5", "actions/setup-python@v6"} for action in actions)
+
+
+@pytest.mark.parametrize("workflow", ["pr_tests.yml", "encoding-safety.yml"])
+def test_recovery_branch_push_is_checked_on_exact_head(workflow):
+    """Direct push runs check out their own commit, unlike PR synthetic merge runs."""
+    source = (ROOT / ".github" / "workflows" / workflow).read_text(encoding="utf-8")
+    assert "  push:\n    branches:" in source
+    assert "fix/ci-evidence-contract-regression-20261023" in source
+    assert "actions/checkout@v5" in source
+    # Do not silently override checkout with a PR merge ref on push events.
+    assert "refs/pull/" not in source
