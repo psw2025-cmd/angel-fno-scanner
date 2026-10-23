@@ -124,5 +124,41 @@ class CurrentRunReceiptTests(unittest.TestCase):
             self.assertEqual(result["broker_order_audit"], "NOT_PERFORMED")
 
 
+    def test_boolean_flags_in_receipt_are_rejected_not_coerced(self):
+        # In Python True == 1 and False == 0; JSON booleans are not valid integer flags.
+        for key, value in (("paper_mode", True), ("live_order_authority", False)):
+            with self.subTest(flag=key):
+                with tempfile.TemporaryDirectory() as temp:
+                    root = Path(temp)
+                    runtime, proof = root / "runtime", root / "proof"
+                    runtime.mkdir()
+                    def child(*args, **kwargs):
+                        make_receipt(runtime, datetime.now(timezone.utc).isoformat())
+                        path = runtime / "data" / "paper_ledger" / "receipt.json"
+                        receipt = json.loads(path.read_text(encoding="utf-8"))
+                        receipt[key] = value
+                        path.write_text(json.dumps(receipt), encoding="utf-8")
+                        return SimpleNamespace(returncode=0)
+                    with self.assertRaisesRegex(RuntimeError, "RECEIPT_SAFETY_FAILURE"):
+                        self.run_once(runtime, proof, child)
+
+    def test_boolean_flags_in_linked_evidence_are_rejected(self):
+        for key, value in (("paper_mode", True), ("live_order_authority", False)):
+            with self.subTest(flag=key):
+                with tempfile.TemporaryDirectory() as temp:
+                    root = Path(temp)
+                    runtime, proof = root / "runtime", root / "proof"
+                    runtime.mkdir()
+                    def child(*args, **kwargs):
+                        digest = make_receipt(runtime, datetime.now(timezone.utc).isoformat())
+                        path = runtime / "data" / "paper_ledger" / ("entry_" + digest + ".json")
+                        evidence = json.loads(path.read_text(encoding="utf-8"))
+                        evidence[key] = value
+                        path.write_text(json.dumps(evidence), encoding="utf-8")
+                        return SimpleNamespace(returncode=0)
+                    with self.assertRaisesRegex(RuntimeError, "LINKED_EVIDENCE_INVALID"):
+                        self.run_once(runtime, proof, child)
+
+
 if __name__ == "__main__":
     unittest.main()
