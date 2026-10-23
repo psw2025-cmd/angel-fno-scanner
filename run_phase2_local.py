@@ -29,6 +29,10 @@ def load_env(path):
 def git(*args):
     return subprocess.run(["git", *args], cwd=ROOT, check=True, text=True, capture_output=True).stdout.strip()
 
+def serialize_raw_snapshot(snapshot):
+    """Return one valid JSON document with a real LF; hash the written bytes."""
+    return json.dumps(snapshot, sort_keys=True, indent=2, allow_nan=False) + "\n"
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", default="phase2/angel_contracts.local.json")
@@ -69,7 +73,7 @@ def main():
     snapshot = {"source_kind": os.environ["PHASE2_SOURCE_KIND"], "captured_at": datetime.now(IST).isoformat(), "instrument_master_sha256": master_sha256, "quotes": raw}
     raw_path = ROOT / "data" / "raw_snapshot.json"
     raw_path.parent.mkdir(parents=True, exist_ok=True)
-    raw_path.write_text(json.dumps(snapshot, sort_keys=True, indent=2, allow_nan=False) + "\\n", encoding="utf-8")
+    raw_path.write_text(serialize_raw_snapshot(snapshot), encoding="utf-8")
     digest = hashlib.sha256(raw_path.read_bytes()).hexdigest()
     print("REAL_BROKER_RAW_SNAPSHOT_SHA256", digest)
     def num(value, field):
