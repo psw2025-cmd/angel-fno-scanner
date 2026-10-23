@@ -12,7 +12,7 @@ def _workflow():
 def test_main_push_and_pull_request_triggers_present():
     source = _workflow()
     assert re.search(r'(?m)^on:\s*$', source)
-    assert re.search(r'(?m)^  push:\s*\n    branches:\s*\[main(?:,\s*[A-Za-z0-9_./*-]+)*\]\s*
+    assert re.search(r'(?m)^  push:\s*\n    branches:\s*\[main(?:,\s*[A-Za-z0-9_./*-]+)*\]\s*$', source)
     assert re.search(r'(?m)^  pull_request:\s*\n    branches:\s*\[main\]\s*$', source)
     assert re.search(r'(?m)^  workflow_dispatch:\s*$', source)
 
