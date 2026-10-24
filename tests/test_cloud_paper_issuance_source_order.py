@@ -9,6 +9,7 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
+from zoneinfo import ZoneInfo
 
 from test_cloud_paper_receipt_freshness import CurrentRunReceiptTests, make_receipt
 
@@ -53,6 +54,30 @@ class IssuanceSourceOrderTests(unittest.TestCase):
                     runtime, issued.isoformat(),
                     source_captured_at=captured.isoformat(),
                     payload_source_at=captured.isoformat(),
+                )
+                return SimpleNamespace(returncode=0)
+
+            self.assertEqual(
+                CurrentRunReceiptTests().run_once(runtime, proof, child), 0
+            )
+            self.assertEqual(
+                json.loads((proof / "status.json").read_text())["status"],
+                "PAPER_RECEIPT_VERIFIED",
+            )
+
+
+    def test_same_instant_with_different_timezone_offsets_is_accepted(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            runtime, proof = Path(tmp) / "runtime", Path(tmp) / "proof"
+            runtime.mkdir()
+
+            def child(*args, **kwargs):
+                instant = datetime.now(timezone.utc)
+                local_capture = instant.astimezone(ZoneInfo("Asia/Kolkata"))
+                make_receipt(
+                    runtime, instant.isoformat(),
+                    source_captured_at=local_capture.isoformat(),
+                    payload_source_at=local_capture.isoformat(),
                 )
                 return SimpleNamespace(returncode=0)
 
