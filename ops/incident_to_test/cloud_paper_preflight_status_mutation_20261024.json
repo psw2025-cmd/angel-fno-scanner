@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "incident_id": "CLOUD-PAPER-PREFLIGHT-STATUS-MUTATION-20261024-01",
+  "classification": "OFFLINE_REPRODUCED_CODE_PATH_DEFECT_NOT_OBSERVED_IN_CLOUD",
+  "repository": "psw2025-cmd/angel-fno-scanner",
+  "first_evidenced_at_utc": "2026-10-24T07:27:52Z",
+  "last_evidenced_at_utc": "2026-10-24T07:28:37Z",
+  "owned_branch": "fix/cloud-paper-preflight-status-isolation-20261024",
+  "stacked_on_pr": 183,
+  "draft_pr": 184,
+  "base_sha": "d9760a35d606532552b128d8c6f0c5ba1d3b57a7",
+  "signal": "A failing --preflight invocation overwrites an existing proof-output/cloud-paper/status.json with FAIL_CLOSED even though preflight is specified as read-only.",
+  "root_cause": "The __main__ exception handler unconditionally writes FAIL_CLOSED status for both --preflight and --once.",
+  "upstream_downstream": "A cloud workflow or operator running configuration-only preflight with missing credentials/invalid PAPER flags can mutate the previous PAPER cycle's status, making evidence refer to a non-execution. A success preflight already preserved status.",
+  "severity": "P1 evidence-status provenance integrity; reproduced only in isolated offline subprocesses, not an observed cloud production failure.",
+  "prevention_hypothesis": "Restrict CLI exception-path status writes to the exact --once invocation; failed and successful --preflight must preserve prior status bytes, while failed --once still fails closed.",
+  "baseline": {
+    "test_first_sha": "ddb96f0b679fa3a4913a7cd861cb04581b97d2e3",
+    "run_id": 40074227976,
+    "job_id": 120814055746,
+    "conclusion": "failure",
+    "checked_out_sha_matches_event_sha": true,
+    "raw_pytest": "2 failed, 379 passed, 3 skipped, 3 warnings, 68 subtests passed",
+    "reproduced_cases": [
+      "preflight with invalid PAPER_MODE overwrites prior status",
+      "preflight with missing credentials overwrites prior status"
+    ],
+    "negative_control": [
+      "successful preflight preserved prior status",
+      "failed --once changed status to FAIL_CLOSED"
+    ],
+    "source_sha256": "NOT_COMPUTED"
+  },
+  "repair": {
+    "code_commit_sha": "4d33b27a2b696624cc982e1a448c74649e2d7d32",
+    "path": "cloud_runner/main.py",
+    "description": "Only exact CLI --once failure owns FAIL_CLOSED status writes; --preflight exceptions exit nonzero without modifying proof status.",
+    "rollback": "Governed revert on owned draft branch after preserving test evidence; never force push."
+  },
+  "regression": {
+    "path": "tests/test_cloud_paper_preflight_status_isolation.py",
+    "tests": 4,
+    "mode": "Offline subprocess using temporary copies of runner modules, dummy environment values, no network, broker, cloud or orders",
+    "cases": [
+      "invalid PAPER safety flag on --preflight",
+      "missing credentials on --preflight",
+      "successful --preflight",
+      "failed --once"
+    ]
+  },
+  "after_ci": {
+    "run_id": 40074283137,
+    "job_id": 120814218634,
+    "head_sha": "4d33b27a2b696624cc982e1a448c74649e2d7d32",
+    "conclusion": "success",
+    "checkout_sha_matches_event_sha": true,
+    "raw_pytest": "381 passed, 3 skipped, 3 warnings, 68 subtests passed",
+    "other_steps": [
+      "compileall SUCCESS",
+      "isolated safety SUCCESS",
+      "payload authority SUCCESS",
+      "memory guard SUCCESS",
+      "chaos regression SUCCESS"
+    ],
+    "qualifier": "Not full mandatory-gate PASS: BigQuery, Colab contract and Windows-only tests skipped"
+  },
+  "deployment": "NOT_PERFORMED",
+  "actual_serving_sha": "UNKNOWN_NOT_DEPLOYED",
+  "genuine_broker_feed": "NOT_VERIFIED",
+  "independent_broker_order_audit": "NOT_PERFORMED",
+  "immutable_forward_forecast": "NOT_VERIFIED",
+  "matured_outcome": "NOT_VERIFIED",
+  "sheet_bq_r2_ledger_ui_alert_reconciliation": "NOT_VERIFIED",
+  "next_session_recurrence_check": "Re-run exact deployed SHA in an authorized cloud PAPER environment. Confirm --preflight failure does not mutate previous run status and --once failure publishes FAIL_CLOSED with independent artifact/run correlation.",
+  "reopen_if": [
+    "Any --preflight success or failure modifies proof status",
+    "Any --once exception leaves a previous success as current",
+    "A preflight status is presented as a verified PAPER execution"
+  ],
+  "operations_advanced": {
+    "1504": "TESTED",
+    "1509": "TESTED",
+    "1510": "ACTIONED",
+    "1511": "ACTIONED",
+    "1512": "TESTED",
+    "1514": "TESTED",
+    "1515": "CI_PASS_AT_CODE_SHA",
+    "1516": "BLOCKED_NOT_DEPLOYED",
+    "1517": "BLOCKED_NO_INDEPENDENT_RUNTIME",
+    "1518": "ACTIONED",
+    "1519": "PENDING_CANONICAL_ISSUE_UPDATE",
+    "1864": "TESTED",
+    "1871": "ACTIONED",
+    "1909": "ACTIONED"
+  },
+  "safety_flags": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  },
+  "notification_receipt": "NONE_NOTIFICATIONS_DISABLED",
+  "email_delivery_receipt": "NONE_EMAIL_DISABLED"
+}
