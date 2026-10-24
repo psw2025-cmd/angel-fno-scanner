@@ -93,6 +93,16 @@ def main():
         raise RuntimeError("RECEIPT_SAFETY_FAILURE")
     from phase2.daily_close import canonical_hash
     payload = json.loads(receipt["bigquery_merge_parameters"]["payload"])
+    # A valid hash is not authorization: the prediction itself must be PAPER.
+    # Do not coerce booleans, strings, or a contradictory optional order flag.
+    if (not isinstance(payload, dict)
+            or payload.get("mode") != "PAPER"
+            or type(payload.get("live_order_authority")) is not int
+            or payload["live_order_authority"] != 0
+            or ("real_broker_orders" in payload
+                and (type(payload["real_broker_orders"]) is not int
+                     or payload["real_broker_orders"] != 0))):
+        raise RuntimeError("PREDICTION_SAFETY_FAILURE")
     try:
         issued_at = datetime.fromisoformat(payload["created_at"])
     except (KeyError, TypeError, ValueError) as exc:
