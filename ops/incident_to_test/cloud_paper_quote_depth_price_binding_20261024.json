@@ -1,0 +1,79 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "CLOUD_PAPER_QUOTE_DEPTH_PRICE_BINDING_20261024",
+  "observed_at_utc": "2026-10-24T18:06:31Z",
+  "classification": "offline code-path integrity defect, not observed broker/cloud incident",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "branch": "fix/cloud-paper-quote-price-binding-20261024",
+  "draft_pr": 194,
+  "base_sha": "db9db20597e14088f9efcaa94a9c27d35710e575",
+  "test_first_sha": "ea280a6d554a265d1d9b5aaec752aa906184e5fb",
+  "implementation_sha": "1e4ca7bc2f0b640d7ea0941e951dd228f9f717a7",
+  "code_head_sha": "c9824cdc931dfb16613bc473d6e2d558c53a7923",
+  "signal": "Ranked PAPER entry_bid/entry_ask can disagree with the exact raw snapshot best bid/ask while the prediction, receipt and raw source hashes all remain internally consistent.",
+  "direct_root_cause": "validate_prediction_ranking checks positive spread and entry_price==entry_ask; validate_ranking_quote_binding checks contract symbol/token only; neither compares ranked entry prices against raw quote depth.",
+  "systemic_cause": "Independent internal checks were treated as corroboration without cross-artifact price equality.",
+  "impact": "Potential PAPER_RECEIPT_VERIFIED false-green for fabricated or inconsistent entry-price provenance; not a verified fill, profit or external quote.",
+  "hypothesis": "Reject missing, invalid, inverted, nonfinite, or mismatched best bid/ask depth before publishing PAPER_RECEIPT_VERIFIED.",
+  "patch": "cloud_runner/main.py: validate_ranking_quote_prices called after rank-quote identity binding; canonical synthetic quote fixture includes best bid/ask depth.",
+  "tests": [
+    "tests/test_cloud_paper_quote_price_binding.py::QuotePriceBindingTests::test_matching_depth_passes",
+    "tests/test_cloud_paper_quote_price_binding.py::QuotePriceBindingTests::test_mismatched_bid_or_ask_fails_closed",
+    "tests/test_cloud_paper_quote_price_binding.py::QuotePriceBindingTests::test_missing_or_invalid_depth_fails_closed",
+    "tests/test_cloud_paper_quote_price_binding.py::QuotePriceBindingTests::test_hash_consistent_forged_entry_price_fails_full_runner"
+  ],
+  "before": {
+    "sha": "ea280a6d554a265d1d9b5aaec752aa906184e5fb",
+    "run_id": 40119180306,
+    "conclusion": "failure",
+    "pytest": "11 failed, 544 passed, 3 skipped, 3 warnings, 226 subtests passed",
+    "note": "11 failures include missing validator AttributeError and a full-run false green"
+  },
+  "after_code_head": {
+    "sha": "c9824cdc931dfb16613bc473d6e2d558c53a7923",
+    "run_id": 40119214157,
+    "conclusion": "success",
+    "pytest": "546 passed, 3 skipped, 3 warnings, 235 subtests passed",
+    "chaos": "6 pass",
+    "checked_out_sha_matches": true
+  },
+  "mandatory_skips": [
+    "BigQuery credentials unavailable",
+    "External Colab contract absent on isolated runner",
+    "Windows PowerShell compatibility not exercised on Ubuntu"
+  ],
+  "deployment": "NOT_DEPLOYED",
+  "runtime": "NOT_PROVEN",
+  "external_broker_quote_authentication": "NOT_PROVEN",
+  "independent_zero_real_orders": "NOT_AUDITED",
+  "rollback": "Revert only the new validator call and test/fixture changes through a reviewed PR if a genuine broker depth contract is incompatible; retain negative incident evidence and never weaken PAPER safety flags.",
+  "reopen_if": "Any ranked bid/ask mismatch or missing quote depth can again publish PAPER_RECEIPT_VERIFIED; exact-head CI fails or deployment/runtime data disagrees; broker schema requires documented revision.",
+  "operation_status": {
+    "1660": "ACTIONED",
+    "1661": "ACTIONED",
+    "1662": "ACTIONED",
+    "1663": "ACTIONED",
+    "1664": "TESTED",
+    "1665": "ACTIONED",
+    "1666": "ACTIONED",
+    "1667": "ACTIONED",
+    "1668": "ACTIONED",
+    "1669": "TESTED",
+    "1670": "ACTIONED",
+    "1671": "ACTIONED",
+    "1672": "TESTED",
+    "1673": "TESTED",
+    "1674": "CI_PASS",
+    "1675": "CI_PASS",
+    "1676": "BLOCKED",
+    "1677": "BLOCKED",
+    "1678": "ACTIONED",
+    "1679": "OPEN"
+  },
+  "other_operations": {
+    "1724": "TESTED",
+    "1732": "TESTED",
+    "1909": "ACTIONED"
+  },
+  "limits": "Offline synthetic regression and exact code-head CI are not independent broker feed proof, deployed SHA proof, matured outcome proof, or production certification."
+}
