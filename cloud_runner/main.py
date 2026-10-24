@@ -297,6 +297,19 @@ def validate_rank_entry_capture(payload, source_captured_at):
     return True
 
 
+def validate_rank_expiry_against_capture(payload, source_captured_at):
+    """Reject option contracts already expired on the snapshot's IST date.
+
+    This is an internal contract-validity check, not proof of an active
+    exchange listing, a liquid quote, or a broker-authenticated expiry.
+    """
+    capture_date_ist = source_captured_at.astimezone(ZoneInfo("Asia/Kolkata")).date()
+    for rank in payload["ranking"]:
+        if date.fromisoformat(rank["expiry"]) < capture_date_ist:
+            raise RuntimeError("RANK_CONTRACT_EXPIRED")
+    return True
+
+
 def validate_paper_receipt_metadata(receipt):
     """Reject contradictory BigQuery write claims in a local-only PAPER receipt.
 
@@ -458,6 +471,7 @@ def main():
     validate_ranking_contract_terms(payload, quotes)
     validate_ranking_quote_prices(payload, quotes)
     validate_rank_entry_capture(payload, source_captured_at)
+    validate_rank_expiry_against_capture(payload, source_captured_at)
     digest = canonical_hash({k: v for k, v in payload.items() if k != "prediction_hash"})
     if not (digest == receipt["prediction_hash"] == payload["prediction_hash"]
             == receipt["bigquery_merge_parameters"]["hash"]):
