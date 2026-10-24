@@ -36,7 +36,7 @@ def exact_paper_flags(data):
                      and data["real_broker_orders"] == 0)))
 
 
-def validate_quote_exchange_times(quotes, captured_at):
+def validate_quote_exchange_times(quotes, captured_at, *, checked_at):
     """Fail closed if self-reported capture time masks an old exchange quote.
 
     This verifies internal quote age/identity only; exchange time fields are
@@ -44,6 +44,11 @@ def validate_quote_exchange_times(quotes, captured_at):
     """
     if captured_at.tzinfo is None or captured_at.utcoffset() is None:
         raise RuntimeError("QUOTE_CAPTURE_TIME_INVALID")
+    if checked_at.tzinfo is None or checked_at.utcoffset() is None:
+        raise RuntimeError("QUOTE_PUBLICATION_TIME_INVALID")
+    # A publication check must be contemporaneous with (or after) capture.
+    if (captured_at - checked_at).total_seconds() > 5:
+        raise RuntimeError("QUOTE_PUBLICATION_TIME_INVALID")
     for row in quotes:
         if not isinstance(row, dict):
             raise RuntimeError("QUOTE_CONTRACT_IDENTITY_MISMATCH")
@@ -73,6 +78,13 @@ def validate_quote_exchange_times(quotes, captured_at):
         if age_seconds < -5:
             raise RuntimeError("QUOTE_EXCHANGE_TIME_FUTURE")
         if age_seconds > 120:
+            raise RuntimeError("QUOTE_EXCHANGE_TIME_STALE")
+        # A child may spend minutes writing its receipt after capture.
+        # A quote must remain fresh at the moment proof is published.
+        publication_age_seconds = (checked_at - exchange_time).total_seconds()
+        if publication_age_seconds < -5:
+            raise RuntimeError("QUOTE_EXCHANGE_TIME_FUTURE")
+        if publication_age_seconds > 120:
             raise RuntimeError("QUOTE_EXCHANGE_TIME_STALE")
     return True
 
@@ -204,7 +216,7 @@ def main():
     quotes = raw_snapshot.get("quotes")
     if not isinstance(quotes, list) or not quotes:
         raise RuntimeError("RAW_SNAPSHOT_QUOTES_MISSING")
-    validate_quote_exchange_times(quotes, source_captured_at)
+    validate_quote_exchange_times(quotes, source_captured_at, checked_at=datetime.now(timezone.utc))
     digest = canonical_hash({k: v for k, v in payload.items() if k != "prediction_hash"})
     if not (digest == receipt["prediction_hash"] == payload["prediction_hash"]
             == receipt["bigquery_merge_parameters"]["hash"]):
