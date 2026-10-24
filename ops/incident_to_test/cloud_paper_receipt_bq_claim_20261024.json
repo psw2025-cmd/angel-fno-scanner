@@ -31,8 +31,13 @@
   ],
   "before_after_evidence": {
     "before_ci_run": 40094768703,
-    "after_ci_run": 40094803545,
-    "after_conclusion": "PENDING"
+    "after_ci_run": 40094902573,
+    "after_conclusion": "SUCCESS_WITH_3_SKIPS",
+    "after_verified_sha": "b23dce63f2d5f2d36f446783b6d6399be9bb656a",
+    "pytest": "428 passed, 3 skipped, 3 warnings, 124 subtests passed",
+    "encoding_safety_run": 40094906519,
+    "encoding_safety_conclusion": "SUCCESS_UBUNTU_WINDOWS",
+    "intermediate_failed_ci": 40094794996
   },
   "safety": {
     "PAPER_MODE": 1,
@@ -67,12 +72,13 @@
     "1690": "ACTIONED",
     "1691": "ACTIONED",
     "1692": "TESTED",
-    "1694": "PENDING_CI",
-    "1695": "BLOCKED",
+    "1694": "TESTED",
+    "1695": "TESTED_QUALIFIED_CI_WITH_3_SKIPS",
     "1696": "BLOCKED",
     "1697": "ACTIONED",
-    "1698": "PENDING_CANONICAL_UPDATE",
+    "1698": "ACTIONED",
+    "1699": "ACTIONED",
     "1909": "ACTIONED"
   },
-  "status": "PATCH_COMMITTED_CI_PENDING"
+  "status": "QUALIFIED_EXACT_HEAD_CI_SUCCESS_WITH_3_SKIPS_NOT_DEPLOYED"
 }
