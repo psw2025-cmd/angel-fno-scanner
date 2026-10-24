@@ -108,7 +108,17 @@ def make_receipt(runtime, captured_at, *, source_captured_at=None, payload_sourc
     (ledger / "receipt.json").write_text(json.dumps(receipt), encoding="utf-8")
     evidence = {"prediction_hash": digest, "source_hash": payload["source_hash"],
                 "paper_mode": 1, "live_order_authority": 0}
-    (ledger / ("entry_" + digest + ".json")).write_text(json.dumps(evidence), encoding="utf-8")
+    entry_evidence = {
+        **evidence,
+        "contracts": [
+            {**rank, "underlying": rank["symbol"],
+             "captured_at": rank["entry_captured_at"]}
+            for rank in ranking
+        ],
+    }
+    (ledger / ("entry_" + digest + ".json")).write_text(
+        json.dumps(entry_evidence), encoding="utf-8"
+    )
     (dna / ("dna_" + digest + ".json")).write_text(json.dumps(evidence), encoding="utf-8")
     return digest
 

@@ -310,6 +310,62 @@ def validate_rank_expiry_against_capture(payload, source_captured_at):
     return True
 
 
+
+def validate_entry_ledger_binding(payload, entry):
+    """Reject linked PAPER entry contracts that contradict the ranked forecast.
+
+    The ledger is a separate artifact and must not be trusted merely because
+    it repeats the prediction/source hashes. This establishes internal
+    consistency only, not broker authentication or executable fills.
+    """
+    contracts = entry.get("contracts") if isinstance(entry, dict) else None
+    ranking = payload["ranking"]
+    if not isinstance(contracts, list) or len(contracts) != len(ranking):
+        raise RuntimeError("ENTRY_LEDGER_CONTRACT_MISMATCH")
+    for rank, recorded in zip(ranking, contracts):
+        if not isinstance(recorded, dict):
+            raise RuntimeError("ENTRY_LEDGER_CONTRACT_MISMATCH")
+        expected = {
+            "rank": rank["rank"],
+            "underlying": rank["symbol"],
+            "exchange": rank["exchange"],
+            "expiry": rank["expiry"],
+            "strike": rank["strike"],
+            "option_type": rank["option_type"],
+            "tradingsymbol": rank["tradingsymbol"],
+            "symboltoken": rank["symboltoken"],
+            "entry_bid": rank["entry_bid"],
+            "entry_ask": rank["entry_ask"],
+            "entry_price": rank["entry_price"],
+            "entry_price_method": rank["entry_price_method"],
+        }
+        for field, expected_value in expected.items():
+            observed = recorded.get(field)
+            if type(expected_value) in (int, float):
+                valid = (type(observed) in (int, float)
+                         and observed == expected_value)
+            else:
+                valid = (type(observed) is type(expected_value)
+                         and observed == expected_value)
+            if not valid:
+                raise RuntimeError("ENTRY_LEDGER_CONTRACT_MISMATCH")
+        # The writer uses source ISO text while a ranked entry may express
+        # the same instant with a different valid timezone offset.
+        try:
+            stored_capture = datetime.fromisoformat(recorded["captured_at"])
+            ranked_capture = datetime.fromisoformat(rank["entry_captured_at"])
+            if (stored_capture.tzinfo is None
+                    or stored_capture.utcoffset() is None
+                    or ranked_capture.tzinfo is None
+                    or ranked_capture.utcoffset() is None
+                    or stored_capture.astimezone(timezone.utc)
+                    != ranked_capture.astimezone(timezone.utc)):
+                raise ValueError("different capture instants")
+        except (KeyError, TypeError, ValueError) as exc:
+            raise RuntimeError("ENTRY_LEDGER_CONTRACT_MISMATCH") from exc
+    return True
+
+
 def validate_paper_receipt_metadata(receipt):
     """Reject contradictory BigQuery write claims in a local-only PAPER receipt.
 
@@ -488,6 +544,8 @@ def main():
                 or data.get("source_hash") != source_hash
                 or not exact_paper_flags(data)):
             raise RuntimeError("LINKED_EVIDENCE_INVALID")
+        if path == entry:
+            validate_entry_ledger_binding(payload, data)
         linked_evidence_bytes[path.name] = evidence_bytes
     PROOF.mkdir(parents=True, exist_ok=True)
     (PROOF / source.name).write_bytes(receipt_bytes)
