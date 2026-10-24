@@ -11,7 +11,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
-from test_cloud_paper_receipt_freshness import CurrentRunReceiptTests, make_receipt
+import test_cloud_paper_receipt_freshness as fixtures
 
 
 class IssuanceSourceOrderTests(unittest.TestCase):
@@ -26,7 +26,7 @@ class IssuanceSourceOrderTests(unittest.TestCase):
                 # future-skew tolerance. Their *order* is impossible for a
                 # forward-issued prediction based on this snapshot.
                 captured = issued + timedelta(seconds=2)
-                make_receipt(
+                fixtures.make_receipt(
                     runtime, issued.isoformat(),
                     source_captured_at=captured.isoformat(),
                     payload_source_at=captured.isoformat(),
@@ -36,7 +36,7 @@ class IssuanceSourceOrderTests(unittest.TestCase):
             with self.assertRaisesRegex(
                 RuntimeError, "PREDICTION_PRECEDES_SOURCE_CAPTURE"
             ):
-                CurrentRunReceiptTests().run_once(runtime, proof, child)
+                fixtures.CurrentRunReceiptTests().run_once(runtime, proof, child)
             self.assertNotEqual(
                 json.loads((proof / "status.json").read_text())["status"],
                 "PAPER_RECEIPT_VERIFIED",
@@ -50,7 +50,7 @@ class IssuanceSourceOrderTests(unittest.TestCase):
             def child(*args, **kwargs):
                 captured = datetime.now(timezone.utc)
                 issued = captured + timedelta(milliseconds=1)
-                make_receipt(
+                fixtures.make_receipt(
                     runtime, issued.isoformat(),
                     source_captured_at=captured.isoformat(),
                     payload_source_at=captured.isoformat(),
@@ -58,7 +58,7 @@ class IssuanceSourceOrderTests(unittest.TestCase):
                 return SimpleNamespace(returncode=0)
 
             self.assertEqual(
-                CurrentRunReceiptTests().run_once(runtime, proof, child), 0
+                fixtures.CurrentRunReceiptTests().run_once(runtime, proof, child), 0
             )
             self.assertEqual(
                 json.loads((proof / "status.json").read_text())["status"],
@@ -74,7 +74,7 @@ class IssuanceSourceOrderTests(unittest.TestCase):
             def child(*args, **kwargs):
                 instant = datetime.now(timezone.utc)
                 local_capture = instant.astimezone(ZoneInfo("Asia/Kolkata"))
-                make_receipt(
+                fixtures.make_receipt(
                     runtime, instant.isoformat(),
                     source_captured_at=local_capture.isoformat(),
                     payload_source_at=local_capture.isoformat(),
@@ -82,7 +82,7 @@ class IssuanceSourceOrderTests(unittest.TestCase):
                 return SimpleNamespace(returncode=0)
 
             self.assertEqual(
-                CurrentRunReceiptTests().run_once(runtime, proof, child), 0
+                fixtures.CurrentRunReceiptTests().run_once(runtime, proof, child), 0
             )
             self.assertEqual(
                 json.loads((proof / "status.json").read_text())["status"],
