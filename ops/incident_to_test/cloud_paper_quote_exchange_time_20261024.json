@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "incident_id": "CLOUD-PAPER-QUOTE-EXCHANGE-TIME-GAP-20261024-01",
+  "classification": "STATIC_CODE_PATH_GAP_CONFIRMED_OFFLINE_TEST_FIRST_NOT_OBSERVED_LIVE_BROKER_INCIDENT",
+  "first_evidenced_at_utc": "2026-10-24T06:16:29Z",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "branch": "fix/cloud-paper-quote-exchange-freshness-20261024",
+  "pr": 182,
+  "signal": "Cloud PAPER runner checked raw snapshot captured_at and hash but did not check quote.exchFeedTime. A freshly timestamped snapshot could carry old or future quote values.",
+  "root_cause": "Snapshot capture time was treated as sufficient freshness evidence despite broker quote exchange timestamps being separate fields.",
+  "upstream_downstream": "Read-only Angel FULL quote response -> Phase2 snapshot capture -> cloud_runner internal validation -> PAPER_RECEIPT_VERIFIED status. Internal timestamps do not authenticate the broker or independently prove live market data.",
+  "impact": "P1 evidence freshness false-green risk; no observed live broker incident, order execution or production runtime evidence.",
+  "prevention_hypothesis": "Require each quoted contract/token identity to match and each exchange timestamp to be timezone-valid, no more than 120 seconds old and no more than 5 seconds future relative to capture, before publishing verified PAPER status.",
+  "patch": {
+    "path": "cloud_runner/main.py",
+    "sha": "0ec510b8312ddff917a4cb25237210a39d36d39b",
+    "behavior": "validate_quote_exchange_times before publishing success",
+    "compatibility_warning": "Angel FULL quote exchFeedTime format and 120-second cutoff unverified in real session; fail closed until confirmed"
+  },
+  "regression": {
+    "path": "tests/test_cloud_paper_quote_exchange_freshness.py",
+    "cases": [
+      "current quote accepted",
+      "stale quote rejected",
+      "future quote rejected",
+      "missing/malformed/naive time rejected",
+      "contract identity mismatch rejected",
+      "timezone-aware ISO accepted",
+      "validation called before verified status"
+    ],
+    "scope": "OFFLINE_NO_NETWORK"
+  },
+  "test_first": {
+    "commit": "1c72a81c6f4e238573caffcad4a0df6890727c55",
+    "workflow_run_id": 40069551032,
+    "job_id": 120799828573,
+    "conclusion": "failure",
+    "raw_pytest": "11 failed, 366 passed, 3 skipped, 62 subtests passed",
+    "failure_cause": "new validator absent; AttributeError"
+  },
+  "after": {
+    "patch_commit": "0ec510b8312ddff917a4cb25237210a39d36d39b",
+    "workflow_run_id": 40069583208,
+    "conclusion": "PENDING_AT_RECORD_CREATION",
+    "exact_head_ci": "NOT_YET_CONFIRMED",
+    "skips": "3 previously disclosed; recheck final job"
+  },
+  "gates": {
+    "deployed": "BLOCKED",
+    "actual_serving_sha": "UNVERIFIED",
+    "genuine_readonly_broker_feed": "UNVERIFIED",
+    "independent_broker_order_audit": "UNVERIFIED",
+    "immutable_forecast_matured_outcome": "UNVERIFIED",
+    "cross_system_reconciliation": "UNVERIFIED",
+    "next_session_recurrence": "WAITING"
+  },
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0,
+    "external_broker_orders_verified": "NO"
+  },
+  "rollback": "Governed revert of draft PR #182 only, preserve red CI; no force push or main/test-framework change",
+  "reopen_if": [
+    "exchange feed time absent or incompatible in genuine broker response",
+    "stale/future quote accepted",
+    "freshly stamped snapshot accepted without per-quote check",
+    "actual serving revision not matching reviewed SHA"
+  ],
+  "operations_advanced": {
+    "1515": "PENDING",
+    "1641": "ACTIONED",
+    "1642": "ACTIONED",
+    "1645": "TESTED",
+    "1648": "ACTIONED",
+    "1649": "ACTIONED",
+    "1650": "TESTED",
+    "1651": "ACTIONED",
+    "1652": "ACTIONED",
+    "1653": "TESTED",
+    "1655": "PENDING",
+    "1656": "BLOCKED",
+    "1657": "BLOCKED",
+    "1658": "ACTIONED",
+    "1659": "ACTIONED",
+    "1909": "ACTIONED"
+  },
+  "prior_requirements": "All 1-1919 remain registered and additive; no blanket closure."
+}
