@@ -48,7 +48,9 @@ class CloudPaperBranchTriggerTests(unittest.TestCase):
         self.assertIn("  pull_request:", self.text)
 
     def test_exact_checkout_identity_guard_preserved(self):
-        self.assertIn('test "$actual" = "$GITHUB_SHA"', self.text)
+        self.assertIn('test "$actual" = "$EXPECTED_HEAD_SHA"', self.text)
+        self.assertIn("github.event.pull_request.head.sha || github.sha", self.text)
+        self.assertNotIn('test "$actual" = "$GITHUB_SHA"', self.text)
         self.assertIn("persist-credentials: false", self.text)
         self.assertIn("REAL_BROKER_ORDERS: '0'", self.text)
 

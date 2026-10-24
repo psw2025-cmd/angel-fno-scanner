@@ -1,0 +1,63 @@
+{
+  "incident_id": "cloud_paper_pr_head_identity_20261024",
+  "class": "CI_WORKFLOW_REGRESSION",
+  "registered_operations": [
+    "1420-1439",
+    "1500-1519",
+    "1520-1539",
+    "1540-1559",
+    "1900-1919"
+  ],
+  "first_observed_utc": "2026-10-24",
+  "signal": "PR events use a synthetic merge commit as GITHUB_SHA, while the safety workflow's identity guard equated checkout HEAD to GITHUB_SHA and labeled that an exact-head check.",
+  "observed_scope": "Static GitHub Actions workflow semantics and reproducible offline regression; no actual malicious PR or live cloud/broker incident observed.",
+  "direct_root_cause": "Checkout did not select github.event.pull_request.head.sha and identity step did not compare against PR head SHA.",
+  "upstream_downstream": "Misleading exact-head provenance could cause CI PASS claims to be attributed to a PR head that was never directly tested; push events already used correct github.sha.",
+  "severity": "HIGH_CI_EVIDENCE_PROVENANCE",
+  "prevention_hypothesis": "Selecting PR head repo/SHA for pull_request events and asserting against expected head SHA, with push/dispatch fallback, prevents a merge-ref false-green identity check.",
+  "test_first": {
+    "commit_sha": "4006499b9136afbe8fe0700a8f65d9f72828c18b",
+    "workflow_run_id": 40085825484,
+    "conclusion": "failure",
+    "failures": 2,
+    "passed": 386,
+    "skipped": 3,
+    "subtests_passed": 77
+  },
+  "patch": {
+    "branch": "fix/cloud-paper-pr-head-sha-20261024",
+    "draft_pr": 186,
+    "base_pr": 185,
+    "workflow": ".github/workflows/cloud-paper-safety-ci.yml",
+    "code_commit": "f782cb5aa7e7e10d935ce1d4751350f2f2d059c7",
+    "test_adjustment_commit": "119a8b5b8a1e985e3aca8a5a9e6f211c1387069f",
+    "rollback": "Governed revert of PR #186; no force push."
+  },
+  "regression_tests": [
+    "tests/test_cloud_paper_pr_head_identity.py::CloudPaperPrHeadIdentityTests",
+    "tests/test_cloud_paper_workflow_branch_trigger.py::CloudPaperBranchTriggerTests::test_exact_checkout_identity_guard_preserved"
+  ],
+  "evidence_chain": {
+    "signal": "STATIC_WORKFLOW_AND_PR_EVENT_SEMANTICS",
+    "root_cause": "PR_MERGE_SHA_CONFUSED_WITH_HEAD_SHA",
+    "patch": "COMMITTED_ON_ISOLATED_BRANCH",
+    "regression_test": "TEST_FIRST_FAILURE_CONFIRMED",
+    "exact_sha_ci": "PENDING_NEW_FINAL_HEAD",
+    "deployed_revision": "NOT_DEPLOYED",
+    "genuine_paper_runtime": "NOT_VERIFIED",
+    "independent_proof": "NOT_VERIFIED",
+    "next_session_recurrence_check": "Open a controlled PR targeting main or feat/cloud-paper-runner and verify pull_request workflow actually checks out event.pull_request.head.sha; record workflow job HEAD and compare with API head SHA. Also check future push branch triggers."
+  },
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0,
+    "broker_order_audit": "NOT_PERFORMED"
+  },
+  "caveats": [
+    "Static contract tests cannot prove a real pull_request event until such a run is observed.",
+    "No cloud deployment or market session was exercised.",
+    "Three unrelated mandatory test skips remain outstanding."
+  ],
+  "status": "ACTIONED_NOT_DEPLOYED"
+}
