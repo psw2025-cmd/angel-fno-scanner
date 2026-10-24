@@ -2,7 +2,7 @@ name: Cloud PAPER Safety CI
 
 on:
   push:
-    branches: [feat/cloud-paper-runner, fix/cloud-paper-third-flag-20261023, fix/cloud-paper-child-timeout-20261024, fix/cloud-paper-source-provenance-20261024, fix/cloud-paper-contradictory-order-flag-20261024, fix/cloud-paper-payload-authority-20261024, fix/cloud-paper-evidence-copy-race-20261024]
+    branches: [feat/cloud-paper-runner, fix/cloud-paper-third-flag-20261023, fix/cloud-paper-child-timeout-20261024, fix/cloud-paper-source-provenance-20261024, fix/cloud-paper-contradictory-order-flag-20261024, fix/cloud-paper-payload-authority-20261024, fix/cloud-paper-evidence-copy-race-20261024, fix/cloud-paper-startup-stale-status-20261024]
   pull_request:
     branches: [main, feat/cloud-paper-runner]
   workflow_dispatch:
