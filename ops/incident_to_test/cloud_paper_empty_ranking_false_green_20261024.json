@@ -11,7 +11,7 @@
     "root_cause": "missing ranking validation",
     "patch": "fail-closed structural validator + full-run gate + realistic synthetic fixture",
     "regression_test": "tests/test_cloud_paper_ranking_contract.py",
-    "exact_sha_ci": "PENDING_FINAL_CI",
+    "exact_sha_ci": "CI #40110755690 PASS at 68cf50f3db5e4d18ec87f53a12871f2ea319c088 with 3 disclosed skips; final record-head CI pending",
     "deployed_revision": "NOT_DEPLOYED",
     "genuine_paper_runtime": "NOT_VERIFIED",
     "independent_proof": "PENDING",
@@ -24,7 +24,13 @@
     "test_first_run": 40110634587,
     "test_first_job": 120921422163,
     "conclusion": "FAILURE",
-    "observed": "12 failed, 463 passed, 3 skipped; missing validate_prediction_ranking; exit 1"
+    "observed": "12 failed, 463 passed, 3 skipped; missing validate_prediction_ranking; exit 1",
+    "intermediate_failure": {
+      "commit": "48410c870fe0c90bd4854711509e446ce853f50a",
+      "run_id": 40110673509,
+      "conclusion": "FAILURE",
+      "observation": "128 failed, 399 passed, 3 skipped: old empty-ranking fixtures did not reach their intended negative cases"
+    }
   },
   "patch": {
     "branch": "fix/cloud-paper-empty-ranking-20261024",
@@ -64,12 +70,13 @@
     "1529": "TESTED",
     "1531": "ACTIONED",
     "1532": "ACTIONED",
-    "1533": "TESTED",
-    "1535": "BLOCKED_PENDING_FINAL_CI",
+    "1533": "OPEN_NOT_TESTED_TRANSIENT_RETRY_RECOVERY",
+    "1534": "TESTED_489_PASSED_3_SKIPPED",
+    "1535": "CI_PASS_WITH_3_SKIPS_PRIOR_HEAD_FINAL_RECORD_HEAD_PENDING",
     "1536": "BLOCKED_NOT_DEPLOYED",
     "1537": "BLOCKED_NOT_RUNTIME_VERIFIED",
     "1538": "ACTIONED",
-    "1539": "OPEN_ISSUE3_UPDATE_PENDING",
+    "1539": "OPEN_ISSUE3_PACKET_PENDING",
     "1724": "TESTED",
     "1732": "TESTED",
     "1909": "ACTIONED"
@@ -82,5 +89,17 @@
     "deployed SHA differs from reviewed commit",
     "actual market-session proof contradicts offline guard"
   ],
-  "status": "CODE_PATCHED_TEST_FIRST_RED_CONFIRMED_FINAL_CI_PENDING_NOT_DEPLOYED_NOT_CERTIFIED"
+  "status": "OFFLINE_FIX_AND_REGRESSIONS_PASS_PRIOR_HEAD_CI_SUCCESS_WITH_3_SKIPS_FINAL_RECORD_HEAD_CI_PENDING_NOT_DEPLOYED_NOT_CERTIFIED",
+  "code_ci_prior_head": {
+    "head_sha": "68cf50f3db5e4d18ec87f53a12871f2ea319c088",
+    "run_id": 40110755690,
+    "job_id": 120921781145,
+    "conclusion": "success_with_3_skips",
+    "checked_out_sha": "68cf50f3db5e4d18ec87f53a12871f2ea319c088",
+    "pytest": "489 passed, 3 skipped, 3 warnings, 179 subtests passed",
+    "chaos": "6 PASS",
+    "encoding_run_id": 40110760188,
+    "encoding_windows": "success",
+    "encoding_ubuntu": "success"
+  }
 }
