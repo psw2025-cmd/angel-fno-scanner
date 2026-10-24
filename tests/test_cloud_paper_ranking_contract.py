@@ -2,7 +2,14 @@
 
 All data is synthetic. No broker, market, cloud or real orders.
 """
+import json
+import tempfile
 import unittest
+from datetime import datetime, timezone
+from pathlib import Path
+from types import SimpleNamespace
+
+from test_cloud_paper_receipt_freshness import CurrentRunReceiptTests, make_receipt
 
 from cloud_runner import main as runner
 
@@ -46,6 +53,22 @@ class PredictionRankingContractTests(unittest.TestCase):
             with self.subTest(rows=rows):
                 with self.assertRaisesRegex(RuntimeError, "PREDICTION_RANKING_INVALID"):
                     runner.validate_prediction_ranking({"ranking": rows})
+
+
+    def test_full_runner_rejects_empty_ranking_despite_consistent_hashes(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            runtime, proof = root / "runtime", root / "proof"
+            runtime.mkdir()
+            def child(*args, **kwargs):
+                # All receipt/source hashes are recalculated and consistent;
+                # only the prediction has no contracts to trade.
+                make_receipt(runtime, datetime.now(timezone.utc).isoformat(), ranking=[])
+                return SimpleNamespace(returncode=0)
+            with self.assertRaisesRegex(RuntimeError, "PREDICTION_RANKING_EMPTY"):
+                CurrentRunReceiptTests().run_once(runtime, proof, child)
+            status = json.loads((proof / "status.json").read_text(encoding="utf-8"))
+            self.assertNotEqual(status["status"], "PAPER_RECEIPT_VERIFIED")
 
 
 if __name__ == "__main__":
