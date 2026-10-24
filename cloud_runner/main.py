@@ -381,6 +381,12 @@ def main():
     if not (started_at <= source_captured_at.astimezone(timezone.utc)
             <= datetime.now(timezone.utc) + timedelta(seconds=5)):
         raise RuntimeError("RAW_SNAPSHOT_NOT_FROM_CURRENT_RUN")
+    # A forward-issued PAPER forecast cannot predate the market snapshot
+    # it claims as its input, even when both times satisfy freshness gates.
+    # Compare absolute instants so differing timezone offsets cannot mask
+    # a reversed causal order. The reviewed Phase 2 writer uses equality.
+    if issued_at.astimezone(timezone.utc) < source_captured_at.astimezone(timezone.utc):
+        raise RuntimeError("PREDICTION_PRECEDES_SOURCE_CAPTURE")
     # The raw capture must declare the reviewed read-only source and agree
     # with the forecast provenance. These fields are self-asserted, NOT
     # independent proof of broker authentication or tick freshness.
