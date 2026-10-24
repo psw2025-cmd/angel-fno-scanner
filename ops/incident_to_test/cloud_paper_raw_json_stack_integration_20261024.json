@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "incident_id": "CLOUD_PAPER_RAW_SNAPSHOT_JSON_STACK_INTEGRATION_20261024",
+  "observed_at_utc": "2026-10-24T14:38:24Z",
+  "classification": "REPRODUCED_OFFLINE_INTEGRATION_GAP_NOT_LIVE_BROKER_INCIDENT",
+  "signal": "Cloud PAPER stacked branch #190 still had invalid raw_snapshot.json writer from main; standalone #176 fix was not integrated",
+  "root_cause": "run_phase2_local.py appended literal two-character backslash+n outside serialized JSON; digest faithfully hashed invalid bytes; cloud runner json.loads cannot accept extra trailing nonwhitespace",
+  "upstream_downstream": "Writer serialization -> raw file SHA256 -> local receipt -> cloud_runner proof validation; #176 independent patch was absent from #190 stack",
+  "impact": "P1 PAPER receipt validation blocked or inconsistent; no verified live broker incident",
+  "baseline": {
+    "parent_pr": 190,
+    "parent_head": "0b3f1770340450710672a8ef952d342456aebaf5",
+    "writer_blob": "f1ca7a0005779398a114e488791dd29f5ed029ae"
+  },
+  "upstream_patch": {
+    "pr": 176,
+    "head": "325a150eaa78e9d993e1d018688ef261fea9c7e7",
+    "writer_blob": "d20858c51a80070f1d13cf1f35b02fe5ac54163d",
+    "test_blob": "7309a0c8f1771a4e814bf0a2e53d8a17cff17438"
+  },
+  "test_first": {
+    "commit": "501b7134b329402bfaf23c1b9393f4ae2b2b1050",
+    "run_id": 40103396116,
+    "job_id": 120899974551,
+    "conclusion": "failure",
+    "exit_code": 2,
+    "observation": "pytest collection ImportError: cannot import serialize_raw_snapshot; does not independently establish live broker JSON error"
+  },
+  "repair": {
+    "commit": "a76d7bc0c0be25519908a117cdd2bd7a8d0f1602",
+    "writer_blob": "d20858c51a80070f1d13cf1f35b02fe5ac54163d",
+    "branch": "fix/cloud-paper-raw-json-integration-20261024",
+    "pr": 191,
+    "description": "Integrate reviewed #176 serializer into isolated branch based on #190; retain sha256 over actual written bytes; no peer branch edits"
+  },
+  "regressions": [
+    "file JSON roundtrip + SHA256 of actual bytes",
+    "exactly one LF and no literal backslash+n",
+    "reject NaN",
+    "verify production writer calls serializer"
+  ],
+  "code_ci": {
+    "run_id": 40103474185,
+    "job_id": 120900214575,
+    "conclusion": "success_with_3_mandatory_skips",
+    "head_sha": "a76d7bc0c0be25519908a117cdd2bd7a8d0f1602",
+    "checked_out_sha": "a76d7bc0c0be25519908a117cdd2bd7a8d0f1602",
+    "pytest": "460 passed, 3 skipped, 3 warnings, 147 subtests passed",
+    "chaos": "6 PASS",
+    "memory_guard": "PASS"
+  },
+  "mandatory_skips": [
+    "BigQuery credentials absent",
+    "External Colab schema contract unavailable",
+    "Windows PowerShell compatibility skipped on Ubuntu"
+  ],
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0,
+    "independent_broker_order_audit": "NOT_PERFORMED"
+  },
+  "lifecycle": {
+    "deployment": "BLOCKED_NOT_PERFORMED",
+    "actual_serving_sha": "UNVERIFIED",
+    "genuine_readonly_feed": "UNVERIFIED",
+    "immutable_forward_forecast": "UNVERIFIED",
+    "matured_outcome": "UNVERIFIED",
+    "sheet_bq_r2_ledger_ui_alert_reconciliation": "UNVERIFIED",
+    "rollback_test": "NOT_PERFORMED",
+    "market_session_recurrence": "WAITING_FOR_DEPLOYMENT_AND_MARKET_SESSION"
+  },
+  "rollback": "Governed revert of integration PR #191, preserve upstream PR #176; no force push",
+  "reopen_if": [
+    "writer no longer produces parseable single JSON document",
+    "writer bypasses serializer",
+    "hash differs from bytes actually published",
+    "CI fails or skips mandatory gate",
+    "serving SHA differs from reviewed commit"
+  ],
+  "operations": {
+    "1501": "ACTIONED",
+    "1502": "ACTIONED",
+    "1504": "ACTIONED",
+    "1505": "TESTED",
+    "1510": "TESTED",
+    "1511": "ACTIONED",
+    "1512": "ACTIONED",
+    "1513": "TESTED",
+    "1515": "TESTED",
+    "1516": "CI_PASS_WITH_MANDATORY_SKIPS",
+    "1517": "BLOCKED",
+    "1518": "BLOCKED",
+    "1519": "ACTIONED",
+    "1664": "TESTED",
+    "1673": "TESTED",
+    "1823": "ACTIONED",
+    "1909": "ACTIONED"
+  },
+  "status": "OFFLINE_PATCH_TESTED_CODE_CI_SUCCESS_WITH_3_SKIPS_FINAL_RECORD_HEAD_CI_PENDING_NOT_DEPLOYED"
+}
