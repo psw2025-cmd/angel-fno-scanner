@@ -40,6 +40,15 @@ def main():
     group.add_argument("--preflight", action="store_true")
     group.add_argument("--once", action="store_true")
     args = parser.parse_args()
+    # Invalidate any previous success before *any* --once startup guard can fail.
+    # Preflight is read-only and must not alter the last run's status.
+    if args.once:
+        PROOF.mkdir(parents=True, exist_ok=True)
+        (PROOF / "status.json").write_text(json.dumps({
+            "status": "RUNNING_NOT_VERIFIED", "paper_mode": 1,
+            "live_order_authority": 0, "real_broker_orders": 0,
+            "broker_order_audit": "NOT_PERFORMED"
+        }, sort_keys=True) + "\n", encoding="utf-8")
     validate_environment()
     if args.preflight:
         print(json.dumps(snapshot(), sort_keys=True))
@@ -54,12 +63,6 @@ def main():
     source = runtime / "data" / "paper_ledger" / "receipt.json"
     before_receipt = source.read_bytes() if source.is_file() else None
     started_at = datetime.now(timezone.utc)
-    PROOF.mkdir(parents=True, exist_ok=True)
-    (PROOF / "status.json").write_text(json.dumps({
-        "status": "RUNNING_NOT_VERIFIED", "paper_mode": 1,
-        "live_order_authority": 0, "real_broker_orders": 0,
-        "broker_order_audit": "NOT_PERFORMED"
-    }, sort_keys=True) + "\n", encoding="utf-8")
     # The writer itself retains all its existing branch, broker and PAPER gates.
     env = dict(os.environ, PAPER_MODE="1", LIVE_ORDER_AUTHORITY="0",
                REAL_BROKER_ORDERS="0", PAPER_LEDGER_BRANCH="test-framework")
