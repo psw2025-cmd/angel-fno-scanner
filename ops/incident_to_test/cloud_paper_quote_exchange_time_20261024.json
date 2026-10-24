@@ -40,10 +40,27 @@
   },
   "after": {
     "patch_commit": "0ec510b8312ddff917a4cb25237210a39d36d39b",
-    "workflow_run_id": 40069583208,
-    "conclusion": "PENDING_AT_RECORD_CREATION",
-    "exact_head_ci": "NOT_YET_CONFIRMED",
-    "skips": "3 previously disclosed; recheck final job"
+    "initial_patch_ci": {
+      "run_id": 40069583208,
+      "conclusion": "failure",
+      "raw_pytest": "29 failed, 369 passed, 3 skipped, 41 subtests passed",
+      "cause": "Existing offline receipt fixtures lacked quote token and exchange timestamps; production guard rejected fixture before unrelated assertions"
+    },
+    "fixture_compatibility_commit": "16928a43e2a9a3191c0cd8837248c4e7f29ce952",
+    "code_head_ci": {
+      "run_id": 40069686155,
+      "job_id": 120800239957,
+      "conclusion": "success",
+      "checkout_sha_matches_event_sha": true,
+      "raw_pytest": "371 passed, 3 skipped, 3 warnings, 68 subtests passed",
+      "mandatory_skips": [
+        "BigQuery integration credentials",
+        "external Colab contract",
+        "Windows-only pytest on Ubuntu"
+      ],
+      "scope": "OFFLINE_CI_NOT_DEPLOYED"
+    },
+    "final_incident_record_head_ci": "PENDING_FINAL_COMMIT_VERIFICATION"
   },
   "gates": {
     "deployed": "BLOCKED",
@@ -68,7 +85,7 @@
     "actual serving revision not matching reviewed SHA"
   ],
   "operations_advanced": {
-    "1515": "PENDING",
+    "1515": "QUALIFIED_CI_PASS_WITH_3_SKIPS",
     "1641": "ACTIONED",
     "1642": "ACTIONED",
     "1645": "TESTED",
@@ -78,12 +95,20 @@
     "1651": "ACTIONED",
     "1652": "ACTIONED",
     "1653": "TESTED",
-    "1655": "PENDING",
+    "1655": "QUALIFIED_CI_PASS_WITH_3_SKIPS",
     "1656": "BLOCKED",
     "1657": "BLOCKED",
     "1658": "ACTIONED",
     "1659": "ACTIONED",
     "1909": "ACTIONED"
   },
-  "prior_requirements": "All 1-1919 remain registered and additive; no blanket closure."
+  "prior_requirements": "All 1-1919 remain registered and additive; no blanket closure.",
+  "recurrence_metrics": {
+    "repeat_incident_count_before": "NOT_ESTABLISHED",
+    "repeat_incident_count_after": "WAITING_MARKET_SESSION",
+    "detection_time": "NOT_ESTABLISHED",
+    "recovery_time": "NOT_ESTABLISHED",
+    "regression_escape_rate": "NOT_ESTABLISHED",
+    "false_green_rate": "NOT_ESTABLISHED"
+  }
 }
