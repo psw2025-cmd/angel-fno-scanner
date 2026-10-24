@@ -272,6 +272,31 @@ def validate_prediction_lineage(payload, source_hash):
     return True
 
 
+
+def validate_rank_entry_capture(payload, source_captured_at):
+    """Bind every ranked NFO entry to the exact source snapshot instant.
+
+    This is self-reported PAPER metadata consistency, not a broker fill or
+    independent authentication of the exchange timestamp.
+    """
+    source_utc = source_captured_at.astimezone(timezone.utc)
+    for rank in payload["ranking"]:
+        if rank.get("exchange") != "NFO":
+            raise RuntimeError("RANK_ENTRY_EXCHANGE_INVALID")
+        try:
+            value = rank["entry_captured_at"]
+            if not isinstance(value, str):
+                raise ValueError("entry capture must be an ISO timestamp")
+            captured = datetime.fromisoformat(value)
+        except (KeyError, ValueError, TypeError) as exc:
+            raise RuntimeError("RANK_ENTRY_CAPTURE_INVALID") from exc
+        if captured.tzinfo is None or captured.utcoffset() is None:
+            raise RuntimeError("RANK_ENTRY_CAPTURE_INVALID")
+        if captured.astimezone(timezone.utc) != source_utc:
+            raise RuntimeError("RANK_ENTRY_CAPTURE_MISMATCH")
+    return True
+
+
 def validate_paper_receipt_metadata(receipt):
     """Reject contradictory BigQuery write claims in a local-only PAPER receipt.
 
@@ -432,6 +457,7 @@ def main():
     validate_ranking_quote_binding(payload, quotes)
     validate_ranking_contract_terms(payload, quotes)
     validate_ranking_quote_prices(payload, quotes)
+    validate_rank_entry_capture(payload, source_captured_at)
     digest = canonical_hash({k: v for k, v in payload.items() if k != "prediction_hash"})
     if not (digest == receipt["prediction_hash"] == payload["prediction_hash"]
             == receipt["bigquery_merge_parameters"]["hash"]):

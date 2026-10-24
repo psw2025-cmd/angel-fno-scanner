@@ -69,6 +69,11 @@ def make_receipt(runtime, captured_at, *, source_captured_at=None, payload_sourc
             "entry_bid": 100.0, "entry_ask": 101.0, "entry_price": 101.0,
             "entry_price_method": "SNAPSHOT_BEST_ASK_NOT_FILLED",
         }]
+    # Mirror the reviewed writer: ranked entries declare NFO and the exact
+    # capture instant. These remain synthetic test-only metadata.
+    ranking = [{**row, "exchange": row.get("exchange", "NFO"),
+                "entry_captured_at": row.get("entry_captured_at", source_captured_at or captured_at)}
+               for row in ranking]
     payload = {"created_at": captured_at, "source_timestamp": payload_source_at or captured_at,
                "source_hash": source_hash,
                "mode": "PAPER", "live_order_authority": 0, "ranking": ranking,
