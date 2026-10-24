@@ -42,6 +42,14 @@ class PublicationFreshnessTests(unittest.TestCase):
             runner.validate_quote_exchange_times(
                 [row()], CAPTURE, checked_at=datetime(2026, 10, 23, 9, 16))
 
+    def test_final_freshness_gate_runs_after_proof_copy(self):
+        source = inspect.getsource(runner.main)
+        gate = "validate_quote_exchange_times(quotes, source_captured_at, checked_at=publish_checked_at)"
+        self.assertIn(gate, source)
+        self.assertGreater(source.index(gate), source.index('write_bytes(raw_bytes)'))
+        self.assertLess(source.index(gate),
+                        source.index('"status": "PAPER_RECEIPT_VERIFIED"'))
+
     def test_main_passes_current_time_before_verified_status(self):
         source = inspect.getsource(runner.main)
         gate = "validate_quote_exchange_times(quotes, source_captured_at, checked_at=datetime.now(timezone.utc))"
