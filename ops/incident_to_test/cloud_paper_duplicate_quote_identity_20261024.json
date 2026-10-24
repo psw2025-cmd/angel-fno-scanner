@@ -1,0 +1,93 @@
+{
+  "incident_id": "CLOUD_PAPER_DUPLICATE_QUOTE_IDENTITY_20261024",
+  "observed_at_utc": "2026-10-24T14:19:05Z",
+  "scope": "Offline NFO quote snapshot identity consistency before CLOUD PAPER verified status",
+  "signal": "A snapshot could contain repeated contract trading symbols or repeated symbol tokens while each individual quote matched its own contract",
+  "root_cause": "validate_quote_exchange_times checked each row identity and age independently but did not enforce uniqueness across the snapshot",
+  "impact": "Duplicate contract quotes could be counted repeatedly or make a contradictory token-to-symbol mapping appear acceptable. No actual broker duplicate or deployed incident observed.",
+  "source_refs": [
+    "cloud_runner/main.py",
+    "run_phase2_local.py",
+    "tests/test_cloud_paper_duplicate_quote_identity.py"
+  ],
+  "historical_overlap": "Separate from PR #182 exchange timestamp freshness, PR #188 master digest consistency, and PR #189 BigQuery receipt metadata; Phase 2 writer independently rejects some duplicate strike identities but not all repeated tokens/symbols",
+  "baseline_sha": "d809adbbe399eb4301c3db3199000d5a26ff42a7",
+  "test_first_sha": "d8261a417c3457265bcb61592a95eeec795d2142",
+  "patch_sha": "3550210bcdad0c4c4188bd86624aa4656ff119c5",
+  "before_ci": {
+    "run_id": 40101905927,
+    "conclusion": "FAILURE",
+    "raw": "4 failed, 454 passed, 3 skipped, 3 warnings, 145 subtests passed",
+    "job_id": 120895620717
+  },
+  "after_code_ci": {
+    "run_id": 40101983572,
+    "conclusion": "SUCCESS_WITH_3_MANDATORY_SKIPS",
+    "raw": "456 passed, 3 skipped, 3 warnings, 147 subtests passed",
+    "job_id": 120895849973,
+    "checkout_sha": "3550210bcdad0c4c4188bd86624aa4656ff119c5",
+    "expected_sha": "3550210bcdad0c4c4188bd86624aa4656ff119c5",
+    "chaos": "6 PASS"
+  },
+  "encoding_ci": {
+    "run_id": 40101986108,
+    "conclusion": "SUCCESS",
+    "ubuntu_job_id": 120895857570,
+    "windows_job_id": 120895857773
+  },
+  "repair": "Reject duplicate tradingSymbol or symbolToken within one read-only NFO snapshot before publishing PAPER_RECEIPT_VERIFIED",
+  "negative_cases": [
+    "exact duplicate symbol and token",
+    "same token with conflicting symbol",
+    "same symbol with conflicting token",
+    "full-run duplicate snapshot cannot publish verified status"
+  ],
+  "positive_cases": [
+    "two distinct contracts remain accepted"
+  ],
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0,
+    "broker_order_audit": "NOT_PERFORMED"
+  },
+  "limitations": [
+    "Offline synthetic tests only; no independently authenticated Angel quote snapshot",
+    "3 mandatory pytest skips remain (BigQuery integration, external Colab contract, Windows PowerShell on Ubuntu)",
+    "Stacked draft PR is not merged or deployed",
+    "Serving SHA, genuine feed, immutable forward forecast, matured outcome, Sheet/BQ/R2/ledger/UI/alert reconciliation and rollback not verified",
+    "Potential PR #176 raw snapshot serialization fix remains separately unmerged; do not claim production readiness"
+  ],
+  "rollback": "Governed revert of isolated PR #190 if peer review or exact-head CI identifies false positives; do not modify parent or force push",
+  "reopen_if": [
+    "A duplicate quote token or trading symbol reaches verified status",
+    "A valid distinct pair is incorrectly rejected",
+    "A future broker token identity format changes and requires explicit reviewed normalization",
+    "Required CI missing or skipped",
+    "Serving revision differs from reviewed SHA"
+  ],
+  "operations": {
+    "1660": "ACTIONED",
+    "1661": "ACTIONED",
+    "1662": "ACTIONED",
+    "1663": "ACTIONED",
+    "1664": "TESTED",
+    "1665": "ACTIONED",
+    "1666": "ACTIONED",
+    "1667": "ACTIONED",
+    "1668": "ACTIONED",
+    "1669": "TESTED",
+    "1670": "ACTIONED",
+    "1671": "ACTIONED",
+    "1672": "TESTED",
+    "1673": "TESTED",
+    "1674": "TESTED",
+    "1675": "TESTED",
+    "1676": "BLOCKED",
+    "1677": "BLOCKED",
+    "1678": "ACTIONED",
+    "1679": "ACTIONED",
+    "1909": "ACTIONED"
+  },
+  "status": "CODE_CI_SUCCESS_WITH_3_SKIPS_DOC_HEAD_CI_PENDING_NOT_DEPLOYED"
+}
