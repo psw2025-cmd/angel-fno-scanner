@@ -139,6 +139,32 @@ def validate_quote_exchange_times(quotes, captured_at, *, checked_at):
             raise RuntimeError("QUOTE_EXCHANGE_TIME_STALE")
     return True
 
+
+def validate_ranking_quote_binding(payload, quotes):
+    """Bind each ranked contract to a unique captured read-only quote identity.
+
+    This proves internal identity agreement only; neither a captured quote nor
+    its self-reported identity is independent broker authentication.
+    """
+    quote_identities = set()
+    for row in quotes:
+        if not isinstance(row, dict) or not isinstance(row.get("contract"), dict):
+            continue
+        contract = row["contract"]
+        symbol, token = contract.get("tradingsymbol"), contract.get("symboltoken")
+        if isinstance(symbol, str) and symbol and str(token).isdigit():
+            quote_identities.add((symbol, str(token)))
+    used = set()
+    for rank in payload["ranking"]:
+        identity = (rank["tradingsymbol"], rank["symboltoken"])
+        if identity not in quote_identities:
+            raise RuntimeError("RANK_QUOTE_IDENTITY_MISMATCH")
+        if identity in used:
+            raise RuntimeError("RANK_QUOTE_DUPLICATE")
+        used.add(identity)
+    return True
+
+
 def validate_instrument_master_provenance(raw_snapshot, payload):
     """Bind the captured master digest to the forecast's declared master.
 
@@ -308,6 +334,7 @@ def main():
     if not isinstance(quotes, list) or not quotes:
         raise RuntimeError("RAW_SNAPSHOT_QUOTES_MISSING")
     validate_quote_exchange_times(quotes, source_captured_at, checked_at=datetime.now(timezone.utc))
+    validate_ranking_quote_binding(payload, quotes)
     digest = canonical_hash({k: v for k, v in payload.items() if k != "prediction_hash"})
     if not (digest == receipt["prediction_hash"] == payload["prediction_hash"]
             == receipt["bigquery_merge_parameters"]["hash"]):
