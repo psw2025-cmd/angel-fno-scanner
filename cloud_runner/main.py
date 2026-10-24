@@ -4,7 +4,6 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
@@ -85,9 +84,11 @@ def main():
         return result.returncode
     if not source.is_file():
         raise RuntimeError("RECEIPT_MISSING")
-    if before_receipt is not None and source.read_bytes() == before_receipt:
+    # Read once: the bytes validated below must be the bytes published as proof.
+    receipt_bytes = source.read_bytes()
+    if before_receipt is not None and receipt_bytes == before_receipt:
         raise RuntimeError("RECEIPT_NOT_REFRESHED")
-    receipt = json.loads(source.read_text(encoding="utf-8"))
+    receipt = json.loads(receipt_bytes)
     if (not exact_paper_flags(receipt)
             or receipt.get("status") != "LOCAL_ARTIFACT_ONLY_NOT_INSERTED"):
         raise RuntimeError("RECEIPT_SAFETY_FAILURE")
@@ -166,15 +167,19 @@ def main():
     dna = runtime / "data" / "anomaly_logs" / ("dna_" + digest + ".json")
     if not entry.is_file() or not dna.is_file():
         raise RuntimeError("LINKED_EVIDENCE_MISSING")
+    linked_evidence_bytes = {}
     for path in (entry, dna):
-        data = json.loads(path.read_text(encoding="utf-8"))
+        evidence_bytes = path.read_bytes()
+        data = json.loads(evidence_bytes)
         if (data.get("prediction_hash") != digest
                 or data.get("source_hash") != source_hash
                 or not exact_paper_flags(data)):
             raise RuntimeError("LINKED_EVIDENCE_INVALID")
+        linked_evidence_bytes[path.name] = evidence_bytes
     PROOF.mkdir(parents=True, exist_ok=True)
-    for path in (source, entry, dna):
-        shutil.copyfile(path, PROOF / path.name)
+    (PROOF / source.name).write_bytes(receipt_bytes)
+    for filename, evidence_bytes in linked_evidence_bytes.items():
+        (PROOF / filename).write_bytes(evidence_bytes)
     # Preserve the verified bytes rather than re-reading a mutable source file.
     (PROOF / "raw_snapshot.json").write_bytes(raw_bytes)
     (PROOF / "status.json").write_text(json.dumps({
