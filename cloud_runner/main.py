@@ -240,8 +240,13 @@ def main():
         (PROOF / filename).write_bytes(evidence_bytes)
     # Preserve the verified bytes rather than re-reading a mutable source file.
     (PROOF / "raw_snapshot.json").write_bytes(raw_bytes)
+    # Recheck immediately before publishing success: hashing/copying may take
+    # time after the initial check, especially on degraded cloud storage.
+    publish_checked_at = datetime.now(timezone.utc)
+    validate_quote_exchange_times(quotes, source_captured_at, checked_at=publish_checked_at)
     (PROOF / "status.json").write_text(json.dumps({
         "status": "PAPER_RECEIPT_VERIFIED",
+        "quote_freshness_checked_at": publish_checked_at.isoformat(),
         "prediction_hash": digest,
         "runtime_sha": git(runtime, "rev-parse", "HEAD"),
         "paper_mode": 1,
