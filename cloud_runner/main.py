@@ -49,6 +49,8 @@ def validate_quote_exchange_times(quotes, captured_at, *, checked_at):
     # A publication check must be contemporaneous with (or after) capture.
     if (captured_at - checked_at).total_seconds() > 5:
         raise RuntimeError("QUOTE_PUBLICATION_TIME_INVALID")
+    seen_symbols = set()
+    seen_tokens = set()
     for row in quotes:
         if not isinstance(row, dict):
             raise RuntimeError("QUOTE_CONTRACT_IDENTITY_MISMATCH")
@@ -60,6 +62,15 @@ def validate_quote_exchange_times(quotes, captured_at, *, checked_at):
                 or quote.get("tradingSymbol") != contract["tradingsymbol"]
                 or str(quote.get("symbolToken")) != str(contract["symboltoken"])):
             raise RuntimeError("QUOTE_CONTRACT_IDENTITY_MISMATCH")
+        # A token or trading symbol must identify exactly one NFO contract
+        # in a capture. Duplicate rows can double-count OI/volume and falsely
+        # corroborate a prediction even when each row's quote matches itself.
+        symbol = contract["tradingsymbol"]
+        token = str(contract["symboltoken"])
+        if symbol in seen_symbols or token in seen_tokens:
+            raise RuntimeError("QUOTE_CONTRACT_DUPLICATE")
+        seen_symbols.add(symbol)
+        seen_tokens.add(token)
         feed_time = quote.get("exchFeedTime")
         if not isinstance(feed_time, str) or not feed_time.strip():
             raise RuntimeError("QUOTE_EXCHANGE_TIME_INVALID")
