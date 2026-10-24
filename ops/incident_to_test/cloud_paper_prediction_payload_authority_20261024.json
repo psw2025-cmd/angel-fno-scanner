@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "incident_id": "CLOUD-PAPER-PREDICTION-PAYLOAD-AUTHORITY-20261024-01",
+  "classification": "REPRODUCED_OFFLINE_CODE_PATH_FALSE_GREEN_NOT_OBSERVED_IN_PRODUCTION",
+  "first_observed_utc": "2026-10-24T01:39:49Z",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "base_branch": "fix/cloud-paper-contradictory-order-flag-20261024",
+  "owned_branch": "fix/cloud-paper-payload-authority-20261024",
+  "draft_pr": 178,
+  "signal": "Hash-consistent payload with mode=LIVE or unsafe authority flags reached PAPER_RECEIPT_VERIFIED despite receipt/entry/DNA safety checks.",
+  "root_cause": "cloud_runner/main.py validated the receipt and linked evidence safety flags, but omitted safety validation of the embedded prediction payload.",
+  "upstream_downstream": "A self-consistent forecast hash does not prove PAPER authorization; unsafe payload values could pass internal proof and mislead downstream health or dashboards.",
+  "impact": "P1 PAPER safety evidence false green, not independently observed in broker runtime",
+  "prevention_hypothesis": "Checking exact mode PAPER and strict integer-zero authority declarations on payload prevents hash-consistent unsafe predictions from receiving verified status.",
+  "baseline": {
+    "test_first_sha": "187d05090de9975e6d70671c34047967090d5fcc",
+    "run_id": 40050810948,
+    "job_id": 120742839535,
+    "conclusion": "failure",
+    "checkout_sha_matched": true,
+    "raw_pytest": "6 failed, 336 passed, 3 skipped, 3 warnings, 27 subtests passed",
+    "negative_cases": [
+      "mode=LIVE",
+      "mode=paper",
+      "live_order_authority=1",
+      "live_order_authority=true",
+      "real_broker_orders=1",
+      "real_broker_orders=true"
+    ],
+    "observed_failure": "AssertionError: RuntimeError not raised",
+    "data": "OFFLINE_TEMPORARY_SYNTHETIC"
+  },
+  "patch": {
+    "path": "cloud_runner/main.py",
+    "commit": "78d65d7ae6cd88f32936d9e3e0fc60ae50b2797b",
+    "behavior": "Reject non-PAPER mode, noninteger/nonzero live_order_authority, and contradictory optional real_broker_orders."
+  },
+  "regression_tests": [
+    {
+      "path": "tests/test_cloud_paper_payload_authority.py",
+      "name": "PredictionPayloadAuthorityTests.test_unsafe_hash_consistent_prediction_payload_fails_closed",
+      "cases": 6
+    }
+  ],
+  "verified_intermediate": {
+    "head_sha": "6adf532561f0cd342ba200dc2499d5374a195ce8",
+    "run_id": 40050841431,
+    "job_id": 120742932708,
+    "conclusion": "success",
+    "exact_head_match": true,
+    "focused": "1 unittest with 6 negative subtests PASS",
+    "full_pytest": "336 passed, 3 skipped, 3 warnings, 33 subtests passed",
+    "chaos": "6 PASS",
+    "skips": [
+      "BigQuery credentials unavailable",
+      "external Colab schema file missing",
+      "Windows PowerShell compatibility on Ubuntu"
+    ]
+  },
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0,
+    "external_broker_order_audit": "NOT_PERFORMED"
+  },
+  "gates": {
+    "cloud_deployment": "NOT_PERFORMED",
+    "serving_sha": "UNVERIFIED",
+    "genuine_broker_feed": "UNVERIFIED",
+    "immutable_forward_forecast": "UNVERIFIED",
+    "matured_outcome": "UNVERIFIED",
+    "cross_system_reconciliation": "UNVERIFIED",
+    "independent_runtime_recurrence": "WAITING"
+  },
+  "rollback": "Normal governed revert of isolated PR #178; no force push or peer-owned branch changes.",
+  "reopen_if": [
+    "Unsafe hash-consistent prediction payload is accepted",
+    "A boolean/string authority flag is coerced to numeric zero",
+    "Verified status is interpreted as proof of independent zero broker orders",
+    "Deployed serving SHA diverges from reviewed exact head"
+  ],
+  "next_checkpoint": "Verify final incident-record commit exact-head non-skipped CI; independent cloud runtime, market feed and broker-order audit remain BLOCKED.",
+  "operations_advanced": {
+    "1524": "TESTED",
+    "1525": "ACTIONED",
+    "1528": "ACTIONED",
+    "1529": "TESTED",
+    "1530": "ACTIONED",
+    "1531": "ACTIONED",
+    "1532": "TESTED",
+    "1534": "TESTED",
+    "1535": "CI_PASS",
+    "1536": "BLOCKED",
+    "1537": "BLOCKED",
+    "1538": "ACTIONED"
+  }
+}
