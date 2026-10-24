@@ -1,7 +1,7 @@
 {
   "schema": "incident_to_test.v1",
   "claim_id": "CLOUD_PAPER_EXPIRED_OPTION_CONTRACT_20261025",
-  "classification": "Offline code-path expiry validation gap; synthetic tests only, not a proven broker/cloud incident",
+  "classification": "Confirmed offline synthetic verifier false-green; NOT a proven broker/cloud incident",
   "observed_at_utc": "2026-10-24T22:41:06Z",
   "repo": "psw2025-cmd/angel-fno-scanner",
   "branch": "fix/cloud-paper-expired-contract-20261025",
@@ -18,7 +18,12 @@
   "corrected_red_sha": "06ca93499053a581279b25a7fa18feacc6e4dc65",
   "corrected_red_ci": {
     "run_id": 40139730307,
-    "status": "PENDING_AT_RECORD_CREATION"
+    "job_id": 121008723976,
+    "conclusion": "failure",
+    "exact_head_sha": "06ca93499053a581279b25a7fa18feacc6e4dc65",
+    "pytest": "1 failed, 590 passed, 3 skipped, 3 warnings, 280 subtests passed",
+    "exit_code": 1,
+    "observed": "Expired prior-IST-date option accepted; AssertionError: RuntimeError not raised"
   },
   "patch": {
     "implementation_sha": "dc6876f60444276d6fe637f97e8733a9998dd7f0",
@@ -44,8 +49,12 @@
   ],
   "ci_after_patch": {
     "run_id": 40139732448,
-    "status": "PENDING_AT_RECORD_CREATION",
-    "head_sha": "32e0ef6943dd31a8c9169e6254976bd9d82fa8f3"
+    "job_id": 121008731016,
+    "conclusion": "success",
+    "exact_head_sha": "32e0ef6943dd31a8c9169e6254976bd9d82fa8f3",
+    "pytest": "593 passed, 3 skipped, 3 warnings, 282 subtests passed",
+    "exit_code": 0,
+    "limitation": "Three mandatory integration/OS skips remain"
   },
   "mandatory_skips": [
     "BigQuery credentials",
@@ -76,7 +85,7 @@
     "1669": "ACTIONED",
     "1672": "ACTIONED",
     "1673": "ACTIONED",
-    "1675": "OPEN",
+    "1675": "TESTED",
     "1676": "BLOCKED",
     "1677": "BLOCKED",
     "1678": "ACTIONED",
@@ -85,12 +94,15 @@
     "1704": "ACTIONED",
     "1709": "ACTIONED",
     "1712": "ACTIONED",
-    "1715": "OPEN",
+    "1715": "TESTED",
     "1716": "BLOCKED",
     "1717": "BLOCKED",
     "1718": "ACTIONED",
     "1719": "OPEN",
     "1909": "ACTIONED"
   },
-  "scope": "Operations 1–1919 additive; this record does not certify deployment, market results, zero orders or permanent prevention"
+  "scope": "Operations 1–1919 additive; this record does not certify deployment, market results, zero orders or permanent prevention",
+  "final_evidence_record_ci": {
+    "status": "PENDING_NEW_EXACT_HEAD"
+  }
 }
