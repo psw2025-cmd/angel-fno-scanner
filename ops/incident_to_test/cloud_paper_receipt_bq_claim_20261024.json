@@ -1,0 +1,84 @@
+{
+  "incident_id": "CLOUD_PAPER_RECEIPT_BQ_CLAIM_20261024",
+  "observed_at_utc": "2026-10-24",
+  "scope": "Offline PAPER receipt metadata: local-only publication vs asserted BigQuery insertion",
+  "signal": "cloud_runner/main.py verified receipt status and safety flags but did not verify BigQuery insert/job identifiers, destination_table or receipt source_kind",
+  "root_cause": "Missing explicit fail-closed local-only BigQuery receipt metadata contract before PAPER_RECEIPT_VERIFIED",
+  "impact": "A modified receipt could carry a claimed BigQuery write id or wrong destination/source while runner published a verified local PAPER receipt; no actual database write or live incident observed",
+  "historical_overlap": "Distinct from PR #176 malformed raw JSON, PR #188 instrument-master provenance, and earlier receipt payload authority tests",
+  "baseline_sha": "17a5c696696bd9b899b90f0299c70b710c3daf3d",
+  "test_first_sha": "2ffe416254cf39d160c407d89fc51268546ae009",
+  "code_fix_sha": "b3421695c0422ef9d2cd21804731cc678a7f07e2",
+  "fixture_fix_sha": "1df07e1a3da02ecde83320d8538c64eff0cd94f0",
+  "patch": "Validate receipt.source_kind, exact PAPER sandbox destination, explicit null BigQuery insert/job ids before verified status",
+  "regression_tests": [
+    "tests/test_cloud_paper_receipt_metadata.py",
+    "tests/test_cloud_paper_receipt_freshness.py"
+  ],
+  "negative_cases": [
+    "fabricated BigQuery insert id",
+    "fabricated BigQuery job id",
+    "wrong destination",
+    "wrong source kind",
+    "missing fields",
+    "wrong types",
+    "full-run forged metadata"
+  ],
+  "source_refs": [
+    "cloud_runner/main.py",
+    "phase2/local_publisher.py",
+    "run_phase2_local.py"
+  ],
+  "before_after_evidence": {
+    "before_ci_run": 40094768703,
+    "after_ci_run": 40094902573,
+    "after_conclusion": "SUCCESS_WITH_3_SKIPS",
+    "after_verified_sha": "b23dce63f2d5f2d36f446783b6d6399be9bb656a",
+    "pytest": "428 passed, 3 skipped, 3 warnings, 124 subtests passed",
+    "encoding_safety_run": 40094906519,
+    "encoding_safety_conclusion": "SUCCESS_UBUNTU_WINDOWS",
+    "intermediate_failed_ci": 40094794996
+  },
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0,
+    "independent_broker_order_audit": "NOT_PERFORMED"
+  },
+  "limitations": [
+    "Metadata equality is internal consistency, not BigQuery authentication or proof of no orders",
+    "Cloud deployment, serving SHA, broker feed, forecast maturation, cross-system reconciliation and rollback remain unverified",
+    "Existing test skips remain unresolved"
+  ],
+  "rollback": "Governed revert of this isolated PR if peer review or exact-head CI reveals regressions; preserve test-first negative receipts; no force push",
+  "reopen_if": [
+    "Any non-null BigQuery write ID accepted as local-only",
+    "Destination/source mismatch accepted",
+    "Future publisher contract changes without matching verifier and regression update",
+    "Missing or skipped mandatory CI",
+    "Serving runtime differs from verified head"
+  ],
+  "operations": {
+    "1505": "ACTIONED",
+    "1525": "TESTED",
+    "1680": "ACTIONED",
+    "1681": "ACTIONED",
+    "1683": "ACTIONED",
+    "1684": "TESTED",
+    "1685": "ACTIONED",
+    "1687": "ACTIONED",
+    "1688": "ACTIONED",
+    "1689": "TESTED",
+    "1690": "ACTIONED",
+    "1691": "ACTIONED",
+    "1692": "TESTED",
+    "1694": "TESTED",
+    "1695": "TESTED_QUALIFIED_CI_WITH_3_SKIPS",
+    "1696": "BLOCKED",
+    "1697": "ACTIONED",
+    "1698": "ACTIONED",
+    "1699": "ACTIONED",
+    "1909": "ACTIONED"
+  },
+  "status": "QUALIFIED_EXACT_HEAD_CI_SUCCESS_WITH_3_SKIPS_NOT_DEPLOYED"
+}

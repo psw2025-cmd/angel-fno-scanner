@@ -106,6 +106,25 @@ def validate_instrument_master_provenance(raw_snapshot, payload):
     return True
 
 
+
+def validate_paper_receipt_metadata(receipt):
+    """Reject contradictory BigQuery write claims in a local-only PAPER receipt.
+
+    Metadata is self-asserted, not evidence of a BigQuery insertion or query.
+    """
+    expected_source = "ANGEL_SMARTAPI_READONLY_QUOTES_NOT_OFFICIAL_SETTLEMENT"
+    expected_table = "fno-angel-prod-1790444589.PAPER_TRADING_SANDBOX_PHASE2.prediction_ledger"
+    if (not isinstance(receipt, dict)
+            or receipt.get("status") != "LOCAL_ARTIFACT_ONLY_NOT_INSERTED"
+            or receipt.get("source_kind") != expected_source
+            or receipt.get("destination_table") != expected_table
+            or "bigquery_insert_id" not in receipt
+            or receipt["bigquery_insert_id"] is not None
+            or "bigquery_job_id" not in receipt
+            or receipt["bigquery_job_id"] is not None):
+        raise RuntimeError("RECEIPT_METADATA_INVALID")
+    return True
+
 def main():
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
@@ -167,6 +186,7 @@ def main():
     if (not exact_paper_flags(receipt)
             or receipt.get("status") != "LOCAL_ARTIFACT_ONLY_NOT_INSERTED"):
         raise RuntimeError("RECEIPT_SAFETY_FAILURE")
+    validate_paper_receipt_metadata(receipt)
     from phase2.daily_close import canonical_hash
     payload = json.loads(receipt["bigquery_merge_parameters"]["payload"])
     # A valid hash is not authorization: the prediction itself must be PAPER.

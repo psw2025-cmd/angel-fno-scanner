@@ -65,6 +65,10 @@ def make_receipt(runtime, captured_at, *, source_captured_at=None, payload_sourc
         "status": "LOCAL_ARTIFACT_ONLY_NOT_INSERTED", "paper_mode": 1,
         "live_order_authority": 0, "prediction_hash": digest,
         "source_hash": payload["source_hash"],
+        "source_kind": "ANGEL_SMARTAPI_READONLY_QUOTES_NOT_OFFICIAL_SETTLEMENT",
+        "destination_table": "fno-angel-prod-1790444589.PAPER_TRADING_SANDBOX_PHASE2.prediction_ledger",
+        "bigquery_insert_id": None,
+        "bigquery_job_id": None,
         "bigquery_merge_parameters": {
             "payload": json.dumps(payload, sort_keys=True), "hash": digest,
         },
