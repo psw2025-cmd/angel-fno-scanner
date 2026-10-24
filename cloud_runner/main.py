@@ -1,12 +1,13 @@
 """Cloud PAPER orchestration, delegating calculation to reviewed Phase 2 code."""
 import argparse
 import hashlib
+import math
 import json
 import os
 import re
 import subprocess
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -34,6 +35,45 @@ def exact_paper_flags(data):
             and ("real_broker_orders" not in data
                  or (type(data["real_broker_orders"]) is int
                      and data["real_broker_orders"] == 0)))
+
+
+def validate_prediction_ranking(payload):
+    """Reject absent, duplicate, or non-tradeable PAPER forecast contracts.
+
+    This is a structural check only, not proof of market prices or broker fills.
+    """
+    ranking = payload.get("ranking") if isinstance(payload, dict) else None
+    if not isinstance(ranking, list) or not ranking:
+        raise RuntimeError("PREDICTION_RANKING_EMPTY")
+    seen = set()
+    for expected_rank, row in enumerate(ranking, 1):
+        if not isinstance(row, dict) or type(row.get("rank")) is not int or row["rank"] != expected_rank:
+            raise RuntimeError("PREDICTION_RANKING_INVALID")
+        if (not isinstance(row.get("symbol"), str) or not row["symbol"].strip()
+                or not isinstance(row.get("tradingsymbol"), str) or not row["tradingsymbol"].strip()
+                or not isinstance(row.get("symboltoken"), str) or not row["symboltoken"].isdigit()
+                or row.get("option_type") not in ("CE", "PE")):
+            raise RuntimeError("PREDICTION_RANKING_INVALID")
+        try:
+            date.fromisoformat(row["expiry"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise RuntimeError("PREDICTION_RANKING_INVALID") from exc
+        strike = row.get("strike")
+        if type(strike) not in (int, float) or not math.isfinite(strike) or strike <= 0:
+            raise RuntimeError("PREDICTION_RANKING_INVALID")
+        for field in ("entry_bid", "entry_ask", "entry_price"):
+            value = row.get(field)
+            if type(value) not in (int, float) or not math.isfinite(value) or value <= 0:
+                raise RuntimeError("PREDICTION_RANKING_INVALID")
+        if (row["entry_bid"] > row["entry_ask"]
+                or row["entry_price"] != row["entry_ask"]
+                or row.get("entry_price_method") != "SNAPSHOT_BEST_ASK_NOT_FILLED"):
+            raise RuntimeError("PREDICTION_RANKING_INVALID")
+        identity = (row["symbol"], row["expiry"], strike, row["option_type"])
+        if identity in seen:
+            raise RuntimeError("PREDICTION_RANKING_INVALID")
+        seen.add(identity)
+    return True
 
 
 def validate_quote_exchange_times(quotes, captured_at, *, checked_at):
@@ -210,6 +250,7 @@ def main():
                 and (type(payload["real_broker_orders"]) is not int
                      or payload["real_broker_orders"] != 0))):
         raise RuntimeError("PREDICTION_SAFETY_FAILURE")
+    validate_prediction_ranking(payload)
     try:
         issued_at = datetime.fromisoformat(payload["created_at"])
     except (KeyError, TypeError, ValueError) as exc:

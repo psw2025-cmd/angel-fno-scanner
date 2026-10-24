@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "incident_id": "CLOUD_PAPER_EMPTY_RANKING_FALSE_GREEN_20261024",
+  "classification": "CONFIRMED_OFFLINE_CODE_PATH_GAP_NOT_LIVE_MARKET_INCIDENT",
+  "observed_at_utc": "2026-10-24T16:14:29Z",
+  "signal": "Existing synthetic full-run fixture carried ranking=[] yet published PAPER_RECEIPT_VERIFIED; no nonempty ranking gate in cloud_runner/main.py",
+  "root_cause": "Cloud runner checked receipt hash, quote timestamps, source provenance and safety flags, but never validated the model ranking contract; synthetic success fixture normalized an impossible empty forecast.",
+  "impact": "P1 evidence false-green: empty/malformed forecast can receive verified PAPER receipt status. Does not prove an actual broker or deployed incident.",
+  "causal_chain": {
+    "signal": "empty ranking accepted",
+    "root_cause": "missing ranking validation",
+    "patch": "fail-closed structural validator + full-run gate + realistic synthetic fixture",
+    "regression_test": "tests/test_cloud_paper_ranking_contract.py",
+    "exact_sha_ci": "CI #40110755690 PASS at 68cf50f3db5e4d18ec87f53a12871f2ea319c088 with 3 disclosed skips; final record-head CI pending",
+    "deployed_revision": "NOT_DEPLOYED",
+    "genuine_paper_runtime": "NOT_VERIFIED",
+    "independent_proof": "PENDING",
+    "next_session_recurrence_check": "reopen if empty/malformed ranking passes or new fixture regresses"
+  },
+  "before": {
+    "parent_pr": 191,
+    "parent_sha": "8a894372dc9da0d3c60f6e43a68bd5f81a0721f1",
+    "test_first_sha": "f203ba32e754ca8e8ab6b7041c5a08e4c4102c28",
+    "test_first_run": 40110634587,
+    "test_first_job": 120921422163,
+    "conclusion": "FAILURE",
+    "observed": "12 failed, 463 passed, 3 skipped; missing validate_prediction_ranking; exit 1",
+    "intermediate_failure": {
+      "commit": "48410c870fe0c90bd4854711509e446ce853f50a",
+      "run_id": 40110673509,
+      "conclusion": "FAILURE",
+      "observation": "128 failed, 399 passed, 3 skipped: old empty-ranking fixtures did not reach their intended negative cases"
+    }
+  },
+  "patch": {
+    "branch": "fix/cloud-paper-empty-ranking-20261024",
+    "pr": 192,
+    "code_sha": "48410c870fe0c90bd4854711509e446ce853f50a",
+    "fixture_sha": "a615e2d9fef3deb99a227975df51cc5d5da68bf4",
+    "full_run_test_sha": "2725208880a88402961f229dde8c338b15aa10a3",
+    "notes": "Only owned draft branch; no main/peer edits. Strict ranking rank sequence, identity, positive executable prices, method and duplicate checks."
+  },
+  "tests": [
+    "empty/null/wrong-type ranking rejected",
+    "valid synthetic quote-backed ranking accepted structurally",
+    "missing identity, NaN strike, impossible entry price or filled-order claim rejected",
+    "duplicate contract/nonsequential/boolean rank rejected",
+    "full runner cannot publish verified status for empty but internally hash-consistent receipt"
+  ],
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0,
+    "independent_broker_order_audit": "NOT_PERFORMED"
+  },
+  "mandatory_external_gates": [
+    "BigQuery integration credentials",
+    "external Colab schema contract",
+    "Windows-only PowerShell pytest on Ubuntu; separate Windows job required",
+    "actual serving SHA",
+    "genuine read-only broker feed",
+    "immutable forward-issued forecast and matured outcome",
+    "Sheet/BQ/R2/ledger/UI/alert reconciliation",
+    "rollback and next market session"
+  ],
+  "operations": {
+    "1520": "ACTIONED",
+    "1521": "ACTIONED",
+    "1524": "TESTED",
+    "1529": "TESTED",
+    "1531": "ACTIONED",
+    "1532": "ACTIONED",
+    "1533": "OPEN_NOT_TESTED_TRANSIENT_RETRY_RECOVERY",
+    "1534": "TESTED_489_PASSED_3_SKIPPED",
+    "1535": "CI_PASS_WITH_3_SKIPS_PRIOR_HEAD_FINAL_RECORD_HEAD_PENDING",
+    "1536": "BLOCKED_NOT_DEPLOYED",
+    "1537": "BLOCKED_NOT_RUNTIME_VERIFIED",
+    "1538": "ACTIONED",
+    "1539": "OPEN_ISSUE3_PACKET_PENDING",
+    "1724": "TESTED",
+    "1732": "TESTED",
+    "1909": "ACTIONED"
+  },
+  "rollback": "Governed revert of isolated PR #192 after review, preserve #191 and all peer branches; no force push",
+  "reopen_if": [
+    "empty or malformed ranking gets PAPER_RECEIPT_VERIFIED",
+    "duplicate contract identity or impossible entry price passes",
+    "exact-head CI skips or fails mandatory gate",
+    "deployed SHA differs from reviewed commit",
+    "actual market-session proof contradicts offline guard"
+  ],
+  "status": "OFFLINE_FIX_AND_REGRESSIONS_PASS_PRIOR_HEAD_CI_SUCCESS_WITH_3_SKIPS_FINAL_RECORD_HEAD_CI_PENDING_NOT_DEPLOYED_NOT_CERTIFIED",
+  "code_ci_prior_head": {
+    "head_sha": "68cf50f3db5e4d18ec87f53a12871f2ea319c088",
+    "run_id": 40110755690,
+    "job_id": 120921781145,
+    "conclusion": "success_with_3_skips",
+    "checked_out_sha": "68cf50f3db5e4d18ec87f53a12871f2ea319c088",
+    "pytest": "489 passed, 3 skipped, 3 warnings, 179 subtests passed",
+    "chaos": "6 PASS",
+    "encoding_run_id": 40110760188,
+    "encoding_windows": "success",
+    "encoding_ubuntu": "success"
+  }
+}
