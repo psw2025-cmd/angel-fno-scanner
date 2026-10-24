@@ -246,6 +246,32 @@ def validate_instrument_master_provenance(raw_snapshot, payload):
 
 
 
+
+def validate_prediction_lineage(payload, source_hash):
+    """Bind run identity to the captured source and declared model version.
+
+    This validates self-reported PAPER provenance, not the underlying model
+    computation or external market data authenticity.
+    """
+    version = payload.get("model_version")
+    features_hash = payload.get("features_hash")
+    run_id = payload.get("run_id")
+    if (not isinstance(version, str) or not version.strip()
+            or not isinstance(features_hash, str)
+            or re.fullmatch(r"[0-9a-f]{64}", features_hash) is None
+            or not isinstance(run_id, str)
+            or re.fullmatch(r"[0-9a-f]{64}", run_id) is None):
+        raise RuntimeError("PREDICTION_LINEAGE_INVALID")
+    from phase2.daily_close import canonical_hash
+    expected_run_id = canonical_hash({
+        "raw_snapshot_sha256": source_hash,
+        "model_version": version,
+    })
+    if run_id != expected_run_id:
+        raise RuntimeError("PREDICTION_RUN_ID_MISMATCH")
+    return True
+
+
 def validate_paper_receipt_metadata(receipt):
     """Reject contradictory BigQuery write claims in a local-only PAPER receipt.
 
@@ -355,6 +381,7 @@ def main():
             or re.fullmatch(r"[0-9a-f]{64}", source_hash) is None
             or receipt.get("source_hash") != source_hash):
         raise RuntimeError("SOURCE_PROVENANCE_MISMATCH")
+    validate_prediction_lineage(payload, source_hash)
     # Bind the signed-off prediction hash to the actual captured broker snapshot
     # bytes. Internal agreement among receipt/entry/DNA alone is insufficient.
     raw = runtime / "data" / "raw_snapshot.json"
