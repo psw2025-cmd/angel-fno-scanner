@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "incident_id": "CLOUD-PAPER-EVIDENCE-COPY-RACE-20261024-01",
+  "classification": "REPRODUCED_OFFLINE_CODE_PATH_FALSE_GREEN_NOT_OBSERVED_IN_CLOUD_RUNTIME",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "owned_branch": "fix/cloud-paper-evidence-copy-race-20261024",
+  "parent_pr": 178,
+  "draft_pr": 179,
+  "signal": "Runner verified receipt, entry and DNA JSON but reopened mutable files through shutil.copyfile; concurrent mutation could make published proof differ from validated content while status reported PAPER_RECEIPT_VERIFIED.",
+  "root_cause": "Time-of-check/time-of-use race between evidence validation and proof copying; only raw_snapshot bytes were previously retained.",
+  "upstream_downstream": "Any concurrent writer or file modification after validation can corrupt proof bytes; downstream artifact consumers may trust a successful status and inconsistent copied files.",
+  "severity": "P1 evidence integrity; not an observed production event",
+  "hypothesis": "Retaining the exact receipt, entry and DNA bytes at validation and writing those bytes directly to proof prevents the reproduced post-validation copy race.",
+  "baseline": {
+    "head_sha": "828cc1adbe7abb50a1b535125e634f8ac180d592",
+    "ci_run_id": 40057223836,
+    "ci_conclusion": "failure",
+    "checkout_identity": "MATCHED",
+    "raw_pytest": "3 failed, 359 passed, 3 skipped, 3 warnings, 54 subtests passed",
+    "cases": [
+      "receipt.json mutated at copy",
+      "entry_<digest>.json mutated at copy",
+      "dna_<digest>.json mutated at copy"
+    ],
+    "note": "Offline synthetic mutation; no broker access or cloud runtime"
+  },
+  "repair": {
+    "code_commit": "2b395ca75dc4fb92f2654da344c9f841bcab1882",
+    "path": "cloud_runner/main.py",
+    "scope": "Use once-read validated bytes for receipt, entry and DNA proof; raw_snapshot already used captured bytes.",
+    "rollback": "Governed revert of isolated commit, preserving negative test evidence and no force push."
+  },
+  "regression": {
+    "path": "tests/test_cloud_paper_evidence_copy_race.py",
+    "mechanism": "Patch shutil.copyfile to mutate each file at the copy boundary; proof must contain the bytes emitted by child and validated, with PAPER_RECEIPT_VERIFIED status.",
+    "safety": "No network, secrets, broker calls or real orders."
+  },
+  "after_ci": "See final exact-head GitHub Actions run and Issue #3 addendum; not claimed by this record.",
+  "runtime_proof": "BLOCKED_NOT_DEPLOYED",
+  "independent_broker_proof": "BLOCKED_NOT_AVAILABLE",
+  "next_session_recurrence_check": "Re-run the negative copy-race regression at exact head and inspect real cloud proof artifact bytes and SHA when authorized deployment exists.",
+  "reopen_if": "Any verified proof differs from its validated receipt/entry/DNA bytes or stale/corrupted proof is published as successful.",
+  "safety_flags": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  }
+}
