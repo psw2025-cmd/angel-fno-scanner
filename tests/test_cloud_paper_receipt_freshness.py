@@ -42,7 +42,10 @@ def make_receipt(runtime, captured_at, *, source_captured_at=None, payload_sourc
             ).strftime("%d-%b-%Y %H:%M:%S")
         except (TypeError, ValueError):
             feed_time = "23-Oct-2026 09:15:00"
-        quotes = [{"contract": {"tradingsymbol": "OFFLINE_TEST_ONLY",
+        quotes = [{"contract": {"underlying": "NIFTY",
+                                 "expiry": "2026-10-29", "strike": 24000.0,
+                                 "option_type": "CE",
+                                 "tradingsymbol": "OFFLINE_TEST_ONLY",
                                  "symboltoken": "999"},
                    "quote": {"tradingSymbol": "OFFLINE_TEST_ONLY",
                              "symbolToken": "999",
