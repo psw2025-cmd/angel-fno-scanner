@@ -56,7 +56,7 @@ jobs:
         run: |
           set -euo pipefail
           git -C paper-runtime fetch --quiet origin main
-          for path in run_phase2_local.py run_phase3_pnl.py update_phase4_dashboard.py phase2/option_dna.py nse_calendar.py nse_holidays.json; do
+          for path in run_phase2_local.py run_phase3_pnl.py update_phase4_dashboard.py nse_calendar.py nse_holidays.json phase2/angel_instruments.py phase2/angel_readonly.py phase2/option_stream.py phase2/model.py phase2/heuristic.py phase2/daily_close.py phase2/local_publisher.py phase2/option_dna.py; do
             test "$(git -C paper-runtime hash-object "$path")" = "$(git -C paper-runtime rev-parse "origin/main:$path")" || { echo "::error::Reviewed writer drift: $path"; exit 1; }
           done
 

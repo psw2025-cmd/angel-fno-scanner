@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "incident_id": "CLOUD-PAPER-UNREVIEWED-WRITER-DEPENDENCIES-20261024-01",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "branch": "fix/cloud-paper-writer-parity-20261024",
+  "pr_number": 181,
+  "classification": "STATIC_COVERAGE_GAP_CONFIRMED_WITH_TEST_FIRST_RED_CI_NOT_OBSERVED_RUNTIME_DRIFT",
+  "signal": "The cloud-paper-runner.yml writer-parity loop checked six paths but omitted seven imported first-party executable modules.",
+  "root_cause": "A manually curated parity allowlist omitted Phase 2 direct and transitive dependencies. The pre-execution hash check could not detect drift in those modules.",
+  "affected_paths": [
+    "phase2/angel_instruments.py",
+    "phase2/angel_readonly.py",
+    "phase2/option_stream.py",
+    "phase2/model.py",
+    "phase2/heuristic.py",
+    "phase2/daily_close.py",
+    "phase2/local_publisher.py"
+  ],
+  "observed_main_and_test_framework_blob_sha_match": true,
+  "comparison_scope": "GitHub connector read of both branches on 2026-10-24. The omission was confirmed; no actual module drift or malicious edit was observed.",
+  "impact": "Unreviewed code could pass the six-path parity gate and run in the cloud PAPER child, compromising safety/provenance. No cloud execution or order incident is asserted.",
+  "hypothesis": "Extend the pre-execution fail-closed hash comparison to all directly/transitively imported first-party Phase 2 writer modules, and guard the allowlist with an offline regression.",
+  "test_first": {
+    "head_sha": "b148486e12fb4e32d8b831668f7620452702a22b",
+    "workflow_run_id": 40065086704,
+    "job_id": 120786521354,
+    "checkout_sha_matches_event_sha": true,
+    "conclusion": "failure",
+    "raw_pytest": "1 failed, 362 passed, 3 skipped, 3 warnings, 62 subtests passed",
+    "failing_test": "tests/test_cloud_paper_writer_parity.py::ReviewedWriterParityTests::test_all_executable_phase2_dependencies_checked_before_execution",
+    "failure": "Unreviewed writer dependency: phase2/angel_instruments.py, phase2/angel_readonly.py, phase2/daily_close.py, phase2/heuristic.py, phase2/local_publisher.py, phase2/model.py, phase2/option_stream.py"
+  },
+  "patch": {
+    "sha_before_record": "dec035f01c21386eada9aab93bf5865c6b480c01",
+    "path": ".github/workflows/cloud-paper-runner.yml",
+    "description": "Add seven omitted first-party executable dependencies to reviewed writer hash parity loop, before execute step.",
+    "test": "tests/test_cloud_paper_writer_parity.py",
+    "negative_boundary": "Missing critical module in workflow loop must be detected",
+    "rollback": "Governed revert of isolated PR #181; do not force push; retain failed baseline"
+  },
+  "exact_head_ci": "PENDING_FINAL_RECORD_COMMIT_AND_INDEPENDENT_VERIFICATION",
+  "deployment": "NOT_PERFORMED",
+  "actual_serving_sha": "BLOCKED",
+  "genuine_readonly_broker_feed": "NOT_VERIFIED",
+  "external_broker_order_audit": "NOT_PERFORMED",
+  "immutable_forecast_matured_outcome": "NOT_VERIFIED",
+  "cross_system_reconciliation": "NOT_VERIFIED",
+  "next_session_recurrence": "Recheck parity list against transitive first-party imports, and verify actual cloud runtime writer SHA and deployment after governed integration.",
+  "reopen_if": [
+    "New Phase 2 imported executable module is not covered by writer parity",
+    "A modified test-framework writer module passes the parity gate",
+    "Runtime serving SHA or executed dependency bytes differ from reviewed source"
+  ],
+  "operations_advanced": {
+    "1541": "ACTIONED",
+    "1543": "ACTIONED",
+    "1544": "TESTED",
+    "1545": "ACTIONED",
+    "1547": "ACTIONED",
+    "1548": "ACTIONED",
+    "1549": "TESTED",
+    "1550": "ACTIONED",
+    "1551": "ACTIONED",
+    "1552": "TESTED",
+    "1553": "OPEN",
+    "1554": "OPEN",
+    "1555": "OPEN",
+    "1556": "BLOCKED",
+    "1557": "BLOCKED",
+    "1558": "ACTIONED",
+    "1559": "OPEN",
+    "1845": "ACTIONED",
+    "1909": "ACTIONED"
+  },
+  "safety_flags": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  }
+}
