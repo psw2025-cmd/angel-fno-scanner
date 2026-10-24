@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "incident_id": "CLOUD-PAPER-CONTRADICTORY-REAL-ORDER-FLAG-20261024-01",
+  "classification": "REPRODUCED_OFFLINE_FALSE_GREEN_CODE_PATH_NOT_OBSERVED_IN_PRODUCTION",
+  "first_observed_utc": "2026-10-24T00:47:52Z",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "base_branch": "fix/cloud-paper-source-provenance-20261024",
+  "owned_branch": "fix/cloud-paper-contradictory-order-flag-20261024",
+  "draft_pr": 177,
+  "signal": "Cloud runner accepted a receipt or linked entry/DNA evidence containing explicit real_broker_orders=1, true, string '0', or null while paper_mode=1 and live_order_authority=0.",
+  "root_cause": "cloud_runner/main.py exact_paper_flags validated only two legacy integer flags and ignored any explicit real_broker_orders field.",
+  "upstream_downstream": "Child Phase 2 artifacts currently omit real_broker_orders; external order audit is not available. Contradictory explicit flags could be represented as PAPER_RECEIPT_VERIFIED in proof status.",
+  "severity": "P1_PAPER_SAFETY_EVIDENCE_FALSE_GREEN",
+  "prevention_hypothesis": "When a receipt/linked artifact explicitly declares real_broker_orders, requiring exact JSON integer zero prevents contradictory declarations from reaching PAPER_RECEIPT_VERIFIED without changing legacy absent-field compatibility.",
+  "baseline": {
+    "commit": "7af96a129bf5b3822b048b41015e8f1e6df8f2e3",
+    "exact_head_push_ci_run_id": 40046742052,
+    "conclusion": "failure",
+    "full_pytest": "12 failed, 335 passed, 3 skipped, 15 subtests passed",
+    "negative_cases": "4 forbidden values x 3 artifact types (receipt, entry, DNA) accepted before patch",
+    "isolation": "NO_NETWORK_SYNTHETIC_FIXTURES"
+  },
+  "patch": {
+    "path": "cloud_runner/main.py",
+    "commit": "5867bfa01fbd8abf712a734d9f9b55a4266cee9e",
+    "behavior": "If real_broker_orders exists, require type is int and value is exactly 0; do not claim absent field proves zero orders."
+  },
+  "regression_tests": {
+    "path": "tests/test_cloud_paper_receipt_freshness.py",
+    "cases": [
+      "test_explicit_forbidden_order_flag_in_receipt_fails_closed",
+      "test_explicit_forbidden_order_flag_in_linked_evidence_fails_closed"
+    ],
+    "values": [
+      1,
+      true,
+      "0",
+      null
+    ],
+    "linked_artifacts": [
+      "receipt",
+      "entry",
+      "dna"
+    ]
+  },
+  "verified_patch_ci": {
+    "commit": "5867bfa01fbd8abf712a734d9f9b55a4266cee9e",
+    "exact_head_push_ci_run_id": 40046860601,
+    "conclusion": "success",
+    "checked_out_sha_equals_event_sha": true,
+    "full_pytest": "335 passed, 3 skipped, 27 subtests passed",
+    "isolated_unittest": "11 PASS",
+    "chaos": "6 PASS",
+    "skips": [
+      "BigQuery integration credentials",
+      "external Colab schema contract",
+      "Windows-only compatibility on Ubuntu"
+    ]
+  },
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0,
+    "external_broker_order_audit": "NOT_PERFORMED",
+    "no_real_order_call_made_by_this_investigation": true
+  },
+  "limitations": [
+    "Absence of real_broker_orders in legacy artifacts remains accepted; no independent proof of zero external orders.",
+    "No cloud deployment, authenticated broker feed, serving SHA, matured outcome, or cross-system reconciliation.",
+    "All regression data synthetic; successful GitHub CI is not runtime certification.",
+    "Dependent draft PR chain #173→#174→#175→#177 unmerged."
+  ],
+  "deployment": "NOT_PERFORMED",
+  "runtime_proof": "UNVERIFIED",
+  "independently_verified": "WAITING_FOR_GENUINE_PAPER_RUNTIME_AND_EXTERNAL_AUDIT",
+  "rollback": "Governed revert of PR #177 only; no force push or peer-branch overwrite.",
+  "reopen_if": [
+    "Explicit real_broker_orders=1/true/string/null accepted in receipt/entry/DNA",
+    "Status claims independent zero-order audit from absent legacy field",
+    "Actual deployed revision differs from reviewed SHA",
+    "Regression escapes future market-session runtime"
+  ],
+  "operations_advanced": {
+    "1505": "TESTED",
+    "1510": "TESTED",
+    "1511": "ACTIONED",
+    "1512": "ACTIONED",
+    "1513": "TESTED",
+    "1515": "TESTED",
+    "1516": "CI_PASS",
+    "1517": "BLOCKED",
+    "1518": "BLOCKED",
+    "1519": "ACTIONED",
+    "1605": "TESTED",
+    "1612": "ACTIONED",
+    "1615": "TESTED",
+    "1909": "ACTIONED"
+  },
+  "next_checkpoint": "Verify final incident-record head exact-SHA CI, post Issue #3 packet, keep full production gate BLOCKED."
+}
