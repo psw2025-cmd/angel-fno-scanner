@@ -28,7 +28,12 @@ def exact_paper_flags(data):
     return (type(data.get("paper_mode")) is int
             and data["paper_mode"] == 1
             and type(data.get("live_order_authority")) is int
-            and data["live_order_authority"] == 0)
+            and data["live_order_authority"] == 0
+            # Older Phase 2 artifacts lack this field. Absence is not
+            # independent proof of zero orders; reject explicit contradictions.
+            and ("real_broker_orders" not in data
+                 or (type(data["real_broker_orders"]) is int
+                     and data["real_broker_orders"] == 0)))
 
 def main():
     parser = argparse.ArgumentParser()
