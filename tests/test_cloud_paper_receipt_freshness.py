@@ -28,8 +28,23 @@ def make_receipt(runtime, captured_at, *, source_captured_at=None, payload_sourc
                  payload_source_kind=None, quotes=None):
     # Synthetic fixture shaped like a broker capture; never authentic market evidence.
     if quotes is None:
-        quotes = [{"contract": {"tradingsymbol": "OFFLINE_TEST_ONLY"},
-                   "quote": {"tradingSymbol": "OFFLINE_TEST_ONLY"}}]
+        # This is a synthetic fixture, never a broker receipt. Keep it valid
+        # against the quote-exchange-time gate so unrelated negative tests
+        # reach the safety condition they are explicitly testing.
+        try:
+            quote_stamp = datetime.fromisoformat(source_captured_at or captured_at)
+            if quote_stamp.tzinfo is None:
+                quote_stamp = quote_stamp.replace(tzinfo=timezone.utc)
+            feed_time = quote_stamp.astimezone(
+                __import__("zoneinfo").ZoneInfo("Asia/Kolkata")
+            ).strftime("%d-%b-%Y %H:%M:%S")
+        except (TypeError, ValueError):
+            feed_time = "23-Oct-2026 09:15:00"
+        quotes = [{"contract": {"tradingsymbol": "OFFLINE_TEST_ONLY",
+                                 "symboltoken": "999"},
+                   "quote": {"tradingSymbol": "OFFLINE_TEST_ONLY",
+                             "symbolToken": "999",
+                             "exchFeedTime": feed_time}}]
     snapshot = {"captured_at": source_captured_at or captured_at,
                 "source_kind": source_kind, "quotes": quotes}
     raw_path = runtime / "data" / "raw_snapshot.json"
