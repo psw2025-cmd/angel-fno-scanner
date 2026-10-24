@@ -1,0 +1,85 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "CLOUD_PAPER_ENTRY_CAPTURE_BINDING_20261025",
+  "classification": "Observed offline synthetic verifier false-green; NOT an observed live broker or cloud incident",
+  "observed_at_utc": "2026-10-24T21:35:21Z",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "branch": "fix/cloud-paper-entry-capture-binding-20261025",
+  "draft_pr": 198,
+  "base_sha": "2c0a19a60e799e47ae331ed5e3fe5d3522deba77",
+  "test_first_sha": "7a54e669065efd556f573c59c3208dcbac002fe8",
+  "test_first_ci": {
+    "run_id": 40134823365,
+    "job_id": 120994001794,
+    "conclusion": "failure",
+    "pytest": "11 failed, 586 passed, 3 skipped, 3 warnings, 271 subtests passed",
+    "exit_code": 1,
+    "skips": [
+      "BigQuery live credential integration",
+      "external Colab contract unavailable",
+      "Windows PowerShell compatibility on Ubuntu"
+    ]
+  },
+  "signal": "PAPER_RECEIPT_VERIFIED accepted synthetic hash-consistent ranked entries with missing/contradictory exchange and entry capture time",
+  "root_cause": "cloud_runner/main.py validates quote identity, contract terms, depth and snapshot time but does not bind each ranked entry's exchange and entry_captured_at to NFO and the snapshot capture instant",
+  "upstream": "run_phase2_local.py writes entry_captured_at and exchange; verifier previously did not validate them",
+  "downstream": "ranked-entry provenance may misrepresent its source snapshot despite matching prediction, receipt, ledger and DNA hashes",
+  "patch": {
+    "code_sha": "e32175982ac97594b5b8e3315d8dd48b8c46f228",
+    "files": [
+      "cloud_runner/main.py",
+      "tests/test_cloud_paper_receipt_freshness.py",
+      "tests/test_cloud_paper_entry_capture_binding.py"
+    ],
+    "description": "Validate each ranked exchange is NFO and its timezone-aware capture instant equals the raw snapshot capture instant"
+  },
+  "regression_tests": [
+    "test_valid_entry_capture_passes",
+    "test_same_instant_different_timezone_passes",
+    "test_missing_capture_fails_even_with_consistent_hashes",
+    "test_naive_or_malformed_capture_fails",
+    "test_past_or_future_entry_capture_fails",
+    "test_wrong_or_missing_exchange_fails"
+  ],
+  "ci_after_patch": {
+    "run_id": 40134855115,
+    "status": "PENDING_AT_RECORD_CREATION",
+    "exact_head_sha": "e32175982ac97594b5b8e3315d8dd48b8c46f228"
+  },
+  "rollback": "Revert isolated PR #198 code/fixture/test changes after peer review if regression found; retain original failing test evidence",
+  "deployment": "NOT_PERFORMED",
+  "genuine_broker_feed": "NOT_VERIFIED",
+  "broker_order_audit": "NOT_PERFORMED",
+  "cross_system_reconciliation": "NOT_VERIFIED",
+  "independent_outcome": "NOT_VERIFIED",
+  "recurrence_reopen": "Reopen if a future hash-consistent ranked entry with absent, non-NFO or mismatched capture instant is accepted, or if exact-head CI/regression fails",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0,
+    "independent_zero_orders": "NOT_VERIFIED"
+  },
+  "operations": {
+    "1720": "ACTIONED",
+    "1721": "ACTIONED",
+    "1723": "ACTIONED",
+    "1724": "TESTED",
+    "1725": "ACTIONED",
+    "1726": "ACTIONED",
+    "1727": "ACTIONED",
+    "1728": "ACTIONED",
+    "1729": "TESTED",
+    "1730": "ACTIONED",
+    "1731": "ACTIONED",
+    "1732": "TESTED",
+    "1733": "OPEN",
+    "1734": "OPEN",
+    "1735": "OPEN",
+    "1736": "BLOCKED",
+    "1737": "BLOCKED",
+    "1738": "ACTIONED",
+    "1739": "OPEN",
+    "1909": "ACTIONED"
+  },
+  "scope": "Operations 1-1919 remain additive; this incident record does not close any lane or certify production"
+}
