@@ -165,6 +165,32 @@ def validate_ranking_quote_binding(payload, quotes):
     return True
 
 
+
+def validate_ranking_contract_terms(payload, quotes):
+    """Bind each ranked option to captured underlying, expiry, strike and side.
+
+    Symbol/token and depth agreement alone cannot establish contract terms.
+    This is internal consistency only, not independent master authentication.
+    """
+    by_identity = {
+        (row["contract"]["tradingsymbol"], str(row["contract"]["symboltoken"])): row["contract"]
+        for row in quotes
+    }
+    for rank in payload["ranking"]:
+        contract = by_identity.get((rank["tradingsymbol"], rank["symboltoken"]))
+        if not isinstance(contract, dict):
+            raise RuntimeError("RANK_QUOTE_CONTRACT_TERMS_MISMATCH")
+        strike = contract.get("strike")
+        if (contract.get("underlying") != rank["symbol"]
+                or contract.get("expiry") != rank["expiry"]
+                or contract.get("option_type") != rank["option_type"]
+                or type(strike) not in (int, float)
+                or not math.isfinite(strike)
+                or strike != rank["strike"]):
+            raise RuntimeError("RANK_QUOTE_CONTRACT_TERMS_MISMATCH")
+    return True
+
+
 def validate_ranking_quote_prices(payload, quotes):
     """Match ranked PAPER entry prices to the exact captured best bid/ask.
 
@@ -371,6 +397,7 @@ def main():
         raise RuntimeError("RAW_SNAPSHOT_QUOTES_MISSING")
     validate_quote_exchange_times(quotes, source_captured_at, checked_at=datetime.now(timezone.utc))
     validate_ranking_quote_binding(payload, quotes)
+    validate_ranking_contract_terms(payload, quotes)
     validate_ranking_quote_prices(payload, quotes)
     digest = canonical_hash({k: v for k, v in payload.items() if k != "prediction_hash"})
     if not (digest == receipt["prediction_hash"] == payload["prediction_hash"]
