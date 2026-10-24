@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "incident_id": "CLOUD-PAPER-QUOTE-PUBLICATION-AGE-GAP-20261024-01",
+  "classification": "OFFLINE_CODE_PATH_DEFECT_REPRODUCED_NOT_OBSERVED_LIVE",
+  "first_evidenced_at_utc": "2026-10-24T06:30:40Z",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "branch": "fix/cloud-paper-publication-freshness-20261024",
+  "pr": 183,
+  "signal": "A quote fresh at snapshot capture could be >120 seconds old by the time a long-running Phase 2 child completed and the runner published PAPER_RECEIPT_VERIFIED.",
+  "root_cause": "validate_quote_exchange_times compared exchFeedTime only to raw captured_at, not to final publication time. CHILD_TIMEOUT_SECONDS permits up to 600 seconds.",
+  "upstream_downstream": "Read-only quote -> snapshot capture -> long Phase2 child -> receipt/hash verification -> proof copy -> PAPER_RECEIPT_VERIFIED. Capture-time freshness alone does not guarantee publication-time freshness.",
+  "impact": "P1 false-green freshness risk in cloud PAPER evidence. No independently observed live broker or deployed runtime incident.",
+  "prevention_hypothesis": "Require explicit timezone-aware checked_at, reject any quote older than 120 seconds at checked_at, and repeat the check immediately before publishing success.",
+  "test_first": {
+    "commit": "08094abba3b5f704152ccaec8d84f5a4bab0900e",
+    "workflow_run_id": 40070489353,
+    "job_id": 120802657485,
+    "conclusion": "failure",
+    "evidence": "New test-first cases failed on missing checked_at keyword and missing main call; exact-head job pytest step failed."
+  },
+  "patch": {
+    "path": "cloud_runner/main.py",
+    "code_commit": "1f45ef4212b7c0cb2a180ea5e45422d60e52f6f3",
+    "behavior": "Fail closed if exchange quote is stale at initial validation or immediately before verified status. Status carries quote_freshness_checked_at, which is a local self-reported timestamp."
+  },
+  "regression": {
+    "files": [
+      "tests/test_cloud_paper_publication_freshness.py",
+      "tests/test_cloud_paper_quote_exchange_freshness.py"
+    ],
+    "cases": [
+      "fresh at publication accepted",
+      "fresh at capture but stale at publication rejected",
+      "boundary crosses 120 seconds rejected",
+      "naive checked_at rejected",
+      "main supplies current time",
+      "final gate after proof copy"
+    ],
+    "scope": "OFFLINE_NO_NETWORK"
+  },
+  "after": {
+    "initial_code_ci": {
+      "run_id": 40070544491,
+      "commit": "8734d39fe0306ebb687b3ef7b84d932cc5b768e4",
+      "conclusion": "success"
+    },
+    "final_record_head_ci": "PENDING_NEW_EXACT_HEAD_CI"
+  },
+  "gates": {
+    "deployed": "BLOCKED",
+    "serving_sha": "UNVERIFIED",
+    "genuine_broker_feed": "UNVERIFIED",
+    "independent_zero_order_audit": "UNVERIFIED",
+    "immutable_forecast_outcome": "UNVERIFIED",
+    "sheet_bq_r2_ledger_ui_alert": "UNVERIFIED",
+    "next_market_session_recurrence": "WAITING"
+  },
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0,
+    "broker_order_audit": "NOT_PERFORMED"
+  },
+  "rollback": "Governed revert of isolated draft PR #183, preserve failed attempts; no force push or changes to main/test-framework.",
+  "reopen_if": [
+    "stale quote passes publication-time check",
+    "time-naive or future publication timestamp passes",
+    "freshness guard omitted before status",
+    "real broker quote timestamp format incompatible",
+    "serving SHA differs from reviewed head"
+  ],
+  "recurrence_metrics": {
+    "repeat_count_before": "UNKNOWN",
+    "repeat_count_after": "WAITING",
+    "detection_time": "UNKNOWN",
+    "recovery_time": "UNKNOWN",
+    "false_green_rate": "UNKNOWN",
+    "regression_escape_rate": "UNKNOWN"
+  },
+  "operations_advanced": {
+    "1505": "TESTED",
+    "1510": "TESTED",
+    "1512": "ACTIONED",
+    "1513": "TESTED",
+    "1515": "PENDING_FINAL_CI",
+    "1645": "TESTED",
+    "1650": "TESTED",
+    "1652": "ACTIONED",
+    "1653": "TESTED",
+    "1655": "PENDING_FINAL_CI",
+    "1656": "BLOCKED",
+    "1657": "BLOCKED",
+    "1658": "ACTIONED",
+    "1659": "ACTIONED",
+    "1909": "ACTIONED"
+  },
+  "prior_requirements": "Operations 1-1919 remain registered, additive, and unclosed absent independently verified evidence."
+}
