@@ -1,0 +1,68 @@
+{
+  "incident_id": "CLOUD_PAPER_INSTRUMENT_MASTER_PROVENANCE_20261024",
+  "observed_at_utc": "2026-10-24T11:46:57Z",
+  "scope": "internal broker snapshot to PAPER prediction provenance binding; offline-only",
+  "signal": "cloud_runner/main.py checks source_hash/source_kind but did not compare instrument_master_sha256 in raw_snapshot against payload.provenance",
+  "root_cause": "Missing explicit cross-artifact instrument master SHA-256 equality gate before PAPER_RECEIPT_VERIFIED",
+  "impact": "Internally inconsistent option-universe source identity could be published as verified PAPER evidence despite other matching hashes; not proof of real-world occurrence",
+  "source_refs": [
+    "cloud_runner/main.py",
+    "run_phase2_local.py",
+    "phase2/angel_instruments.py"
+  ],
+  "baseline_sha": "167ec5e9491676cf1cc5cb07cabd7acedbc2cd43",
+  "test_first_sha": "da5875403c533cc15d0b3205ef9e332d840d8083",
+  "test_first_ci": {
+    "run_id": 40091233500,
+    "job_id": 120864157016,
+    "conclusion": "failure",
+    "summary": "11 failed, 389 passed, 3 skipped, 3 warnings, 77 subtests passed",
+    "link": "https://github.com/psw2025-cmd/angel-fno-scanner/actions/runs/40091233500"
+  },
+  "code_fix_sha": "5cfd85fabe146a764f1baac722196c40551cb354",
+  "patch": "validate_instrument_master_provenance requires both lower-case 64-hex master digests and exact equality before verified status",
+  "regression_tests": "tests/test_cloud_paper_instrument_master_provenance.py",
+  "negative_cases": [
+    "mismatched hashes",
+    "missing captured hash",
+    "missing forecast hash",
+    "malformed/incorrect-type hash",
+    "missing integration gate"
+  ],
+  "positive_case": "matching lower-case SHA-256",
+  "limitations": [
+    "Only internal digest consistency; does not authenticate Angel instrument master, broker feed or independent zero-order audit",
+    "Offline CI does not verify deployment, serving SHA, market-session behavior, forecast maturation or Sheet/BQ/R2/ledger/UI reconciliation",
+    "Three pre-existing pytest skips remain unresolved"
+  ],
+  "rollback": "Governed revert of isolated PR #188 only after preserving negative tests and failed receipts; never force push",
+  "reopen_if": [
+    "mismatched master digests accepted",
+    "missing or malformed digest accepted",
+    "verified status published without this gate",
+    "future writer changes bypass captured master identity"
+  ],
+  "status": "PATCH_COMMITTED_CI_PENDING",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0,
+    "independent_broker_order_audit": "NOT_PERFORMED"
+  },
+  "operations": {
+    "1664": "TESTED",
+    "1665": "ACTIONED",
+    "1668": "ACTIONED",
+    "1669": "TESTED",
+    "1670": "ACTIONED",
+    "1671": "ACTIONED",
+    "1672": "TESTED",
+    "1674": "TESTED",
+    "1675": "PENDING_CI",
+    "1676": "BLOCKED",
+    "1677": "BLOCKED",
+    "1678": "ACTIONED",
+    "1679": "PENDING_CANONICAL_UPDATE",
+    "1909": "ACTIONED"
+  }
+}
