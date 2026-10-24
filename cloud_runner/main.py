@@ -8,6 +8,7 @@ import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -33,6 +34,47 @@ def exact_paper_flags(data):
             and ("real_broker_orders" not in data
                  or (type(data["real_broker_orders"]) is int
                      and data["real_broker_orders"] == 0)))
+
+
+def validate_quote_exchange_times(quotes, captured_at):
+    """Fail closed if self-reported capture time masks an old exchange quote.
+
+    This verifies internal quote age/identity only; exchange time fields are
+    supplied by the broker response and are not independent authentication.
+    """
+    if captured_at.tzinfo is None or captured_at.utcoffset() is None:
+        raise RuntimeError("QUOTE_CAPTURE_TIME_INVALID")
+    for row in quotes:
+        if not isinstance(row, dict):
+            raise RuntimeError("QUOTE_CONTRACT_IDENTITY_MISMATCH")
+        contract, quote = row.get("contract"), row.get("quote")
+        if not isinstance(contract, dict) or not isinstance(quote, dict):
+            raise RuntimeError("QUOTE_CONTRACT_IDENTITY_MISMATCH")
+        if (not contract.get("tradingsymbol")
+                or not contract.get("symboltoken")
+                or quote.get("tradingSymbol") != contract["tradingsymbol"]
+                or str(quote.get("symbolToken")) != str(contract["symboltoken"])):
+            raise RuntimeError("QUOTE_CONTRACT_IDENTITY_MISMATCH")
+        feed_time = quote.get("exchFeedTime")
+        if not isinstance(feed_time, str) or not feed_time.strip():
+            raise RuntimeError("QUOTE_EXCHANGE_TIME_INVALID")
+        try:
+            exchange_time = datetime.strptime(
+                feed_time, "%d-%b-%Y %H:%M:%S"
+            ).replace(tzinfo=ZoneInfo("Asia/Kolkata"))
+        except ValueError:
+            try:
+                exchange_time = datetime.fromisoformat(feed_time)
+            except ValueError as exc:
+                raise RuntimeError("QUOTE_EXCHANGE_TIME_INVALID") from exc
+            if exchange_time.tzinfo is None or exchange_time.utcoffset() is None:
+                raise RuntimeError("QUOTE_EXCHANGE_TIME_INVALID")
+        age_seconds = (captured_at - exchange_time).total_seconds()
+        if age_seconds < -5:
+            raise RuntimeError("QUOTE_EXCHANGE_TIME_FUTURE")
+        if age_seconds > 120:
+            raise RuntimeError("QUOTE_EXCHANGE_TIME_STALE")
+    return True
 
 def main():
     parser = argparse.ArgumentParser()
@@ -162,6 +204,7 @@ def main():
     quotes = raw_snapshot.get("quotes")
     if not isinstance(quotes, list) or not quotes:
         raise RuntimeError("RAW_SNAPSHOT_QUOTES_MISSING")
+    validate_quote_exchange_times(quotes, source_captured_at)
     digest = canonical_hash({k: v for k, v in payload.items() if k != "prediction_hash"})
     if not (digest == receipt["prediction_hash"] == payload["prediction_hash"]
             == receipt["bigquery_merge_parameters"]["hash"]):
