@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "incident_id": "CLOUD_PAPER_RANK_QUOTE_IDENTITY_BINDING_20261024",
+  "classification": "REPRODUCED_OFFLINE_FALSE_GREEN_NOT_OBSERVED_BROKER_INCIDENT",
+  "first_seen_utc": "2026-10-24T16:47:17Z",
+  "last_verified_utc": "2026-10-24T16:48:16Z",
+  "signal": "Internally hash-consistent PAPER prediction ranking could name a contract symbol/token absent from captured raw broker quote identities and still pass the Cloud PAPER receipt verifier.",
+  "root_cause": "Cloud runner validated ranking structure and raw quote identity/freshness independently but never required ranked quote identities to exist in the captured snapshot.",
+  "upstream_downstream": "Phase2 read-only quote capture -> raw snapshot SHA256 -> prediction ranking and canonical hash -> local receipt and linked evidence -> cloud runner PAPER_RECEIPT_VERIFIED status",
+  "impact": "P1 PAPER evidence false-green risk; not independently observed in broker/cloud runtime.",
+  "baseline": {
+    "parent_pr": 192,
+    "parent_sha": "af3c16e1908aab4ad4128c57ea929c104fc99d3f",
+    "test_first_sha": "caf0cf38c7577fca4b48aef5407b623135ba9dc2",
+    "failing_ci_run": 40113168391,
+    "failing_ci_job": 120928934845,
+    "failing_result": "8 failed, 515 passed, 3 skipped, 3 warnings, 200 subtests passed; exit 1"
+  },
+  "prevention_hypothesis": "Rejecting any ranked (tradingsymbol,symboltoken) absent from captured quote identities and any duplicate rank use of one quote prevents internally inconsistent rank-to-capture provenance from being marked PAPER_RECEIPT_VERIFIED.",
+  "patch": {
+    "branch": "fix/cloud-paper-rank-quote-binding-20261024",
+    "pr": 193,
+    "code_sha": "c1c50385d41c940242cec764bc740464fc011ccd",
+    "scope": "cloud_runner/main.py rank quote identity binding before receipt success publication",
+    "rollback": "Revert only this isolated branch's code and tests through normal reviewed PR; never bypass PAPER flags or weaken gates."
+  },
+  "tests": {
+    "file": "tests/test_cloud_paper_rank_quote_binding.py",
+    "cases": [
+      "valid unique rank identity",
+      "unseen trading symbol",
+      "unseen symbol token",
+      "same quote reused under different ranked strike",
+      "missing/malformed quote contract",
+      "full runner forged ranking with internally consistent hashes rejects verified status"
+    ],
+    "post_patch_ci_run": 40113195242,
+    "post_patch_ci_job": 120929014405,
+    "post_patch_result": "518 passed, 3 skipped, 3 warnings, 205 subtests passed; CI success; exact checked out head c1c50385d41c940242cec764bc740464fc011ccd",
+    "encoding_run": 40113199218,
+    "encoding_result": "Windows and Ubuntu success"
+  },
+  "status": "TESTED_CI_SUCCESS_WITH_3_MANDATORY_SKIPS_NOT_DEPLOYED",
+  "mandatory_skips": [
+    "live BigQuery credentials",
+    "external Colab schema contract",
+    "Windows-only PowerShell compatibility on Ubuntu"
+  ],
+  "limitations": [
+    "Quote identities and market timestamps are self-asserted within captured data; not independent broker authentication.",
+    "This guard binds symbol/token only, not expiry/strike, market price or order fills.",
+    "No genuine market-session replay, serving revision, independent broker order audit, cross-system reconciliation, or rollback deployment verified.",
+    "Saturday market closed; recurrence validation requires future genuine trading session."
+  ],
+  "next_checkpoint": "After any integration, verify exact deployed SHA, broker authenticated read-only fresh quote identity, independent order audit, forward-issued immutable forecast, matured outcome and next-session recurrence; keep production BLOCKED until mandatory skips and external gates pass.",
+  "reopen_if": [
+    "ranked symbol/token absent from raw capture accepted",
+    "same quote used for multiple rank rows accepted",
+    "exact-head CI skipped or branch diverges",
+    "deployed serving SHA differs",
+    "fresh broker quote contradicts predicted contract identity"
+  ],
+  "operation_mapping": {
+    "1660": "ACTIONED",
+    "1664": "TESTED",
+    "1670": "TESTED",
+    "1672": "TESTED",
+    "1675": "CI_PASS_WITH_DISCLOSED_SKIPS",
+    "1676": "CI_PASS_WITH_DISCLOSED_SKIPS",
+    "1677": "BLOCKED",
+    "1678": "BLOCKED",
+    "1679": "ACTIONED",
+    "1909": "ACTIONED"
+  }
+}
