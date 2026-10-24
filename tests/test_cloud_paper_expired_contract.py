@@ -75,5 +75,26 @@ class ExpiredContractGuardTests(unittest.TestCase):
         self.run_case(expiry, expired=False)
 
 
+    def test_ist_midnight_boundary_uses_exchange_local_date(self):
+        from cloud_runner import main as runner
+        # UTC remains on Oct 24 at both instants, but IST rolls to Oct 25.
+        payload = {"ranking": [{"expiry": "2026-10-24"}]}
+        before = datetime.fromisoformat("2026-10-24T18:29:59+00:00")
+        after = datetime.fromisoformat("2026-10-24T18:30:00+00:00")
+        self.assertTrue(runner.validate_rank_expiry_against_capture(payload, before))
+        with self.assertRaisesRegex(RuntimeError, "RANK_CONTRACT_EXPIRED"):
+            runner.validate_rank_expiry_against_capture(payload, after)
+
+    def test_timezone_equivalent_capture_instants_give_same_result(self):
+        from cloud_runner import main as runner
+        payload = {"ranking": [{"expiry": "2026-10-24"}]}
+        utc = datetime.fromisoformat("2026-10-24T18:30:00+00:00")
+        ist = utc.astimezone(IST)
+        for stamp in (utc, ist):
+            with self.subTest(stamp=stamp.isoformat()):
+                with self.assertRaisesRegex(RuntimeError, "RANK_CONTRACT_EXPIRED"):
+                    runner.validate_rank_expiry_against_capture(payload, stamp)
+
+
 if __name__ == "__main__":
     unittest.main()
