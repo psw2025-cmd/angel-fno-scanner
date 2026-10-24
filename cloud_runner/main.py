@@ -88,6 +88,24 @@ def validate_quote_exchange_times(quotes, captured_at, *, checked_at):
             raise RuntimeError("QUOTE_EXCHANGE_TIME_STALE")
     return True
 
+def validate_instrument_master_provenance(raw_snapshot, payload):
+    """Bind the captured master digest to the forecast's declared master.
+
+    This establishes internal agreement only, not external master authenticity.
+    """
+    provenance = payload.get("provenance") if isinstance(payload, dict) else None
+    captured_digest = (raw_snapshot.get("instrument_master_sha256")
+                       if isinstance(raw_snapshot, dict) else None)
+    predicted_digest = (provenance.get("instrument_master_sha256")
+                        if isinstance(provenance, dict) else None)
+    for digest in (captured_digest, predicted_digest):
+        if not isinstance(digest, str) or re.fullmatch(r"[0-9a-f]{64}", digest) is None:
+            raise RuntimeError("INSTRUMENT_MASTER_PROVENANCE_INVALID")
+    if captured_digest != predicted_digest:
+        raise RuntimeError("INSTRUMENT_MASTER_PROVENANCE_MISMATCH")
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
@@ -213,6 +231,7 @@ def main():
     if (not isinstance(provenance, dict)
             or provenance.get("source_kind") != expected_source_kind):
         raise RuntimeError("SOURCE_KIND_PROVENANCE_MISMATCH")
+    validate_instrument_master_provenance(raw_snapshot, payload)
     quotes = raw_snapshot.get("quotes")
     if not isinstance(quotes, list) or not quotes:
         raise RuntimeError("RAW_SNAPSHOT_QUOTES_MISSING")

@@ -25,7 +25,8 @@ CREDS = {
 
 def make_receipt(runtime, captured_at, *, source_captured_at=None, payload_source_at=None,
                  source_kind="ANGEL_SMARTAPI_READONLY_QUOTES_NOT_OFFICIAL_SETTLEMENT",
-                 payload_source_kind=None, quotes=None):
+                 payload_source_kind=None, quotes=None,
+                 raw_master_sha="a" * 64, payload_master_sha="a" * 64):
     # Synthetic fixture shaped like a broker capture; never authentic market evidence.
     if quotes is None:
         # This is a synthetic fixture, never a broker receipt. Keep it valid
@@ -46,7 +47,8 @@ def make_receipt(runtime, captured_at, *, source_captured_at=None, payload_sourc
                              "symbolToken": "999",
                              "exchFeedTime": feed_time}}]
     snapshot = {"captured_at": source_captured_at or captured_at,
-                "source_kind": source_kind, "quotes": quotes}
+                "source_kind": source_kind, "quotes": quotes,
+                "instrument_master_sha256": raw_master_sha}
     raw_path = runtime / "data" / "raw_snapshot.json"
     raw_path.parent.mkdir(parents=True, exist_ok=True)
     raw_bytes = (json.dumps(snapshot, sort_keys=True) + "\n").encode("utf-8")
@@ -55,7 +57,8 @@ def make_receipt(runtime, captured_at, *, source_captured_at=None, payload_sourc
     payload = {"created_at": captured_at, "source_timestamp": payload_source_at or captured_at,
                "source_hash": source_hash,
                "mode": "PAPER", "live_order_authority": 0, "ranking": [],
-               "provenance": {"source_kind": payload_source_kind or source_kind}}
+               "provenance": {"source_kind": payload_source_kind or source_kind,
+                              "instrument_master_sha256": payload_master_sha}}
     digest = canonical_hash(payload)
     payload["prediction_hash"] = digest
     receipt = {
@@ -398,6 +401,35 @@ class CurrentRunReceiptTests(unittest.TestCase):
                             return SimpleNamespace(returncode=0)
                         with self.assertRaisesRegex(RuntimeError, "LINKED_EVIDENCE_INVALID"):
                             self.run_once(runtime, proof, child)
+
+
+    def test_mismatched_instrument_master_digests_fail_full_runner(self):
+        # The raw bytes and prediction hash are independently internally valid.
+        # The master identity still must agree across them.
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            runtime, proof = root / "runtime", root / "proof"
+            runtime.mkdir()
+            def child(*args, **kwargs):
+                make_receipt(runtime, datetime.now(timezone.utc).isoformat(),
+                             raw_master_sha="a" * 64, payload_master_sha="b" * 64)
+                return SimpleNamespace(returncode=0)
+            with self.assertRaisesRegex(RuntimeError, "INSTRUMENT_MASTER_PROVENANCE_MISMATCH"):
+                self.run_once(runtime, proof, child)
+            self.assertNotEqual(json.loads((proof / "status.json").read_text())["status"],
+                                "PAPER_RECEIPT_VERIFIED")
+
+    def test_missing_instrument_master_digest_fails_full_runner(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            runtime, proof = root / "runtime", root / "proof"
+            runtime.mkdir()
+            def child(*args, **kwargs):
+                make_receipt(runtime, datetime.now(timezone.utc).isoformat(),
+                             raw_master_sha=None)
+                return SimpleNamespace(returncode=0)
+            with self.assertRaisesRegex(RuntimeError, "INSTRUMENT_MASTER_PROVENANCE_INVALID"):
+                self.run_once(runtime, proof, child)
 
 if __name__ == "__main__":
     unittest.main()
