@@ -1,5 +1,6 @@
 """Offline, no-network safety tests for the draft cloud PAPER runner."""
 import contextlib
+import fnmatch
 import io
 import json
 import os
@@ -116,9 +117,14 @@ class CloudPaperSafetyTests(unittest.TestCase):
         push_section = workflow.split("  push:", 1)[1].split("  pull_request:", 1)[0]
         match = re.search(r"branches:\s*\[([^\]]+)\]", push_section)
         self.assertIsNotNone(match)
-        push_branches = {name.strip() for name in match.group(1).split(",")}
-        self.assertTrue({"feat/cloud-paper-runner",
-                         "fix/cloud-paper-third-flag-20261023"}.issubset(push_branches))
+        push_patterns = {name.strip().strip("'\\\"") for name in match.group(1).split(",")}
+        self.assertIn("feat/cloud-paper-runner", push_patterns)
+        for branch in ("fix/cloud-paper-third-flag-20261023",
+                       "fix/cloud-paper-ci-branch-coverage-20261024",
+                       "fix/cloud-paper-future-safety-20270101"):
+            with self.subTest(branch=branch):
+                self.assertTrue(any(fnmatch.fnmatchcase(branch, pattern)
+                                    for pattern in push_patterns), branch)
 
     def test_evidence_never_asserts_unobserved_no_order_execution(self):
         source = (ROOT / "cloud_runner/main.py").read_text(encoding="utf-8")
