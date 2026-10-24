@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "incident_id": "CLOUD-PAPER-STARTUP-STALE-STATUS-20261024-01",
+  "classification": "REPRODUCED_OFFLINE_FALSE_GREEN_STATUS_PATH_NOT_OBSERVED_IN_CLOUD_RUNTIME",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "base_sha": "b6b11d1af6aa5edeb306473fe225fb079a346ebb",
+  "owned_branch": "fix/cloud-paper-startup-stale-status-20261024",
+  "signal": "A previous PAPER_RECEIPT_VERIFIED status.json survived an early --once startup guard failure, before the runner replaced status with RUNNING_NOT_VERIFIED.",
+  "root_cause": "cloud_runner/main.py called validate_environment and runtime checkout/.env guards before invalidating the previous status.",
+  "upstream_downstream": "Invalid/missing environment, wrong runtime branch or unreviewed .env could abort early while external status readers still observe previous success. CLI exception handler updates FAIL_CLOSED if invoked, but direct main() callers and abrupt termination before handler can leave stale success.",
+  "severity": "P1 stale evidence false green, reproduced only with offline mocked startup; not a cloud incident claim",
+  "prevention_hypothesis": "Write RUNNING_NOT_VERIFIED before any --once startup validation while keeping --preflight read-only.",
+  "baseline": {
+    "head_sha": "395b7486308fa2fa36d5accae91b97aa6f07c591",
+    "ci_run_id": 40062037291,
+    "job_id": 120777431845,
+    "conclusion": "failure",
+    "checkout": "exact event SHA matched (CI identity step success)",
+    "raw_pytest": "3 failed, 360 passed, 3 skipped, 57 subtests passed",
+    "negative_cases": [
+      "environment validation raises",
+      "runtime branch mismatch",
+      "unreviewed .env file"
+    ],
+    "note": "Synthetic old success status and mocked startup; no broker/cloud interaction"
+  },
+  "repair": {
+    "commit": "37a23820015d6e7a4c585038155d15aba6941f3e",
+    "path": "cloud_runner/main.py",
+    "scope": "Invalidate prior status immediately after --once parse, before validation/branch/.env checks. Do not mutate status for --preflight.",
+    "rollback": "Governed revert on isolated branch only, preserve failing test; no force push."
+  },
+  "regression": {
+    "path": "tests/test_cloud_paper_startup_status.py",
+    "cases": 3,
+    "mode": "offline unittest with temporary files, dummy flags and patched environment/branch checks"
+  },
+  "after_ci": "PENDING_FRESH_EXACT_HEAD",
+  "deployment": "NOT_PERFORMED",
+  "runtime_proof": "BLOCKED_NOT_DEPLOYED",
+  "independent_broker_order_audit": "NOT_PERFORMED",
+  "next_session_recurrence_check": "Re-run test against exact deployed SHA and independently inspect failed startup status transitions in cloud evidence. Do not equate status flag with broker audit.",
+  "reopen_if": [
+    "Any --once startup rejection retains a prior PAPER_RECEIPT_VERIFIED status",
+    "A failed cloud run is reported as current success",
+    "Status is trusted without matching run identity and source timestamps"
+  ],
+  "safety_flags": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  },
+  "operations_advanced": {
+    "1505": "TESTED",
+    "1510": "TESTED",
+    "1511": "ACTIONED",
+    "1512": "ACTIONED",
+    "1513": "TESTED",
+    "1515": "TESTED",
+    "1516": "PENDING_CI",
+    "1517": "BLOCKED",
+    "1518": "BLOCKED",
+    "1519": "ACTIONED",
+    "1864": "TESTED",
+    "1871": "ACTIONED",
+    "1909": "ACTIONED"
+  }
+}
