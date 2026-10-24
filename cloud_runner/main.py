@@ -334,7 +334,6 @@ def validate_entry_ledger_binding(payload, entry):
             "option_type": rank["option_type"],
             "tradingsymbol": rank["tradingsymbol"],
             "symboltoken": rank["symboltoken"],
-            "captured_at": rank["entry_captured_at"],
             "entry_bid": rank["entry_bid"],
             "entry_ask": rank["entry_ask"],
             "entry_price": rank["entry_price"],
@@ -350,6 +349,20 @@ def validate_entry_ledger_binding(payload, entry):
                          and observed == expected_value)
             if not valid:
                 raise RuntimeError("ENTRY_LEDGER_CONTRACT_MISMATCH")
+        # The writer uses source ISO text while a ranked entry may express
+        # the same instant with a different valid timezone offset.
+        try:
+            stored_capture = datetime.fromisoformat(recorded["captured_at"])
+            ranked_capture = datetime.fromisoformat(rank["entry_captured_at"])
+            if (stored_capture.tzinfo is None
+                    or stored_capture.utcoffset() is None
+                    or ranked_capture.tzinfo is None
+                    or ranked_capture.utcoffset() is None
+                    or stored_capture.astimezone(timezone.utc)
+                    != ranked_capture.astimezone(timezone.utc)):
+                raise ValueError("different capture instants")
+        except (KeyError, TypeError, ValueError) as exc:
+            raise RuntimeError("ENTRY_LEDGER_CONTRACT_MISMATCH") from exc
     return True
 
 
