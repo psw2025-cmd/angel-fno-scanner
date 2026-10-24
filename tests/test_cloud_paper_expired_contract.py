@@ -47,7 +47,15 @@ class ExpiredContractGuardTests(unittest.TestCase):
             }]
 
             def child(*args, **kwargs):
-                fixtures.make_receipt(runtime, stamp, quotes=quotes, ranking=ranking)
+                # Generate source and quote timestamps *after* runner startup;
+                # otherwise the current-run guard masks the expiry regression.
+                child_now = datetime.now(timezone.utc)
+                quotes[0]["quote"]["exchFeedTime"] = child_now.astimezone(IST).strftime(
+                    "%d-%b-%Y %H:%M:%S"
+                )
+                fixtures.make_receipt(
+                    runtime, child_now.isoformat(), quotes=quotes, ranking=ranking
+                )
                 return SimpleNamespace(returncode=0)
 
             if expired:
