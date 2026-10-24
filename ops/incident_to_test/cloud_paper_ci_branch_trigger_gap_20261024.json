@@ -1,0 +1,49 @@
+{
+  "incident_id": "cloud_paper_ci_branch_trigger_gap_20261024",
+  "class": "CI_WORKFLOW_REGRESSION",
+  "registered_operations": [
+    "1540-1559",
+    "1520-1539",
+    "1900-1919"
+  ],
+  "observation_date_utc": "2026-10-24",
+  "signal": "Cloud PAPER Safety CI push trigger explicitly listed 12 historical branch names; newly created fix/cloud-paper-ci-branch-coverage-20261024 did not match any pattern.",
+  "root_cause": "Workflow push branch allowlist was maintained by appending exact branch names, coupling every new isolated PAPER fix to a manual YAML edit.",
+  "impact": "A future isolated PAPER fix branch could lack direct-head Cloud PAPER Safety CI while stacked PR checks target neither main nor feat/cloud-paper-runner. Absence of CI is not PASS.",
+  "before": {
+    "source_sha": "dd0af963477a8941d6eb46ddc92b9c63551b4ba0",
+    "branch_patterns": 12,
+    "test_first_commit": "54ee90455e499e8a16b7042e3e21716d0039fa30",
+    "new_branch_matched": false
+  },
+  "patch": {
+    "workflow": ".github/workflows/cloud-paper-safety-ci.yml",
+    "change": "Use bounded quoted fix/cloud-paper-* glob; retain feat/cloud-paper-runner and pull_request/dispatch.",
+    "isolated_branch": "fix/cloud-paper-ci-branch-coverage-20261024",
+    "rollback": "Governed revert of branch-trigger change if unintended scope or missed routing is observed; no force push."
+  },
+  "regression_tests": [
+    "tests/test_cloud_paper_workflow_branch_trigger.py::CloudPaperBranchTriggerTests",
+    "tests/test_cloud_paper_three_flags.py::CloudPaperSafetyTests::test_safety_ci_persists_after_peer_integration"
+  ],
+  "failed_attempt": {
+    "commit": "a71afe627a336dbfb5f3a216ec98b924fd9bacd3",
+    "workflow_run_id": 40080943523,
+    "conclusion": "failure",
+    "direct_cause": "Existing regression asserted historical literal branch names instead of matching the new glob; no test bypass was used.",
+    "evidence_url": "https://github.com/psw2025-cmd/angel-fno-scanner/actions/runs/40080943523"
+  },
+  "subsequent_patch_commit": "0d9c91fa8da537194d0944863b73c92459eb33a5",
+  "acceptance": "Fresh exact-head push-triggered CI with complete mandatory test steps and explicit skips; negative unrelated-branch exclusion; no reduction of PAPER safety flags.",
+  "exact_head_ci": "PENDING_NEW_HEAD",
+  "deployed_revision": "NOT_DEPLOYED",
+  "genuine_paper_runtime": "NOT_VERIFIED",
+  "independent_proof": "NOT_VERIFIED",
+  "next_session_recurrence_check": "On next owned fix/cloud-paper-* branch, confirm push-triggered workflow run head_sha matches new commit and all mandatory steps execute. Reopen if absent or skipped.",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  },
+  "status": "ACTIONED_NOT_RUNTIME_PROVEN"
+}
