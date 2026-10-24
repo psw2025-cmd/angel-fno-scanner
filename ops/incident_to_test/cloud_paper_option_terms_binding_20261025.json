@@ -1,0 +1,87 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "CLOUD_PAPER_OPTION_TERMS_BINDING_20261025",
+  "classification": "reproduced offline verifier false-green; not observed external broker or cloud runtime incident",
+  "observed_at_utc": "2026-10-24T18:45:45Z",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "branch": "fix/cloud-paper-contract-terms-binding-20261025",
+  "draft_pr": 195,
+  "base_sha": "28bbb164cbe019b6b16a0f6c1317f304647fec64",
+  "test_first_sha": "fc2e55bd91232cc2ba416f31a83e08cd40aaa92c",
+  "implementation_sha": "5387f158fb054307d9ae05f371707350bd1b8089",
+  "fixture_sha": "22a6d39cf7ccb5b9a33e4d970a2bb9a65f40303c",
+  "signal": "Full-run hash-consistent PAPER ranking with underlying BANKNIFTY but captured option contract NIFTY produced PAPER_RECEIPT_VERIFIED.",
+  "direct_root_cause": "Existing rank-to-quote binding compared tradingsymbol/symboltoken and bid/ask only; never cross-checked underlying, expiry, strike or CE/PE against captured contract metadata.",
+  "systemic_cause": "Independent hash/identity/price validators were treated as full contract provenance without semantic term equality.",
+  "impact": "Potential wrong-option PAPER prediction false-green; not an observed broker execution, loss or fill.",
+  "prevention_hypothesis": "Fail closed when any ranked option underlying, expiry, strike or side differs from the exact captured contract; missing metadata must fail.",
+  "patch": "cloud_runner/main.py validate_ranking_contract_terms called after quote identity binding and before price binding; tests/test_cloud_paper_receipt_freshness.py synthetic fixture supplies complete terms.",
+  "tests": [
+    "tests/test_cloud_paper_contract_terms_binding.py::ContractTermsBindingTests::test_matching_terms_are_accepted",
+    "tests/test_cloud_paper_contract_terms_binding.py::ContractTermsBindingTests::test_wrong_underlying_expiry_strike_or_side_rejected",
+    "tests/test_cloud_paper_contract_terms_binding.py::ContractTermsBindingTests::test_missing_contract_metadata_fails_closed",
+    "tests/test_cloud_paper_contract_terms_binding.py::ContractTermsBindingTests::test_full_runner_rejects_hash_consistent_wrong_underlying"
+  ],
+  "before": {
+    "sha": "fc2e55bd91232cc2ba416f31a83e08cd40aaa92c",
+    "run_id": 40122129422,
+    "job_id": 120955784812,
+    "conclusion": "failure",
+    "pytest": "10 failed, 572 passed, 3 skipped, 3 warnings, 256 subtests passed",
+    "critical_reproduction": "Full runner emitted PAPER_RECEIPT_VERIFIED for hash-consistent wrong underlying; expected rejection was not raised."
+  },
+  "after_code_head": {
+    "sha": "22a6d39cf7ccb5b9a33e4d970a2bb9a65f40303c",
+    "run_id": 40122169503,
+    "job_id": 120955897377,
+    "conclusion": "success",
+    "pytest": "574 passed, 3 skipped, 3 warnings, 264 subtests passed",
+    "chaos": "6 PASS",
+    "checked_out_sha_matches": true
+  },
+  "mandatory_skips": [
+    "BigQuery credentials unavailable",
+    "External Colab schema contract absent on isolated runner",
+    "Windows PowerShell compatibility pytest skipped on Ubuntu"
+  ],
+  "independent_market_session": "NOT_PROVEN",
+  "deployment": "NOT_DEPLOYED",
+  "serving_sha": "NOT_PROVEN",
+  "broker_order_audit": "NOT_PERFORMED",
+  "cross_system_reconciliation": "NOT_PROVEN",
+  "rollback": "Reviewed revert of this isolated PR only if verified broker manifest schema conflicts; preserve negative tests/evidence; never weaken PAPER safety flags.",
+  "reopen_if": "Wrong underlying/expiry/strike/CE-PE or missing contract terms can again produce PAPER_RECEIPT_VERIFIED; exact-head CI regresses; deployed SHA/data plane differs.",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  },
+  "operation_status": {
+    "1660": "ACTIONED",
+    "1661": "ACTIONED",
+    "1662": "ACTIONED",
+    "1663": "ACTIONED",
+    "1664": "TESTED",
+    "1665": "ACTIONED",
+    "1666": "ACTIONED",
+    "1667": "ACTIONED",
+    "1668": "ACTIONED",
+    "1669": "TESTED",
+    "1670": "ACTIONED",
+    "1671": "ACTIONED",
+    "1672": "TESTED",
+    "1673": "NOT_APPLICABLE: deterministic pure validator; no network/retry or transient state in this path",
+    "1674": "TESTED: 574 passed, 3 mandatory skips, 264 subtests, chaos 6 pass",
+    "1675": "TESTED: draft PR #195, exact code-head SHA verified; final record-head CI pending",
+    "1676": "BLOCKED: no deployment; serving revision unverified",
+    "1677": "BLOCKED: no genuine broker/session recurrence or independent audit",
+    "1678": "ACTIONED",
+    "1679": "OPEN: canonical Issue #3 packet pending"
+  },
+  "related_operations": {
+    "1724": "TESTED",
+    "1732": "TESTED",
+    "1909": "ACTIONED"
+  },
+  "limits": "Offline synthetic tests and exact code-head CI with three mandatory skips do not establish broker authenticity, cloud deployment, matured outcomes, full production readiness or permanent prevention."
+}
