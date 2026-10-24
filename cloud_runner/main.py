@@ -261,7 +261,21 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except Exception as exc:
-        PROOF.mkdir(parents=True, exist_ok=True)
-        (PROOF / "status.json").write_text(json.dumps({"status": "FAIL_CLOSED", "error_type": type(exc).__name__, "missing_snapshot_variable_names": [name for name in REQUIRED[:4] if not os.getenv(name)], "paper_mode": os.getenv("PAPER_MODE") == "1", "live_order_authority": os.getenv("LIVE_ORDER_AUTHORITY") == "0", "real_broker_orders": os.getenv("REAL_BROKER_ORDERS") == "0"}, sort_keys=True) + "\n", encoding="utf-8")
-        print("CLOUD_PAPER_RUNNER_FAIL_CLOSED type=" + type(exc).__name__, file=sys.stderr)
+        # A read-only --preflight must never overwrite a previous PAPER run's
+        # evidence, even when its environment validation fails. Only a valid
+        # --once invocation owns the run-status lifecycle.
+        if sys.argv[1:] == ["--once"]:
+            PROOF.mkdir(parents=True, exist_ok=True)
+            (PROOF / "status.json").write_text(json.dumps({
+                "status": "FAIL_CLOSED",
+                "error_type": type(exc).__name__,
+                "missing_snapshot_variable_names": [
+                    name for name in REQUIRED[:4] if not os.getenv(name)
+                ],
+                "paper_mode": os.getenv("PAPER_MODE") == "1",
+                "live_order_authority": os.getenv("LIVE_ORDER_AUTHORITY") == "0",
+                "real_broker_orders": os.getenv("REAL_BROKER_ORDERS") == "0",
+            }, sort_keys=True) + "\n", encoding="utf-8")
+        print("CLOUD_PAPER_RUNNER_FAIL_CLOSED type=" + type(exc).__name__,
+              file=sys.stderr)
         sys.exit(1)
