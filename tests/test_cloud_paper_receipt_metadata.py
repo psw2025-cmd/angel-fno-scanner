@@ -26,6 +26,10 @@ def valid_metadata():
 
 
 class PaperReceiptClaimTests(unittest.TestCase):
+    def test_destination_contract_tracks_reviewed_phase2_writer(self):
+        from run_phase2_local import TABLE
+        self.assertEqual(TABLE, EXPECTED_TABLE)
+
     def test_valid_local_only_metadata(self):
         receipt = {"status": "LOCAL_ARTIFACT_ONLY_NOT_INSERTED", **valid_metadata()}
         self.assertTrue(runner.validate_paper_receipt_metadata(receipt))
