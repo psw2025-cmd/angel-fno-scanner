@@ -165,6 +165,42 @@ def validate_ranking_quote_binding(payload, quotes):
     return True
 
 
+def validate_ranking_quote_prices(payload, quotes):
+    """Match ranked PAPER entry prices to the exact captured best bid/ask.
+
+    This proves internal depth/entry agreement, not broker quote authenticity,
+    executable liquidity, or a fill. Never infer a real execution from this.
+    """
+    quote_by_identity = {
+        (row["contract"]["tradingsymbol"], str(row["contract"]["symboltoken"])): row["quote"]
+        for row in quotes
+    }
+    for rank in payload["ranking"]:
+        identity = (rank["tradingsymbol"], rank["symboltoken"])
+        quote = quote_by_identity.get(identity)
+        if not isinstance(quote, dict):
+            raise RuntimeError("RANK_QUOTE_IDENTITY_MISMATCH")
+        depth = quote.get("depth")
+        if not isinstance(depth, dict):
+            raise RuntimeError("RANK_QUOTE_DEPTH_INVALID")
+        buy, sell = depth.get("buy"), depth.get("sell")
+        if not isinstance(buy, list) or not buy or not isinstance(sell, list) or not sell:
+            raise RuntimeError("RANK_QUOTE_DEPTH_INVALID")
+        try:
+            best_bid_raw, best_ask_raw = buy[0]["price"], sell[0]["price"]
+            if type(best_bid_raw) is bool or type(best_ask_raw) is bool:
+                raise ValueError("Boolean price")
+            best_bid, best_ask = float(best_bid_raw), float(best_ask_raw)
+        except (TypeError, KeyError, ValueError, OverflowError):
+            raise RuntimeError("RANK_QUOTE_DEPTH_INVALID") from None
+        if (not math.isfinite(best_bid) or not math.isfinite(best_ask)
+                or best_bid <= 0 or best_ask < best_bid):
+            raise RuntimeError("RANK_QUOTE_DEPTH_INVALID")
+        if rank["entry_bid"] != best_bid or rank["entry_ask"] != best_ask:
+            raise RuntimeError("RANK_QUOTE_PRICE_MISMATCH")
+    return True
+
+
 def validate_instrument_master_provenance(raw_snapshot, payload):
     """Bind the captured master digest to the forecast's declared master.
 
@@ -335,6 +371,7 @@ def main():
         raise RuntimeError("RAW_SNAPSHOT_QUOTES_MISSING")
     validate_quote_exchange_times(quotes, source_captured_at, checked_at=datetime.now(timezone.utc))
     validate_ranking_quote_binding(payload, quotes)
+    validate_ranking_quote_prices(payload, quotes)
     digest = canonical_hash({k: v for k, v in payload.items() if k != "prediction_hash"})
     if not (digest == receipt["prediction_hash"] == payload["prediction_hash"]
             == receipt["bigquery_merge_parameters"]["hash"]):
