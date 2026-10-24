@@ -1,0 +1,83 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "CLOUD_PAPER_FORECAST_SOURCE_CAUSAL_ORDER_20261025",
+  "classification": "Reproduced offline hash-consistent verifier false-green; not a proven external broker/cloud incident",
+  "observed_at_utc": "2026-10-24T19:31:48Z",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "branch": "fix/cloud-paper-issuance-source-order-20261025",
+  "draft_pr": 196,
+  "base_sha": "94a0212e9231ca8bc3bf8e34a9958d9b7795e1c7",
+  "test_first_sha": "7e260e21d5f8f102d045a0d808e2a78e160214fd",
+  "implementation_sha": "ab9366a5c3cca92cab117eea00bc2e279319ad37",
+  "boundary_test_sha": "636913315b7db7499507865d0e9d535cd7ba91b3",
+  "signal": "Full-run synthetic receipt with valid hashes and current timestamps was PAPER_RECEIPT_VERIFIED despite created_at preceding raw captured_at by two seconds.",
+  "direct_root_cause": "Cloud runner independently checked issuance and source freshness but omitted their causal ordering.",
+  "systemic_cause": "Independent freshness checks treated as sufficient proof of temporal integrity; five-second future tolerance masked a reversed source-to-forecast order.",
+  "impact": "False internal PAPER provenance certification and potential lookahead/point-in-time misstatement; no observed real order, market fill or loss.",
+  "prevention_hypothesis": "Reject when issued_at UTC instant is strictly before source_captured_at UTC instant; permit equal instants because reviewed Phase 2 writer uses snapshot timestamp as created_at.",
+  "patch": "cloud_runner/main.py: fail-closed PREDICTION_PRECEDES_SOURCE_CAPTURE immediately after current-run source timestamp validation.",
+  "tests": [
+    "tests/test_cloud_paper_issuance_source_order.py::IssuanceSourceOrderTests::test_hash_consistent_forecast_issued_before_snapshot_is_rejected",
+    "tests/test_cloud_paper_issuance_source_order.py::IssuanceSourceOrderTests::test_source_capture_before_issuance_is_accepted",
+    "tests/test_cloud_paper_issuance_source_order.py::IssuanceSourceOrderTests::test_same_instant_with_different_timezone_offsets_is_accepted"
+  ],
+  "before": {
+    "sha": "7e260e21d5f8f102d045a0d808e2a78e160214fd",
+    "run_id": 40125660862,
+    "job_id": 120966399862,
+    "conclusion": "failure",
+    "pytest": "1 failed, 599 passed, 3 skipped, 3 warnings, 285 passing subtests",
+    "critical_reproduction": "PAPER_RECEIPT_VERIFIED printed; expected RuntimeError not raised."
+  },
+  "after": {
+    "sha": "636913315b7db7499507865d0e9d535cd7ba91b3",
+    "run_id": 40125747065,
+    "conclusion": "PENDING_AT_RECORD_CREATION"
+  },
+  "mandatory_skips": [
+    "BigQuery live credential integration",
+    "External Colab contract file unavailable",
+    "Windows-only PowerShell pytest skipped on Ubuntu"
+  ],
+  "independent_market_session": "NOT_PROVEN",
+  "deployment": "NOT_DEPLOYED",
+  "serving_sha": "NOT_PROVEN",
+  "broker_order_audit": "NOT_PERFORMED",
+  "cross_system_reconciliation": "NOT_PROVEN",
+  "rollback": "Revert this isolated PR only after proving a genuine broker schema/time ordering incompatibility; preserve negative test, failing CI and incident record.",
+  "reopen_if": "Any forecast created before its claimed captured source again yields PAPER_RECEIPT_VERIFIED, CI test fails, or deployed revision lacks this guard.",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  },
+  "operation_status": {
+    "1720": "ACTIONED",
+    "1721": "ACTIONED",
+    "1722": "ACTIONED",
+    "1723": "ACTIONED",
+    "1724": "TESTED",
+    "1725": "ACTIONED",
+    "1726": "ACTIONED",
+    "1727": "ACTIONED",
+    "1728": "ACTIONED",
+    "1729": "TESTED",
+    "1730": "ACTIONED",
+    "1731": "ACTIONED",
+    "1732": "TESTED",
+    "1733": "NOT_APPLICABLE: no network retries in deterministic timestamp comparison",
+    "1734": "OPEN: full suite after correction pending",
+    "1735": "OPEN: final exact-head CI pending",
+    "1736": "BLOCKED: no cloud deployment",
+    "1737": "BLOCKED: no independent market-session proof",
+    "1738": "ACTIONED",
+    "1739": "OPEN: canonical Issue #3 update pending"
+  },
+  "related_operations": {
+    "1500": "ACTIONED",
+    "1520": "ACTIONED",
+    "1700": "ACTIONED",
+    "1909": "ACTIONED"
+  },
+  "limits": "Offline synthetic verification is not broker authenticity, forward immutable market forecast, actual cloud runtime or production certification."
+}
