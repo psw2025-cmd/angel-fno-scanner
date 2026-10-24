@@ -1,0 +1,108 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "CLOUD_PAPER_EXPIRED_OPTION_CONTRACT_20261025",
+  "classification": "Confirmed offline synthetic verifier false-green; NOT a proven broker/cloud incident",
+  "observed_at_utc": "2026-10-24T22:41:06Z",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "branch": "fix/cloud-paper-expired-contract-20261025",
+  "draft_pr": 199,
+  "base_sha": "b0ea8a4c824d91f065e93ee40eb2986009fa9c9b",
+  "first_test_only_sha": "99dbbe7518fb09fe460404f2ed5d58e7326f55c3",
+  "first_test_attempt": {
+    "run_id": 40139609783,
+    "conclusion": "FAILURE",
+    "observed": "3 failed, 588 passed, 3 skipped; prior-date negative masked by RECEIPT_NOT_FROM_CURRENT_RUN due fixture timestamp created before runner start",
+    "valid_root_cause_reproduction": false
+  },
+  "corrected_red_branch": "fix/cloud-paper-expiry-red-fixture-20261025",
+  "corrected_red_sha": "06ca93499053a581279b25a7fa18feacc6e4dc65",
+  "corrected_red_ci": {
+    "run_id": 40139730307,
+    "job_id": 121008723976,
+    "conclusion": "failure",
+    "exact_head_sha": "06ca93499053a581279b25a7fa18feacc6e4dc65",
+    "pytest": "1 failed, 590 passed, 3 skipped, 3 warnings, 280 subtests passed",
+    "exit_code": 1,
+    "observed": "Expired prior-IST-date option accepted; AssertionError: RuntimeError not raised"
+  },
+  "patch": {
+    "implementation_sha": "dc6876f60444276d6fe637f97e8733a9998dd7f0",
+    "fixture_boundary_sha": "56ec448cd6f412f686202a86e9266a247ac48ca8",
+    "corrected_test_sha": "32e0ef6943dd31a8c9169e6254976bd9d82fa8f3",
+    "files": [
+      "cloud_runner/main.py",
+      "tests/test_cloud_paper_expired_contract.py"
+    ],
+    "description": "Reject expiry dates before the captured snapshot's Asia/Kolkata calendar date; preserve same-date and future-date contracts"
+  },
+  "signal": "Verifier parses rank expiry but lacks comparison to captured IST trading date; expired self-consistent quote/rank could pass",
+  "root_cause": "validate_prediction_ranking validates expiry syntax but no expiry-vs-source date relationship; validator previously lacked post-capture expiry gate",
+  "upstream": "Self-reported option manifest can include stale or expired contract terms; quote contract agreement alone is insufficient",
+  "downstream": "PAPER_RECEIPT_VERIFIED may certify an already-expired ranked option, distorting forecast/ledger quality",
+  "hypothesis": "A ranked expiry earlier than source capture's IST date must be rejected regardless of hash and quote identity; same-day expiry is not rejected solely by this guard",
+  "tests": [
+    "test_prior_ist_date_must_fail_even_when_quote_and_rank_agree",
+    "test_capture_date_expiry_is_not_prematurely_rejected",
+    "test_future_expiry_remains_valid",
+    "test_ist_midnight_boundary_uses_exchange_local_date",
+    "test_timezone_equivalent_capture_instants_give_same_result"
+  ],
+  "ci_after_patch": {
+    "run_id": 40139732448,
+    "job_id": 121008731016,
+    "conclusion": "success",
+    "exact_head_sha": "32e0ef6943dd31a8c9169e6254976bd9d82fa8f3",
+    "pytest": "593 passed, 3 skipped, 3 warnings, 282 subtests passed",
+    "exit_code": 0,
+    "limitation": "Three mandatory integration/OS skips remain"
+  },
+  "mandatory_skips": [
+    "BigQuery credentials",
+    "external Colab contract",
+    "Windows PowerShell test on Ubuntu"
+  ],
+  "deployment": "NOT_PERFORMED",
+  "serving_sha": "NOT_VERIFIED",
+  "genuine_broker_feed": "NOT_VERIFIED",
+  "independent_broker_order_audit": "NOT_PERFORMED",
+  "immutable_forward_issuance": "NOT_VERIFIED",
+  "matured_outcome": "NOT_VERIFIED",
+  "cross_system_reconciliation": "NOT_VERIFIED",
+  "rollback": "Revert only isolated expiry guard and associated tests on owned branch after governed review; preserve failed-test evidence and incident record",
+  "recurrence_reopen": "Any prior-IST-date expiry accepted with self-consistent snapshot/rank; any exact-head CI failure; branch integration alters the guard",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0,
+    "independent_zero_orders": "NOT_VERIFIED"
+  },
+  "operations": {
+    "1420": "ACTIONED",
+    "1500": "ACTIONED",
+    "1520": "ACTIONED",
+    "1660": "ACTIONED",
+    "1664": "ACTIONED",
+    "1669": "ACTIONED",
+    "1672": "ACTIONED",
+    "1673": "ACTIONED",
+    "1675": "TESTED",
+    "1676": "BLOCKED",
+    "1677": "BLOCKED",
+    "1678": "ACTIONED",
+    "1679": "OPEN",
+    "1700": "ACTIONED",
+    "1704": "ACTIONED",
+    "1709": "ACTIONED",
+    "1712": "ACTIONED",
+    "1715": "TESTED",
+    "1716": "BLOCKED",
+    "1717": "BLOCKED",
+    "1718": "ACTIONED",
+    "1719": "OPEN",
+    "1909": "ACTIONED"
+  },
+  "scope": "Operations 1–1919 additive; this record does not certify deployment, market results, zero orders or permanent prevention",
+  "final_evidence_record_ci": {
+    "status": "PENDING_NEW_EXACT_HEAD"
+  }
+}
