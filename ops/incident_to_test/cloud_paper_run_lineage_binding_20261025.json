@@ -1,0 +1,103 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "CLOUD_PAPER_RUN_LINEAGE_BINDING_20261025",
+  "classification": "Reproduced offline hash-consistent verifier false-green; NOT an observed broker/cloud incident",
+  "observed_at_utc": "2026-10-24T21:26:52Z",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "branch": "fix/cloud-paper-run-lineage-binding-20261025",
+  "draft_pr": 197,
+  "base_sha": "682d1a2d4cc70e6ad9d81a89c368012f57c14fe3",
+  "fixture_sha": "84b95b2a6ed7b83e922c920cde49c91727bc37d7",
+  "test_first_sha": "4cab35681b53ad31fb01f03fc7157e4562133d22",
+  "implementation_sha": "f2b44d02e7cab85b1fac300231251b4ae15ad592",
+  "signal": "Synthetic full-run receipt with recomputed prediction_hash, linked evidence hashes and source_hash was PAPER_RECEIPT_VERIFIED despite absent/forged run_id, missing features_hash or invalid model_version.",
+  "direct_root_cause": "cloud_runner/main.py validated prediction_hash and source_hash but did not validate run_id, features_hash or model_version lineage contract.",
+  "systemic_cause": "Hash agreement across self-reported artifacts was treated as sufficient lineage proof; reviewed Phase 2 writer's deterministic run identity was not enforced downstream.",
+  "impact": "False internal provenance and potentially misleading per-run attribution; no observed broker order, fill, financial loss or cloud incident.",
+  "prevention_hypothesis": "Reject absent/malformed model_version, features_hash and run_id; compute expected run_id using reviewed Phase 2 canonical hash of source_hash and model_version and require exact match.",
+  "patch": "cloud_runner/main.py validate_prediction_lineage() called after source_hash check; shared synthetic fixture now includes structurally correct run lineage.",
+  "tests": [
+    "tests/test_cloud_paper_run_lineage.py::PaperRunLineageTests::test_matching_run_lineage_remains_accepted",
+    "tests/test_cloud_paper_run_lineage.py::PaperRunLineageTests::test_missing_run_id_fails_even_with_rehashed_receipt",
+    "tests/test_cloud_paper_run_lineage.py::PaperRunLineageTests::test_unrelated_run_id_fails_even_with_rehashed_receipt",
+    "tests/test_cloud_paper_run_lineage.py::PaperRunLineageTests::test_missing_or_malformed_features_digest_fails",
+    "tests/test_cloud_paper_run_lineage.py::PaperRunLineageTests::test_missing_or_malformed_model_version_fails"
+  ],
+  "before": {
+    "sha": "4cab35681b53ad31fb01f03fc7157e4562133d22",
+    "run_id": 40134206456,
+    "job_id": 120992142253,
+    "conclusion": "failure",
+    "pytest": "9 failed, 580 passed, 3 skipped, 3 warnings, 264 subtests passed",
+    "evidence": "Expected RuntimeError not raised; PAPER_RECEIPT_VERIFIED printed for malformed lineage"
+  },
+  "after": {
+    "sha": "f2b44d02e7cab85b1fac300231251b4ae15ad592",
+    "run_id": 40134301255,
+    "job_id": 120992432071,
+    "conclusion": "success",
+    "pytest": "582 passed, 3 skipped, 3 warnings, 271 subtests passed",
+    "exact_head_match": true,
+    "encoding_run_id": 40134304527,
+    "encoding_conclusion": "success"
+  },
+  "mandatory_skips": [
+    "BigQuery credentials integration",
+    "External Colab contract file unavailable",
+    "Windows PowerShell compatibility test skipped on Ubuntu"
+  ],
+  "deployment": "NOT_DEPLOYED",
+  "serving_sha": "NOT_PROVEN",
+  "genuine_broker_feed": "NOT_PROVEN",
+  "independent_market_session": "NOT_PROVEN",
+  "broker_order_audit": "NOT_PERFORMED",
+  "cross_system_reconciliation": "NOT_PROVEN",
+  "causal_chain": {
+    "signal": "9 red negative-test cases",
+    "root_cause": "Missing deterministic run lineage verifier",
+    "patch": "validate_prediction_lineage",
+    "regression_test": "tests/test_cloud_paper_run_lineage.py",
+    "exact_sha_ci": "f2b44d02e7cab85b1fac300231251b4ae15ad592 / 40134301255 success with 3 skips",
+    "deployed_revision": "BLOCKED",
+    "genuine_paper_runtime": "BLOCKED",
+    "independent_proof": "BLOCKED",
+    "next_session_recurrence_check": "Rerun exact-head negatives after merge and independently compare deployed run_id/source_hash/model_version on real read-only capture"
+  },
+  "rollback": "Revert only this isolated branch after demonstrating incompatibility with reviewed Phase 2 writer; preserve red CI and tests; do not alter peer-owned branches.",
+  "reopen_if": "Any hash-consistent malformed run_id/features_hash/model_version again yields PAPER_RECEIPT_VERIFIED, tests regress, or serving revision lacks guard.",
+  "operation_status": {
+    "1720": "ACTIONED",
+    "1721": "ACTIONED",
+    "1722": "ACTIONED",
+    "1723": "ACTIONED",
+    "1724": "TESTED",
+    "1725": "ACTIONED",
+    "1726": "ACTIONED",
+    "1727": "ACTIONED",
+    "1728": "ACTIONED",
+    "1729": "TESTED",
+    "1730": "ACTIONED",
+    "1731": "ACTIONED",
+    "1732": "TESTED",
+    "1733": "NOT_APPLICABLE: deterministic local comparison has no transient network or retries",
+    "1734": "TESTED: full suite 582 pass, 3 skipped",
+    "1735": "TESTED: exact-head CI success with 3 disclosed mandatory skips; not full non-skipped certification",
+    "1736": "BLOCKED: unmerged, undeployed",
+    "1737": "BLOCKED: independent market session unavailable",
+    "1738": "ACTIONED",
+    "1739": "OPEN: Issue #3 update pending"
+  },
+  "related_operations": {
+    "1500": "ACTIONED",
+    "1520": "ACTIONED",
+    "1660": "ACTIONED",
+    "1680": "ACTIONED",
+    "1909": "ACTIONED"
+  },
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  },
+  "limits": "Run ID and feature hash checks establish structural/internal agreement only; do not prove the model actually computed the features, genuine broker source, immutable issuance, independent outcomes, real-order audit or production certification."
+}

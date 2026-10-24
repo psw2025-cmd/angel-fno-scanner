@@ -74,6 +74,14 @@ def make_receipt(runtime, captured_at, *, source_captured_at=None, payload_sourc
                "mode": "PAPER", "live_order_authority": 0, "ranking": ranking,
                "provenance": {"source_kind": payload_source_kind or source_kind,
                               "instrument_master_sha256": payload_master_sha}}
+    # Synthetic lineage matches the reviewed Phase 2 writer contract.
+    # These hashes are fixture-only, not authenticated broker/model evidence.
+    payload["model_version"] = "V1_HEURISTIC_SYNTHETIC"
+    payload["features_hash"] = "c" * 64
+    payload["run_id"] = canonical_hash({
+        "raw_snapshot_sha256": source_hash,
+        "model_version": payload["model_version"],
+    })
     digest = canonical_hash(payload)
     payload["prediction_hash"] = digest
     receipt = {
