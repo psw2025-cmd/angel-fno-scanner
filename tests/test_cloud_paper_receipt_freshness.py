@@ -26,7 +26,8 @@ CREDS = {
 def make_receipt(runtime, captured_at, *, source_captured_at=None, payload_source_at=None,
                  source_kind="ANGEL_SMARTAPI_READONLY_QUOTES_NOT_OFFICIAL_SETTLEMENT",
                  payload_source_kind=None, quotes=None,
-                 raw_master_sha="a" * 64, payload_master_sha="a" * 64):
+                 raw_master_sha="a" * 64, payload_master_sha="a" * 64,
+                 ranking=None):
     # Synthetic fixture shaped like a broker capture; never authentic market evidence.
     if quotes is None:
         # This is a synthetic fixture, never a broker receipt. Keep it valid
@@ -54,9 +55,18 @@ def make_receipt(runtime, captured_at, *, source_captured_at=None, payload_sourc
     raw_bytes = (json.dumps(snapshot, sort_keys=True) + "\n").encode("utf-8")
     raw_path.write_bytes(raw_bytes)
     source_hash = hashlib.sha256(raw_bytes).hexdigest()
+    if ranking is None:
+        # Synthetic quote-backed rank; never evidence of a genuine broker fill.
+        ranking = [{
+            "rank": 1, "symbol": "NIFTY", "expiry": "2026-10-29",
+            "strike": 24000.0, "option_type": "CE",
+            "tradingsymbol": "OFFLINE_TEST_ONLY", "symboltoken": "999",
+            "entry_bid": 100.0, "entry_ask": 101.0, "entry_price": 101.0,
+            "entry_price_method": "SNAPSHOT_BEST_ASK_NOT_FILLED",
+        }]
     payload = {"created_at": captured_at, "source_timestamp": payload_source_at or captured_at,
                "source_hash": source_hash,
-               "mode": "PAPER", "live_order_authority": 0, "ranking": [],
+               "mode": "PAPER", "live_order_authority": 0, "ranking": ranking,
                "provenance": {"source_kind": payload_source_kind or source_kind,
                               "instrument_master_sha256": payload_master_sha}}
     digest = canonical_hash(payload)
