@@ -46,7 +46,9 @@ def make_receipt(runtime, captured_at, *, source_captured_at=None, payload_sourc
                                  "symboltoken": "999"},
                    "quote": {"tradingSymbol": "OFFLINE_TEST_ONLY",
                              "symbolToken": "999",
-                             "exchFeedTime": feed_time}}]
+                             "exchFeedTime": feed_time,
+                             "depth": {"buy": [{"price": 100.0}],
+                                       "sell": [{"price": 101.0}]}}}]
     snapshot = {"captured_at": source_captured_at or captured_at,
                 "source_kind": source_kind, "quotes": quotes,
                 "instrument_master_sha256": raw_master_sha}
