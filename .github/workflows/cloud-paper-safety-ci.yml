@@ -23,15 +23,20 @@ jobs:
       - name: Checkout exact event revision
         uses: actions/checkout@v5
         with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - name: Verify checkout identity
         shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
           actual="$(git rev-parse HEAD)"
           echo "CHECKED_OUT_SHA=$actual"
+          echo "EXPECTED_HEAD_SHA=$EXPECTED_HEAD_SHA"
           echo "EVENT_SHA=$GITHUB_SHA"
-          test "$actual" = "$GITHUB_SHA"
+          test "$actual" = "$EXPECTED_HEAD_SHA"
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
