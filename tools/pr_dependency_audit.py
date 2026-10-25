@@ -96,7 +96,16 @@ def build_report(prs, repo, main_ref="main"):
         n = pr.get("number")
         if not isinstance(n, int) or isinstance(n, bool) or n < 1 or n in indexed:
             raise AuditError("Missing or duplicate PR number")
+        if pr.get("state") != "open":
+            raise AuditError("Non-open PR in open inventory")
+        if type(pr.get("draft")) is not bool:
+            raise AuditError("Missing or invalid draft status")
+        head_sha = pr.get("head", {}).get("sha") if isinstance(pr.get("head"), dict) else None
+        if not isinstance(head_sha, str) or not re.fullmatch(r"[0-9a-fA-F]{40}", head_sha):
+            raise AuditError("Missing or invalid head SHA")
         head, base = _repo_ref(pr, "head"), _repo_ref(pr, "base")
+        if base[0] != repo:
+            raise AuditError("Unexpected base repository in PR inventory")
         if head in heads:
             raise AuditError("Ambiguous open PR head identity")
         heads[head] = n
