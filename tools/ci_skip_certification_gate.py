@@ -20,6 +20,12 @@ def assess_report(path):
         cases = list(root.iter("testcase"))
         if not cases:
             raise ValueError("zero collected test cases")
+        # One JUnit testcase identity must represent at most one collected test.
+        # Without this check a repeated passing case can inflate the denominator.
+        identities = [(case.get("classname", ""), case.get("name", ""))
+                      for case in cases]
+        if len(set(identities)) != len(identities):
+            raise ValueError("duplicate JUnit testcase identity")
         for suite in suites:
             # pytest reports one suite; reject inconsistent aggregate metadata.
             direct = list(suite.findall("testcase"))
