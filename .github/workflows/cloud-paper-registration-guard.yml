@@ -5,6 +5,8 @@ on:
       - '.github/workflows/cloud-paper-runner.yml'
       - '.github/workflows/cloud-paper-registration-guard.yml'
       - 'tests/test_cloud_paper_registration_failclosed.py'
+      - 'tests/test_registration_junit_gate.py'
+      - 'tools/registration_junit_gate.py'
 permissions:
   contents: read
 jobs:
@@ -30,10 +32,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Run registration fail-closed regression
+      - name: Run negative and boundary receipt regressions
         run: |
           python -m pip install 'pytest>=8,<10'
-          python -m pytest -q tests/test_cloud_paper_registration_failclosed.py --junitxml=registration-junit.xml
-      - name: Refuse missing or skipped tests
+          python -m pytest -q tests/test_registration_junit_gate.py
+      - name: Run registration fail-closed regression
         run: |
-          python -c "from xml.etree import ElementTree as ET; r=ET.parse('registration-junit.xml').getroot(); c=list(r.iter('testcase')); assert len(c)>=3 and not any(any(t.find(x) is not None for x in ('skipped','failure','error')) for t in c), 'missing/skipped/failed registration guard'"
+          python -m pytest -q tests/test_cloud_paper_registration_failclosed.py --junitxml=registration-junit.xml
+      - name: Reject forged, missing, duplicate or skipped test receipts
+        run: |
+          python tools/registration_junit_gate.py registration-junit.xml
