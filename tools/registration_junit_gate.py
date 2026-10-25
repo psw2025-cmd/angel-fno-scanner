@@ -7,6 +7,12 @@ import sys
 from xml.etree import ElementTree as ET
 
 EXPECTED_CLASSNAME = "tests.test_cloud_paper_registration_failclosed"
+SEMANTIC_CLASSNAME = "tests.test_cloud_paper_registration_contract"
+SEMANTIC_CASE_COUNTS = {
+    "test_real_registration_shell_exits_nonzero_without_orders": 1,
+    "test_semantic_guard_rejects_mutations_that_string_checks_missed": 5,
+    "test_semantic_guard_rejects_duplicate_yaml_keys": 2,
+}
 
 EXPECTED_TESTS = frozenset({
     "test_placeholder_fails_closed_instead_of_reporting_registered_success",
@@ -22,7 +28,7 @@ def _count(element, attribute):
     return int(raw)
 
 
-def verify(path):
+def verify(path, *, semantic=False):
     root = ET.parse(Path(path)).getroot()
     if root.tag == "testsuite":
         suites = [root]
@@ -63,22 +69,48 @@ def verify(path):
         name, classname = case.get("name", ""), case.get("classname", "")
         if not name.strip() or not classname.strip():
             raise ValueError("missing JUnit testcase identity")
-        if classname != EXPECTED_CLASSNAME:
+        if classname != (SEMANTIC_CLASSNAME if semantic else EXPECTED_CLASSNAME):
             raise ValueError("unexpected JUnit testcase classname")
         if any(child.tag not in allowed_case_children for child in case):
             raise ValueError("unexpected JUnit testcase child")
         identities.append(name)
-    if len(identities) != len(set(identities)) or set(identities) != EXPECTED_TESTS:
+    if len(identities) != len(set(identities)):
+        raise ValueError("duplicate JUnit testcase identity")
+    if semantic:
+        observed = {key: 0 for key in SEMANTIC_CASE_COUNTS}
+        for name in identities:
+            if name in observed and SEMANTIC_CASE_COUNTS[name] == 1:
+                observed[name] += 1
+                continue
+            prefix = name.split("[", 1)[0]
+            if (prefix not in observed or SEMANTIC_CASE_COUNTS[prefix] == 1
+                    or not name.startswith(prefix + "[") or not name.endswith("]")
+                    or name == prefix + "[]"):
+                raise ValueError("semantic receipt coverage mismatch")
+            observed[prefix] += 1
+        if observed != SEMANTIC_CASE_COUNTS:
+            raise ValueError("semantic receipt coverage mismatch")
+    elif set(identities) != EXPECTED_TESTS:
         raise ValueError("duplicate, missing, or unexpected registration tests")
-    if totals != {"tests": len(EXPECTED_TESTS), "skipped": 0, "failures": 0, "errors": 0}:
-        raise ValueError("registration test failure or skipped case")
+    expected_total = sum(SEMANTIC_CASE_COUNTS.values()) if semantic else len(EXPECTED_TESTS)
+    if totals != {"tests": expected_total, "skipped": 0, "failures": 0, "errors": 0}:
+        raise ValueError("semantic or registration test failure or skipped case")
     return totals
+
+
+def verify_semantic(path):
+    """Independently certify that all eight semantic workflow cases ran."""
+    return verify(path, semantic=True)
 
 
 if __name__ == "__main__":
     try:
+        if len(sys.argv) != 3:
+            raise ValueError("both registration and semantic JUnit receipts are mandatory")
         counts = verify(sys.argv[1])
-    except (IndexError, OSError, ET.ParseError, ValueError) as exc:
+        semantic_counts = verify_semantic(sys.argv[2])
+    except (OSError, ET.ParseError, ValueError) as exc:
         print(f"REGISTRATION_JUNIT_BLOCKED: {exc}", file=sys.stderr)
         raise SystemExit(1)
-    print("REGISTRATION_JUNIT_PASS " + " ".join(f"{k}={v}" for k, v in counts.items()))
+    print("REGISTRATION_JUNIT_PASS " + " ".join(f"{k}={v}" for k, v in counts.items())
+          + f" semantic_tests={semantic_counts['tests']} semantic_skipped={semantic_counts['skipped']}")
