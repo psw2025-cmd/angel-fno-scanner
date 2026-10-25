@@ -37,10 +37,11 @@ jobs:
       - name: Run negative and boundary receipt and semantic workflow regressions
         run: |
           python -m pip install 'pytest>=8,<10' 'PyYAML>=6,<7'
-          python -m pytest -q tests/test_registration_junit_gate.py tests/test_cloud_paper_registration_contract.py
+          python -m pytest -q tests/test_registration_junit_gate.py
+          python -m pytest -q tests/test_cloud_paper_registration_contract.py --junitxml=semantic-junit.xml
       - name: Run registration fail-closed regression
         run: |
           python -m pytest -q tests/test_cloud_paper_registration_failclosed.py --junitxml=registration-junit.xml
-      - name: Reject forged, missing, duplicate or skipped test receipts
+      - name: Reject missing, skipped, or forged registration AND semantic receipts
         run: |
-          python tools/registration_junit_gate.py registration-junit.xml
+          python tools/registration_junit_gate.py registration-junit.xml semantic-junit.xml
