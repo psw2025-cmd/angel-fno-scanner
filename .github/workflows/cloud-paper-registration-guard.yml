@@ -5,7 +5,9 @@ on:
       - '.github/workflows/cloud-paper-runner.yml'
       - '.github/workflows/cloud-paper-registration-guard.yml'
       - 'tests/test_cloud_paper_registration_failclosed.py'
+      - 'tests/test_cloud_paper_registration_contract.py'
       - 'tests/test_registration_junit_gate.py'
+      - 'tools/cloud_paper_registration_contract.py'
       - 'tools/registration_junit_gate.py'
 permissions:
   contents: read
@@ -32,10 +34,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Run negative and boundary receipt regressions
+      - name: Run negative and boundary receipt and semantic workflow regressions
         run: |
-          python -m pip install 'pytest>=8,<10'
-          python -m pytest -q tests/test_registration_junit_gate.py
+          python -m pip install 'pytest>=8,<10' 'PyYAML>=6,<7'
+          python -m pytest -q tests/test_registration_junit_gate.py tests/test_cloud_paper_registration_contract.py
       - name: Run registration fail-closed regression
         run: |
           python -m pytest -q tests/test_cloud_paper_registration_failclosed.py --junitxml=registration-junit.xml
