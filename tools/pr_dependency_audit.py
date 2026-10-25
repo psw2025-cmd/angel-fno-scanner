@@ -7,14 +7,25 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
+from urllib.request import HTTPRedirectHandler, build_opener
 from urllib.parse import parse_qs, urlparse
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
 _REPO = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 class AuditError(RuntimeError):
     pass
 
-def fetch_open_prs(repo, token, max_pages=20, opener=urlopen):
+class _NoRedirectHandler(HTTPRedirectHandler):
+    """Reject redirects before Authorization headers can reach another URL."""
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+def _safe_open(req, timeout):
+    return build_opener(_NoRedirectHandler()).open(req, timeout=timeout)
+
+def fetch_open_prs(repo, token, max_pages=20, opener=None):
+    if opener is None:
+        opener = _safe_open
     if not _REPO.fullmatch(repo) or any(part in (".", "..") or ".." in part for part in repo.split("/")):
         raise AuditError("Invalid repository identity")
     if not token:
