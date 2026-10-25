@@ -48,6 +48,21 @@ def assess_report(path):
                 declared = suite.get(attribute)
                 if declared is not None and int(declared) != observed:
                     raise ValueError("inconsistent JUnit " + attribute)
+        # The optional aggregate <testsuites> counters must not contradict
+        # testcase evidence. Pytest may report additional unittest subtests,
+        # so the declared test total is a lower-bound check, not equality.
+        if root.tag == "testsuites":
+            declared_tests = root.get("tests")
+            if declared_tests is not None and int(declared_tests) < len(cases):
+                raise ValueError("JUnit root test count below testcase count")
+            for attribute, observed in (
+                ("skipped", sum(c.find("skipped") is not None for c in cases)),
+                ("failures", sum(c.find("failure") is not None for c in cases)),
+                ("errors", sum(c.find("error") is not None for c in cases)),
+            ):
+                declared = root.get(attribute)
+                if declared is not None and int(declared) != observed:
+                    raise ValueError("inconsistent JUnit root " + attribute)
         skipped = sum(case.find("skipped") is not None for case in cases)
         failed = sum(case.find("failure") is not None for case in cases)
         errors = sum(case.find("error") is not None for case in cases)
