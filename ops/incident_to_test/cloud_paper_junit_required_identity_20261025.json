@@ -1,0 +1,68 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "CLOUD_PAPER_JUNIT_MISSING_NAME_ZERO_SUITE_FALSE_GREEN_20261025",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "branch": "fix/cloud-paper-junit-required-identity-20261025",
+  "pr": 204,
+  "base_pr": 203,
+  "classification": "Confirmed offline JUnit parser false-green; no claim of actual production JUnit corruption",
+  "signal": "JUnit with missing/blank testcase name or suite tests=0 despite one testcase returned CI_TEST_GATE_PASS",
+  "root_cause": "ci_skip_certification_gate.py counted testcase nodes without validating required testcase name or suite declared-test lower bound",
+  "before": {
+    "test_first_sha": "be5f51e9b63bf1639861b8a446449d5f0167f17d",
+    "run_id": 40158430616,
+    "job_id": 121064677610,
+    "result": "7 failed, 614 passed, 3 skipped; negative cases observed CI_TEST_GATE_PASS"
+  },
+  "design_correction": {
+    "sha": "48653ef851e99ab3c755b389a73391966c08b770",
+    "reason": "JUnit classname is optional; changed test to accept absent classname and retain negative name/count checks"
+  },
+  "repair": {
+    "sha": "11463c985f85ec5d37fd3f5f9287c1ec86985eb5",
+    "path": "tools/ci_skip_certification_gate.py",
+    "tests": "tests/test_ci_junit_required_identity_guard.py",
+    "hypothesis": "Nonblank name and suite tests>=direct testcase count reject contradictory evidence without rejecting legitimate pytest/unittest subtest inflated totals"
+  },
+  "after": {
+    "code_head_ci_run_id": 40158475126,
+    "final_head_sha": "PENDING",
+    "final_ci": "PENDING"
+  },
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  },
+  "operations": {
+    "1520": "ACTIONED",
+    "1521": "ACTIONED",
+    "1524": "TESTED",
+    "1525": "ACTIONED",
+    "1528": "ACTIONED",
+    "1529": "TESTED",
+    "1531": "ACTIONED",
+    "1532": "TESTED",
+    "1534": "BLOCKED: three mandatory skips",
+    "1535": "BLOCKED: non-skipped CI absent",
+    "1536": "BLOCKED: no deployment",
+    "1537": "BLOCKED: next session independent recurrence",
+    "1538": "ACTIONED",
+    "1539": "OPEN: canonical issue packet pending"
+  },
+  "not_proven": [
+    "mandatory non-skipped CI",
+    "main merge",
+    "actual cloud serving SHA",
+    "broker feed freshness",
+    "zero-order audit",
+    "forward-issued immutable forecast",
+    "matured outcome",
+    "Sheets/BQ/R2/ledger/UI reconciliation",
+    "rollback",
+    "market-session recurrence"
+  ],
+  "rollback": "Revert only the isolated guard/test/incident record on this branch after governed review; do not bypass existing skip certification",
+  "reopen_when": "Blank testcase name or suite count less than direct cases passes parser; valid missing classname is rejected; JUnit count contradicts executed CI",
+  "artifact_sha256": "NOT_CALCULATED"
+}

@@ -22,6 +22,10 @@ def assess_report(path):
             raise ValueError("zero collected test cases")
         # One JUnit testcase identity must represent at most one collected test.
         # Without this check a repeated passing case can inflate the denominator.
+        # JUnit testcase 'name' is required, while 'classname' is optional.
+        # An empty name can otherwise be counted as a successful collected test.
+        if any(not (case.get("name") or "").strip() for case in cases):
+            raise ValueError("missing or blank JUnit testcase name")
         identities = [(case.get("classname", ""), case.get("name", ""))
                       for case in cases]
         if len(set(identities)) != len(identities):
@@ -29,6 +33,11 @@ def assess_report(path):
         for suite in suites:
             # pytest reports one suite; reject inconsistent aggregate metadata.
             direct = list(suite.findall("testcase"))
+            # Pytest/unittest subtests may increase declared totals without
+            # emitting additional testcase nodes. Only the lower bound is safe.
+            declared_tests = suite.get("tests")
+            if declared_tests is not None and int(declared_tests) < len(direct):
+                raise ValueError("JUnit suite test count below testcase count")
             for attribute, observed in (
                 # pytest may count unittest subtests in suite totals without
                 # emitting a testcase element for each subtest.
