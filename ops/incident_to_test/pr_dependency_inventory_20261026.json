@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "incident_id": "PR_DEPENDENCY_INVENTORY_GAP_20261026",
+  "observed_at_ist": "2026-10-26T01:42:49+05:30",
+  "signal": "GitHub connector open PR search returned 48 results; many PR bodies explicitly describe stacked draft dependencies.",
+  "source": "https://github.com/psw2025-cmd/angel-fno-scanner/pulls",
+  "root_cause_hypothesis": "No independently checked, machine-readable dependency inventory was available in inspected main branch; PR list alone cannot prove safe integration order.",
+  "scope": "GitHub coordination and evidence only; not an observed cloud runtime failure.",
+  "patch_paths": [
+    "tools/pr_dependency_audit.py",
+    "tests/test_pr_dependency_audit.py",
+    ".github/workflows/pr-dependency-audit.yml"
+  ],
+  "regression_command": "python -m unittest discover -s tests -p test_pr_dependency_audit.py -v",
+  "local_test_result": {
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "first_attempt_failed": 1,
+    "first_attempt_reason": "Repository validation accepted ../unsafe before regex correction."
+  },
+  "remote_ci": {
+    "status": "PENDING_NOT_VERIFIED",
+    "exact_head_sha": "d81d56c07cefcd1bcbd89aa70a731b322ca3a304"
+  },
+  "runtime": {
+    "status": "NOT_DEPLOYED",
+    "actual_serving_sha": null
+  },
+  "recurrence_check": "Compare daily authenticated inventory count and dependency edges; reopen if pagination incomplete, graph cycles, unresolved bases silently treated as mergeable, or missing exact-head CI.",
+  "rollback": "Revert only the isolated inventory workflow, script, tests and incident record through a governed PR.",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  },
+  "status": "ACTIONED_LOCAL_TEST_PASS_CI_PENDING"
+}
