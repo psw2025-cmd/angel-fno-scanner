@@ -23,3 +23,14 @@ def test_semantic_guard_rejects_mutations_that_string_checks_missed(old, new):
     assert old in SOURCE
     with pytest.raises(ValueError):
         validate(SOURCE.replace(old, new, 1))
+
+
+@pytest.mark.parametrize('old,new', [
+    ('on: workflow_dispatch', 'on: push\non: workflow_dispatch'),
+    ("REAL_BROKER_ORDERS: '0'", "REAL_BROKER_ORDERS: '1'\n      REAL_BROKER_ORDERS: '0'"),
+])
+def test_semantic_guard_rejects_duplicate_yaml_keys(old, new):
+    """Duplicate YAML keys must not hide unsafe settings from the guard."""
+    assert old in SOURCE
+    with pytest.raises(ValueError, match='duplicate'):
+        validate(SOURCE.replace(old, new, 1))
