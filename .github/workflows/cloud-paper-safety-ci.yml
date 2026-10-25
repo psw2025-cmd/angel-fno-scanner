@@ -53,5 +53,10 @@ jobs:
         run: python tools/memory_guard.py
       - name: Run chaos regression
         run: python tools/chaos_inject.py
-      - name: Run complete repository pytest with skip disclosure
-        run: python -m pytest -q -rs
+      - name: Run complete repository pytest with JUnit evidence
+        run: |
+          mkdir -p proof-output/cloud-paper
+          python -m pytest -q -rs --junitxml=proof-output/cloud-paper/pytest-junit.xml
+      - name: Block CI certification on skipped or missing test evidence
+        if: always()
+        run: python tools/ci_skip_certification_gate.py proof-output/cloud-paper/pytest-junit.xml
