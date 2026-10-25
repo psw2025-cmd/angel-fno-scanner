@@ -1,0 +1,69 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "COLAB_CONTRACT_JSON_DUPLICATE_AND_NONSTANDARD_CONSTANT_20261026",
+  "repository": "psw2025-cmd/angel-fno-scanner",
+  "pr": 208,
+  "classification": "Confirmed Python standard-parser ambiguity in test evidence validation; no corrupted authentic contract observed",
+  "observed_utc": "2026-10-25T18:50:36Z",
+  "signal": "json.loads silently accepts duplicate mapping keys (last wins) and NaN/Infinity; structural validation alone can overlook ambiguous source bytes",
+  "source_file": "tests/test_colab_contract.py",
+  "root_cause": "Default json.loads accepts duplicate object keys and nonstandard numeric constants",
+  "systemic_cause": "No strict JSON syntax contract at evidence ingestion boundary",
+  "impact": "An otherwise digest-matching contract could be accepted despite ambiguous/nonstandard JSON; digest alone does not establish source authenticity",
+  "prevention_hypothesis": "Rejecting duplicate keys recursively and nonstandard numeric constants before structural validation prevents ambiguous JSON from being certified",
+  "before": {
+    "reproduction": "Offline Python json.loads accepted duplicate root/nested keys and NaN; source-level confirmed; not an observed live corruption"
+  },
+  "patch": {
+    "commit_sha": "eb429ec9d2970fcb6f0a90d1363e3463c7357fdb",
+    "file": "tests/test_colab_contract.py",
+    "function": "parse_colab_contract_json",
+    "changes": "object_pairs_hook duplicate rejection, parse_constant rejection, direct use by authentic-contract test"
+  },
+  "regression_tests": [
+    "tests/test_colab_contract.py::test_colab_json_accepts_unambiguous_structural_fixture",
+    "tests/test_colab_contract.py::test_colab_json_rejects_duplicate_keys_even_if_last_value_is_valid",
+    "tests/test_colab_contract.py::test_colab_json_rejects_nonstandard_numeric_constants"
+  ],
+  "after": {
+    "exact_head_sha": "eb429ec9d2970fcb6f0a90d1363e3463c7357fdb",
+    "exact_head_ci_run": 40223081865,
+    "exact_head_ci": "23 passed, 1 failed (missing private contract), 0 skipped; exact checkout SHA matched; exit 1",
+    "broader_run": 40223081880,
+    "broader_result": "382 passed, 1 failed, 2 skipped; synthetic merge cf6143d; exit 1",
+    "encoding_run": 40223081864,
+    "encoding_result": "Ubuntu and Windows success"
+  },
+  "original_private_source": {
+    "name": "17_COLAB_SCHEMA_CONTRACT.json",
+    "size_bytes": 2234,
+    "sha256": "c63bfb7dcd5bc1553dd897e88719568f637f6f08bffb490505d5e21156c50afe",
+    "offline_strict_parse": "PASS on genuine Drive read; original bytes not published",
+    "origin_authentication": "PENDING independent author attestation",
+    "ci_provisioning": "BLOCKED (no authorized secure CI source)"
+  },
+  "safety": {
+    "PAPER_MODE": "1",
+    "LIVE_ORDER_AUTHORITY": "0",
+    "REAL_BROKER_ORDERS": "0",
+    "production_deployed": false,
+    "broker_orders_audited": false
+  },
+  "rollback": "Revert only this parser/test change after reviewed equivalent strict parser is established; never replace with permissive JSON or skip on missing contract",
+  "recurrence": "Reopen on duplicate-key acceptance, NaN/Infinity acceptance, skipped authentic-contract test, unexpected digest, mismatched checked-out SHA, or new source ambiguity",
+  "lifecycle": {
+    "1505": "ACTIONED",
+    "1506": "ACTIONED",
+    "1509": "ACTIONED",
+    "1510": "ACTIONED",
+    "1512": "ACTIONED",
+    "1513": "TESTED",
+    "1515": "BLOCKED: missing privately provisioned authentic contract and two broader skips",
+    "1516": "BLOCKED: exact-head full mandatory CI is red",
+    "1517": "OPEN",
+    "1518": "OPEN",
+    "1519": "ACTIONED"
+  },
+  "next_checkpoint": "Secure authentic private contract provisioning and independent origin attestation; rerun exact-head mandatory CI, resolve two skips, then verify serving runtime and zero-order audit",
+  "certification": "NOT_CERTIFIED"
+}

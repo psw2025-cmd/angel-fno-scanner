@@ -1,0 +1,38 @@
+name: Colab External Contract Integrity (non-certifying)
+on:
+  pull_request:
+    paths:
+      - 'tests/test_colab_contract.py'
+      - '.github/workflows/colab-contract-integrity.yml'
+permissions:
+  contents: read
+jobs:
+  external-contract-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact PR head
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          echo "CHECKED_OUT_SHA=$actual"
+          echo "EXPECTED_HEAD_SHA=$EXPECTED_HEAD_SHA"
+          test "$actual" = "$EXPECTED_HEAD_SHA"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install test dependency
+        run: python -m pip install 'pytest>=8,<10'
+      - name: Run actual external-contract test (must not skip or be replaced by fixture)
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
+        run: |
+          python -m pytest -q -rs tests/test_colab_contract.py --junitxml=colab-contract-junit.xml

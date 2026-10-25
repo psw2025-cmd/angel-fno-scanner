@@ -17,7 +17,11 @@ Verifies:
 3. Missing or ambiguous required fields strictly raise SCHEMA_FAIL.
 """
 
+import hashlib
+import hmac
 import json
+import os
+import re
 from pathlib import Path
 import pytest
 
@@ -84,27 +88,224 @@ def map_raw_headers_to_canonical(headers: list[str]) -> dict[str, str]:
     return mapped
 
 
+def resolve_colab_contract_path(candidates: list[Path]) -> Path:
+    """Never certify an unavailable external contract as a skipped success.
+
+    This only locates the real artifact; it does not generate or replace one.
+    """
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    raise FileNotFoundError(
+        "COLAB_SCHEMA_CONTRACT_BLOCKED: authentic 17_COLAB_SCHEMA_CONTRACT.json "
+        "is unavailable; external schema certification cannot pass"
+    )
+
+
+def verify_colab_contract_digest(path: Path, expected_sha256: str | None) -> bytes:
+    """Bind loaded bytes to an independently recorded expected digest.
+
+    A matching digest proves byte integrity only; the expected digest must
+    still be established from an authentic, independently reviewed source.
+    """
+    if not expected_sha256 or not re.fullmatch(r"[0-9a-fA-F]{64}", expected_sha256):
+        raise ValueError(
+            "COLAB_SCHEMA_DIGEST_BLOCKED: independently verified SHA-256 "
+            "digest is required before external-contract certification"
+        )
+    payload = path.read_bytes()
+    actual = hashlib.sha256(payload).hexdigest()
+    if not hmac.compare_digest(actual, expected_sha256.lower()):
+        raise ValueError("COLAB_SCHEMA_DIGEST_MISMATCH: external contract bytes differ")
+    return payload
+
+
+
+def parse_colab_contract_json(raw: bytes) -> dict:
+    """Reject ambiguous or non-standard JSON before structural validation.
+
+    Python's default json.loads silently keeps the last duplicate mapping key
+    and accepts NaN/Infinity. Neither is acceptable for an evidence contract.
+    """
+    def unique_pairs(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise SchemaFail(f"SCHEMA_FAIL: duplicate JSON key: {key!r}")
+            result[key] = value
+        return result
+
+    def reject_constant(value):
+        raise SchemaFail(f"SCHEMA_FAIL: non-standard JSON constant: {value}")
+
+    return json.loads(
+        raw.decode("utf-8"),
+        object_pairs_hook=unique_pairs,
+        parse_constant=reject_constant,
+    )
+
+
+EXPECTED_FORENSIC_LIVE_HEADERS = [
+    "Timestamp (IST)", "Symbol", "Nearest Expiry", "Fut LTP",
+    "Fut Chg %", "Fut OBI", "ATM Strike", "ATM CE Contract",
+    "CE LTP", "CE Chg %", "CE OI", "CE OBI", "ATM PE Contract",
+    "PE LTP", "PE Chg %", "PE OI", "ATM PCR", "Forensic Action Signal",
+]
+EXPECTED_HEARTBEAT_HEADERS = [
+    "Last Ping (IST)", "Angel Session Status", "Auto-Discovered Symbols",
+    "Engine Status", "Seconds Since Last Write", "Automated Feed Alert",
+]
+
+
+def validate_colab_contract_structure(contract: dict) -> None:
+    """Validate the recovered V2 structural contract, not only nine aliases.
+
+    This is a schema check, not evidence of source authenticity or a live feed.
+    The original bytes must separately pass the pinned digest check.
+    """
+    if not isinstance(contract, dict) or contract.get("contract_version") != "2.0.0":
+        raise SchemaFail("SCHEMA_FAIL: unsupported Colab contract version")
+    if contract.get("canonical_column_aliases") != EXPLICIT_ALIAS_MAP:
+        raise SchemaFail("SCHEMA_FAIL: canonical alias dictionary drift")
+    worksheets = contract.get("worksheets")
+    if not isinstance(worksheets, dict):
+        raise SchemaFail("SCHEMA_FAIL: missing worksheet definitions")
+    for name, expected_headers in (
+        ("FORENSIC_LIVE", EXPECTED_FORENSIC_LIVE_HEADERS),
+        ("HEARTBEAT", EXPECTED_HEARTBEAT_HEADERS),
+    ):
+        sheet = worksheets.get(name)
+        if not isinstance(sheet, dict):
+            raise SchemaFail(f"SCHEMA_FAIL: missing {name} worksheet")
+        if (sheet.get("strict_schema") != expected_headers
+                or sheet.get("required_columns_count") != len(expected_headers)):
+            raise SchemaFail(f"SCHEMA_FAIL: {name} ordered column contract drift")
+    forensic = worksheets["FORENSIC_LIVE"]
+    if forensic.get("expected_symbols_count") != 219 or forensic.get("primary_key") != "Symbol":
+        raise SchemaFail("SCHEMA_FAIL: FORENSIC_LIVE universe/key contract drift")
+
+
+def _synthetic_structure_fixture() -> dict:
+    """Minimal in-memory structure for regression tests; not original evidence."""
+    return {
+        "contract_version": "2.0.0",
+        "canonical_column_aliases": dict(EXPLICIT_ALIAS_MAP),
+        "worksheets": {
+            "FORENSIC_LIVE": {
+                "strict_schema": list(EXPECTED_FORENSIC_LIVE_HEADERS),
+                "required_columns_count": 18,
+                "expected_symbols_count": 219,
+                "primary_key": "Symbol",
+            },
+            "HEARTBEAT": {
+                "strict_schema": list(EXPECTED_HEARTBEAT_HEADERS),
+                "required_columns_count": 6,
+            },
+        },
+    }
+
+
+
+def test_colab_json_accepts_unambiguous_structural_fixture():
+    fixture = _synthetic_structure_fixture()
+    parsed = parse_colab_contract_json(json.dumps(fixture).encode("utf-8"))
+    assert parsed == fixture
+    validate_colab_contract_structure(parsed)
+
+
+@pytest.mark.parametrize("raw", [
+    b'{"contract_version":"2.0.1","contract_version":"2.0.0"}',
+    b'{"worksheets":{"FORENSIC_LIVE":{"primary_key":"Wrong","primary_key":"Symbol"}}}',
+    b'{"canonical_column_aliases":{"Fut LTP":"WRONG","Fut LTP":"FUTURES_LTP"}}',
+])
+def test_colab_json_rejects_duplicate_keys_even_if_last_value_is_valid(raw):
+    with pytest.raises(SchemaFail, match="SCHEMA_FAIL: duplicate JSON key"):
+        parse_colab_contract_json(raw)
+
+
+@pytest.mark.parametrize("value", ["NaN", "Infinity", "-Infinity"])
+def test_colab_json_rejects_nonstandard_numeric_constants(value):
+    with pytest.raises(SchemaFail, match="SCHEMA_FAIL: non-standard JSON constant"):
+        parse_colab_contract_json(('{"expected_symbols_count":' + value + '}').encode("utf-8"))
+
+
+def test_synthetic_colab_structure_fixture_is_accepted():
+    validate_colab_contract_structure(_synthetic_structure_fixture())
+
+
+@pytest.mark.parametrize("mutation", [
+    "missing_alias", "reordered_forensic_columns", "wrong_symbol_count",
+    "wrong_heartbeat_count", "wrong_version", "missing_worksheet",
+])
+def test_colab_structure_rejects_contract_drift(mutation):
+    fixture = _synthetic_structure_fixture()
+    if mutation == "missing_alias":
+        del fixture["canonical_column_aliases"]["ATM Strike"]
+    elif mutation == "reordered_forensic_columns":
+        fixture["worksheets"]["FORENSIC_LIVE"]["strict_schema"].reverse()
+    elif mutation == "wrong_symbol_count":
+        fixture["worksheets"]["FORENSIC_LIVE"]["expected_symbols_count"] = 218
+    elif mutation == "wrong_heartbeat_count":
+        fixture["worksheets"]["HEARTBEAT"]["required_columns_count"] = 5
+    elif mutation == "wrong_version":
+        fixture["contract_version"] = "2.0.1"
+    elif mutation == "missing_worksheet":
+        del fixture["worksheets"]["HEARTBEAT"]
+    with pytest.raises(SchemaFail, match="SCHEMA_FAIL"):
+        validate_colab_contract_structure(fixture)
+
+
+def test_colab_digest_requires_expected_hash(tmp_path):
+    fixture = tmp_path / "fixture.json"
+    fixture.write_text("{}", encoding="utf-8")
+    with pytest.raises(ValueError, match="COLAB_SCHEMA_DIGEST_BLOCKED"):
+        verify_colab_contract_digest(fixture, None)
+    with pytest.raises(ValueError, match="COLAB_SCHEMA_DIGEST_BLOCKED"):
+        verify_colab_contract_digest(fixture, "invalid")
+
+
+def test_colab_digest_rejects_mismatch(tmp_path):
+    fixture = tmp_path / "fixture.json"
+    fixture.write_text("{}", encoding="utf-8")
+    with pytest.raises(ValueError, match="COLAB_SCHEMA_DIGEST_MISMATCH"):
+        verify_colab_contract_digest(fixture, "0" * 64)
+
+
+def test_colab_digest_accepts_matching_fixture_only(tmp_path):
+    """Synthetic fixture tests hashing, NOT provenance or schema authenticity."""
+    fixture = tmp_path / "fixture.json"
+    payload = b'{"canonical_column_aliases": {}}'
+    fixture.write_bytes(payload)
+    assert verify_colab_contract_digest(fixture, hashlib.sha256(payload).hexdigest()) == payload
+
+
+def test_missing_colab_contract_is_hard_failure(tmp_path):
+    """Negative regression: absent external evidence must not be a pytest skip."""
+    with pytest.raises(FileNotFoundError, match="COLAB_SCHEMA_CONTRACT_BLOCKED"):
+        resolve_colab_contract_path([tmp_path / "17_COLAB_SCHEMA_CONTRACT.json"])
+
+
+def test_colab_contract_resolver_uses_existing_file(tmp_path):
+    """Resolver-only fixture; not evidence of an authentic Colab contract."""
+    candidate = tmp_path / "17_COLAB_SCHEMA_CONTRACT.json"
+    candidate.write_text("{}", encoding="utf-8")
+    assert resolve_colab_contract_path([tmp_path / "absent.json", candidate]) == candidate
+
+
 def test_colab_contract_json_matches_specification():
-    candidates = [
+    configured = os.environ.get("COLAB_SCHEMA_CONTRACT_PATH")
+    # Explicit override must not silently fall back to a stale local copy.
+    candidates = [Path(configured)] if configured else [
         CONTRACT_PATH,
         Path("/mnt/c/AngelFNO_Workstation/reports/final_e2e_truth_20261001_114500/17_COLAB_SCHEMA_CONTRACT.json"),
     ]
-    path = next((p for p in candidates if p.exists()), None)
-    if not path:
-        pytest.skip("Schema contract file not found on isolated CI runner")
-    contract = json.loads(path.read_text(encoding="utf-8"))
+    path = resolve_colab_contract_path(candidates)
+    # An arbitrary local JSON file cannot satisfy this gate without a pinned
+    # digest. Digest matching is necessary, not sufficient, for provenance.
+    raw = verify_colab_contract_digest(path, os.environ.get("COLAB_SCHEMA_CONTRACT_SHA256"))
+    contract = parse_colab_contract_json(raw)
     
-    aliases = contract["canonical_column_aliases"]
-    assert aliases["Fut LTP"] == "FUTURES_LTP"
-    assert aliases["Fut Chg %"] == "FUTURES_CHANGE_PCT"
-    assert aliases["CE LTP"] == "CE_LTP"
-    assert aliases["CE Chg %"] == "CE_CHANGE_PCT"
-    assert aliases["CE OI"] == "CE_OI"
-    assert aliases["PE LTP"] == "PE_LTP"
-    assert aliases["PE Chg %"] == "PE_CHANGE_PCT"
-    assert aliases["PE OI"] == "PE_OI"
-    assert aliases["ATM PCR"] == "PCR"
-
+    validate_colab_contract_structure(contract)
 
 def test_valid_forensic_live_headers_map_successfully():
     forensic_headers = [

@@ -1,0 +1,57 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "COLAB_SCHEMA_SOURCE_RECOVERED_20261025",
+  "date_ist": "2026-10-25",
+  "classification": "Owner Drive original named artifact located and bytes independently hashed; CI artifact delivery and external provenance attestation still pending",
+  "original_name": "17_COLAB_SCHEMA_CONTRACT.json",
+  "source": "Owner Google Drive / final_e2e_truth_20261001_114500 / 17_COLAB_SCHEMA_CONTRACT.json",
+  "source_location_publication": "REDACTED: owner Drive item ID and spreadsheet IDs deliberately not copied into public repository",
+  "handoff_corrob": "20_FINAL_HANDOFF.md in same audit bundle identifies this as definitive Colab V2/dashboard schema contract",
+  "drive_revision": {
+    "original_filename": "17_COLAB_SCHEMA_CONTRACT.json",
+    "mime_type": "application/json",
+    "size_bytes": 2234,
+    "revision_modified_utc": "2026-10-01T06:20:25.891Z",
+    "last_modifying_user": "owner (identity redacted)"
+  },
+  "byte_integrity": {
+    "sha256": "c63bfb7dcd5bc1553dd897e88719568f637f6f08bffb490505d5e21156c50afe",
+    "calculated_from": "raw downloaded Drive bytes using sha256sum and Python hashlib",
+    "bytes": 2234
+  },
+  "nonsecret_structure": {
+    "contract_version": "2.0.0",
+    "updated_at_ist": "2026-10-01 11:49:56",
+    "canonical_aliases": 14,
+    "forensic_live_required_columns": 18,
+    "forensic_live_strict_schema_columns": 18,
+    "forensic_live_expected_symbols": 219
+  },
+  "previous_claim_correction": "Prior Issue #3/PR #208 claims of file unavailable in Drive were based on Drive search; exact named file exists in a browsable owner audit folder. Source recovered, not yet provisioned to GitHub CI.",
+  "risk": "Public repository must not contain original JSON without review because it includes spreadsheet and cloud resource identifiers.",
+  "evidence_limits": [
+    "Google Drive metadata and handoff corroborate lineage but independent external signing/notarization not proven",
+    "CI runners still lack this original artifact and matching pinned digest",
+    "No new exact-head non-skipped CI run or production deployment in this recovery record"
+  ],
+  "next_actions": [
+    "Review source authenticity and hash independently",
+    "Provision original bytes to isolated CI through approved least-privilege private artifact mechanism; do not expose IDs/credentials",
+    "Pin and compare independently verified SHA-256 before schema validation",
+    "Re-run exact-head mandatory non-skipped CI and independently check source-to-runtime evidence"
+  ],
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0,
+    "real_orders_executed": false
+  },
+  "rollback": "Revert this evidence-only record if source revision is disproved; do not disable missing-contract fail-closed gate.",
+  "reopen": "Reopen on source digest mismatch, file revision change, identity contradiction, missing file in CI, or any green mandatory certification without original bytes.",
+  "operations": {
+    "1500-1519": "ACTIONED: raw-source provenance evidence",
+    "1520-1539": "ACTIONED: previously skipped mandatory contract artifact recovered; full CI BLOCKED",
+    "1660-1679": "ACTIONED: schema source recovered; runtime data contract unverified",
+    "1900-1919": "ACTIONED: corrected false historical unavailability claim; next recurrence check OPEN"
+  }
+}
