@@ -24,7 +24,8 @@ def assess_report(path):
             # pytest reports one suite; reject inconsistent aggregate metadata.
             direct = list(suite.findall("testcase"))
             for attribute, observed in (
-                ("tests", len(direct)),
+                # pytest may count unittest subtests in suite totals without
+                # emitting a testcase element for each subtest.
                 ("skipped", sum(c.find("skipped") is not None for c in direct)),
                 ("failures", sum(c.find("failure") is not None for c in direct)),
                 ("errors", sum(c.find("error") is not None for c in direct)),
