@@ -80,3 +80,67 @@ def test_unrecognized_testcase_outcome_rejected(tmp_path):
         ET.SubElement(root[0].findall("testcase")[0], "notrun")
     with pytest.raises(ValueError, match="unexpected JUnit testcase child"):
         verify(_xml(tmp_path, forge))
+
+
+# Semantic safety tests are mandatory too. A green registration-only JUnit
+# receipt must not mask an entirely skipped semantic workflow test suite.
+def _semantic_xml(tmp_path, transform=lambda root: None):
+    root = ET.Element("testsuites")
+    suite = ET.SubElement(root, "testsuite", tests="8", skipped="0", failures="0", errors="0")
+    names = [
+        "test_real_registration_shell_exits_nonzero_without_orders",
+        *(f"test_semantic_guard_rejects_mutations_that_string_checks_missed[{i}]" for i in range(5)),
+        *(f"test_semantic_guard_rejects_duplicate_yaml_keys[{i}]" for i in range(2)),
+    ]
+    for name in names:
+        ET.SubElement(suite, "testcase", classname="tests.test_cloud_paper_registration_contract", name=name)
+    transform(root)
+    path = tmp_path / "semantic-receipt.xml"
+    ET.ElementTree(root).write(path, encoding="utf-8")
+    return path
+
+
+def test_semantic_receipt_requires_eight_distinct_cases(tmp_path):
+    from tools import registration_junit_gate as gate
+    assert gate.verify_semantic(_semantic_xml(tmp_path))["tests"] == 8
+
+
+def test_semantic_receipt_rejects_skipped_case(tmp_path):
+    from tools import registration_junit_gate as gate
+    def forge(root):
+        ET.SubElement(root[0][0], "skipped")
+        root[0].set("skipped", "1")
+    with pytest.raises(ValueError, match="skipped"):
+        gate.verify_semantic(_semantic_xml(tmp_path, forge))
+
+
+def test_semantic_receipt_rejects_missing_case(tmp_path):
+    from tools import registration_junit_gate as gate
+    def forge(root):
+        root[0].remove(root[0][-1])
+        root[0].set("tests", "7")
+    with pytest.raises(ValueError, match="coverage"):
+        gate.verify_semantic(_semantic_xml(tmp_path, forge))
+
+
+def test_semantic_receipt_rejects_duplicate_case(tmp_path):
+    from tools import registration_junit_gate as gate
+    def forge(root):
+        cases = root[0].findall("testcase")
+        cases[1].set("name", cases[2].get("name"))
+    with pytest.raises(ValueError, match="duplicate"):
+        gate.verify_semantic(_semantic_xml(tmp_path, forge))
+
+
+def test_semantic_receipt_rejects_unrelated_case(tmp_path):
+    from tools import registration_junit_gate as gate
+    def forge(root):
+        root[0][0].set("name", "test_unrelated")
+    with pytest.raises(ValueError, match="coverage"):
+        gate.verify_semantic(_semantic_xml(tmp_path, forge))
+
+
+def test_semantic_receipt_rejects_contradictory_root_count(tmp_path):
+    from tools import registration_junit_gate as gate
+    with pytest.raises(ValueError, match="root tests"):
+        gate.verify_semantic(_semantic_xml(tmp_path, lambda root: root.set("tests", "9")))
