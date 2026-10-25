@@ -12,6 +12,7 @@
 - tools/verify_harness.py: normalized unicode em/en-dashes using escape sequences (\u2014, \u2013) maintaining pure ASCII source encoding.
 - tools/check_downstream.py: normalized currency symbols using unicode escape sequence (\u20b9) maintaining pure ASCII source encoding.
 - .github/workflows/definitive_branch_gate.yml: created definitive GitHub Action workflow enforcing branch protection, cloud paper runner connectivity, and cryptographic reconciliation gate matching BigQuery and Google Sheets.
+- .github/workflows/pr_tests.yml: updated PR verification to enforce the definitive branch protection gate jobs.
 - tools/verify_sheets_bq_reconciliation.py: normalized docstring to ASCII hyphen.
 - pytest.ini: set testpaths = tests to prevent exploratory scripts from interfering with automated discovery.
 
