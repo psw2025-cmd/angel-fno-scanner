@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "incident_id": "PAPER-PR-AUTH-REDIRECT-20261026",
+  "scope": "PR dependency audit HTTP client; offline code-path confirmed, no observed token exfiltration",
+  "signal": "urllib.request.HTTPRedirectHandler.redirect_request forwards Authorization header on redirect",
+  "root_cause": "default urlopen automatically follows HTTP 30x before pagination URL validation",
+  "upstream": "authenticated GitHub PR inventory using default urlopen",
+  "downstream": "possible GitHub token forwarding or untrusted inventory response",
+  "prevention_hypothesis": "reject all HTTP redirects at opener layer, before a redirected request is constructed",
+  "patch_paths": [
+    "tools/pr_dependency_audit.py",
+    "tests/test_pr_dependency_audit.py",
+    ".github/workflows/pr-dependency-audit.yml"
+  ],
+  "regression_tests": [
+    "test_redirect_handler_never_forwards_authorization",
+    "test_safe_opener_installs_no_redirect_handler",
+    "test_default_fetch_fails_closed_on_redirect_response"
+  ],
+  "before_ref": "fa618c7ba1fda058cf337ee0ac7228d85cc43879",
+  "after_ref": "e070c041b9abf8a4d685f881c56a068464080e27",
+  "status": "IMPLEMENTED_NOT_VERIFIED",
+  "runtime_proof": "NOT_PERFORMED",
+  "independent_review": "PENDING",
+  "rollback": "governed revert of three isolated commits; do not force push",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  },
+  "reopen_if": [
+    "cross-host redirect accepted",
+    "authorization forwarded to redirected URL",
+    "CI exact-head regression fails",
+    "workflow unexpectedly skips mandatory tests"
+  ]
+}
