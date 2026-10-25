@@ -87,6 +87,61 @@
         "1540-1559",
         "1900-1919"
       ]
+    },
+    {
+      "claim_id": "CLOUD_PAPER_SEMANTIC_SUITE_SKIP_BLIND_SPOT_20261025",
+      "date_ist": "2026-10-25",
+      "classification": "Source-confirmed certification coverage risk; no observed skipped production CI receipt",
+      "signal": "Registration Guard verified the three registration tests' JUnit receipt but not the eight semantic workflow safety cases; a skipped semantic suite could return pytest exit 0 without invalidating the final registration-only JUnit gate.",
+      "root_cause": "Two separate pytest invocations; semantic suite had no bound JUnit receipt or mandatory case count in the final certification step.",
+      "impact": "A green targeted guard could be misread as complete structural coverage even when all semantic checks were skipped.",
+      "test_first_sha": "6b6af8f6569d7a7edce4019bb100e9f70175025b",
+      "test_first_run_id": 40190435482,
+      "test_first_job_id": 121160090094,
+      "test_first_result": "Exact-head authenticated GitHub CI failed 6 new tests, 18 passed; AttributeError verify_semantic missing. This proves new guard not yet implemented, not an observed skipped-suite false-green.",
+      "patch_shas": [
+        "8b8be9f84dfacbf3ca5df3659a8d10bbf3f6b297",
+        "e0d3219b345565823721e5362eb4f604fcfea247"
+      ],
+      "patch_files": [
+        "tools/registration_junit_gate.py",
+        "tests/test_registration_junit_gate.py",
+        ".github/workflows/cloud-paper-registration-guard.yml"
+      ],
+      "regression_tests": [
+        "test_semantic_receipt_requires_eight_distinct_cases",
+        "test_semantic_receipt_rejects_skipped_case",
+        "test_semantic_receipt_rejects_missing_case",
+        "test_semantic_receipt_rejects_duplicate_case",
+        "test_semantic_receipt_rejects_unrelated_case",
+        "test_semantic_receipt_rejects_contradictory_root_count"
+      ],
+      "prevention_hypothesis": "Bind the actual semantic pytest JUnit receipt to eight distinct expected test identities, zero skipped/failures/errors, and refuse missing receipt; keep separate three-case registration receipt and exact-head verification.",
+      "exact_head_ci": {
+        "run_id": 40190473800,
+        "job_id": 121160202382,
+        "sha": "e0d3219b345565823721e5362eb4f604fcfea247",
+        "result": "SUCCESS; exact SHA matched; 16 receipt regressions passed; 8 semantic cases passed; 3 registration cases passed; JUnit both suites skipped=0"
+      },
+      "full_repository_ci": "WAITING_FOR_RESULT; separate synthetic merge-ref run is not exact-head certification",
+      "deployment": "NOT_DEPLOYED",
+      "genuine_paper_runtime": "NOT_PROVEN",
+      "independent_recurrence": "WAITING_NEXT_SESSION",
+      "rollback": "Revert isolated semantic receipt verifier/workflow change if legitimate pytest output cannot be parsed; never replace with unverified success-only gate.",
+      "reopen_if": "Any semantic safety case is skipped/missing/duplicated/unexpected while the registration guard still reports success, or exact-head and runtime evidence disagree.",
+      "metrics": {
+        "repeat_incidents": "NOT_MEASURED",
+        "detection_time": "NOT_MEASURED",
+        "recovery_time": "NOT_MEASURED",
+        "false_green_rate": "NOT_MEASURED"
+      },
+      "related_operations": [
+        "1500-1519",
+        "1520-1539",
+        "1540-1559",
+        "1900-1919"
+      ],
+      "status": "TESTED_EXACT_HEAD_TARGETED; UNDEPLOYED; INDEPENDENT_RUNTIME_BLOCKED"
     }
   ]
 }
