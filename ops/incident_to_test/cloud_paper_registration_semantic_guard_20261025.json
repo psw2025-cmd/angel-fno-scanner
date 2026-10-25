@@ -1,0 +1,67 @@
+{
+  "incident_id": "CLOUD_PAPER_REGISTRATION_STRING_GUARD_BYPASS_20261025",
+  "incident_type": "source-confirmed potential false-green; not observed in production",
+  "first_observed_ist": "2026-10-25 15:23+05:30",
+  "root_cause": "The three existing structural tests searched workflow source for literals instead of checking parsed YAML trigger, effective PAPER env flags and actual fail-closed step behavior.",
+  "before_evidence": {
+    "source_ref": "f4a8cbc650b7166aa1158e1460866cd52a68a530",
+    "legacy_accepted_mutations": [
+      "on: [workflow_dispatch, push]",
+      "REAL_BROKER_ORDERS: '1' # REAL_BROKER_ORDERS: '0'",
+      "additional success step after exit 1"
+    ],
+    "reproduction": "Local source mutation comparison, not an authenticated GitHub Actions failure"
+  },
+  "repair": {
+    "branch": "fix/cloud-paper-registration-failclosed-20261025",
+    "code": "tools/cloud_paper_registration_contract.py",
+    "tests": "tests/test_cloud_paper_registration_contract.py",
+    "workflow": ".github/workflows/cloud-paper-registration-guard.yml",
+    "patch_sha_before_record": "2a377b2adeb24f7fbcb71e32a7d665ac09ac2b87",
+    "safety": "PAPER_MODE=1; LIVE_ORDER_AUTHORITY=0; REAL_BROKER_ORDERS=0; no order path added"
+  },
+  "tests": {
+    "local": "6 passed, 0 skipped (offline scratch execution)",
+    "negative_cases": 5,
+    "behavioral_cases": 1,
+    "ci": "WAITING exact-head GitHub Actions"
+  },
+  "evidence_chain": {
+    "signal": "String-only test accepted unsafe YAML mutations",
+    "root_cause": "Unparsed text assertions",
+    "patch": "Strict parsed-YAML semantics plus statically bounded shell exit=1 execution",
+    "regression_test": "Mutation tests and actual marker execution",
+    "exact_sha_ci": "WAITING",
+    "deployed_revision": "NOT_DEPLOYED",
+    "genuine_paper_runtime": "NOT_VERIFIED",
+    "independent_proof": "NOT_VERIFIED",
+    "next_session_recurrence_check": "Recheck current main and PR head, run CI, inspect dispatch status after governed merge"
+  },
+  "status": "IMPLEMENTED_NOT_DEPLOYED",
+  "affected_operations": [
+    1524,
+    1525,
+    1528,
+    1529,
+    1530,
+    1531,
+    1532,
+    1534,
+    1535,
+    1538,
+    1539,
+    1600,
+    1601,
+    1900,
+    1901
+  ],
+  "unresolved": [
+    "Three broader repository integration skips",
+    "PR draft/unmerged",
+    "No authenticated broker feed",
+    "No independently verified zero broker orders",
+    "No serving SHA",
+    "No matured outcomes or cross-system reconciliation"
+  ],
+  "rollback": "Revert only this isolated semantic guard if a genuine reviewed Cloud PAPER runner replaces the registration placeholder; never relax live-order prohibitions."
+}
