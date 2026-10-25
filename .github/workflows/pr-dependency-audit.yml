@@ -1,0 +1,37 @@
+name: PAPER PR Dependency Audit
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '15 2 * * *'
+permissions:
+  contents: read
+  pull-requests: read
+concurrency:
+  group: paper-pr-dependency-audit
+  cancel-in-progress: false
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Negative and boundary regression suite
+        run: python -m unittest discover -s tests -p test_pr_dependency_audit.py -v
+      - name: Authenticated read-only PR dependency inventory
+        run: python tools/pr_dependency_audit.py --repo '${{ github.repository }}' --output proof-output/pr-dependency/inventory.json
+      - name: Preserve audit snapshot even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-pr-dependency-audit-${{ github.run_id }}
+          path: proof-output/pr-dependency/inventory.json
+          if-no-files-found: warn
+          retention-days: 30
