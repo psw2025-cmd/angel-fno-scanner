@@ -18,6 +18,7 @@ Verifies:
 """
 
 import json
+import os
 from pathlib import Path
 import pytest
 
@@ -84,14 +85,41 @@ def map_raw_headers_to_canonical(headers: list[str]) -> dict[str, str]:
     return mapped
 
 
+def resolve_colab_contract_path(candidates: list[Path]) -> Path:
+    """Never certify an unavailable external contract as a skipped success.
+
+    This only locates the real artifact; it does not generate or replace one.
+    """
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    raise FileNotFoundError(
+        "COLAB_SCHEMA_CONTRACT_BLOCKED: authentic 17_COLAB_SCHEMA_CONTRACT.json "
+        "is unavailable; external schema certification cannot pass"
+    )
+
+
+def test_missing_colab_contract_is_hard_failure(tmp_path):
+    """Negative regression: absent external evidence must not be a pytest skip."""
+    with pytest.raises(FileNotFoundError, match="COLAB_SCHEMA_CONTRACT_BLOCKED"):
+        resolve_colab_contract_path([tmp_path / "17_COLAB_SCHEMA_CONTRACT.json"])
+
+
+def test_colab_contract_resolver_uses_existing_file(tmp_path):
+    """Resolver-only fixture; not evidence of an authentic Colab contract."""
+    candidate = tmp_path / "17_COLAB_SCHEMA_CONTRACT.json"
+    candidate.write_text("{}", encoding="utf-8")
+    assert resolve_colab_contract_path([tmp_path / "absent.json", candidate]) == candidate
+
+
 def test_colab_contract_json_matches_specification():
-    candidates = [
+    configured = os.environ.get("COLAB_SCHEMA_CONTRACT_PATH")
+    # Explicit override must not silently fall back to a stale local copy.
+    candidates = [Path(configured)] if configured else [
         CONTRACT_PATH,
         Path("/mnt/c/AngelFNO_Workstation/reports/final_e2e_truth_20261001_114500/17_COLAB_SCHEMA_CONTRACT.json"),
     ]
-    path = next((p for p in candidates if p.exists()), None)
-    if not path:
-        pytest.skip("Schema contract file not found on isolated CI runner")
+    path = resolve_colab_contract_path(candidates)
     contract = json.loads(path.read_text(encoding="utf-8"))
     
     aliases = contract["canonical_column_aliases"]
