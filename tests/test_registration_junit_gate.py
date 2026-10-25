@@ -66,3 +66,17 @@ def test_malformed_xml(tmp_path):
     path.write_text("<testsuites><testsuite>", encoding="utf-8")
     with pytest.raises(ET.ParseError):
         verify(path)
+
+
+def test_unexpected_classname_rejected(tmp_path):
+    def forge(root):
+        root[0].findall("testcase")[0].set("classname", "tests.unrelated_suite")
+    with pytest.raises(ValueError, match="unexpected"):
+        verify(_xml(tmp_path, forge))
+
+
+def test_unrecognized_testcase_outcome_rejected(tmp_path):
+    def forge(root):
+        ET.SubElement(root[0].findall("testcase")[0], "notrun")
+    with pytest.raises(ValueError, match="unexpected JUnit testcase child"):
+        verify(_xml(tmp_path, forge))
