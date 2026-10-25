@@ -1,0 +1,62 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "CLOUD_PAPER_MAIN_REGISTRATION_FALSE_SUCCESS_RISK_20261025",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "base_sha": "96309488ceccef11552b4fe734c685ef14667c78",
+  "classification": "Source-confirmed false-success risk; no observed live PAPER dispatch incident",
+  "signal": "main cloud-paper-runner.yml workflow_dispatch register job runs only echo Registered and would exit 0 without PAPER work",
+  "root_cause": "Registration-only placeholder was represented as a successful Cloud PAPER Runner job",
+  "impact": "A green manual dispatch on main could be mistaken for live read-only feed, forecasts or runtime health",
+  "prevention_hypothesis": "Preserve workflow registration but emit CLOUD_PAPER_NOT_DEPLOYED and nonzero exit; run structural regression at exact PR head without skips",
+  "before": {
+    "workflow": "main:.github/workflows/cloud-paper-runner.yml",
+    "step": "echo \"Registered\"",
+    "risk": "false success",
+    "observed_run": "NOT_FOUND_OR_NOT_CHECKED"
+  },
+  "patch": {
+    "workflow": ".github/workflows/cloud-paper-runner.yml",
+    "changes": "explicit error and exit 1, contents read, manual only, PAPER_MODE=1, LIVE_ORDER_AUTHORITY=0, REAL_BROKER_ORDERS=0"
+  },
+  "regression_tests": [
+    "tests/test_cloud_paper_registration_failclosed.py::test_placeholder_fails_closed_instead_of_reporting_registered_success",
+    "tests/test_cloud_paper_registration_failclosed.py::test_placeholder_is_manual_and_read_only",
+    "tests/test_cloud_paper_registration_failclosed.py::test_placeholder_cannot_authorize_real_orders"
+  ],
+  "exact_head_ci": {
+    "workflow": ".github/workflows/cloud-paper-registration-guard.yml",
+    "status": "PENDING_FRESH_GITHUB_RECEIPT"
+  },
+  "test_first": {
+    "commit": "eb6b2f1148f32637f2c16a143242a383e332cfed",
+    "github_pr_tests_run": 40169199462,
+    "conclusion": "CANCELLED_SUPERSEDED_BEFORE_COMPLETION",
+    "negative_result": "SOURCE_DETERMINISTIC_NOT_AUTHENTICATED_CI"
+  },
+  "safety": {
+    "PAPER_MODE": "1",
+    "LIVE_ORDER_AUTHORITY": "0",
+    "REAL_BROKER_ORDERS": "0",
+    "real_orders_executed_by_this_change": false,
+    "independent_zero_order_audit": "NOT_AVAILABLE"
+  },
+  "deployment": {
+    "status": "NOT_DEPLOYED",
+    "serving_sha": "NOT_PROVEN",
+    "genuine_feed": "NOT_PROVEN",
+    "immutable_forecast": "NOT_PROVEN",
+    "matured_outcome": "NOT_PROVEN",
+    "cross_system_reconciliation": "NOT_PROVEN"
+  },
+  "rollback": "Revert this isolated PR only after the reviewed PAPER runner has been merged and genuine dispatch evidence is verified; never replace the block with success-only echo.",
+  "recurrence": "Reopen if main registration-only dispatch exits zero without genuine PAPER evidence, or if guard test/sha attestation is skipped, missing, or fails.",
+  "related_operations": [
+    "1420-1439",
+    "1500-1519",
+    "1520-1539",
+    "1540-1559",
+    "1600-1619",
+    "1900-1919"
+  ],
+  "status": "IMPLEMENTED_NOT_MERGED_OR_RUNTIME_PROVEN"
+}
