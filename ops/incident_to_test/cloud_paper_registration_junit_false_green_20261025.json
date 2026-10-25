@@ -142,6 +142,52 @@
         "1900-1919"
       ],
       "status": "TESTED_EXACT_HEAD_TARGETED; UNDEPLOYED; INDEPENDENT_RUNTIME_BLOCKED"
+    },
+    {
+      "claim_id": "CLOUD_PAPER_SEMANTIC_PARAMETER_ID_COVERAGE_20261025",
+      "date_ist": "2026-10-25",
+      "classification": "Confirmed semantic JUnit verifier false-green using synthetic parameter identities; no observed forged production receipt",
+      "signal": "Semantic receipt verifier accepted any unique bracketed parameter IDs under two required test function prefixes, allowing missing actual mutation cases to be replaced while keeping the 8-case denominator.",
+      "root_cause": "Semantic JUnit identity contract checked only function-prefix counts, not the exact eight pytest test-case identities.",
+      "test_first_sha": "d52591f22e9b8edad179d3281e7957993de18b92",
+      "test_first_run_id": 40196469923,
+      "test_first_job_id": 121178256782,
+      "test_first_result": "AUTHENTICATED_FAIL: exact-head match, 2 failed / 16 passed; both unexpected parameter-ID cases DID NOT RAISE ValueError",
+      "patch_sha": "407c1eb4e966149b396ca79151b3d27e2a8f3e2b",
+      "patch_files": [
+        "tools/registration_junit_gate.py",
+        "tests/test_registration_junit_gate.py",
+        "tests/test_cloud_paper_registration_contract.py"
+      ],
+      "regression_tests": [
+        "tests/test_registration_junit_gate.py::test_semantic_receipt_rejects_unexpected_parameter_identity",
+        "tests/test_registration_junit_gate.py::test_semantic_receipt_rejects_unexpected_duplicate_key_parameter"
+      ],
+      "prevention_hypothesis": "Bind JUnit receipt to eight explicit stable pytest parameter IDs, and fail closed on any unrecognized, missing or duplicate ID.",
+      "after_exact_head_ci": {
+        "run_id": 40196516696,
+        "status": "PENDING_VERIFICATION_AT_RECORD_WRITE"
+      },
+      "deployment": "NOT_DEPLOYED",
+      "serving_sha": "NOT_PROVEN",
+      "genuine_paper_runtime": "NOT_PROVEN",
+      "independent_recurrence": "WAITING_NEXT_SESSION",
+      "rollback": "Governed revert only if stable pytest ID contract rejects authentic generated JUnit; preserve fail-closed registration safety and zero-order flags.",
+      "reopen_if": "Any altered or fabricated parameter ID passes JUnit validation, targeted CI skips, or final PR head differs from attested CI SHA.",
+      "related_operations": [
+        "1524",
+        "1525",
+        "1528",
+        "1529",
+        "1530",
+        "1531",
+        "1532",
+        "1534",
+        "1535",
+        "1538",
+        "1539"
+      ],
+      "scope_status": "ACTIONED_AND_TEST_FIRST_REPRODUCED; PATCH_COMMITTED; FULL_CI_DEPLOYMENT_RUNTIME_BLOCKED"
     }
   ]
 }
