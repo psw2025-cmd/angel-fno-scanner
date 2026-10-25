@@ -55,7 +55,7 @@ class TestDependencyAudit(unittest.TestCase):
         def opener(req, timeout):
             calls.append(req.full_url)
             if len(calls) == 1:
-                return Response([pr(1, "a")], '<https://api.github.com/repos/x/y/pulls?page=2>; rel="next"')
+                return Response([pr(1, "a")], f'<https://api.github.com/repos/{REPO}/pulls?state=open&per_page=100&page=2>; rel="next"')
             return Response([pr(2, "b")])
         self.assertEqual(len(fetch_open_prs(REPO, "fake", opener=opener)), 2)
     def test_external_pagination_host_rejected(self):
@@ -72,5 +72,48 @@ class TestDependencyAudit(unittest.TestCase):
         def opener(req, timeout): raise URLError("unavailable")
         with self.assertRaisesRegex(AuditError, "fetch failed"):
             fetch_open_prs(REPO, "fake", opener=opener)
+
+    def test_same_host_different_repository_pagination_rejected(self):
+        def opener(req, timeout):
+            return Response([pr(1, "a")],
+                '<https://api.github.com/repos/another/project/pulls?state=open&per_page=100&page=2>; rel="next"')
+        with self.assertRaisesRegex(AuditError, "Untrusted pagination"):
+            fetch_open_prs(REPO, "fake", opener=opener)
+
+    def test_same_host_different_endpoint_pagination_rejected(self):
+        def opener(req, timeout):
+            return Response([pr(1, "a")],
+                '<https://api.github.com/user?state=open&per_page=100&page=2>; rel="next"')
+        with self.assertRaisesRegex(AuditError, "Untrusted pagination"):
+            fetch_open_prs(REPO, "fake", opener=opener)
+
+    def test_closed_state_pagination_rejected(self):
+        def opener(req, timeout):
+            return Response([pr(1, "a")],
+                f'<https://api.github.com/repos/{REPO}/pulls?state=closed&per_page=100&page=2>; rel="next"')
+        with self.assertRaisesRegex(AuditError, "Untrusted pagination"):
+            fetch_open_prs(REPO, "fake", opener=opener)
+
+    def test_skipped_page_pagination_rejected(self):
+        def opener(req, timeout):
+            return Response([pr(1, "a")],
+                f'<https://api.github.com/repos/{REPO}/pulls?state=open&per_page=100&page=3>; rel="next"')
+        with self.assertRaisesRegex(AuditError, "Untrusted pagination"):
+            fetch_open_prs(REPO, "fake", opener=opener)
+
+    def test_duplicate_query_parameter_pagination_rejected(self):
+        def opener(req, timeout):
+            return Response([pr(1, "a")],
+                f'<https://api.github.com/repos/{REPO}/pulls?state=open&state=closed&per_page=100&page=2>; rel="next"')
+        with self.assertRaisesRegex(AuditError, "Untrusted pagination"):
+            fetch_open_prs(REPO, "fake", opener=opener)
+
+    def test_fragment_pagination_rejected(self):
+        def opener(req, timeout):
+            return Response([pr(1, "a")],
+                f'<https://api.github.com/repos/{REPO}/pulls?state=open&per_page=100&page=2#misleading>; rel="next"')
+        with self.assertRaisesRegex(AuditError, "Untrusted pagination"):
+            fetch_open_prs(REPO, "fake", opener=opener)
+
 
 if __name__ == "__main__": unittest.main()

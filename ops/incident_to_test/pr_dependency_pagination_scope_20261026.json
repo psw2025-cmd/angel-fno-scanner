@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "incident_id": "PAPER-PR-PAGINATION-SCOPE-20261026",
+  "observed_at_utc": "2026-10-25T20:55:50Z",
+  "source_ref": "fix/paper-pr-dependency-audit-20261026",
+  "source_head": "ae790dd6519544d8f6e5dc9ee7e10fb06361ced3",
+  "signal": "PR inventory fetch accepted any same-host api.github.com Link as next page",
+  "scope": "offline code-path defect; no observed malicious API response",
+  "root_cause": "host-only validation of untrusted pagination URL",
+  "risk": "cross-repository or closed-state inventory contamination, missing pages and false PASS",
+  "repair": "Bind pagination to exact repository endpoint, open state, page size 100, sequential page and no duplicate parameters or fragments",
+  "test_file": "tests/test_pr_dependency_audit.py",
+  "negative_cases": [
+    "cross-repository link",
+    "different endpoint link",
+    "closed-state link",
+    "page gap",
+    "duplicate state parameter",
+    "fragment"
+  ],
+  "positive_boundary": "same repository, open state, 100/page, page 2",
+  "test_first_sha": "f0c5e0f49a92cc72300210dff2c2c417a5cc949c",
+  "patch_sha": "8839ac2a6f51343a47194a9ba1e78690faf90998",
+  "ci_status": "PENDING_AT_RECORD_CREATION",
+  "runtime_status": "NOT_APPLICABLE: read-only governance tool not deployed",
+  "certification": "NOT_CERTIFIED",
+  "reopen_on": [
+    "untrusted Link accepted",
+    "pagination gaps accepted",
+    "same-host cross-repo inventory accepted",
+    "missing exact-head CI"
+  ],
+  "rollback": "governed revert of isolated pagination changes; retain parent PR209 audit",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  }
+}
