@@ -11,6 +11,8 @@
 - config/corporate_action_registry.json: added formal corporate action mapping for ICICIPRULI to ICICILIFE symbol change.
 - tools/verify_harness.py: normalized unicode em/en-dashes using escape sequences (\u2014, \u2013) maintaining pure ASCII source encoding.
 - tools/check_downstream.py: normalized currency symbols using unicode escape sequence (\u20b9) maintaining pure ASCII source encoding.
+- .github/workflows/definitive_branch_gate.yml: created definitive GitHub Action workflow enforcing branch protection, cloud paper runner connectivity, and cryptographic reconciliation gate matching BigQuery and Google Sheets.
+- tools/verify_sheets_bq_reconciliation.py: normalized docstring to ASCII hyphen.
 - pytest.ini: set testpaths = tests to prevent exploratory scripts from interfering with automated discovery.
 
 ## 2026-10-21 - Night scanner check tells the truth, and one failure ticket

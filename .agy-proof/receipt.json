@@ -2,9 +2,9 @@
   "schema": 1,
   "policy": "AGY-EVIDENCE-INTEGRITY-v1",
   "session": "6c4acb5c-a981-41f2-a61a-e7751fbdd1c7",
-  "turn": "829ca012373849408f51b96540ea2892",
-  "run_id": "7d236c4e4ee8453fa9180c63fcfc022f",
-  "observed_utc": "2026-10-25T21:26:06Z",
+  "turn": "91341fbc1a444791bac22798faba4188",
+  "run_id": "e50675cdc6bc44689c543c6a8cc1c3fe",
+  "observed_utc": "2026-10-25T22:41:10Z",
   "workspace": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner",
   "scope": "Verify complete cross-source coverage, role classification, fault recovery, live sheet synchronization, 4-point tripwire gates, and negative controls for AngelFNO",
   "limitations": [
@@ -54,60 +54,60 @@
   "subjects_unchanged_during_checks": true,
   "artifacts": [
     {
-      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T212525Z-45bc410c4a4b4b15b8b0a21ee9a1d0fe\\0.stdout.txt",
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T224031Z-eae855e23a4a4f0e9027dd7e77da7abe\\0.stdout.txt",
       "sha256": "647615d4ab1794bbc212c0b59f3e3355bed31065cff619884ca815677180c55f"
     },
     {
-      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T212525Z-45bc410c4a4b4b15b8b0a21ee9a1d0fe\\0.stderr.txt",
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T224031Z-eae855e23a4a4f0e9027dd7e77da7abe\\0.stderr.txt",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T212525Z-45bc410c4a4b4b15b8b0a21ee9a1d0fe\\1.stdout.txt",
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T224031Z-eae855e23a4a4f0e9027dd7e77da7abe\\1.stdout.txt",
       "sha256": "8bd23bfef30ff4b7e26ede56a9ee4173d640720d3d71c0e9428c010bce625355"
     },
     {
-      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T212525Z-45bc410c4a4b4b15b8b0a21ee9a1d0fe\\1.stderr.txt",
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T224031Z-eae855e23a4a4f0e9027dd7e77da7abe\\1.stderr.txt",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T212525Z-45bc410c4a4b4b15b8b0a21ee9a1d0fe\\2.stdout.txt",
-      "sha256": "ad52ce73acd6608df32951fc48a20a9588ab5697f7309dd31a93c2daf8217fda"
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T224031Z-eae855e23a4a4f0e9027dd7e77da7abe\\2.stdout.txt",
+      "sha256": "1684a04adc7a7da442291d499db8538854dd6ec2d1bda8cb124641acfb9bda4b"
     },
     {
-      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T212525Z-45bc410c4a4b4b15b8b0a21ee9a1d0fe\\2.stderr.txt",
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T224031Z-eae855e23a4a4f0e9027dd7e77da7abe\\2.stderr.txt",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T212525Z-45bc410c4a4b4b15b8b0a21ee9a1d0fe\\3.stdout.txt",
-      "sha256": "fb44e58b40316aabc7c0fa34958abb4182aa42f1ab7f26c62fe5bda2e99e17ca"
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T224031Z-eae855e23a4a4f0e9027dd7e77da7abe\\3.stdout.txt",
+      "sha256": "0890308d8ffa14ec28f0f7e657ef1452bd6e499d04050f47243eee6ff8a3c03e"
     },
     {
-      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T212525Z-45bc410c4a4b4b15b8b0a21ee9a1d0fe\\3.stderr.txt",
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T224031Z-eae855e23a4a4f0e9027dd7e77da7abe\\3.stderr.txt",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T212525Z-45bc410c4a4b4b15b8b0a21ee9a1d0fe\\4.stdout.txt",
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T224031Z-eae855e23a4a4f0e9027dd7e77da7abe\\4.stdout.txt",
       "sha256": "0a7dad61eaee2178ac9b0c4129a10ebebc8c4d97bae0902f9b6c0f8b4917f7de"
     },
     {
-      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T212525Z-45bc410c4a4b4b15b8b0a21ee9a1d0fe\\4.stderr.txt",
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T224031Z-eae855e23a4a4f0e9027dd7e77da7abe\\4.stderr.txt",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T212525Z-45bc410c4a4b4b15b8b0a21ee9a1d0fe\\5.stdout.txt",
-      "sha256": "5e42c641a7e9090b99f2d6e7fe620f75088cd2beefaaaf914c09dee2356c397b"
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T224031Z-eae855e23a4a4f0e9027dd7e77da7abe\\5.stdout.txt",
+      "sha256": "3767230afca65b3f7e48b969181499a14815694f5cdc0b69ff0d60b8ecb1b6cd"
     },
     {
-      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T212525Z-45bc410c4a4b4b15b8b0a21ee9a1d0fe\\5.stderr.txt",
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T224031Z-eae855e23a4a4f0e9027dd7e77da7abe\\5.stderr.txt",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T212525Z-45bc410c4a4b4b15b8b0a21ee9a1d0fe\\6.stdout.txt",
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T224031Z-eae855e23a4a4f0e9027dd7e77da7abe\\6.stdout.txt",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
-      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T212525Z-45bc410c4a4b4b15b8b0a21ee9a1d0fe\\6.stderr.txt",
-      "sha256": "f5e8c44c00fb9aed6be59ef4d5d6fce2fe878acfe998b87f3d8a9beebb72ab4d"
+      "path": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner\\.agy-proof\\runs\\2026-10-25T224031Z-eae855e23a4a4f0e9027dd7e77da7abe\\6.stderr.txt",
+      "sha256": "fdca0ce7bbce223f43b8ad10a97be76bcc3ba2aea0eb683e7152dc2f2b14163b"
     }
   ],
   "requirements": [
@@ -168,8 +168,8 @@
         "coverage"
       ],
       "cwd": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner",
-      "started_utc": "2026-10-25T21:25:25Z",
-      "elapsed_seconds": 2.516,
+      "started_utc": "2026-10-25T22:40:31Z",
+      "elapsed_seconds": 2.906,
       "exit_code": 0,
       "assertion": {
         "type": "json_equals",
@@ -195,8 +195,8 @@
         "classification"
       ],
       "cwd": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner",
-      "started_utc": "2026-10-25T21:25:28Z",
-      "elapsed_seconds": 2.313,
+      "started_utc": "2026-10-25T22:40:34Z",
+      "elapsed_seconds": 2.906,
       "exit_code": 0,
       "assertion": {
         "type": "json_equals",
@@ -222,8 +222,8 @@
         "recovery"
       ],
       "cwd": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner",
-      "started_utc": "2026-10-25T21:25:30Z",
-      "elapsed_seconds": 6.156,
+      "started_utc": "2026-10-25T22:40:37Z",
+      "elapsed_seconds": 6.094,
       "exit_code": 0,
       "assertion": {
         "type": "json_equals",
@@ -249,8 +249,8 @@
         "sync"
       ],
       "cwd": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner",
-      "started_utc": "2026-10-25T21:25:36Z",
-      "elapsed_seconds": 7.969,
+      "started_utc": "2026-10-25T22:40:43Z",
+      "elapsed_seconds": 6.438,
       "exit_code": 0,
       "assertion": {
         "type": "json_equals",
@@ -276,8 +276,8 @@
         "safety"
       ],
       "cwd": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner",
-      "started_utc": "2026-10-25T21:25:44Z",
-      "elapsed_seconds": 2.718,
+      "started_utc": "2026-10-25T22:40:50Z",
+      "elapsed_seconds": 1.843,
       "exit_code": 0,
       "assertion": {
         "type": "json_equals",
@@ -302,8 +302,8 @@
         "--json"
       ],
       "cwd": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner",
-      "started_utc": "2026-10-25T21:25:47Z",
-      "elapsed_seconds": 15.563,
+      "started_utc": "2026-10-25T22:40:52Z",
+      "elapsed_seconds": 13.625,
       "exit_code": 0,
       "assertion": {
         "type": "json_equals",
@@ -329,8 +329,8 @@
         "tests/test_verify_codex1_gates.py"
       ],
       "cwd": "C:\\AngelFNO_Workstation\\repos\\angel-fno-scanner",
-      "started_utc": "2026-10-25T21:26:03Z",
-      "elapsed_seconds": 3.797,
+      "started_utc": "2026-10-25T22:41:05Z",
+      "elapsed_seconds": 4.375,
       "exit_code": 0,
       "assertion": {
         "type": "exit_only"
@@ -342,5 +342,5 @@
     }
   ],
   "overall": "PASS",
-  "integrity_signature": "1044d7fc2181b8ce07490566740e0aa680faca243c59e3c3448cb26acfdd3e4b"
+  "integrity_signature": "e333d3c9e5570c975e85c72ceeb3dadac805c59f6def1a11d09aaec4162c03d8"
 }

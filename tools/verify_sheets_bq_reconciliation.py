@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 tools/verify_sheets_bq_reconciliation.py
-100-Year Autonomy Audit — Real-Time Google Sheets & BigQuery Cross-Sink Reconciliation
+100-Year Autonomy Audit - Real-Time Google Sheets & BigQuery Cross-Sink Reconciliation
 Performs deterministic readback audit comparing OPTION_SHEET and BigQuery option_predictions_live.
 Never equates total table rows with cycle parity; validates exact counts and symbol sets.
 """
