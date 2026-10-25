@@ -26,10 +26,17 @@
   ],
   "expected_ci": "Full CI must fail with explicit missing external contract until genuine file is recovered; fixture tests do not certify artifact",
   "after": {
-    "pr_tests_run_id": 40204046382,
-    "encoding_run_id": 40204046376,
-    "status": "IN_PROGRESS_AT_RECORD_TIME",
-    "exact_head_certification": "NOT_VERIFIED"
+    "first_head": "20035ae13f5ad4a3e0a9d1e40157bed365df893c",
+    "first_head_pr_tests_run_id": 40204046382,
+    "verified_pr_tests_run_id": 40204076527,
+    "verified_pr_tests_job_id": 121201223225,
+    "verified_result": "FAILURE: 1 failed, 365 passed, 2 skipped, 3 warnings",
+    "verified_error": "FileNotFoundError: COLAB_SCHEMA_CONTRACT_BLOCKED: authentic 17_COLAB_SCHEMA_CONTRACT.json is unavailable; external schema certification cannot pass",
+    "verified_exit_code": 1,
+    "encoding_run_id": 40204076539,
+    "encoding_result": "SUCCESS: Ubuntu and Windows jobs",
+    "exact_head_certification": "NOT_PROVEN: PR Tests is pull_request workflow, source checkout may be synthetic merge",
+    "full_non_skipped_certification": "BLOCKED: authentic external JSON missing and two other skips"
   },
   "source_of_truth": "Authentic original JSON plus independently verified hash and provenance; no synthetic replacement",
   "safety": {
@@ -45,13 +52,13 @@
     "1528": "ACTIONED",
     "1529": "ACTIONED",
     "1531": "ACTIONED",
-    "1532": "ACTIONED",
-    "1534": "BLOCKED: authentic contract missing",
+    "1532": "TESTED: GitHub PR Tests run 40204076527 exit 1 on missing artifact",
+    "1534": "BLOCKED: 1 intentional missing-contract failure plus 2 remaining skips",
     "1535": "BLOCKED: full non-skipped CI unavailable",
     "1536": "BLOCKED: undeployed",
     "1537": "BLOCKED: independent market-session recurrence",
-    "1538": "ACTIONED",
-    "1539": "OPEN: canonical Issue #3 publication pending"
+    "1538": "ACTIONED: incident record and negative outcome retained",
+    "1539": "OPEN: Issue #3 packet pending"
   },
   "not_proven": [
     "authentic external contract",
@@ -63,5 +70,6 @@
     "matured outcomes",
     "cross-system reconciliation",
     "deployment rollback"
-  ]
+  ],
+  "last_seen_utc": "2026-10-25T14:50:53Z"
 }
