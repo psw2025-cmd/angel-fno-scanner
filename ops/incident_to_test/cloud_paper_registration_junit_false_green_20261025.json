@@ -59,5 +59,34 @@
     "REAL_BROKER_ORDERS": "0",
     "no_orders_executed_by_change": true
   },
-  "scope": "Operations 1524,1525,1531,1532,1534,1535,1538,1539; no lifecycle completion"
+  "scope": "Operations 1524,1525,1531,1532,1534,1535,1538,1539; no lifecycle completion",
+  "additional_occurrences": [
+    {
+      "date_ist": "2026-10-25",
+      "signal": "JUnit registration gate accepted expected test names with unrelated classname, or unrecognized testcase child element.",
+      "root_cause": "Test identities were bound by name only, not module classname; testcase child tags were not validated.",
+      "test_first_sha": "e05371e8796e57f16ad3eafbfbd2111b4b04cbc3",
+      "test_first_run_id": 40177378002,
+      "test_first_job_id": 121120907129,
+      "test_first_result": "FAILURE: 2 failed, 8 passed; both expected ValueError but gate did not raise; raw GitHub Actions logs independently read",
+      "patch_sha": "17a80e7934a0d56c950fc0d083e9a0d1a82ae7f5",
+      "regression_tests": [
+        "tests/test_registration_junit_gate.py::test_unexpected_classname_rejected",
+        "tests/test_registration_junit_gate.py::test_unrecognized_testcase_outcome_rejected"
+      ],
+      "prevention_hypothesis": "Require the exact pytest module classname and reject unrecognized testcase child elements; accept real pytest output with zero skipped cases.",
+      "rollback": "Revert only this isolated validator amendment if legitimate pytest JUnit becomes incompatible; do not weaken the registration-only fail-closed gate.",
+      "reopen_if": "An unexpected classname or unrecognized testcase outcome passes, or genuine JUnit is rejected without a documented safe schema change.",
+      "exact_head_ci": "PENDING_NEW_COMMIT_RUN",
+      "deployment": "NOT_DEPLOYED",
+      "genuine_paper_runtime": "NOT_PROVEN",
+      "independent_recurrence": "WAITING",
+      "related_operations": [
+        "1500-1519",
+        "1520-1539",
+        "1540-1559",
+        "1900-1919"
+      ]
+    }
+  ]
 }
