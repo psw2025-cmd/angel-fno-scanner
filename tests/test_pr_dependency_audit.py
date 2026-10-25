@@ -55,7 +55,7 @@ class TestDependencyAudit(unittest.TestCase):
         def opener(req, timeout):
             calls.append(req.full_url)
             if len(calls) == 1:
-                return Response([pr(1, "a")], '<https://api.github.com/repos/x/y/pulls?page=2>; rel="next"')
+                return Response([pr(1, "a")], f'<https://api.github.com/repos/{REPO}/pulls?state=open&per_page=100&page=2>; rel="next"')
             return Response([pr(2, "b")])
         self.assertEqual(len(fetch_open_prs(REPO, "fake", opener=opener)), 2)
     def test_external_pagination_host_rejected(self):
