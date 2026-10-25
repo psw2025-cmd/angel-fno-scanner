@@ -140,8 +140,12 @@ jobs:
           assert recon.get("row_count_match") is True, "Row count mismatch"
           assert recon.get("sheets_symbols_count") == 219, "Sheets symbol count != 219"
           assert recon.get("bigquery_symbols_count") == 219, "BigQuery symbol count != 219"
+          assert recon.get("run_id_match") is True, "Run ID parity mismatch"
+          assert recon.get("timestamp_match") is True, "Timestamp parity mismatch"
+          assert recon.get("writer_id_match") is True, "Writer ID parity mismatch"
           sha = data.get("checksum_sha256_16")
           print(f"[CRYPTOGRAPHIC PROOF PASS] Symbol SHA-256 (16-char prefix): {sha}")
+          print(f"[PROVENANCE PROOF PASS] Run ID: {recon.get('sheet_run_id')} | Writer ID: {recon.get('sheet_writer_id')} | Delta: {recon.get('provenance_time_delta_seconds')}s")
           PY
 
       - name: Upload Cryptographic Reconciliation Evidence

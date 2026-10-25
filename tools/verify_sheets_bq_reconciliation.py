@@ -3,7 +3,7 @@
 tools/verify_sheets_bq_reconciliation.py
 100-Year Autonomy Audit - Real-Time Google Sheets & BigQuery Cross-Sink Reconciliation
 Performs deterministic readback audit comparing OPTION_SHEET and BigQuery option_predictions_live.
-Never equates total table rows with cycle parity; validates exact counts and symbol sets.
+Never equates total table rows with cycle parity; validates exact counts, symbol sets, and provenance.
 """
 
 import argparse
@@ -41,10 +41,11 @@ def get_authenticated_clients():
     return gc, bq
 
 
-def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, table=None):
+def reconcile(run_id=None, sheet_id=None, project=None, dataset=None, table=None):
     """
-    Read Sheets FORENSIC_LIVE and CE_PE_RANK, compare with BigQuery option_predictions_live.
-    Verify universe coverage (219), distinct symbols, and run provenance.
+    Read Sheets FORENSIC_LIVE, CE_PE_RANK, and PUBLICATION_STATUS, compare with
+    BigQuery option_predictions_live. Verify universe coverage (219), distinct
+    symbols, run provenance (run_id, git_sha, writer_id), and timestamp alignment.
     """
     credentials.load_env()
     canonical_sheet_id = sheet_id or credentials.get_canonical_sheet_id()
@@ -58,7 +59,7 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
         "status": "FAIL_CLOSED",
         "canonical_sheet_id": canonical_sheet_id,
         "bigquery_table": full_table_id,
-        "target_run_id": str(run_id),
+        "target_run_id": str(run_id) if run_id else "AUTO_DETECT",
         "sheets": {},
         "bigquery": {},
         "reconciliation": {}
@@ -75,13 +76,18 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
 
     # 1. Inspect Google Sheets
     forensic_symbols = set()
+    sheet_run_id = None
+    sheet_git_sha = None
+    sheet_writer_id = None
+    sheet_published_at_ist = None
+
     try:
         sh = gc.open_by_key(canonical_sheet_id)
+
         # FORENSIC_LIVE tab
         ws_forensic = sh.worksheet("FORENSIC_LIVE")
         f_vals = ws_forensic.get_all_values()
-        f_header = [h.strip() for h in f_vals[0]]
-        f_rows = f_vals[1:]
+        f_rows = f_vals[1:] if len(f_vals) > 1 else []
         forensic_count = len(f_rows)
         forensic_symbols = {r[1].strip() for r in f_rows if len(r) > 1 and r[1].strip()}
 
@@ -98,6 +104,19 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
         ]
         rank_count = len(rank_data_rows)
 
+        # PUBLICATION_STATUS tab: provenance metadata
+        try:
+            ws_pub = sh.worksheet("PUBLICATION_STATUS")
+            pub_vals = ws_pub.get_all_values()
+            if len(pub_vals) > 1:
+                pub_row = pub_vals[1]
+                sheet_run_id = pub_row[2].strip() if len(pub_row) > 2 else None
+                sheet_git_sha = pub_row[3].strip() if len(pub_row) > 3 else None
+                sheet_writer_id = pub_row[4].strip() if len(pub_row) > 4 else None
+                sheet_published_at_ist = pub_row[5].strip() if len(pub_row) > 5 else None
+        except Exception as pub_exc:
+            result["sheets_pub_error"] = str(pub_exc)
+
         result["sheets"] = {
             "status": "PASS" if forensic_count == 219 and len(forensic_symbols) == 219 and rank_count == 200 else "FAIL",
             "spreadsheet_title": sh.title,
@@ -105,12 +124,21 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
             "forensic_distinct_symbols": len(forensic_symbols),
             "ce_pe_rank_data_rows": rank_count,
             "sample_symbol": f_rows[0][1] if f_rows else None,
-            "sample_timestamp": f_rows[0][0] if f_rows else None
+            "sample_timestamp": f_rows[0][0] if f_rows else None,
+            "provenance_run_id": sheet_run_id,
+            "provenance_git_sha": sheet_git_sha,
+            "provenance_writer_id": sheet_writer_id,
+            "provenance_published_at_ist": sheet_published_at_ist
         }
     except Exception as exc:
         result["sheets"] = {"status": "FAIL", "error": str(exc)}
 
     # 2. Inspect BigQuery
+    bq_latest_run_id = None
+    bq_latest_git_sha = None
+    bq_latest_writer_id = None
+    bq_latest_timestamp = None
+
     try:
         table_ref = bq.get_table(full_table_id)
         bq_total_rows = table_ref.num_rows
@@ -126,13 +154,33 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
         query_job = bq.query(query)
         q_res = list(query_job.result())[0]
 
+        # Extract latest partition provenance
+        prov_query = f"""
+            SELECT run_id, git_sha, writer_id, snapshot_timestamp, count(*) as count
+            FROM `{full_table_id}`
+            GROUP BY run_id, git_sha, writer_id, snapshot_timestamp
+            ORDER BY snapshot_timestamp DESC
+            LIMIT 1
+        """
+        prov_rows = list(bq.query(prov_query).result())
+        if prov_rows:
+            bq_latest_row = prov_rows[0]
+            bq_latest_run_id = bq_latest_row.run_id
+            bq_latest_git_sha = bq_latest_row.git_sha
+            bq_latest_writer_id = bq_latest_row.writer_id
+            bq_latest_timestamp = bq_latest_row.snapshot_timestamp
+
         result["bigquery"] = {
             "status": "PASS" if q_res.distinct_symbols == 219 and q_res.total_rows == 219 else "FAIL",
             "table_num_rows": bq_total_rows,
             "query_total_rows": q_res.total_rows,
             "distinct_symbols": q_res.distinct_symbols,
             "oldest_timestamp": str(q_res.oldest_timestamp),
-            "newest_timestamp": str(q_res.newest_timestamp)
+            "newest_timestamp": str(q_res.newest_timestamp),
+            "provenance_run_id": bq_latest_run_id,
+            "provenance_git_sha": bq_latest_git_sha,
+            "provenance_writer_id": bq_latest_writer_id,
+            "provenance_snapshot_timestamp": str(bq_latest_timestamp)
         }
     except Exception as exc:
         result["bigquery"] = {"status": "FAIL", "error": str(exc)}
@@ -150,7 +198,6 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
     sheets_sym_list = sorted(list(forensic_symbols))
     sheets_hash = hashlib.sha256(",".join(sheets_sym_list).encode("utf-8")).hexdigest()[:16] if sheets_sym_list else "NONE_SHEETS"
 
-    # Query distinct symbols from BigQuery table
     bq_hash = "NONE_BQ"
     if bq_ok:
         try:
@@ -163,6 +210,29 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
     hash_matches = (sheets_hash == bq_hash) and (sheets_hash not in ("NONE_SHEETS", "NONE_BQ"))
     result["checksum_sha256_16"] = sheets_hash
 
+    # Provenance Comparisons (Strict assertions, zero hardcoded booleans)
+    target_rid = str(run_id).strip() if run_id else bq_latest_run_id
+    result["target_run_id"] = str(target_rid)
+
+    run_id_match = bool(sheet_run_id and bq_latest_run_id and (sheet_run_id == bq_latest_run_id))
+    if run_id:
+        run_id_match = run_id_match and (sheet_run_id == str(run_id).strip())
+
+    git_sha_match = bool(sheet_git_sha and bq_latest_git_sha and (sheet_git_sha == bq_latest_git_sha))
+    writer_id_match = bool(sheet_writer_id and bq_latest_writer_id and (sheet_writer_id == bq_latest_writer_id) and (sheet_writer_id == "market_bot"))
+
+    time_diff_sec = None
+    timestamp_match = False
+    if sheet_published_at_ist and bq_latest_timestamp:
+        try:
+            sheet_dt = datetime.datetime.strptime(sheet_published_at_ist, "%Y-%m-%d %H:%M:%S").replace(tzinfo=IST)
+            sheet_utc = sheet_dt.astimezone(datetime.timezone.utc)
+            bq_utc = bq_latest_timestamp.astimezone(datetime.timezone.utc)
+            time_diff_sec = abs((sheet_utc - bq_utc).total_seconds())
+            timestamp_match = (time_diff_sec <= 120.0)
+        except Exception:
+            timestamp_match = False
+
     result["reconciliation"] = {
         "universe_parity": universe_matches,
         "symbol_exact_match": hash_matches,
@@ -170,18 +240,29 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
         "sheets_symbols_count": sheets_syms,
         "bigquery_symbols_count": bq_syms,
         "row_count_match": row_count_matches,
-        "timestamp_match": True,
-        "run_id_match": True,
+        "timestamp_match": timestamp_match,
+        "run_id_match": run_id_match,
+        "git_sha_match": git_sha_match,
+        "writer_id_match": writer_id_match,
         "symbol_hash_parity_verified": hash_matches,
         "live_universe_qualified": universe_matches and (sheets_syms == 219),
-        "run_id_parity_verified": True,
-        "exchange_timestamp_parity_verified": True,
+        "run_id_parity_verified": run_id_match,
+        "exchange_timestamp_parity_verified": timestamp_match,
+        "provenance_time_delta_seconds": time_diff_sec,
+        "sheet_run_id": sheet_run_id,
+        "bigquery_run_id": bq_latest_run_id,
+        "sheet_git_sha": sheet_git_sha,
+        "bigquery_git_sha": bq_latest_git_sha,
+        "sheet_writer_id": sheet_writer_id,
+        "bigquery_writer_id": bq_latest_writer_id,
         "adaniensol_present": "ADANIENSOL" in forensic_symbols,
         "adanipower_present": "ADANIPOWER" in forensic_symbols,
         "ntpc_present": "NTPC" in forensic_symbols
     }
 
-    if (sheets_ok and bq_ok and universe_matches and row_count_matches and result["sheets"].get("ce_pe_rank_data_rows") == 200 and hash_matches):
+    if (sheets_ok and bq_ok and universe_matches and row_count_matches
+            and result["sheets"].get("ce_pe_rank_data_rows") == 200
+            and hash_matches and run_id_match and timestamp_match and writer_id_match):
         result["status"] = "PASS"
     else:
         result["status"] = "FAIL_CLOSED"
@@ -191,7 +272,7 @@ def reconcile(run_id="37900561389", sheet_id=None, project=None, dataset=None, t
 
 def main():
     parser = argparse.ArgumentParser(description="Reconcile Google Sheets and BigQuery sinks.")
-    parser.add_argument("--run-id", default="37900561389", help="Workflow run ID to reconcile")
+    parser.add_argument("--run-id", default=None, help="Specific workflow run ID to reconcile (defaults to auto-detect latest)")
     parser.add_argument("--sheet-id", default=None, help="Google Sheet ID")
     parser.add_argument("--project", default=BQ_PROJECT_DEFAULT, help="BigQuery GCP Project ID")
     parser.add_argument("--dataset", default=BQ_DATASET_DEFAULT, help="BigQuery Dataset ID")
@@ -228,6 +309,9 @@ def main():
 - **FORENSIC_LIVE Unique Symbols**: `{recon_res.get('sheets', {}).get('forensic_distinct_symbols', 0)}`
 - **CE_PE_RANK Data Rows**: `{recon_res.get('sheets', {}).get('ce_pe_rank_data_rows', 0)}`
 - **Sample Timestamp**: `{recon_res.get('sheets', {}).get('sample_timestamp', 'N/A')}`
+- **Provenance Run ID**: `{recon_res.get('sheets', {}).get('provenance_run_id', 'N/A')}`
+- **Provenance Git SHA**: `{recon_res.get('sheets', {}).get('provenance_git_sha', 'N/A')}`
+- **Provenance Writer ID**: `{recon_res.get('sheets', {}).get('provenance_writer_id', 'N/A')}`
 - **Tab Inspection Status**: `{recon_res.get('sheets', {}).get('status', 'FAIL')}`
 
 ---
@@ -237,6 +321,10 @@ def main():
 - **Distinct Symbols Count**: `{recon_res.get('bigquery', {}).get('distinct_symbols', 0)}`
 - **Oldest Exchange Timestamp**: `{recon_res.get('bigquery', {}).get('oldest_timestamp', 'N/A')}`
 - **Newest Exchange Timestamp**: `{recon_res.get('bigquery', {}).get('newest_timestamp', 'N/A')}`
+- **Provenance Run ID**: `{recon_res.get('bigquery', {}).get('provenance_run_id', 'N/A')}`
+- **Provenance Git SHA**: `{recon_res.get('bigquery', {}).get('provenance_git_sha', 'N/A')}`
+- **Provenance Writer ID**: `{recon_res.get('bigquery', {}).get('provenance_writer_id', 'N/A')}`
+- **Provenance Snapshot Timestamp**: `{recon_res.get('bigquery', {}).get('provenance_snapshot_timestamp', 'N/A')}`
 - **Table Inspection Status**: `{recon_res.get('bigquery', {}).get('status', 'FAIL')}`
 
 ---
@@ -246,7 +334,11 @@ def main():
 | :--- | :---: | :---: | :---: |
 | **Universe Symbol Count** | `{recon_res.get('reconciliation', {}).get('sheets_symbols_count', 0)}` | `{recon_res.get('reconciliation', {}).get('bigquery_symbols_count', 0)}` | `{'PASS' if recon_res.get('reconciliation', {}).get('universe_parity') else 'FAIL'}` |
 | **Row Count Alignment** | `{recon_res.get('sheets', {}).get('forensic_live_rows', 0)}` | `{recon_res.get('bigquery', {}).get('query_total_rows', 0)}` | `{'PASS' if recon_res.get('reconciliation', {}).get('row_count_match') else 'FAIL'}` |
-| **219-Symbol Full Universe** | 219 | 219 | `{'PASS' if recon_res.get('reconciliation', {}).get('live_universe_qualified') else 'FAIL'}` |
+| **Symbol SHA-256 Prefix** | `{recon_res.get('checksum_sha256_16', 'N/A')}` | `{recon_res.get('checksum_sha256_16', 'N/A')}` | `{'PASS' if recon_res.get('reconciliation', {}).get('symbol_exact_match') else 'FAIL'}` |
+| **Run ID Parity** | `{recon_res.get('reconciliation', {}).get('sheet_run_id', 'N/A')}` | `{recon_res.get('reconciliation', {}).get('bigquery_run_id', 'N/A')}` | `{'PASS' if recon_res.get('reconciliation', {}).get('run_id_match') else 'FAIL'}` |
+| **Git SHA Parity** | `{recon_res.get('reconciliation', {}).get('sheet_git_sha', 'N/A')}` | `{recon_res.get('reconciliation', {}).get('bigquery_git_sha', 'N/A')}` | `{'PASS' if recon_res.get('reconciliation', {}).get('git_sha_match') else 'FAIL'}` |
+| **Writer ID Parity** | `{recon_res.get('reconciliation', {}).get('sheet_writer_id', 'N/A')}` | `{recon_res.get('reconciliation', {}).get('bigquery_writer_id', 'N/A')}` | `{'PASS' if recon_res.get('reconciliation', {}).get('writer_id_match') else 'FAIL'}` |
+| **Timestamp Parity (<=120s)** | `{recon_res.get('sheets', {}).get('provenance_published_at_ist', 'N/A')}` | `{recon_res.get('bigquery', {}).get('provenance_snapshot_timestamp', 'N/A')}` | `{'PASS' if recon_res.get('reconciliation', {}).get('timestamp_match') else 'FAIL'}` |
 
 ---
 

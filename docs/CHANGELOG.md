@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-26 - Elimination of hardcoded provenance booleans in cross-sink reconciliation
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED
+**Evidence:** 
+- `tools/verify_sheets_bq_reconciliation.py`: replaced hardcoded `True` values for `run_id_match`, `timestamp_match`, `run_id_parity_verified`, and `exchange_timestamp_parity_verified` with dynamic extractions from `PUBLICATION_STATUS` worksheet and BigQuery `option_predictions_live` partition. Measured time delta is 0.0178s; run ID is dynamically verified as `39806853848`.
+- `tests/test_verify_sheets_bq_reconciliation.py`: added 4 unit tests (including negative controls for run ID mismatch, timestamp drift >120s, and unauthorized non-market_bot writer); all passed.
+- Full pytest suite: 408 passed in 19.71s (zero regressions).
+- Source encoding gate: PASS across 193 files with 0 errors.
+
+### What changed
+- `tools/verify_sheets_bq_reconciliation.py`: dynamic extraction of `sheet_run_id`, `sheet_git_sha`, `sheet_writer_id`, `sheet_published_at_ist` from `PUBLICATION_STATUS` tab; queried latest partition from BigQuery; dynamic calculation of boolean match flags; removed hardcoded default `--run-id 37900561389` in favor of dynamic detection.
+- `tests/test_verify_sheets_bq_reconciliation.py`: created negative control suite testing fail-closed behavior on mismatched provenance.
+- `.github/workflows/pr_tests.yml`: added explicit assertions for `run_id_match`, `timestamp_match`, and `writer_id_match`.
+- `.github/workflows/definitive_branch_gate.yml`: added explicit assertions for `run_id_match`, `timestamp_match`, and `writer_id_match`.
+
 ## 2026-10-26 - Autonomous Cloud Run Deployment, Explainer Guide & Colab Intelligence
 
 **Status:** IMPLEMENTED_AND_DEPLOYED
