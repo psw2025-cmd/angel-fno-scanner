@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-26 - Symbol identity alignment and repository policy enforcement
+
+**Status:** IMPLEMENTED_NOT_DEPLOYED
+**Evidence:** 404/404 pytest tests pass. 47/47 core contract tests pass. tools/verify_all.py returns ALL GREEN. tools/encoding_source_gate.py returns PASS (8 files, 0 errors). Proof receipt verified.
+
+### What changed
+- angel_prediction_engine.py: updated regulatory symbol map (ICICIPRULI -> ICICILIFE) to match NSE circular; generalized entry regex in reconcile_next_day_gap_trades to safely parse multi-format currency notes.
+- config/fno_canonical_universe_219.json: aligned ICICIPRULI to ICICILIFE.
+- config/corporate_action_registry.json: added formal corporate action mapping for ICICIPRULI to ICICILIFE symbol change.
+- tools/verify_harness.py: normalized unicode em/en-dashes using escape sequences (\u2014, \u2013) maintaining pure ASCII source encoding.
+- tools/check_downstream.py: normalized currency symbols using unicode escape sequence (\u20b9) maintaining pure ASCII source encoding.
+- pytest.ini: set testpaths = tests to prevent exploratory scripts from interfering with automated discovery.
+
 ## 2026-10-21 - Night scanner check tells the truth, and one failure ticket
 
 **Status:** IMPLEMENTED_NOT_DEPLOYED

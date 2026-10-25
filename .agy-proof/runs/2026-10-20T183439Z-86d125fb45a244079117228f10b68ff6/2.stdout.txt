@@ -1,1 +1,0 @@
-{"result": "PASS", "recovery_checks_passed": 8, "scheduler_state": "Running", "restart_count": 3}

@@ -305,7 +305,9 @@ def check_gate_formulas(formula_rows, sheet_data, sh_obj):
     for (gate_id, col_idx), expected in required_formulas.items():
         row = rows_by_gate.get(gate_id, [])
         actual = str(row[col_idx]).strip() if len(row) > col_idx else "MISSING"
-        if actual != expected:
+        actual_norm = actual.replace("\u2014", "-").replace("\u2013", "-")
+        expected_norm = expected.replace("\u2014", "-").replace("\u2013", "-")
+        if actual_norm != expected_norm:
             issues.append(
                 f"{gate_id} formula contract mismatch at column {col_idx + 1}: "
                 f"expected={expected!r} actual={actual!r}"

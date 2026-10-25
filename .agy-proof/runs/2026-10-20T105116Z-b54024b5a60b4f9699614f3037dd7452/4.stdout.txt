@@ -1,1 +1,0 @@
-{"result": "PASS", "PAPER_MODE": "1", "LIVE_ORDER_AUTHORITY": "0", "safety_enforced": true}

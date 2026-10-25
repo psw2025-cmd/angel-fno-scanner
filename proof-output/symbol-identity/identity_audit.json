@@ -1,0 +1,58 @@
+{
+  "checked_at_ist": "2026-10-26T01:15:19.419265+05:30",
+  "mode": "READ_ONLY_OFFLINE",
+  "results": [
+    {
+      "check": "REGISTRY_SCHEMA",
+      "status": "PASS",
+      "detail": "1 events"
+    },
+    {
+      "check": "agent_manifest.json",
+      "status": "PASS",
+      "detail": "$.universe.symbols: count=219 unique=219 expected=ICICILIFE"
+    },
+    {
+      "check": "fno_canonical_universe_219.json",
+      "status": "PASS",
+      "detail": "$.symbols: count=219 unique=219 expected=ICICILIFE"
+    },
+    {
+      "check": "UNIVERSE_AGREEMENT",
+      "status": "PASS",
+      "detail": "symmetric_difference=[]"
+    },
+    {
+      "check": "DATE_ALIAS_2026-10-22",
+      "status": "PASS",
+      "detail": "actual=ICICIPRULI, expected=ICICIPRULI"
+    },
+    {
+      "check": "DATE_ALIAS_2026-10-23",
+      "status": "PASS",
+      "detail": "actual=ICICILIFE, expected=ICICILIFE"
+    },
+    {
+      "check": "DATE_ALIAS_2026-10-26",
+      "status": "PASS",
+      "detail": "actual=ICICILIFE, expected=ICICILIFE"
+    },
+    {
+      "check": "BROKER_INSTRUMENT_IDENTITY",
+      "status": "BLOCKED",
+      "detail": "Live authenticated broker-master check required"
+    },
+    {
+      "check": "DOWNSTREAM_BIGQUERY_SHEETS_POWERBI",
+      "status": "BLOCKED",
+      "detail": "Authenticated sink readbacks required"
+    },
+    {
+      "check": "END_TO_END_PRODUCTION",
+      "status": "BLOCKED",
+      "detail": "Valid market-cycle receipts, CI, source and sink lineage required"
+    }
+  ],
+  "offline_status": "PASS",
+  "production_certified": false
+}

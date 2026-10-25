@@ -412,7 +412,7 @@ TARGETED_DISCOVERY_QUERIES = (
 )
 
 REGULATOR_SECTOR_MAP = {
-    "IRDAI": ("POLICYBZR", "HDFCLIFE", "SBILIFE", "ICICIPRULI", "LICI"),
+    "IRDAI": ("POLICYBZR", "HDFCLIFE", "SBILIFE", "ICICILIFE", "LICI"),
     "USFDA": ("SUNPHARMA", "DRREDDY", "CIPLA", "DIVISLAB", "LUPIN", "AUROPHARMA", "ALKEM", "ZYDUSLIFE", "TORNTPHARM", "BIOCON"),
     "CDSCO": ("SUNPHARMA", "DRREDDY", "CIPLA", "DIVISLAB", "LUPIN", "AUROPHARMA", "ALKEM", "ZYDUSLIFE", "TORNTPHARM", "BIOCON"),
     "TRAI": ("BHARTIARTL", "IDEA", "INDUSTOWER"),
@@ -1485,7 +1485,7 @@ def reconcile_next_day_gap_trades(smartApi, sh, bq_client, predictions, ist_str,
             contract = (r[6] if side == "CE" else r[7]).strip().upper()
             note = r[8]
 
-            m_entry = re.search(r"Entry:\s*₹?\s*([0-9.]+)", note)
+            m_entry = re.search(r"Entry:\s*(?:[^\d\s]+\s*)?([0-9.]+)", note)
             entry_ltp = float(m_entry.group(1)) if m_entry else 0.0
 
             open_ltp = 0.0

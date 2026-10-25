@@ -1,4 +1,4 @@
-﻿import json
+import json
 
 import pytest
 
@@ -41,6 +41,7 @@ def test_scanner_prediction_failure_is_not_false_green(monkeypatch):
     import angel_prediction_engine as engine
     from types import SimpleNamespace
 
+    monkeypatch.setattr(scanner, "session_plan", lambda *_: ("OPEN", {"status": "OPEN", "expect_live_scanner": True}))
     monkeypatch.setattr(scanner, "load_env", lambda: None)
     monkeypatch.setattr(scanner, "require_authorized_writer", lambda: None)
     monkeypatch.setattr(scanner, "acquire_cycle_lease", lambda: None)
@@ -105,6 +106,7 @@ def test_fresh_heartbeat_still_runs_one_prediction(monkeypatch):
     import angel_prediction_engine as engine
     from types import SimpleNamespace
     calls = []
+    monkeypatch.setattr(scanner, "session_plan", lambda *_: ("OPEN", {"status": "OPEN", "expect_live_scanner": True}))
     monkeypatch.setattr(scanner, "load_env", lambda: None)
     monkeypatch.setattr(scanner, "require_authorized_writer", lambda: None)
     monkeypatch.setattr(scanner, "acquire_cycle_lease", lambda: None)

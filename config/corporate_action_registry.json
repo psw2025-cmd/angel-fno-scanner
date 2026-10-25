@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "events": [
+    {
+      "old_symbol": "ICICIPRULI",
+      "new_symbol": "ICICILIFE",
+      "effective_date": "2026-10-23",
+      "exchange": "NSE",
+      "segments": ["EQ", "FO"],
+      "equity_isin": "INE726G01019",
+      "source_ref": "NSE/CML/76967",
+      "source_url": "https://nsearchives.nseindia.com/content/circulars/CML76967.pdf",
+      "derivatives_source_ref": "NSE/FAOP/77013",
+      "derivatives_source_url": "https://nsearchives.nseindia.com/content/circulars/FAOP77013.pdf",
+      "status": "exchange_verified"
+    }
+  ]
+}

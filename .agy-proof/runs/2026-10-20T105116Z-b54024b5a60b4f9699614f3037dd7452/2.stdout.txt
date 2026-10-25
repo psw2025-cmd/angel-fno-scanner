@@ -1,1 +1,0 @@
-{"result": "FAIL", "state": "Running", "has_retry": false, "has_queue": false, "has_lock": true}

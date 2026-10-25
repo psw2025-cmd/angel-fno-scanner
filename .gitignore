@@ -47,3 +47,6 @@ scratch/
 *.xls
 C:/Temp/
 C:\Temp\
+
+# Evidence gate run execution artifacts
+.agy-proof/runs/

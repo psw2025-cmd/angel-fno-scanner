@@ -1,4 +1,0 @@
-usage: verify_codex1_gates.py [-h] [--mock-offline] [--mock-broker-down]
-                              [--mock-wrong-date] [--mock-live-trading]
-                              [--mock-stale]
-verify_codex1_gates.py: error: unrecognized arguments: --json

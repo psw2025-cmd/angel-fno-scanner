@@ -1,1 +1,0 @@
-{"result": "PASS", "record_count": 3233, "roles": {"Production": 105, "Test": 2953, "Archive": 173, "Backup": 2}, "unknowns": 0, "reconciliation": {"filesystem_count": 3233, "csv_count": 3233, "missing_from_csv": 0, "extra_csv": 0, "walk_errors": []}}

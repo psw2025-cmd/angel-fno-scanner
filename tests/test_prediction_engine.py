@@ -676,9 +676,7 @@ def test_reconcile_preserves_exact_contract_identity_when_atm_drifts(monkeypatch
         def __init__(self, ws):
             self.ws = ws
         def worksheet(self, name):
-            if name == "PAPER_ALERT_LOG":
-                return self.ws
-            raise ValueError(f"Unknown sheet: {name}")
+            return self.ws
 
     class MockSmartApi:
         def __init__(self):

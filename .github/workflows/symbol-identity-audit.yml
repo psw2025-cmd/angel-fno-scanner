@@ -1,0 +1,29 @@
+﻿name: Symbol Identity Audit
+on:
+  push:
+    paths:
+      - 'agent_manifest.json'
+      - 'config/fno_canonical_universe_219.json'
+      - 'config/corporate_action_registry.json'
+      - 'tools/symbol_identity_guard.py'
+      - '.github/workflows/symbol-identity-audit.yml'
+  pull_request:
+  schedule:
+    - cron: '15 2 * * 1-5'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-identity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python tools/symbol_identity_guard.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: symbol-identity-audit
+          path: proof-output/symbol-identity/identity_audit.json
