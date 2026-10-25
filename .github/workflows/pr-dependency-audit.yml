@@ -1,7 +1,7 @@
 name: PAPER PR Dependency Audit
 on:
   push:
-    branches: ['fix/paper-pr-pagination-*']
+    branches: ['fix/paper-pr-pagination-*', 'fix/paper-pr-redirect-*']
   pull_request:
     branches: [main]
   workflow_dispatch:
