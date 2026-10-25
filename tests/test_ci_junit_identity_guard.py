@@ -41,6 +41,11 @@ class JUnitIdentityGuardTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0, result.stdout)
         self.assertIn("CI_TEST_GATE_BLOCKED", result.stdout)
 
+    def test_same_test_name_in_distinct_classes_is_not_a_duplicate(self):
+        result = invoke([("pytest", [("tests.test_alpha", "test_shared"),
+                                      ("tests.test_beta", "test_shared")])])
+        self.assertEqual(result.returncode, 0, result.stdout)
+
     def test_distinct_testcase_identities_still_pass_structural_gate(self):
         result = invoke([("pytest", [("tests.test_guard", "test_a"),
                                       ("tests.test_guard", "test_b")])])
