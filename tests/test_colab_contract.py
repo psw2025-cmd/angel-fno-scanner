@@ -120,6 +120,31 @@ def verify_colab_contract_digest(path: Path, expected_sha256: str | None) -> byt
     return payload
 
 
+
+def parse_colab_contract_json(raw: bytes) -> dict:
+    """Reject ambiguous or non-standard JSON before structural validation.
+
+    Python's default json.loads silently keeps the last duplicate mapping key
+    and accepts NaN/Infinity. Neither is acceptable for an evidence contract.
+    """
+    def unique_pairs(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise SchemaFail(f"SCHEMA_FAIL: duplicate JSON key: {key!r}")
+            result[key] = value
+        return result
+
+    def reject_constant(value):
+        raise SchemaFail(f"SCHEMA_FAIL: non-standard JSON constant: {value}")
+
+    return json.loads(
+        raw.decode("utf-8"),
+        object_pairs_hook=unique_pairs,
+        parse_constant=reject_constant,
+    )
+
+
 EXPECTED_FORENSIC_LIVE_HEADERS = [
     "Timestamp (IST)", "Symbol", "Nearest Expiry", "Fut LTP",
     "Fut Chg %", "Fut OBI", "ATM Strike", "ATM CE Contract",
@@ -178,6 +203,30 @@ def _synthetic_structure_fixture() -> dict:
             },
         },
     }
+
+
+
+def test_colab_json_accepts_unambiguous_structural_fixture():
+    fixture = _synthetic_structure_fixture()
+    parsed = parse_colab_contract_json(json.dumps(fixture).encode("utf-8"))
+    assert parsed == fixture
+    validate_colab_contract_structure(parsed)
+
+
+@pytest.mark.parametrize("raw", [
+    b'{"contract_version":"2.0.1","contract_version":"2.0.0"}',
+    b'{"worksheets":{"FORENSIC_LIVE":{"primary_key":"Wrong","primary_key":"Symbol"}}}',
+    b'{"canonical_column_aliases":{"Fut LTP":"WRONG","Fut LTP":"FUTURES_LTP"}}',
+])
+def test_colab_json_rejects_duplicate_keys_even_if_last_value_is_valid(raw):
+    with pytest.raises(SchemaFail, match="SCHEMA_FAIL: duplicate JSON key"):
+        parse_colab_contract_json(raw)
+
+
+@pytest.mark.parametrize("value", ["NaN", "Infinity", "-Infinity"])
+def test_colab_json_rejects_nonstandard_numeric_constants(value):
+    with pytest.raises(SchemaFail, match="SCHEMA_FAIL: non-standard JSON constant"):
+        parse_colab_contract_json(('{"expected_symbols_count":' + value + '}').encode("utf-8"))
 
 
 def test_synthetic_colab_structure_fixture_is_accepted():
@@ -254,7 +303,7 @@ def test_colab_contract_json_matches_specification():
     # An arbitrary local JSON file cannot satisfy this gate without a pinned
     # digest. Digest matching is necessary, not sufficient, for provenance.
     raw = verify_colab_contract_digest(path, os.environ.get("COLAB_SCHEMA_CONTRACT_SHA256"))
-    contract = json.loads(raw.decode("utf-8"))
+    contract = parse_colab_contract_json(raw)
     
     validate_colab_contract_structure(contract)
 
