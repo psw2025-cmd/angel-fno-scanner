@@ -62,6 +62,30 @@ class CISkipCertificationGateTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("CI_TEST_GATE_BLOCKED", result.stdout)
 
+    def test_pytest_subtest_count_metadata_does_not_hide_case_level_result(self):
+        # pytest/unittest subtests can inflate suite totals without separate
+        # testcase nodes. Case-level skipped/failure/error markers are decisive.
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory) / "pytest.xml"
+            suite = ET.Element("testsuite", tests="5")
+            ET.SubElement(suite, "testcase", name="one_collected_case")
+            ET.ElementTree(suite).write(report, encoding="utf-8")
+            result = subprocess.run([sys.executable, str(GUARD), str(report)],
+                                    text=True, capture_output=True, check=False)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_inconsistent_skipped_metadata_blocks(self):
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory) / "pytest.xml"
+            suite = ET.Element("testsuite", tests="1", skipped="0")
+            case = ET.SubElement(suite, "testcase", name="skipped_case")
+            ET.SubElement(case, "skipped")
+            ET.ElementTree(suite).write(report, encoding="utf-8")
+            result = subprocess.run([sys.executable, str(GUARD), str(report)],
+                                    text=True, capture_output=True, check=False)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("CI_TEST_GATE_BLOCKED", result.stdout)
+
     def test_workflow_must_invoke_gate_after_generating_junit(self):
         workflow = (ROOT / ".github/workflows/cloud-paper-safety-ci.yml").read_text(encoding="utf-8")
         self.assertIn("--junitxml=", workflow)
