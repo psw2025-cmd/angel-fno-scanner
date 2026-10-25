@@ -89,8 +89,13 @@ def _semantic_xml(tmp_path, transform=lambda root: None):
     suite = ET.SubElement(root, "testsuite", tests="8", skipped="0", failures="0", errors="0")
     names = [
         "test_real_registration_shell_exits_nonzero_without_orders",
-        *(f"test_semantic_guard_rejects_mutations_that_string_checks_missed[{i}]" for i in range(5)),
-        *(f"test_semantic_guard_rejects_duplicate_yaml_keys[{i}]" for i in range(2)),
+        "test_semantic_guard_rejects_mutations_that_string_checks_missed[manual-only-trigger]",
+        "test_semantic_guard_rejects_mutations_that_string_checks_missed[orders-disabled]",
+        "test_semantic_guard_rejects_mutations_that_string_checks_missed[nonzero-exit]",
+        "test_semantic_guard_rejects_mutations_that_string_checks_missed[single-step]",
+        "test_semantic_guard_rejects_mutations_that_string_checks_missed[no-shell-expansion]",
+        "test_semantic_guard_rejects_duplicate_yaml_keys[duplicate-trigger]",
+        "test_semantic_guard_rejects_duplicate_yaml_keys[duplicate-order-flag]",
     ]
     for name in names:
         ET.SubElement(suite, "testcase", classname="tests.test_cloud_paper_registration_contract", name=name)
