@@ -1,0 +1,67 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "COLAB_SCHEMA_PARTIAL_ASSERTION_COVERAGE_20261025",
+  "date_ist": "2026-10-25",
+  "classification": "Source-confirmed test coverage gap; no observed corrupted live contract",
+  "signal": "tests/test_colab_contract.py checked only 9 of 14 alias mappings and did not assert recovered FORENSIC_LIVE/HEARTBEAT strict schema, 219 expected symbols, version or primary key",
+  "root_cause": "Partial assertion coverage allowed structural drift to evade the external contract test even if authentic JSON were supplied",
+  "upstream": "External original contract was previously missing from CI and has now been recovered from owner Drive; provenance and private CI delivery remain pending",
+  "downstream": "A structurally incompatible Colab dashboard contract could be mistaken for valid; no observed runtime mismatch established",
+  "source": {
+    "filename": "17_COLAB_SCHEMA_CONTRACT.json",
+    "bytes": 2234,
+    "sha256": "c63bfb7dcd5bc1553dd897e88719568f637f6f08bffb490505d5e21156c50afe",
+    "source_lineage": "owner Drive audit bundle, October 1 2026",
+    "confidentiality": "Original JSON contains operational identifiers; do not publish original bytes in public repository"
+  },
+  "patch": {
+    "file": "tests/test_colab_contract.py",
+    "commit": "b86278b24806151a5c13625c903669217db855a9",
+    "details": "Validate full 14 alias map, version 2.0.0, ordered 18 FORENSIC_LIVE headers, ordered 6 HEARTBEAT headers, 219 expected symbols and Symbol primary key, after original-byte SHA256 check"
+  },
+  "regression_tests": [
+    "test_synthetic_colab_structure_fixture_is_accepted",
+    "test_colab_structure_rejects_contract_drift[missing_alias]",
+    "test_colab_structure_rejects_contract_drift[reordered_forensic_columns]",
+    "test_colab_structure_rejects_contract_drift[wrong_symbol_count]",
+    "test_colab_structure_rejects_contract_drift[wrong_heartbeat_count]",
+    "test_colab_structure_rejects_contract_drift[wrong_version]",
+    "test_colab_structure_rejects_contract_drift[missing_worksheet]"
+  ],
+  "offline_before_after": {
+    "result": "PASS: recovered original bytes matched previously recorded SHA256; original structure accepted; five independent local mutation categories rejected; no full repository test execution claimed",
+    "limits": "Offline structural check is not the exact committed GitHub test code or authenticated GitHub CI"
+  },
+  "exact_head_ci": "PENDING_NEW_COMMIT_RECEIPT",
+  "provisioning": "BLOCKED: original private contract not yet supplied to CI with approved least-privilege access",
+  "deployment": "NOT_DEPLOYED",
+  "genuine_paper_runtime": "NOT_PROVEN",
+  "independent_zero_order_audit": "NOT_AVAILABLE",
+  "rollback": "Governed revert of isolated structural assertions if an authenticated updated contract supersedes V2; do not restore skipped/missing contract certification",
+  "reopen_if": [
+    "Future authentic contract digest or version changes",
+    "Missing alias or wrong column order/count passes",
+    "219 symbol contract drift passes without review",
+    "CI reports full success while external contract is unavailable"
+  ],
+  "operations": {
+    "1664": "ACTIONED",
+    "1665": "ACTIONED",
+    "1668": "ACTIONED",
+    "1669": "ACTIONED",
+    "1671": "ACTIONED",
+    "1672": "TESTED_OFFLINE",
+    "1674": "BLOCKED",
+    "1675": "PENDING_CI",
+    "1676": "BLOCKED",
+    "1677": "WAITING",
+    "1678": "ACTIONED",
+    "1679": "PENDING_CANONICAL_PACKET"
+  },
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0,
+    "real_order_action": "NONE"
+  }
+}
