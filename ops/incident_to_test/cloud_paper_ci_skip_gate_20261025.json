@@ -1,0 +1,97 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "CLOUD_PAPER_CI_SKIPPED_TEST_FALSE_GREEN_20261025",
+  "classification": "Confirmed CI structural false-green policy: pytest returned success with three disclosed skips; no deployed broker incident proven",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "branch": "fix/cloud-paper-ci-skip-certification-gate-20261025",
+  "draft_pr": 201,
+  "base_pr": 200,
+  "signal": "Prior Cloud PAPER Safety CI concluded SUCCESS even when repository pytest reported 3 skipped integration tests; this is not full mandatory non-skipped verification",
+  "root_cause": "Workflow executed pytest -q -rs but did not enforce zero skipped cases or require machine-readable JUnit proof",
+  "upstream": "Credentials/external Colab/Windows-only integration prerequisites missing from Ubuntu environment",
+  "downstream": "Green structural CI status could be misread as full production certification despite untested gates",
+  "before": {
+    "head_sha": "5333cdc7d29b860a8f17f3e8ec738e0d1ebbeb32",
+    "ci_run_id": 40150340783,
+    "conclusion": "failure",
+    "pytest": "8 failed, 601 passed, 3 skipped, 3 warnings, 282 subtests passed",
+    "reproduction": "Eight test-first negative assertions fail because guard is absent and workflow does not generate JUnit"
+  },
+  "repair": {
+    "files": [
+      "tools/ci_skip_certification_gate.py",
+      ".github/workflows/cloud-paper-safety-ci.yml",
+      "tests/test_ci_skip_certification_gate.py"
+    ],
+    "description": "Generate JUnit XML, fail closed on any skipped/failure/error/zero-test/missing/malformed/inconsistent JUnit; do not weaken existing PAPER flags",
+    "code_sha": "bbec7e8fadb72117780d76cc246b5bd57bb8baad"
+  },
+  "expected_after": "Repository pytest can pass its runnable tests, but workflow must conclude FAILURE with CI_TEST_GATE_BLOCKED skipped=3 until integration prerequisites are resolved",
+  "after": {
+    "ci_run_id": 40150393363,
+    "conclusion": "PENDING_AT_RECORD_CREATION",
+    "exact_head": "PENDING_AT_RECORD_CREATION"
+  },
+  "prevention_hypothesis": "Any skipped pytest case prevents Cloud PAPER Safety CI from showing success; a complete non-skipped JUnit report alone can pass the test-count gate but never substitutes for deployed runtime proof",
+  "regression_tests": [
+    "test_complete_non_skipped_suite_can_pass_structural_gate",
+    "test_any_skip_blocks_certification_even_if_all_other_tests_pass",
+    "test_failures_and_errors_block",
+    "test_missing_or_malformed_report_blocks",
+    "test_zero_collected_cases_blocks",
+    "test_workflow_must_invoke_gate_after_generating_junit"
+  ],
+  "mandatory_skips": [
+    "BigQuery credentials",
+    "external Colab contract",
+    "Windows PowerShell on Ubuntu"
+  ],
+  "deployment": "NOT_PERFORMED",
+  "serving_sha": "NOT_VERIFIED",
+  "genuine_broker_feed": "NOT_VERIFIED",
+  "independent_zero_order_audit": "NOT_VERIFIED",
+  "immutable_forecast": "NOT_VERIFIED",
+  "matured_outcome": "NOT_VERIFIED",
+  "cross_system_reconciliation": "NOT_VERIFIED",
+  "rollback": "Revert isolated gate/test/workflow commits on owned branch after governed review; never turn mandatory skips into pass",
+  "recurrence_reopen": "Any workflow SUCCESS while pytest JUnit has skipped/failure/error/zero/missing or inconsistent counts, or untested head, reopens this incident",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0,
+    "independent_broker_order_audit": "NOT_VERIFIED"
+  },
+  "operations": {
+    "1420": "ACTIONED",
+    "1500": "ACTIONED",
+    "1520": "ACTIONED",
+    "1521": "ACTIONED",
+    "1524": "ACTIONED",
+    "1528": "ACTIONED",
+    "1529": "TESTED",
+    "1530": "ACTIONED",
+    "1531": "ACTIONED",
+    "1532": "ACTIONED",
+    "1533": "TESTED",
+    "1534": "TESTED",
+    "1535": "BLOCKED",
+    "1536": "BLOCKED",
+    "1537": "BLOCKED",
+    "1538": "ACTIONED",
+    "1539": "OPEN",
+    "1540": "ACTIONED",
+    "1544": "ACTIONED",
+    "1549": "ACTIONED",
+    "1551": "ACTIONED",
+    "1552": "TESTED",
+    "1555": "BLOCKED",
+    "1556": "BLOCKED",
+    "1557": "BLOCKED",
+    "1558": "ACTIONED",
+    "1559": "OPEN",
+    "1909": "ACTIONED",
+    "1918": "ACTIONED",
+    "1919": "OPEN"
+  },
+  "scope": "Operations 1-1919 remain registered and additive; no complete lane closure or production certification"
+}
