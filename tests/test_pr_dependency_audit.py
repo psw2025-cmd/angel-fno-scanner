@@ -12,7 +12,7 @@ REPO = "psw2025-cmd/angel-fno-scanner"
 def pr(n, head, base="main", *, head_repo=REPO, base_repo=REPO, draft=True):
     return {"number": n, "head": {"repo": {"full_name": head_repo}, "ref": head, "sha": "a" * 40},
             "base": {"repo": {"full_name": base_repo}, "ref": base},
-            "draft": draft, "html_url": f"https://github.com/{REPO}/pull/{n}"}
+            "draft": draft, "state": "open", "html_url": f"https://github.com/{REPO}/pull/{n}"}
 
 class Response:
     def __init__(self, data, link=""):
@@ -118,6 +118,30 @@ class TestDependencyAudit(unittest.TestCase):
         with self.assertRaisesRegex(AuditError, "Untrusted pagination"):
             fetch_open_prs(REPO, "fake", opener=opener)
 
+
+    def test_missing_head_sha_is_not_valid_inventory_evidence(self):
+        x = pr(1, "a")
+        x["head"].pop("sha")
+        with self.assertRaisesRegex(AuditError, "head SHA"):
+            build_report([x], REPO)
+
+    def test_closed_pr_payload_cannot_be_reported_as_open(self):
+        x = pr(1, "a")
+        x["state"] = "closed"
+        with self.assertRaisesRegex(AuditError, "Non-open"):
+            build_report([x], REPO)
+
+    def test_missing_draft_status_is_not_assumed_false(self):
+        x = pr(1, "a")
+        x.pop("draft")
+        with self.assertRaisesRegex(AuditError, "draft"):
+            build_report([x], REPO)
+
+    def test_wrong_base_repository_is_not_classified_as_unresolved(self):
+        x = pr(1, "a")
+        x["base"]["repo"]["full_name"] = "another/project"
+        with self.assertRaisesRegex(AuditError, "base repository"):
+            build_report([x], REPO)
 
     def test_redirect_handler_never_forwards_authorization(self):
         request = Request(
