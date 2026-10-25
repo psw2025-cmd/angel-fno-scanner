@@ -144,3 +144,29 @@ def test_semantic_receipt_rejects_contradictory_root_count(tmp_path):
     from tools import registration_junit_gate as gate
     with pytest.raises(ValueError, match="root tests"):
         gate.verify_semantic(_semantic_xml(tmp_path, lambda root: root.set("tests", "9")))
+
+
+def test_semantic_receipt_rejects_unexpected_parameter_identity(tmp_path):
+    """A matching count is not proof that the five required mutations ran."""
+    from tools import registration_junit_gate as gate
+
+    def forge(root):
+        root[0].findall("testcase")[1].set(
+            "name", "test_semantic_guard_rejects_mutations_that_string_checks_missed[unverified-case]"
+        )
+
+    with pytest.raises(ValueError, match="coverage"):
+        gate.verify_semantic(_semantic_xml(tmp_path, forge))
+
+
+def test_semantic_receipt_rejects_unexpected_duplicate_key_parameter(tmp_path):
+    """Two arbitrary parameter IDs must not satisfy duplicate-key coverage."""
+    from tools import registration_junit_gate as gate
+
+    def forge(root):
+        root[0].findall("testcase")[-1].set(
+            "name", "test_semantic_guard_rejects_duplicate_yaml_keys[unverified-key]"
+        )
+
+    with pytest.raises(ValueError, match="coverage"):
+        gate.verify_semantic(_semantic_xml(tmp_path, forge))
