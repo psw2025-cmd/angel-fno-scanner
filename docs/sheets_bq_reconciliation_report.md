@@ -1,6 +1,6 @@
 # Google Sheets & BigQuery Cross-Sink Reconciliation Report
 
-**Audit Time (IST)**: `2026-10-26T04:03:50.072646+05:30`
+**Audit Time (IST)**: `2026-10-26T04:43:52.486585+05:30`
 **Reconciliation Status**: `[PASS]`
 **Canonical Google Sheet**: `1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs`
 **BigQuery Destination**: `fno-angel-prod-1790444589.fno_predictions.option_predictions_live`
@@ -39,7 +39,7 @@
 ## 4. Machine-Readable Raw Audit Payload
 ```json
 {
-  "audit_timestamp_ist": "2026-10-26T04:03:50.072646+05:30",
+  "audit_timestamp_ist": "2026-10-26T04:43:52.486585+05:30",
   "status": "PASS",
   "canonical_sheet_id": "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs",
   "bigquery_table": "fno-angel-prod-1790444589.fno_predictions.option_predictions_live",

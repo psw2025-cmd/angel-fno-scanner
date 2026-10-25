@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-10-26 - Autonomous Cloud Run Deployment, Explainer Guide & Colab Intelligence
+
+**Status:** IMPLEMENTED_AND_DEPLOYED
+**Evidence:** 
+- GitHub Actions Run `40243042087` on `feat/cdx-01-to-12-integration` passed all 5 gates (Hygiene, 404 Tests, Cryptographic Parity, Cloud Paper Runner, Branch Protection Gate).
+- Google Cloud Build `019ecfeb-3d03-460c-850f-6ec2d961dacd` successfully built scanner image `1fbf2967` with aligned `ICICILIFE` universe contract.
+- Cloud Run Job `angel-market-scan-job` in `asia-south1` updated to image `1fbf2967` with explicit `PAPER_MODE=1` and `LIVE_ORDER_AUTHORITY=0`. Live execution `angel-market-scan-job-bb5mx` completed successfully with exit code 0.
+- Authorized Evidence Gate verified 7/7 requirements PASS in `.agy-proof/receipt.json` (Run ID `97c61858181f435a87238b9f513f0137`).
+- Created double-clickable health checker `VERIFY-ALL-GATES.bat`.
+- Created kid-friendly visual architecture guide `docs/EXPLAINER_FOR_OWNER.md`.
+- Created interactive Google Colab dynamic intelligence guide `notebooks/AngelFNO_Live_Intelligence_Guide.ipynb`.
+
+### What changed
+- `docs/EXPLAINER_FOR_OWNER.md`: added kid-friendly architectural guide explaining Angel One live streaming, Black-76 Greeks, Market Top vs. System Top exhaustion radar, Bayesian catalyst learning, and cloud execution when laptop is off.
+- `notebooks/AngelFNO_Live_Intelligence_Guide.ipynb`: dynamic Google Colab and Jupyter interactive notebook visualizing real-time BigQuery predictions, universe heatmap, gap-up predictions, gamma climaxes, catalyst weights, and 30-day paper trading ledger.
+- `VERIFY-ALL-GATES.bat`: single double-clickable Windows batch file validating safety locks, cryptographic parity, Cloud Run status, and core contract tests with simple 2-line family language summary.
+- Cloud Run `angel-market-scan-job`: updated to container image `scanner:1fbf2967` and verified zero-exit execution.
+
 ## 2026-10-26 - Symbol identity alignment and repository policy enforcement
 
 **Status:** IMPLEMENTED_NOT_DEPLOYED
