@@ -6,6 +6,8 @@ from pathlib import Path
 import sys
 from xml.etree import ElementTree as ET
 
+EXPECTED_CLASSNAME = "tests.test_cloud_paper_registration_failclosed"
+
 EXPECTED_TESTS = frozenset({
     "test_placeholder_fails_closed_instead_of_reporting_registered_success",
     "test_placeholder_is_manual_and_read_only",
@@ -56,10 +58,15 @@ def verify(path):
             raise ValueError(f"JUnit root {key} count mismatch")
 
     identities = []
+    allowed_case_children = {"skipped", "failure", "error", "system-out", "system-err", "properties"}
     for case in cases:
         name, classname = case.get("name", ""), case.get("classname", "")
         if not name.strip() or not classname.strip():
             raise ValueError("missing JUnit testcase identity")
+        if classname != EXPECTED_CLASSNAME:
+            raise ValueError("unexpected JUnit testcase classname")
+        if any(child.tag not in allowed_case_children for child in case):
+            raise ValueError("unexpected JUnit testcase child")
         identities.append(name)
     if len(identities) != len(set(identities)) or set(identities) != EXPECTED_TESTS:
         raise ValueError("duplicate, missing, or unexpected registration tests")
