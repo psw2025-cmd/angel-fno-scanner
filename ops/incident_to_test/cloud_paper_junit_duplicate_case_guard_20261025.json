@@ -1,0 +1,81 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "CLOUD_PAPER_JUNIT_DUPLICATE_CASE_FALSE_GREEN_20261025",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "branch": "fix/cloud-paper-junit-duplicate-case-guard-20261025",
+  "pr": 203,
+  "base_pr": 202,
+  "classification": "Confirmed offline CI evidence false-green; duplicate testcase identities previously counted as distinct passes",
+  "signal": "tools/ci_skip_certification_gate.py returned CI_TEST_GATE_PASS for XML containing duplicate classname/name testcase identities",
+  "root_cause": "Gate counted testcase nodes and skip/failure/error markers but never checked unique collected-test identities",
+  "upstream": "JUnit XML may be corrupted, accidentally duplicated, or assembled incorrectly; no assertion of actual CI artifact corruption",
+  "downstream": "False confidence in executed test denominator; no proof of broker/cloud incident",
+  "prevention_hypothesis": "Reject repeated (classname,name) pairs across all JUnit suites, without treating distinct classes with same test name as duplicates",
+  "before": {
+    "sha": "9c12b4960afec24852fcd88079edc6db4c920e09",
+    "run_id": 40155337985,
+    "job_id": 121055433089,
+    "conclusion": "failure",
+    "pytest": "2 failed, 609 passed, 3 skipped, 286 subtests passed",
+    "evidence": "Two red tests saw CI_TEST_GATE_PASS tests=2 skipped=0 failures=0 errors=0 for duplicate testcase identities"
+  },
+  "repair": {
+    "sha": "6bad6d05e4529e409a5fc205a8ef1402d7b2a3a0",
+    "files": [
+      "tools/ci_skip_certification_gate.py",
+      "tests/test_ci_junit_identity_guard.py"
+    ],
+    "description": "Fail closed on duplicate JUnit testcase identities; test same-class duplicates, cross-suite duplicates, and valid unique identities"
+  },
+  "after": {
+    "code_head_run_id": 40155402728,
+    "job_id": 121055629364,
+    "windows_job_id": 121055629590,
+    "code_head_pytest": "611 passed, 3 skipped, 286 subtests passed",
+    "code_head_gate": "CI_TEST_GATE_BLOCKED tests=614 skipped=3 failures=0 errors=0",
+    "windows_job": "success",
+    "final_record_head": "PENDING_AT_RECORD_CREATION"
+  },
+  "operations": {
+    "1520": "ACTIONED",
+    "1521": "ACTIONED",
+    "1522": "ACTIONED",
+    "1523": "ACTIONED",
+    "1524": "TESTED",
+    "1525": "ACTIONED",
+    "1526": "ACTIONED",
+    "1527": "ACTIONED",
+    "1528": "ACTIONED",
+    "1529": "TESTED",
+    "1530": "ACTIONED",
+    "1531": "TESTED",
+    "1532": "TESTED",
+    "1533": "NOT_APPLICABLE: deterministic XML parser; no network retries or transient service state",
+    "1534": "TESTED: full pytest 611 pass/3 skip; not all mandatory gates",
+    "1535": "BLOCKED: full mandatory non-skipped CI absent",
+    "1536": "BLOCKED: no deployment",
+    "1537": "BLOCKED: no independent market-session recurrence",
+    "1538": "ACTIONED",
+    "1539": "OPEN: canonical Issue #3 update pending"
+  },
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  },
+  "not_proven": [
+    "all mandatory tests non-skipped",
+    "merged",
+    "deployed serving SHA",
+    "authenticated read-only broker feed",
+    "independent zero-order audit",
+    "immutable forward forecast",
+    "matured outcomes",
+    "cross-system reconciliation",
+    "next-session recurrence",
+    "rollback"
+  ],
+  "rollback": "Revert only isolated duplicate-case guard/test/record after governed review; retain prior PR #202 safety and skip gates",
+  "reopen_when": "Any duplicate JUnit testcase identity passes CI gate; same-name different-class legitimate tests blocked; source/expected/executed SHA drift; test skip falsely certified",
+  "artifact_sha256": "NOT_CALCULATED; Git SHA is not an artifact SHA-256"
+}
