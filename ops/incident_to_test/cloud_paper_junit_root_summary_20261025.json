@@ -1,0 +1,58 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "CLOUD_PAPER_JUNIT_ROOT_SUMMARY_CONTRADICTION_20261025",
+  "classification": "Source-confirmed offline parser false-green; not evidence that actual production JUnit is forged",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "pr": 205,
+  "branch": "fix/cloud-paper-junit-root-summary-20261025",
+  "base_pr": 204,
+  "safety": {
+    "PAPER_MODE": "1",
+    "LIVE_ORDER_AUTHORITY": "0",
+    "REAL_BROKER_ORDERS": "0",
+    "real_orders_executed": false,
+    "independent_zero_order_audit": "NOT_AVAILABLE"
+  },
+  "signal": "tools/ci_skip_certification_gate.py checked individual testsuite metadata but ignored contradictory aggregate <testsuites> skipped/failures/errors/tests attributes",
+  "root_cause": "No root aggregate metadata reconciliation for <testsuites> XML documents",
+  "systemic_impact": "A JUnit report with a passing testcase and contradictory root skipped/failure/error totals could return CI_TEST_GATE_PASS; this is an evidence integrity risk, not proof of a real corrupted CI report",
+  "prevention_hypothesis": "When root aggregate counters exist, fail closed if root tests is below testcase count or root skipped/failures/errors disagree with testcase status markers; preserve optional root attributes and inflated tests totals for unittest subtests",
+  "test_first": {
+    "sha": "472e1929ac4d08ab9900fdfce2b620807ee56ca8",
+    "test_file": "tests/test_ci_junit_root_summary_guard.py",
+    "tests": 7,
+    "negative_cases": 4,
+    "positive_cases": 3,
+    "github_ci_failure_receipt": "NOT_AVAILABLE",
+    "local_reconstructed_logic_check": "4 negative cases previously accepted, all 4 rejected with patch; 3 positive cases remain accepted. This is not an exact repository pytest or CI receipt."
+  },
+  "repair": {
+    "sha": "2886ebba344a37cfe8ad1092b184529382d395a3",
+    "file": "tools/ci_skip_certification_gate.py",
+    "scope": "Read-only JUnit parser; no cloud/broker/runtime changes"
+  },
+  "ci": {
+    "test_first_encoding_safety": {
+      "run_id": 40165435181,
+      "status": "SUCCESS",
+      "scope": "encoding only"
+    },
+    "repair_encoding_safety": {
+      "run_id": 40165469764,
+      "status": "PENDING_AT_RECORD_TIME",
+      "scope": "encoding only"
+    },
+    "cloud_paper_safety": "UNVERIFIED; GitHub connector commit-run lookup only exposes PR-triggered runs, not push runs; PR #205 targets a stacked branch outside workflow pull_request base filter",
+    "exact_head_non_skipped": "BLOCKED/UNVERIFIED; historical 3 Ubuntu skipped integration tests remain unresolved"
+  },
+  "deployment": {
+    "status": "NOT_DEPLOYED",
+    "serving_sha": "NOT_PROVEN",
+    "feed": "NOT_PROVEN",
+    "outcomes": "NOT_PROVEN",
+    "cross_system": "NOT_PROVEN"
+  },
+  "recurrence_reopen": "Reopen if any malformed aggregate root counts return exit 0, if a valid optional-root JUnit is rejected, or if deployed CI lacks exact-head test receipts",
+  "rollback": "Revert only this PR's parser change if legitimate JUnit metadata are rejected; preserve negative tests and incident evidence",
+  "status": "IMPLEMENTED_NOT_CI_CERTIFIED"
+}
