@@ -1,0 +1,63 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "CLOUD_PAPER_REGISTRATION_JUNIT_FALSE_GREEN_20261025",
+  "classification": "Source-confirmed false-green risk; no observed forged production receipt",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "prior_pr": 207,
+  "branch": "fix/cloud-paper-registration-failclosed-20261025",
+  "baseline_head_sha": "0e2fd1335e3f87910e360418a400deb0336e8f06",
+  "signal": "Registration Guard inline JUnit predicate only checks >=3 testcase nodes and absence of skipped/failure/error children",
+  "reproduction": {
+    "kind": "local synthetic forged JUnit (NOT real CI evidence)",
+    "observed": "ORIGINAL_INLINE_GATE_ACCEPTS_DUPLICATE_MISSING_TEST=True",
+    "time_window": "2026-10-25 IST"
+  },
+  "root_cause": "No binding to expected test identities; no duplicate check or JUnit declared-count reconciliation",
+  "impact": "A structurally forged JUnit receipt could falsely certify the registration-only workflow tests",
+  "patch": {
+    "files": [
+      "tools/registration_junit_gate.py",
+      "tests/test_registration_junit_gate.py",
+      ".github/workflows/cloud-paper-registration-guard.yml"
+    ],
+    "logic": "Fail closed on missing/unexpected/duplicate testcase names, blank classnames, count contradictions, skips/failures/errors, malformed XML; exact expected three cases"
+  },
+  "regression_tests": [
+    "test_valid_three_unique_cases",
+    "test_duplicate_name_inflates_false_green",
+    "test_missing_expected_case_replaced_with_unrelated",
+    "test_declared_count_contradiction",
+    "test_root_count_contradiction",
+    "test_skipped_case",
+    "test_missing_classname",
+    "test_malformed_xml"
+  ],
+  "local_result": "8 passed, 0 skipped, offline; independent authenticated CI receipt required",
+  "first_authenticated_targeted_ci": {
+    "run_id": 40173987369,
+    "sha": "bc09b6d4a8f713d1377b6680fef8daeed0919322",
+    "conclusion": "success",
+    "results": "8 receipt tests passed, 3 registration tests passed, registration JUnit gate PASS, exact SHA matched"
+  },
+  "final_head_ci": "PENDING_FRESH_RECEIPT_AFTER_RECORD_COMMIT",
+  "deployment": "NOT_DEPLOYED",
+  "serving_sha": "NOT_PROVEN",
+  "genuine_broker_feed": "NOT_PROVEN",
+  "independent_zero_order_audit": "NOT_AVAILABLE",
+  "immutable_forecast": "NOT_PROVEN",
+  "matured_outcome": "NOT_PROVEN",
+  "rollback": "Governed revert of JUnit guard additions if they reject valid pytest output; never revert to success-only placeholder",
+  "reopen_if": [
+    "unexpected or duplicated JUnit identities accepted",
+    "declared counts disagree with actual cases",
+    "registration guard reports success without exact-head execution",
+    "skips/failures/missing mandatory cases accepted"
+  ],
+  "safety": {
+    "PAPER_MODE": "1",
+    "LIVE_ORDER_AUTHORITY": "0",
+    "REAL_BROKER_ORDERS": "0",
+    "no_orders_executed_by_change": true
+  },
+  "scope": "Operations 1524,1525,1531,1532,1534,1535,1538,1539; no lifecycle completion"
+}
