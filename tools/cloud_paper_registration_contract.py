@@ -9,6 +9,21 @@ from pathlib import Path
 
 import yaml
 
+class _UniqueKeyBaseLoader(yaml.BaseLoader):
+    """Reject duplicate YAML mapping keys instead of silently taking the last."""
+
+    def construct_mapping(self, node, deep=False):
+        seen = set()
+        for key_node, _ in node.value:
+            if not isinstance(key_node, yaml.ScalarNode):
+                raise ValueError('unsupported non-scalar YAML mapping key')
+            key = key_node.value
+            if key in seen:
+                raise ValueError(f'duplicate YAML mapping key: {key}')
+            seen.add(key)
+        return super().construct_mapping(node, deep=deep)
+
+
 WORKFLOW = Path(__file__).resolve().parents[1] / '.github/workflows/cloud-paper-runner.yml'
 FLAGS = {'PAPER_MODE': '1', 'LIVE_ORDER_AUTHORITY': '0', 'REAL_BROKER_ORDERS': '0'}
 _ECHO = re.compile(r'echo "::error::CLOUD_PAPER_NOT_DEPLOYED: [A-Za-z0-9 ,.;:\-]+" >&2\Z')
@@ -17,7 +32,7 @@ _ECHO = re.compile(r'echo "::error::CLOUD_PAPER_NOT_DEPLOYED: [A-Za-z0-9 ,.;:\-]
 def validate(source: str) -> str:
     """Return the bounded fail-closed shell script or reject the YAML."""
     try:
-        doc = yaml.load(source, Loader=yaml.BaseLoader)
+        doc = yaml.load(source, Loader=_UniqueKeyBaseLoader)
     except yaml.YAMLError as exc:
         raise ValueError('invalid workflow YAML') from exc
     if not isinstance(doc, dict) or set(doc) != {'name', 'on', 'permissions', 'jobs'} or doc.get('on') != 'workflow_dispatch':
