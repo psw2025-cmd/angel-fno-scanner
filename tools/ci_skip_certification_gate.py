@@ -37,7 +37,7 @@ def assess_report(path):
         errors = sum(case.find("error") is not None for case in cases)
         return len(cases), skipped, failed, errors
     except (OSError, ET.ParseError, ValueError, TypeError) as exc:
-        print("CI_TEST_GATE_BLOCKED invalid_or_missing_junit=" + type(exc).__name__)
+        print("CI_TEST_GATE_BLOCKED invalid_or_missing_junit=" + type(exc).__name__ + " detail=" + str(exc))
         return None
 
 
