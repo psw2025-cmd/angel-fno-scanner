@@ -1,0 +1,67 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "COLAB_EXTERNAL_CONTRACT_SKIP_FALSE_GREEN_20261025",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "branch": "fix/colab-contract-missing-failclosed-20261025",
+  "pr": 208,
+  "classification": "Confirmed source-level skip of mandatory external contract when file absent; no evidence of forged production contract",
+  "signal": "tests/test_colab_contract.py uses pytest.skip when 17_COLAB_SCHEMA_CONTRACT.json is unavailable",
+  "direct_cause": "Hardcoded Windows/WSL paths with skip fallback on CI runner",
+  "systemic_cause": "External artifact not versioned or provisioned with authenticated provenance; full PR Tests reports success despite skipped integration",
+  "before": {
+    "main_sha": "96309488ceccef11552b4fe734c685ef14667c78",
+    "run_id": 40196576404,
+    "result": "392 passed, 3 skipped",
+    "colab_skip_reason": "Source-level branch confirmed; exact per-test CI skip reason not emitted by -q output"
+  },
+  "patch": {
+    "commit_sha": "20035ae13f5ad4a3e0a9d1e40157bed365df893c",
+    "path": "tests/test_colab_contract.py",
+    "change": "Missing contract raises FileNotFoundError COLAB_SCHEMA_CONTRACT_BLOCKED; explicit env path override; 2 resolver-only tests"
+  },
+  "test_mapping": [
+    "tests/test_colab_contract.py::test_missing_colab_contract_is_hard_failure",
+    "tests/test_colab_contract.py::test_colab_contract_resolver_uses_existing_file",
+    "tests/test_colab_contract.py::test_colab_contract_json_matches_specification"
+  ],
+  "expected_ci": "Full CI must fail with explicit missing external contract until genuine file is recovered; fixture tests do not certify artifact",
+  "after": {
+    "pr_tests_run_id": 40204046382,
+    "encoding_run_id": 40204046376,
+    "status": "IN_PROGRESS_AT_RECORD_TIME",
+    "exact_head_certification": "NOT_VERIFIED"
+  },
+  "source_of_truth": "Authentic original JSON plus independently verified hash and provenance; no synthetic replacement",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  },
+  "rollback": "Revert only isolated test changes if a stronger authenticated, non-skipped external-contract gate replaces this implementation",
+  "reopen": "Any missing external contract returns green mandatory certification; explicit override silently uses historical fallback; wrong schema accepted",
+  "operations": {
+    "1524": "ACTIONED",
+    "1525": "ACTIONED",
+    "1528": "ACTIONED",
+    "1529": "ACTIONED",
+    "1531": "ACTIONED",
+    "1532": "ACTIONED",
+    "1534": "BLOCKED: authentic contract missing",
+    "1535": "BLOCKED: full non-skipped CI unavailable",
+    "1536": "BLOCKED: undeployed",
+    "1537": "BLOCKED: independent market-session recurrence",
+    "1538": "ACTIONED",
+    "1539": "OPEN: canonical Issue #3 publication pending"
+  },
+  "not_proven": [
+    "authentic external contract",
+    "non-skipped full CI",
+    "serving SHA",
+    "broker feed freshness",
+    "independent zero-order audit",
+    "forward-issued forecasts",
+    "matured outcomes",
+    "cross-system reconciliation",
+    "deployment rollback"
+  ]
+}
