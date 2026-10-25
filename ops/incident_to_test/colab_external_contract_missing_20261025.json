@@ -71,5 +71,38 @@
     "cross-system reconciliation",
     "deployment rollback"
   ],
-  "last_seen_utc": "2026-10-25T14:50:53Z"
+  "last_seen_utc": "2026-10-25T15:54:38Z",
+  "additional_occurrences": [
+    {
+      "claim_id": "COLAB_EXTERNAL_CONTRACT_UNBOUND_BYTES_20261025",
+      "classification": "Source-confirmed provenance/integrity gap: existing-file resolver accepted arbitrary file bytes without any expected digest; no observed forged production contract",
+      "signal": "PR #208 resolver uses is_file and directly json.loads(path.read_text); no independent byte-integrity check",
+      "root_cause": "No SHA-256 binding between supplied external JSON and separately reviewed expected artifact",
+      "patch": {
+        "sha": "627df8c8e0c8c3994dbb42d76027517495b1ffc2",
+        "file": "tests/test_colab_contract.py",
+        "change": "require COLAB_SCHEMA_CONTRACT_SHA256 (64 hex), compare loaded bytes with SHA-256, fail closed on missing/malformed/mismatch"
+      },
+      "exact_head_workflow": {
+        "sha": "cd2ce124a1b4c47dde58abb1ea7048a11075598a",
+        "file": ".github/workflows/colab-contract-integrity.yml",
+        "result": "PENDING"
+      },
+      "regression_tests": [
+        "test_colab_digest_requires_expected_hash",
+        "test_colab_digest_rejects_mismatch",
+        "test_colab_digest_accepts_matching_fixture_only"
+      ],
+      "caveat": "A matching SHA-256 proves integrity against a chosen digest, not that the chosen digest came from an authentic source. No genuine JSON or independently authenticated digest was recovered. Synthetic fixture is not production evidence.",
+      "rollback": "Governed revert of digest requirement only if an equivalent stronger authenticated provenance binding supersedes it; never restore missing-file skip",
+      "reopen_if": "Missing/malformed digest, mismatched bytes or absent JSON ever yields mandatory green; or digest presented as independent provenance without source attestation",
+      "related_operations": [
+        "1500-1519",
+        "1520-1539",
+        "1660-1679",
+        "1900-1919"
+      ],
+      "status": "ACTIONED; EXACT_HEAD_CI_PENDING; AUTHENTIC_ARTIFACT_BLOCKED; UNDEPLOYED"
+    }
+  ]
 }
