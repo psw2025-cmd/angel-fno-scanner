@@ -1,5 +1,7 @@
 name: PAPER PR Dependency Audit
 on:
+  pull_request:
+    branches: [main]
   workflow_dispatch:
   schedule:
     - cron: '15 2 * * *'
@@ -20,6 +22,14 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify checked-out exact SHA
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA" || { echo 'HEAD_SHA_MISMATCH'; exit 1; }
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
