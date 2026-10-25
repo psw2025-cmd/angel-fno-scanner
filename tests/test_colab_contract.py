@@ -17,8 +17,11 @@ Verifies:
 3. Missing or ambiguous required fields strictly raise SCHEMA_FAIL.
 """
 
+import hashlib
+import hmac
 import json
 import os
+import re
 from pathlib import Path
 import pytest
 
@@ -99,6 +102,48 @@ def resolve_colab_contract_path(candidates: list[Path]) -> Path:
     )
 
 
+def verify_colab_contract_digest(path: Path, expected_sha256: str | None) -> bytes:
+    """Bind loaded bytes to an independently recorded expected digest.
+
+    A matching digest proves byte integrity only; the expected digest must
+    still be established from an authentic, independently reviewed source.
+    """
+    if not expected_sha256 or not re.fullmatch(r"[0-9a-fA-F]{64}", expected_sha256):
+        raise ValueError(
+            "COLAB_SCHEMA_DIGEST_BLOCKED: independently verified SHA-256 "
+            "digest is required before external-contract certification"
+        )
+    payload = path.read_bytes()
+    actual = hashlib.sha256(payload).hexdigest()
+    if not hmac.compare_digest(actual, expected_sha256.lower()):
+        raise ValueError("COLAB_SCHEMA_DIGEST_MISMATCH: external contract bytes differ")
+    return payload
+
+
+def test_colab_digest_requires_expected_hash(tmp_path):
+    fixture = tmp_path / "fixture.json"
+    fixture.write_text("{}", encoding="utf-8")
+    with pytest.raises(ValueError, match="COLAB_SCHEMA_DIGEST_BLOCKED"):
+        verify_colab_contract_digest(fixture, None)
+    with pytest.raises(ValueError, match="COLAB_SCHEMA_DIGEST_BLOCKED"):
+        verify_colab_contract_digest(fixture, "invalid")
+
+
+def test_colab_digest_rejects_mismatch(tmp_path):
+    fixture = tmp_path / "fixture.json"
+    fixture.write_text("{}", encoding="utf-8")
+    with pytest.raises(ValueError, match="COLAB_SCHEMA_DIGEST_MISMATCH"):
+        verify_colab_contract_digest(fixture, "0" * 64)
+
+
+def test_colab_digest_accepts_matching_fixture_only(tmp_path):
+    """Synthetic fixture tests hashing, NOT provenance or schema authenticity."""
+    fixture = tmp_path / "fixture.json"
+    payload = b'{"canonical_column_aliases": {}}'
+    fixture.write_bytes(payload)
+    assert verify_colab_contract_digest(fixture, hashlib.sha256(payload).hexdigest()) == payload
+
+
 def test_missing_colab_contract_is_hard_failure(tmp_path):
     """Negative regression: absent external evidence must not be a pytest skip."""
     with pytest.raises(FileNotFoundError, match="COLAB_SCHEMA_CONTRACT_BLOCKED"):
@@ -120,7 +165,10 @@ def test_colab_contract_json_matches_specification():
         Path("/mnt/c/AngelFNO_Workstation/reports/final_e2e_truth_20261001_114500/17_COLAB_SCHEMA_CONTRACT.json"),
     ]
     path = resolve_colab_contract_path(candidates)
-    contract = json.loads(path.read_text(encoding="utf-8"))
+    # An arbitrary local JSON file cannot satisfy this gate without a pinned
+    # digest. Digest matching is necessary, not sufficient, for provenance.
+    raw = verify_colab_contract_digest(path, os.environ.get("COLAB_SCHEMA_CONTRACT_SHA256"))
+    contract = json.loads(raw.decode("utf-8"))
     
     aliases = contract["canonical_column_aliases"]
     assert aliases["Fut LTP"] == "FUTURES_LTP"
