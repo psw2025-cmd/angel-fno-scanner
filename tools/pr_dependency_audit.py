@@ -7,7 +7,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 from urllib.request import Request, urlopen
 
 _REPO = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
@@ -23,12 +23,21 @@ def fetch_open_prs(repo, token, max_pages=20, opener=urlopen):
         raise AuditError("max_pages must be 1..20")
     next_url = f"https://api.github.com/repos/{repo}/pulls?state=open&per_page=100&page=1"
     visited, all_prs = set(), []
-    for _ in range(max_pages):
+    for page in range(1, max_pages + 1):
         if next_url in visited:
             raise AuditError("Pagination loop")
         visited.add(next_url)
         parsed = urlparse(next_url)
-        if parsed.scheme != "https" or parsed.hostname != "api.github.com" or parsed.username or parsed.password:
+        try:
+            query = parse_qs(parsed.query, strict_parsing=True, keep_blank_values=True)
+        except ValueError as exc:
+            raise AuditError("Untrusted pagination query") from exc
+        # The Link header is untrusted input. Same-host links can still change
+        # repository, endpoint, state, page size or page sequence.
+        if (parsed.scheme != "https" or parsed.netloc != "api.github.com"
+                or parsed.path != f"/repos/{repo}/pulls"
+                or parsed.params or parsed.fragment
+                or query != {"state": ["open"], "per_page": ["100"], "page": [str(page)]}):
             raise AuditError("Untrusted pagination URL")
         req = Request(next_url, headers={
             "Authorization": f"Bearer {token}",
