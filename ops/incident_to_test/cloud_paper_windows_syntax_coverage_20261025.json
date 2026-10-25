@@ -1,0 +1,93 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "CLOUD_PAPER_WINDOWS_POWERSHELL_SKIP_COVERAGE_20261025",
+  "classification": "Confirmed CI coverage gap: Windows-only PowerShell syntax test skipped in Ubuntu; Windows execution now separately evidenced without weakening Ubuntu zero-skip gate",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "branch": "fix/cloud-paper-windows-syntax-evidence-20261025",
+  "pr": 202,
+  "base_pr": 201,
+  "signal": "Cloud PAPER Ubuntu full pytest skips tests/test_infra_readiness.py::test_windows_powershell_syntax; Windows PowerShell parser was not exercised by Cloud PAPER Safety CI.",
+  "root_cause": "Single-platform Ubuntu-only paper-safety job, with platform-conditional skip in the test.",
+  "prevention_hypothesis": "A dedicated exact-head Windows job executing the actual PowerShell syntax test, with zero-skip JUnit guard, supplies independent platform-specific coverage; Ubuntu mandatory skip gate must remain blocked until all applicable gates are governed.",
+  "before": {
+    "sha": "3779dccaf81b7b861316d27c6be805bc80c7754b",
+    "run_id": 40151832592,
+    "job_id": 121044790605,
+    "conclusion": "failure",
+    "observed": "1 failed, 607 passed, 3 skipped; test_cloud_paper_windows_syntax_workflow.py failed: No dedicated Windows syntax proof job"
+  },
+  "repair": {
+    "sha": "3dde0611770f536701382dda5463e99bb5ac3320",
+    "files": [
+      ".github/workflows/cloud-paper-safety-ci.yml",
+      "tests/test_cloud_paper_windows_syntax_workflow.py"
+    ],
+    "description": "Add windows-syntax Windows runner with exact-head checkout, PAPER-only flags, actual PowerShell parser pytest and always-on JUnit zero-skip gate; no changes to Ubuntu skip policy."
+  },
+  "after": {
+    "run_id": 40151866366,
+    "head_sha": "3dde0611770f536701382dda5463e99bb5ac3320",
+    "windows": {
+      "job_id": 121044879220,
+      "conclusion": "success",
+      "pytest": "1 passed",
+      "gate": "CI_TEST_GATE_PASS tests=1 skipped=0 failures=0 errors=0"
+    },
+    "ubuntu": {
+      "job_id": 121044879315,
+      "conclusion": "failure expected",
+      "pytest": "608 passed, 3 skipped",
+      "gate": "CI_TEST_GATE_BLOCKED tests=611 skipped=3 failures=0 errors=0"
+    },
+    "final_record_head": "PENDING_AT_RECORD_CREATION"
+  },
+  "mandatory_remaining": [
+    "BigQuery live credential test still skipped on Ubuntu",
+    "External Colab schema contract test still skipped on Ubuntu",
+    "Windows-only syntax test remains skipped in Ubuntu but separately executed on Windows; no cross-platform exemption granted"
+  ],
+  "not_proven": [
+    "merged",
+    "deployed serving SHA",
+    "authenticated read-only broker tick",
+    "independent zero-order audit",
+    "immutable forward-issued forecast",
+    "independently matured outcome",
+    "Sheet/BQ/R2/ledger/UI/alert reconciliation",
+    "next-session recurrence",
+    "rollback"
+  ],
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0,
+    "independent_external_audit": "NOT_VERIFIED"
+  },
+  "rollback": "Revert isolated workflow and regression test on owned branch after governed review; retain zero-skip fail-closed gate.",
+  "reopen": "Windows job absent/skipped, SHA mismatch, JUnit missing/zero/skipped, PowerShell parse failure, or Ubuntu CI incorrectly reports full certification despite skipped mandatory tests.",
+  "operations": {
+    "1520": "ACTIONED",
+    "1521": "ACTIONED",
+    "1524": "TESTED",
+    "1529": "TESTED",
+    "1532": "ACTIONED",
+    "1533": "TESTED",
+    "1535": "BLOCKED",
+    "1536": "BLOCKED",
+    "1537": "BLOCKED",
+    "1538": "ACTIONED",
+    "1539": "OPEN",
+    "1540": "ACTIONED",
+    "1544": "TESTED",
+    "1552": "TESTED",
+    "1555": "BLOCKED",
+    "1556": "BLOCKED",
+    "1557": "BLOCKED",
+    "1558": "ACTIONED",
+    "1559": "OPEN",
+    "1909": "ACTIONED",
+    "1918": "ACTIONED",
+    "1919": "OPEN"
+  },
+  "scope": "All 1-1919 operations remain registered; this incident is not deployed, independently market verified, or production certified."
+}
