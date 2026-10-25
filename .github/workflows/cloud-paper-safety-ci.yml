@@ -60,3 +60,43 @@ jobs:
       - name: Block CI certification on skipped or missing test evidence
         if: always()
         run: python tools/ci_skip_certification_gate.py proof-output/cloud-paper/pytest-junit.xml
+
+  windows-syntax:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    env:
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
+    steps:
+      - name: Checkout exact event revision for Windows proof
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify Windows checkout identity
+        shell: pwsh
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          $actual = (git rev-parse HEAD).Trim()
+          Write-Output "CHECKED_OUT_SHA=$actual"
+          Write-Output "EXPECTED_HEAD_SHA=$env:EXPECTED_HEAD_SHA"
+          if ($actual -ne $env:EXPECTED_HEAD_SHA) { throw 'Windows checkout SHA mismatch' }
+      - name: Set up Python for Windows
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Install isolated syntax test requirements
+        run: python -m pip install pytest
+      - name: Run actual Windows PowerShell parser regression with JUnit
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path proof-output/cloud-paper | Out-Null
+          python -m pytest -q -rs tests/test_infra_readiness.py::test_windows_powershell_syntax --junitxml=proof-output/cloud-paper/windows-syntax-junit.xml
+      - name: Block Windows proof on skips or missing JUnit
+        if: always()
+        shell: pwsh
+        run: python tools/ci_skip_certification_gate.py proof-output/cloud-paper/windows-syntax-junit.xml
