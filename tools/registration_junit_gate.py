@@ -1,6 +1,6 @@
 """Fail-closed validation of the Cloud PAPER registration guard's JUnit receipt.
 
-This certifies only the three structural registration tests, never a PAPER runtime.
+This certifies registration and semantic tests, never a PAPER runtime.
 """
 from pathlib import Path
 import sys
@@ -8,11 +8,16 @@ from xml.etree import ElementTree as ET
 
 EXPECTED_CLASSNAME = "tests.test_cloud_paper_registration_failclosed"
 SEMANTIC_CLASSNAME = "tests.test_cloud_paper_registration_contract"
-SEMANTIC_CASE_COUNTS = {
-    "test_real_registration_shell_exits_nonzero_without_orders": 1,
-    "test_semantic_guard_rejects_mutations_that_string_checks_missed": 5,
-    "test_semantic_guard_rejects_duplicate_yaml_keys": 2,
-}
+SEMANTIC_EXPECTED_TESTS = frozenset({
+    "test_real_registration_shell_exits_nonzero_without_orders",
+    "test_semantic_guard_rejects_mutations_that_string_checks_missed[manual-only-trigger]",
+    "test_semantic_guard_rejects_mutations_that_string_checks_missed[orders-disabled]",
+    "test_semantic_guard_rejects_mutations_that_string_checks_missed[nonzero-exit]",
+    "test_semantic_guard_rejects_mutations_that_string_checks_missed[single-step]",
+    "test_semantic_guard_rejects_mutations_that_string_checks_missed[no-shell-expansion]",
+    "test_semantic_guard_rejects_duplicate_yaml_keys[duplicate-trigger]",
+    "test_semantic_guard_rejects_duplicate_yaml_keys[duplicate-order-flag]",
+})
 
 EXPECTED_TESTS = frozenset({
     "test_placeholder_fails_closed_instead_of_reporting_registered_success",
@@ -77,22 +82,11 @@ def verify(path, *, semantic=False):
     if len(identities) != len(set(identities)):
         raise ValueError("duplicate JUnit testcase identity")
     if semantic:
-        observed = {key: 0 for key in SEMANTIC_CASE_COUNTS}
-        for name in identities:
-            if name in observed and SEMANTIC_CASE_COUNTS[name] == 1:
-                observed[name] += 1
-                continue
-            prefix = name.split("[", 1)[0]
-            if (prefix not in observed or SEMANTIC_CASE_COUNTS[prefix] == 1
-                    or not name.startswith(prefix + "[") or not name.endswith("]")
-                    or name == prefix + "[]"):
-                raise ValueError("semantic receipt coverage mismatch")
-            observed[prefix] += 1
-        if observed != SEMANTIC_CASE_COUNTS:
+        if set(identities) != SEMANTIC_EXPECTED_TESTS:
             raise ValueError("semantic receipt coverage mismatch")
     elif set(identities) != EXPECTED_TESTS:
         raise ValueError("duplicate, missing, or unexpected registration tests")
-    expected_total = sum(SEMANTIC_CASE_COUNTS.values()) if semantic else len(EXPECTED_TESTS)
+    expected_total = len(SEMANTIC_EXPECTED_TESTS) if semantic else len(EXPECTED_TESTS)
     if totals != {"tests": expected_total, "skipped": 0, "failures": 0, "errors": 0}:
         raise ValueError("semantic or registration test failure or skipped case")
     return totals
