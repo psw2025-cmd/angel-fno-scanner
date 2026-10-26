@@ -1,0 +1,39 @@
+{
+  "schema": "incident_to_test.v1",
+  "incident_id": "PAPER_INFRA_READINESS_MISSING_CHECK_FALSE_GREEN_RISK_20261026",
+  "classification": "SOURCE_CONFIRMED_POTENTIAL_FALSE_GREEN_NOT_OBSERVED_RUNTIME_PASS",
+  "observed_at_ist": "2026-10-26",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "source_before": {
+    "ref": "main",
+    "sha": "96309488ceccef11552b4fe734c685ef14667c78",
+    "file": "scripts/infra_readiness.py",
+    "signal": "report() excluded NOT_PROVEN and accepted any nonempty subset of PASS checks; failed sections could leave required checks absent"
+  },
+  "causal_chain": {
+    "signal": "Required local/CI/BigQuery/Sheet checks missing after a section error",
+    "root_cause": "Infrastructure PASS denominator lacked a required-check identity and uniqueness contract",
+    "patch": "Require all mode-specific check identities exactly once, reject missing/duplicate/suppressed/blank identities and unknown mode",
+    "regression_test": "tests/test_infra_readiness_coverage.py",
+    "exact_sha_ci": "PENDING_FRESH_GITHUB_RECEIPT",
+    "deployed_revision": "NOT_DEPLOYED",
+    "genuine_paper_runtime": "NOT_PROVEN",
+    "independent_proof": "NOT_PROVEN",
+    "next_session_recurrence_check": "Recheck evidence_coverage in fresh infra-readiness report and validate exact serving SHA; reopen on missing check or any false-green"
+  },
+  "impact": "Potential false infrastructure PASS from incomplete evidence; no demonstrated broker runtime impact",
+  "safety": {
+    "PAPER_MODE": "1",
+    "LIVE_ORDER_AUTHORITY": "0",
+    "REAL_BROKER_ORDERS": "0"
+  },
+  "rollback": "Revert only this PR after independent review; never disable or weaken evidence gate as a workaround",
+  "scope_operations": [
+    1500,
+    1520,
+    1540,
+    1860,
+    1900
+  ],
+  "notes": "Synthetic unit tests and CI are not live broker, BigQuery, Sheets or production certification."
+}
