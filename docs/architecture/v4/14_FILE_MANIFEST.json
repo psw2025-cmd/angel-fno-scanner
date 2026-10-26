@@ -1,0 +1,77 @@
+{
+  "version": "4.0",
+  "scope": "DOCUMENT_PACKAGE_ONLY",
+  "generated_date": "2026-10-26",
+  "files": [
+    {
+      "path": "01_BASELINE_ARCHITECTURE_V1.md",
+      "size": 47798,
+      "sha256": "8c8daa70106ccaf8a5c22c9cf8971ad64f4c93c3479b5ef274e44559322bb75c"
+    },
+    {
+      "path": "02_EXECUTION_AND_COORDINATION_V2.md",
+      "size": 30739,
+      "sha256": "abbe95582e23cb634ba15a70d8bd90df6f9552613a196f1715afaa93d8f1aa78"
+    },
+    {
+      "path": "03_LOCAL_AGENT_EXECUTION_ORDER.md",
+      "size": 3844,
+      "sha256": "feed9c89018d5a36da8c8c03467018cabfdf7f46ee1503f738b830f2f748d843"
+    },
+    {
+      "path": "04_MACHINE_READABLE_STATUS_TEMPLATE.json",
+      "size": 929,
+      "sha256": "cc19de69137910364f540895b641af98d86cfe5c4352dc1d677a0d7f105d3fe0"
+    },
+    {
+      "path": "05_FAILURE_FORENSICS_AND_PREVENTION_V3.md",
+      "size": 24629,
+      "sha256": "31efbbe339e3d7b475112ecc6b15573abaf6a829ee76228e221028f4ad778b93"
+    },
+    {
+      "path": "06_RELEASE_ACCEPTANCE_MATRIX.csv",
+      "size": 1034,
+      "sha256": "ba1bc8ccffb1ca66eaefce6d978a10d30a53f7365b249edf6db929ac1267343f"
+    },
+    {
+      "path": "07_HISTORICAL_INCIDENT_REGISTER.csv",
+      "size": 7521,
+      "sha256": "564e54850c1333347e34f36025af2587bc474a7d85788ba31759ee9beed5b03a"
+    },
+    {
+      "path": "08_MANIFEST_SHA256.json",
+      "size": 1332,
+      "sha256": "9b3382736175156982918b4a47cb55fc7c7fd4af39798a0b54134f20b5b4d93b"
+    },
+    {
+      "path": "09_PREHANDOFF_GAP_CLOSURE_V4.md",
+      "size": 15764,
+      "sha256": "054d36efd08ce3cf2b086fa864499bfea9768e35bf17a96e407ce45bc47d6d7f"
+    },
+    {
+      "path": "10_AGENT_HANDOFF_PROTOCOL_V4.md",
+      "size": 5087,
+      "sha256": "c1c51359ce0293e1a62c24c30f03186634baacb87652094d5b7c343e5ab37e96"
+    },
+    {
+      "path": "11_OWNER_OUTCOME_AND_METRIC_CONTRACT.md",
+      "size": 2871,
+      "sha256": "02ba520f1f63de9bf96443095999463bcccd8784bdb85c226cb8286148accecc"
+    },
+    {
+      "path": "12_SOURCE_AND_PERMISSION_REGISTER.csv",
+      "size": 1856,
+      "sha256": "ea1c74f105b2e6860194ce2b689f47eef010c34086e011c94674a8644797e719"
+    },
+    {
+      "path": "13_HARD_STOP_ACCEPTANCE.csv",
+      "size": 1657,
+      "sha256": "a7f4dad88888beb6bc2e3559bf329ec8277f1d8c2ebbbf82b0b5dc8ebcb0b9fe"
+    },
+    {
+      "path": "README_START_HERE.md",
+      "size": 1189,
+      "sha256": "2f0a14eaced07fa6a34b979389122162b6defc2699e7cb9417a02e676f94b8bd"
+    }
+  ]
+}
