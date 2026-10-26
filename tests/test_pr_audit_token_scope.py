@@ -61,6 +61,16 @@ def validate_workflow_security(workflow):
     if "python tools/pr_dependency_audit.py" not in inventory_step:
         raise AssertionError("authenticated inventory command missing")
 
+    preserve_step = following.split("\n      - ", 1)[0]
+    for expected in (
+        "        if: always()",
+        "        uses: actions/upload-artifact@v4",
+        "          path: proof-output/pr-dependency/inventory.json",
+        "          if-no-files-found: error",
+    ):
+        if expected not in preserve_step:
+            raise AssertionError("audit artifact fail-closed contract missing")
+
     job_before_steps = active.partition("    steps:")[0]
     if "EXPECTED_HEAD_SHA: ${{ github.sha }}" not in active:
         raise AssertionError("exact-head verification missing")
@@ -124,6 +134,23 @@ class AuditTokenScopeTests(unittest.TestCase):
             "          persist-credentials: false\n", "", 1,
         )
         with self.assertRaisesRegex(AssertionError, "credential isolation"):
+            validate_workflow_security(mutated)
+
+
+    def test_rejects_missing_artifact_fail_closed(self):
+        mutated = self.workflow.replace(
+            "          if-no-files-found: error",
+            "          if-no-files-found: warn", 1,
+        )
+        with self.assertRaisesRegex(AssertionError, "audit artifact fail-closed"):
+            validate_workflow_security(mutated)
+
+    def test_rejects_wrong_artifact_path(self):
+        mutated = self.workflow.replace(
+            "          path: proof-output/pr-dependency/inventory.json",
+            "          path: proof-output/pr-dependency/unknown.json", 1,
+        )
+        with self.assertRaisesRegex(AssertionError, "audit artifact fail-closed"):
             validate_workflow_security(mutated)
 
 
