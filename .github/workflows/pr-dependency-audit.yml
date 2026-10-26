@@ -47,5 +47,5 @@ jobs:
         with:
           name: paper-pr-dependency-audit-${{ github.run_id }}
           path: proof-output/pr-dependency/inventory.json
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 30
