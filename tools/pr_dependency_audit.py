@@ -103,6 +103,9 @@ def build_report(prs, repo, main_ref="main"):
         head_sha = pr.get("head", {}).get("sha") if isinstance(pr.get("head"), dict) else None
         if not isinstance(head_sha, str) or not re.fullmatch(r"[0-9a-fA-F]{40}", head_sha):
             raise AuditError("Missing or invalid head SHA")
+        base_sha = pr.get("base", {}).get("sha") if isinstance(pr.get("base"), dict) else None
+        if not isinstance(base_sha, str) or not re.fullmatch(r"[0-9a-fA-F]{40}", base_sha):
+            raise AuditError("Missing or invalid base SHA")
         head, base = _repo_ref(pr, "head"), _repo_ref(pr, "base")
         if base[0] != repo:
             raise AuditError("Unexpected base repository in PR inventory")
@@ -113,6 +116,7 @@ def build_report(prs, repo, main_ref="main"):
                       "base_repo": base[0], "base_ref": base[1],
                       "draft": pr.get("draft") is True,
                       "head_sha": pr.get("head", {}).get("sha"),
+                      "base_sha": base_sha,
                       "html_url": pr.get("html_url"),
                       "parent_pr": None, "classification": None}
     for row in indexed.values():
@@ -121,7 +125,12 @@ def build_report(prs, repo, main_ref="main"):
         else:
             parent = heads.get((row["base_repo"], row["base_ref"]))
             row["parent_pr"] = parent
-            row["classification"] = "STACKED" if parent else "UNRESOLVED_BASE_REQUIRES_REVIEW"
+            if parent is None:
+                row["classification"] = "UNRESOLVED_BASE_REQUIRES_REVIEW"
+            elif row["base_sha"].lower() != indexed[parent]["head_sha"].lower():
+                row["classification"] = "STACKED_BASE_SHA_DRIFT_REQUIRES_REVIEW"
+            else:
+                row["classification"] = "STACKED"
     state = {}
     def visit(n):
         if state.get(n) == 1:
@@ -137,7 +146,7 @@ def build_report(prs, repo, main_ref="main"):
         visit(n)
     rows = [indexed[n] for n in sorted(indexed)]
     counts = {key: sum(row["classification"] == key for row in rows)
-              for key in ("DIRECT_MAIN_BASE_NOT_MERGE_APPROVAL", "STACKED", "UNRESOLVED_BASE_REQUIRES_REVIEW")}
+              for key in ("DIRECT_MAIN_BASE_NOT_MERGE_APPROVAL", "STACKED", "STACKED_BASE_SHA_DRIFT_REQUIRES_REVIEW", "UNRESOLVED_BASE_REQUIRES_REVIEW")}
     return {"schema_version": 1, "repository": repo,
             "generated_at_utc": datetime.now(timezone.utc).isoformat(),
             "source": "authenticated_github_open_pr_api_snapshot",
@@ -155,7 +164,7 @@ def main(argv=None):
         path = Path(args.output)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        print(f"PR_DEPENDENCY_INVENTORY_PASS count={report['open_pr_count']} unresolved={report['classification_counts']['UNRESOLVED_BASE_REQUIRES_REVIEW']} (not a merge approval)")
+        print(f"PR_DEPENDENCY_INVENTORY_PASS count={report['open_pr_count']} unresolved={report['classification_counts']['UNRESOLVED_BASE_REQUIRES_REVIEW'] + report['classification_counts']['STACKED_BASE_SHA_DRIFT_REQUIRES_REVIEW']} (not a merge approval)")
         return 0
     except AuditError as exc:
         print(f"PR_DEPENDENCY_INVENTORY_BLOCKED: {exc}", file=sys.stderr)
