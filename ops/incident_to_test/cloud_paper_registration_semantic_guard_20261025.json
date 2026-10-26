@@ -1,0 +1,103 @@
+{
+  "incident_id": "CLOUD_PAPER_REGISTRATION_STRING_GUARD_BYPASS_20261025",
+  "incident_type": "source-confirmed potential false-green; not observed in production",
+  "first_observed_ist": "2026-10-25 15:23+05:30",
+  "root_cause": "The three existing structural tests searched workflow source for literals instead of checking parsed YAML trigger, effective PAPER env flags and actual fail-closed step behavior.",
+  "before_evidence": {
+    "source_ref": "f4a8cbc650b7166aa1158e1460866cd52a68a530",
+    "legacy_accepted_mutations": [
+      "on: [workflow_dispatch, push]",
+      "REAL_BROKER_ORDERS: '1' # REAL_BROKER_ORDERS: '0'",
+      "additional success step after exit 1"
+    ],
+    "reproduction": "Local source mutation comparison, not an authenticated GitHub Actions failure"
+  },
+  "repair": {
+    "branch": "fix/cloud-paper-registration-failclosed-20261025",
+    "code": "tools/cloud_paper_registration_contract.py",
+    "tests": "tests/test_cloud_paper_registration_contract.py",
+    "workflow": ".github/workflows/cloud-paper-registration-guard.yml",
+    "patch_sha_before_record": "2a377b2adeb24f7fbcb71e32a7d665ac09ac2b87",
+    "safety": "PAPER_MODE=1; LIVE_ORDER_AUTHORITY=0; REAL_BROKER_ORDERS=0; no order path added"
+  },
+  "tests": {
+    "local": "6 passed, 0 skipped (offline scratch execution)",
+    "negative_cases": 5,
+    "behavioral_cases": 1,
+    "ci": "WAITING exact-head GitHub Actions"
+  },
+  "evidence_chain": {
+    "signal": "String-only test accepted unsafe YAML mutations",
+    "root_cause": "Unparsed text assertions",
+    "patch": "Strict parsed-YAML semantics plus statically bounded shell exit=1 execution",
+    "regression_test": "Mutation tests and actual marker execution",
+    "exact_sha_ci": "WAITING",
+    "deployed_revision": "NOT_DEPLOYED",
+    "genuine_paper_runtime": "NOT_VERIFIED",
+    "independent_proof": "NOT_VERIFIED",
+    "next_session_recurrence_check": "Recheck current main and PR head, run CI, inspect dispatch status after governed merge"
+  },
+  "status": "IMPLEMENTED_NOT_DEPLOYED",
+  "affected_operations": [
+    1524,
+    1525,
+    1528,
+    1529,
+    1530,
+    1531,
+    1532,
+    1534,
+    1535,
+    1538,
+    1539,
+    1600,
+    1601,
+    1900,
+    1901
+  ],
+  "unresolved": [
+    "Three broader repository integration skips",
+    "PR draft/unmerged",
+    "No authenticated broker feed",
+    "No independently verified zero broker orders",
+    "No serving SHA",
+    "No matured outcomes or cross-system reconciliation"
+  ],
+  "rollback": "Revert only this isolated semantic guard if a genuine reviewed Cloud PAPER runner replaces the registration placeholder; never relax live-order prohibitions.",
+  "additional_occurrences": [
+    {
+      "id": "CLOUD_PAPER_DUPLICATE_YAML_KEY_BYPASS_20261025",
+      "first_seen_ist": "2026-10-25 16:40+05:30",
+      "signal": "PyYAML BaseLoader silently takes the last duplicate YAML mapping key, allowing a workflow with hidden conflicting on/env keys to pass semantic validation.",
+      "classification": "Authenticated test-first CI reproduces two guard false greens; not an observed production dispatch",
+      "root_cause": "Default yaml.BaseLoader mapping construction overwrites duplicate keys without rejecting the source ambiguity.",
+      "upstream_downstream": "Ambiguous GitHub workflow source -> semantic guard accepted invalid source -> targeted CI could misleadingly certify workflow configuration; actual GitHub parser behavior not asserted.",
+      "test_first_sha": "42f89b53cd8f5ce9a4d2e137bc83b4ac7eb96e77",
+      "test_first_run_id": 40187846920,
+      "test_first_job_id": 121152329242,
+      "test_first_raw_result": "2 failed, 16 passed; both expected ValueError but original validator DID NOT RAISE",
+      "patch_sha": "0767b651ebc905b2b6c7d8d32086793b4448e997",
+      "patch": "Reject duplicate and non-scalar mapping keys with _UniqueKeyBaseLoader before evaluating parsed workflow semantics.",
+      "regression_tests": [
+        "tests/test_cloud_paper_registration_contract.py::test_semantic_guard_rejects_duplicate_yaml_keys[on]",
+        "tests/test_cloud_paper_registration_contract.py::test_semantic_guard_rejects_duplicate_yaml_keys[REAL_BROKER_ORDERS]"
+      ],
+      "focused_ci_run_id": 40187863686,
+      "focused_ci_job_id": 121152376877,
+      "focused_ci_result": "exact-head matched; 18 passed semantic/JUnit regressions; 3 passed registration tests; REGISTRATION_JUNIT_PASS 0 skipped",
+      "full_repo_ci": "PENDING_NEW_HEAD; previous full suite skipped 3 mandatory integrations",
+      "deployment": "NOT_DEPLOYED",
+      "genuine_paper_runtime": "NOT_PROVEN",
+      "independent_recurrence": "WAITING_NEXT_SESSION",
+      "rollback": "Revert only _UniqueKeyBaseLoader if valid GitHub YAML is rejected; retain fail-closed dispatch and test coverage.",
+      "reopen_if": "Any duplicate YAML mapping key is accepted or exact-head guard becomes skipped/missing; compare main after governed merge.",
+      "related_operations": [
+        "1500-1519",
+        "1520-1539",
+        "1540-1559",
+        "1600-1619",
+        "1900-1919"
+      ]
+    }
+  ]
+}

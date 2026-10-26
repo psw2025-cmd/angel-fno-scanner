@@ -1,7 +1,23 @@
 name: Cloud PAPER Runner
+
+# Registration-only workflow on main. The reviewed PAPER runner is not
+# deployed here; dispatch must never look like a successful trading cycle.
 on: workflow_dispatch
+
+permissions:
+  contents: read
+
 jobs:
-  register:
+  registration-only:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
     steps:
-      - run: echo "Registered"
+      - name: Reject execution until reviewed PAPER runner is deployed
+        shell: bash
+        run: |
+          echo "::error::CLOUD_PAPER_NOT_DEPLOYED: main has a registration-only workflow; no broker feed, PAPER cycle, or outcome verification was executed." >&2
+          exit 1

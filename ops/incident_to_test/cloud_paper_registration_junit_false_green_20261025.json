@@ -1,0 +1,193 @@
+{
+  "schema": "incident_to_test.v1",
+  "claim_id": "CLOUD_PAPER_REGISTRATION_JUNIT_FALSE_GREEN_20261025",
+  "classification": "Source-confirmed false-green risk; no observed forged production receipt",
+  "repo": "psw2025-cmd/angel-fno-scanner",
+  "prior_pr": 207,
+  "branch": "fix/cloud-paper-registration-failclosed-20261025",
+  "baseline_head_sha": "0e2fd1335e3f87910e360418a400deb0336e8f06",
+  "signal": "Registration Guard inline JUnit predicate only checks >=3 testcase nodes and absence of skipped/failure/error children",
+  "reproduction": {
+    "kind": "local synthetic forged JUnit (NOT real CI evidence)",
+    "observed": "ORIGINAL_INLINE_GATE_ACCEPTS_DUPLICATE_MISSING_TEST=True",
+    "time_window": "2026-10-25 IST"
+  },
+  "root_cause": "No binding to expected test identities; no duplicate check or JUnit declared-count reconciliation",
+  "impact": "A structurally forged JUnit receipt could falsely certify the registration-only workflow tests",
+  "patch": {
+    "files": [
+      "tools/registration_junit_gate.py",
+      "tests/test_registration_junit_gate.py",
+      ".github/workflows/cloud-paper-registration-guard.yml"
+    ],
+    "logic": "Fail closed on missing/unexpected/duplicate testcase names, blank classnames, count contradictions, skips/failures/errors, malformed XML; exact expected three cases"
+  },
+  "regression_tests": [
+    "test_valid_three_unique_cases",
+    "test_duplicate_name_inflates_false_green",
+    "test_missing_expected_case_replaced_with_unrelated",
+    "test_declared_count_contradiction",
+    "test_root_count_contradiction",
+    "test_skipped_case",
+    "test_missing_classname",
+    "test_malformed_xml"
+  ],
+  "local_result": "8 passed, 0 skipped, offline; independent authenticated CI receipt required",
+  "first_authenticated_targeted_ci": {
+    "run_id": 40173987369,
+    "sha": "bc09b6d4a8f713d1377b6680fef8daeed0919322",
+    "conclusion": "success",
+    "results": "8 receipt tests passed, 3 registration tests passed, registration JUnit gate PASS, exact SHA matched"
+  },
+  "final_head_ci": "PENDING_FRESH_RECEIPT_AFTER_RECORD_COMMIT",
+  "deployment": "NOT_DEPLOYED",
+  "serving_sha": "NOT_PROVEN",
+  "genuine_broker_feed": "NOT_PROVEN",
+  "independent_zero_order_audit": "NOT_AVAILABLE",
+  "immutable_forecast": "NOT_PROVEN",
+  "matured_outcome": "NOT_PROVEN",
+  "rollback": "Governed revert of JUnit guard additions if they reject valid pytest output; never revert to success-only placeholder",
+  "reopen_if": [
+    "unexpected or duplicated JUnit identities accepted",
+    "declared counts disagree with actual cases",
+    "registration guard reports success without exact-head execution",
+    "skips/failures/missing mandatory cases accepted"
+  ],
+  "safety": {
+    "PAPER_MODE": "1",
+    "LIVE_ORDER_AUTHORITY": "0",
+    "REAL_BROKER_ORDERS": "0",
+    "no_orders_executed_by_change": true
+  },
+  "scope": "Operations 1524,1525,1531,1532,1534,1535,1538,1539; no lifecycle completion",
+  "additional_occurrences": [
+    {
+      "date_ist": "2026-10-25",
+      "signal": "JUnit registration gate accepted expected test names with unrelated classname, or unrecognized testcase child element.",
+      "root_cause": "Test identities were bound by name only, not module classname; testcase child tags were not validated.",
+      "test_first_sha": "e05371e8796e57f16ad3eafbfbd2111b4b04cbc3",
+      "test_first_run_id": 40177378002,
+      "test_first_job_id": 121120907129,
+      "test_first_result": "FAILURE: 2 failed, 8 passed; both expected ValueError but gate did not raise; raw GitHub Actions logs independently read",
+      "patch_sha": "17a80e7934a0d56c950fc0d083e9a0d1a82ae7f5",
+      "regression_tests": [
+        "tests/test_registration_junit_gate.py::test_unexpected_classname_rejected",
+        "tests/test_registration_junit_gate.py::test_unrecognized_testcase_outcome_rejected"
+      ],
+      "prevention_hypothesis": "Require the exact pytest module classname and reject unrecognized testcase child elements; accept real pytest output with zero skipped cases.",
+      "rollback": "Revert only this isolated validator amendment if legitimate pytest JUnit becomes incompatible; do not weaken the registration-only fail-closed gate.",
+      "reopen_if": "An unexpected classname or unrecognized testcase outcome passes, or genuine JUnit is rejected without a documented safe schema change.",
+      "exact_head_ci": "PENDING_NEW_COMMIT_RUN",
+      "deployment": "NOT_DEPLOYED",
+      "genuine_paper_runtime": "NOT_PROVEN",
+      "independent_recurrence": "WAITING",
+      "related_operations": [
+        "1500-1519",
+        "1520-1539",
+        "1540-1559",
+        "1900-1919"
+      ]
+    },
+    {
+      "claim_id": "CLOUD_PAPER_SEMANTIC_SUITE_SKIP_BLIND_SPOT_20261025",
+      "date_ist": "2026-10-25",
+      "classification": "Source-confirmed certification coverage risk; no observed skipped production CI receipt",
+      "signal": "Registration Guard verified the three registration tests' JUnit receipt but not the eight semantic workflow safety cases; a skipped semantic suite could return pytest exit 0 without invalidating the final registration-only JUnit gate.",
+      "root_cause": "Two separate pytest invocations; semantic suite had no bound JUnit receipt or mandatory case count in the final certification step.",
+      "impact": "A green targeted guard could be misread as complete structural coverage even when all semantic checks were skipped.",
+      "test_first_sha": "6b6af8f6569d7a7edce4019bb100e9f70175025b",
+      "test_first_run_id": 40190435482,
+      "test_first_job_id": 121160090094,
+      "test_first_result": "Exact-head authenticated GitHub CI failed 6 new tests, 18 passed; AttributeError verify_semantic missing. This proves new guard not yet implemented, not an observed skipped-suite false-green.",
+      "patch_shas": [
+        "8b8be9f84dfacbf3ca5df3659a8d10bbf3f6b297",
+        "e0d3219b345565823721e5362eb4f604fcfea247"
+      ],
+      "patch_files": [
+        "tools/registration_junit_gate.py",
+        "tests/test_registration_junit_gate.py",
+        ".github/workflows/cloud-paper-registration-guard.yml"
+      ],
+      "regression_tests": [
+        "test_semantic_receipt_requires_eight_distinct_cases",
+        "test_semantic_receipt_rejects_skipped_case",
+        "test_semantic_receipt_rejects_missing_case",
+        "test_semantic_receipt_rejects_duplicate_case",
+        "test_semantic_receipt_rejects_unrelated_case",
+        "test_semantic_receipt_rejects_contradictory_root_count"
+      ],
+      "prevention_hypothesis": "Bind the actual semantic pytest JUnit receipt to eight distinct expected test identities, zero skipped/failures/errors, and refuse missing receipt; keep separate three-case registration receipt and exact-head verification.",
+      "exact_head_ci": {
+        "run_id": 40190473800,
+        "job_id": 121160202382,
+        "sha": "e0d3219b345565823721e5362eb4f604fcfea247",
+        "result": "SUCCESS; exact SHA matched; 16 receipt regressions passed; 8 semantic cases passed; 3 registration cases passed; JUnit both suites skipped=0"
+      },
+      "full_repository_ci": "WAITING_FOR_RESULT; separate synthetic merge-ref run is not exact-head certification",
+      "deployment": "NOT_DEPLOYED",
+      "genuine_paper_runtime": "NOT_PROVEN",
+      "independent_recurrence": "WAITING_NEXT_SESSION",
+      "rollback": "Revert isolated semantic receipt verifier/workflow change if legitimate pytest output cannot be parsed; never replace with unverified success-only gate.",
+      "reopen_if": "Any semantic safety case is skipped/missing/duplicated/unexpected while the registration guard still reports success, or exact-head and runtime evidence disagree.",
+      "metrics": {
+        "repeat_incidents": "NOT_MEASURED",
+        "detection_time": "NOT_MEASURED",
+        "recovery_time": "NOT_MEASURED",
+        "false_green_rate": "NOT_MEASURED"
+      },
+      "related_operations": [
+        "1500-1519",
+        "1520-1539",
+        "1540-1559",
+        "1900-1919"
+      ],
+      "status": "TESTED_EXACT_HEAD_TARGETED; UNDEPLOYED; INDEPENDENT_RUNTIME_BLOCKED"
+    },
+    {
+      "claim_id": "CLOUD_PAPER_SEMANTIC_PARAMETER_ID_COVERAGE_20261025",
+      "date_ist": "2026-10-25",
+      "classification": "Confirmed semantic JUnit verifier false-green using synthetic parameter identities; no observed forged production receipt",
+      "signal": "Semantic receipt verifier accepted any unique bracketed parameter IDs under two required test function prefixes, allowing missing actual mutation cases to be replaced while keeping the 8-case denominator.",
+      "root_cause": "Semantic JUnit identity contract checked only function-prefix counts, not the exact eight pytest test-case identities.",
+      "test_first_sha": "d52591f22e9b8edad179d3281e7957993de18b92",
+      "test_first_run_id": 40196469923,
+      "test_first_job_id": 121178256782,
+      "test_first_result": "AUTHENTICATED_FAIL: exact-head match, 2 failed / 16 passed; both unexpected parameter-ID cases DID NOT RAISE ValueError",
+      "patch_sha": "407c1eb4e966149b396ca79151b3d27e2a8f3e2b",
+      "patch_files": [
+        "tools/registration_junit_gate.py",
+        "tests/test_registration_junit_gate.py",
+        "tests/test_cloud_paper_registration_contract.py"
+      ],
+      "regression_tests": [
+        "tests/test_registration_junit_gate.py::test_semantic_receipt_rejects_unexpected_parameter_identity",
+        "tests/test_registration_junit_gate.py::test_semantic_receipt_rejects_unexpected_duplicate_key_parameter"
+      ],
+      "prevention_hypothesis": "Bind JUnit receipt to eight explicit stable pytest parameter IDs, and fail closed on any unrecognized, missing or duplicate ID.",
+      "after_exact_head_ci": {
+        "run_id": 40196516696,
+        "status": "PENDING_VERIFICATION_AT_RECORD_WRITE"
+      },
+      "deployment": "NOT_DEPLOYED",
+      "serving_sha": "NOT_PROVEN",
+      "genuine_paper_runtime": "NOT_PROVEN",
+      "independent_recurrence": "WAITING_NEXT_SESSION",
+      "rollback": "Governed revert only if stable pytest ID contract rejects authentic generated JUnit; preserve fail-closed registration safety and zero-order flags.",
+      "reopen_if": "Any altered or fabricated parameter ID passes JUnit validation, targeted CI skips, or final PR head differs from attested CI SHA.",
+      "related_operations": [
+        "1524",
+        "1525",
+        "1528",
+        "1529",
+        "1530",
+        "1531",
+        "1532",
+        "1534",
+        "1535",
+        "1538",
+        "1539"
+      ],
+      "scope_status": "ACTIONED_AND_TEST_FIRST_REPRODUCED; PATCH_COMMITTED; FULL_CI_DEPLOYMENT_RUNTIME_BLOCKED"
+    }
+  ]
+}

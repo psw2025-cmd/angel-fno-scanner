@@ -1,0 +1,47 @@
+name: Cloud PAPER Registration Guard
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/cloud-paper-runner.yml'
+      - '.github/workflows/cloud-paper-registration-guard.yml'
+      - 'tests/test_cloud_paper_registration_failclosed.py'
+      - 'tests/test_cloud_paper_registration_contract.py'
+      - 'tests/test_registration_junit_gate.py'
+      - 'tools/cloud_paper_registration_contract.py'
+      - 'tools/registration_junit_gate.py'
+permissions:
+  contents: read
+jobs:
+  registration-guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact source revision
+        shell: bash
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          echo "CHECKED_OUT_SHA=$actual"
+          echo "EXPECTED_HEAD_SHA=$EXPECTED_HEAD_SHA"
+          test "$actual" = "$EXPECTED_HEAD_SHA"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run negative and boundary receipt and semantic workflow regressions
+        run: |
+          python -m pip install 'pytest>=8,<10' 'PyYAML>=6,<7'
+          python -m pytest -q tests/test_registration_junit_gate.py
+          python -m pytest -q tests/test_cloud_paper_registration_contract.py --junitxml=semantic-junit.xml
+      - name: Run registration fail-closed regression
+        run: |
+          python -m pytest -q tests/test_cloud_paper_registration_failclosed.py --junitxml=registration-junit.xml
+      - name: Reject missing, skipped, or forged registration AND semantic receipts
+        run: |
+          python tools/registration_junit_gate.py registration-junit.xml semantic-junit.xml
