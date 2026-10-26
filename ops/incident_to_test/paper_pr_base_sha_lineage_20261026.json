@@ -1,0 +1,26 @@
+{
+  "incident_id": "PAPER_PR_BASE_SHA_LINEAGE_20261026",
+  "source": "Source inspection of tools/pr_dependency_audit.py at 15577e0b29ccce5080502fa8b0a5ffc830b4ddb6",
+  "signal": "A stacked PR was classified solely by matching base branch ref to another open PR head ref; no comparison of base.sha with parent head.sha",
+  "observed_scope": "Source-level provenance omission; no observed malicious GitHub API response or production incident",
+  "root_cause": "Dependency identity was branch-name bound but not commit bound",
+  "impact": "Potential false confidence that stacked PR dependency metadata is coherent when parent/head SHAs disagree; no merge is approved by audit",
+  "test_first_commit": "4fc2206471d2196394bd382347db981a3f651e82",
+  "repair_commit": "6617bb77aeefa451587b09e070f606526e7e38cb",
+  "tests": [
+    "test_missing_base_sha_fails_closed",
+    "test_stacked_base_sha_drift_requires_review",
+    "test_stacked_matching_base_sha_retains_stack"
+  ],
+  "acceptance": "All three new cases plus existing suite pass on exact-head CI, authenticated API audit succeeds or honestly reports BLOCKED; drift is marked requires-review rather than merge-ready",
+  "status": "ACTIONED_NOT_CI_PROVEN",
+  "runtime": "NOT_DEPLOYED",
+  "independent_proof": "PENDING",
+  "rollback": "Governed revert of these three isolated commits in this owned branch; preserve original records",
+  "recurrence": "Reopen on absent base SHA acceptance, mismatched base/head SHA classified STACKED, missing tests or SHA mismatch",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  }
+}
