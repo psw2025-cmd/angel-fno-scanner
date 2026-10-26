@@ -7,14 +7,42 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
+from urllib.request import HTTPRedirectHandler, build_opener
 from urllib.parse import parse_qs, urlparse
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
 _REPO = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 class AuditError(RuntimeError):
     pass
 
-def fetch_open_prs(repo, token, max_pages=20, opener=urlopen):
+class _NoRedirectHandler(HTTPRedirectHandler):
+    """Reject redirects before Authorization headers can reach another URL."""
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+def _safe_open(req, timeout):
+    return build_opener(_NoRedirectHandler()).open(req, timeout=timeout)
+
+def _next_link_url(link):
+    """Parse every Link relation; malformed metadata must not imply last page."""
+    if not link:
+        return None
+    if not isinstance(link, str):
+        raise AuditError("Malformed pagination Link")
+    next_links = []
+    for part in link.split(","):
+        match = re.fullmatch(r'\s*<([^<>\s]+)>\s*;\s*rel="(next|prev|first|last)"\s*', part)
+        if not match:
+            raise AuditError("Malformed pagination Link")
+        if match.group(2) == "next":
+            next_links.append(match.group(1))
+    if len(next_links) > 1:
+        raise AuditError("Ambiguous pagination")
+    return next_links[0] if next_links else None
+
+def fetch_open_prs(repo, token, max_pages=20, opener=None):
+    if opener is None:
+        opener = _safe_open
     if not _REPO.fullmatch(repo) or any(part in (".", "..") or ".." in part for part in repo.split("/")):
         raise AuditError("Invalid repository identity")
     if not token:
@@ -55,14 +83,17 @@ def fetch_open_prs(repo, token, max_pages=20, opener=urlopen):
             raise AuditError(f"GitHub PR inventory fetch failed: {type(exc).__name__}") from exc
         if not isinstance(data, list) or any(not isinstance(item, dict) for item in data):
             raise AuditError("Invalid GitHub PR payload")
+        if len(data) > 100:
+            raise AuditError("Invalid GitHub PR page size")
         all_prs.extend(data)
-        next_links = [part.split(";", 1)[0].strip().strip("<>")
-                      for part in link.split(",") if 'rel="next"' in part]
-        if len(next_links) > 1:
-            raise AuditError("Ambiguous pagination")
-        next_url = next_links[0] if next_links else None
+        next_url = _next_link_url(link)
         if not next_url:
-            return all_prs
+            if len(data) == 100:
+                # Missing Link metadata on a full page is ambiguous: probe
+                # the next canonical page rather than silently truncate.
+                next_url = f"https://api.github.com/repos/{repo}/pulls?state=open&per_page=100&page={page + 1}"
+            else:
+                return all_prs
     raise AuditError("Inventory incomplete: pagination bound exceeded")
 
 def _repo_ref(item, side):
@@ -85,7 +116,19 @@ def build_report(prs, repo, main_ref="main"):
         n = pr.get("number")
         if not isinstance(n, int) or isinstance(n, bool) or n < 1 or n in indexed:
             raise AuditError("Missing or duplicate PR number")
+        if pr.get("state") != "open":
+            raise AuditError("Non-open PR in open inventory")
+        if type(pr.get("draft")) is not bool:
+            raise AuditError("Missing or invalid draft status")
+        head_sha = pr.get("head", {}).get("sha") if isinstance(pr.get("head"), dict) else None
+        if not isinstance(head_sha, str) or not re.fullmatch(r"[0-9a-fA-F]{40}", head_sha):
+            raise AuditError("Missing or invalid head SHA")
+        base_sha = pr.get("base", {}).get("sha") if isinstance(pr.get("base"), dict) else None
+        if not isinstance(base_sha, str) or not re.fullmatch(r"[0-9a-fA-F]{40}", base_sha):
+            raise AuditError("Missing or invalid base SHA")
         head, base = _repo_ref(pr, "head"), _repo_ref(pr, "base")
+        if base[0] != repo:
+            raise AuditError("Unexpected base repository in PR inventory")
         if head in heads:
             raise AuditError("Ambiguous open PR head identity")
         heads[head] = n
@@ -93,6 +136,7 @@ def build_report(prs, repo, main_ref="main"):
                       "base_repo": base[0], "base_ref": base[1],
                       "draft": pr.get("draft") is True,
                       "head_sha": pr.get("head", {}).get("sha"),
+                      "base_sha": base_sha,
                       "html_url": pr.get("html_url"),
                       "parent_pr": None, "classification": None}
     for row in indexed.values():
@@ -101,7 +145,12 @@ def build_report(prs, repo, main_ref="main"):
         else:
             parent = heads.get((row["base_repo"], row["base_ref"]))
             row["parent_pr"] = parent
-            row["classification"] = "STACKED" if parent else "UNRESOLVED_BASE_REQUIRES_REVIEW"
+            if parent is None:
+                row["classification"] = "UNRESOLVED_BASE_REQUIRES_REVIEW"
+            elif row["base_sha"].lower() != indexed[parent]["head_sha"].lower():
+                row["classification"] = "STACKED_BASE_SHA_DRIFT_REQUIRES_REVIEW"
+            else:
+                row["classification"] = "STACKED"
     state = {}
     def visit(n):
         if state.get(n) == 1:
@@ -117,7 +166,7 @@ def build_report(prs, repo, main_ref="main"):
         visit(n)
     rows = [indexed[n] for n in sorted(indexed)]
     counts = {key: sum(row["classification"] == key for row in rows)
-              for key in ("DIRECT_MAIN_BASE_NOT_MERGE_APPROVAL", "STACKED", "UNRESOLVED_BASE_REQUIRES_REVIEW")}
+              for key in ("DIRECT_MAIN_BASE_NOT_MERGE_APPROVAL", "STACKED", "STACKED_BASE_SHA_DRIFT_REQUIRES_REVIEW", "UNRESOLVED_BASE_REQUIRES_REVIEW")}
     return {"schema_version": 1, "repository": repo,
             "generated_at_utc": datetime.now(timezone.utc).isoformat(),
             "source": "authenticated_github_open_pr_api_snapshot",
@@ -135,7 +184,7 @@ def main(argv=None):
         path = Path(args.output)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        print(f"PR_DEPENDENCY_INVENTORY_PASS count={report['open_pr_count']} unresolved={report['classification_counts']['UNRESOLVED_BASE_REQUIRES_REVIEW']} (not a merge approval)")
+        print(f"PR_DEPENDENCY_INVENTORY_PASS count={report['open_pr_count']} unresolved={report['classification_counts']['UNRESOLVED_BASE_REQUIRES_REVIEW'] + report['classification_counts']['STACKED_BASE_SHA_DRIFT_REQUIRES_REVIEW']} (not a merge approval)")
         return 0
     except AuditError as exc:
         print(f"PR_DEPENDENCY_INVENTORY_BLOCKED: {exc}", file=sys.stderr)

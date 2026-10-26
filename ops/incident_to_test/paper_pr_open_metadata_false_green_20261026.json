@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "incident_id": "PAPER-PR-OPEN-METADATA-20261026",
+  "scope": "Read-only GitHub PR dependency inventory; static source-code validation omission, not an observed GitHub API incident",
+  "signal": "build_report previously accepted missing head.sha, closed state, missing draft, or foreign base repository as an open PR inventory row",
+  "root_cause": "open-PR response metadata was used without validating identity/provenance and required fields",
+  "impact": "potential misleading PR dependency inventory and false-green governance evidence",
+  "before_ref": "5bd50c561e8c13d3138e6e3c467ba8f44706efc7",
+  "test_first_ref": "3eb2cf7b1451ed15e2e43729cec0e1c4881aac66",
+  "patch_ref": "72c7bd58c05d90281871872138868866db82247c",
+  "patch_paths": [
+    "tools/pr_dependency_audit.py",
+    "tests/test_pr_dependency_audit.py"
+  ],
+  "regression_tests": [
+    "test_missing_head_sha_is_not_valid_inventory_evidence",
+    "test_closed_pr_payload_cannot_be_reported_as_open",
+    "test_missing_draft_status_is_not_assumed_false",
+    "test_wrong_base_repository_is_not_classified_as_unresolved"
+  ],
+  "test_status": "NOT_EXECUTED_IN_AUTHENTICATED_CI",
+  "exact_head_ci": "PENDING",
+  "deployed_revision": "NOT_DEPLOYED",
+  "genuine_paper_runtime": "NOT_PROVEN",
+  "independent_proof": "PENDING",
+  "next_session_recurrence_check": "Re-run authentic PR inventory and test suite on exact head; compare complete open-PR counts and source SHAs",
+  "rollback": "Governed revert of isolated metadata validation and tests; preserve prior redirect guard",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  },
+  "reopen_if": [
+    "missing head SHA accepted",
+    "closed PR classified as open",
+    "missing draft accepted",
+    "foreign base accepted",
+    "exact-head regression fails"
+  ]
+}

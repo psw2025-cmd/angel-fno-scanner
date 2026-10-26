@@ -1,0 +1,30 @@
+{
+  "incident_id": "PAPER_PR_LINK_HEADER_SILENT_TRUNCATION_20261026",
+  "topic": "PR inventory completeness / evidence provenance",
+  "observed_scope": "Source-level defect in authenticated read-only PR audit; no observed malformed GitHub response, token disclosure, cloud runtime incident, or real broker order",
+  "signal": "Nonempty malformed Link metadata, e.g. rel=next without quotes or URL without angle brackets, was silently interpreted as no next page",
+  "root_cause": "fetch_open_prs searched for the literal substring rel=\"next\" and discarded other Link segments without validating their syntax",
+  "downstream_risk": "Incomplete open-PR inventory can be reported as PR_DEPENDENCY_INVENTORY_PASS, obscuring stacked dependencies",
+  "before_ref": "2854f0ca0df26e94239dae68e8989a8ab126690c",
+  "test_first_sha": "3d36a7ce3e3be1c8b13127f3e4613626172f1fd5",
+  "repair_shas": [
+    "d9ed31a56c794bd4a774cbff243fedcaadacbf06",
+    "947a9f32f89851f619fd4d8468ad63c4aec79e94"
+  ],
+  "test_cases": [
+    "test_unquoted_link_relation_cannot_silently_truncate",
+    "test_malformed_link_missing_angle_brackets_fails_closed",
+    "test_last_page_with_only_prev_link_is_valid",
+    "test_duplicate_next_link_fails_closed"
+  ],
+  "prevention_hypothesis": "Strict parsing of every Link relation prevents malformed headers from being mistaken for end-of-pagination while preserving standard GitHub next/prev/first/last relations",
+  "status": "ACTIONED_NOT_CI_PROVEN",
+  "mandatory_next": "Verify 32 focused tests on exact final head with no skips, authenticate complete PR snapshot, independently review against actual GitHub Link syntax, then governed integration; broader mandatory CI and runtime remain BLOCKED",
+  "rollback": "Normal reviewed revert of the two implementation commits and tests only; retain incident history; no force push",
+  "reopen": "Any malformed Link producing PASS, a standard GitHub Link causing incorrect BLOCKED, absent exact-head CI, or incomplete inventory accepted as complete",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  }
+}
