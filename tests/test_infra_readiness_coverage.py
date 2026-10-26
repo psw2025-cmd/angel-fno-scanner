@@ -45,6 +45,8 @@ def test_missing_mandatory_evidence_cannot_be_infrastructure_pass(tmp_path, miss
     coverage = [c for c in status["checks"] if c["check"] == "evidence_coverage"]
     assert len(coverage) == 1 and coverage[0]["status"] == "FAIL"
     assert missing in coverage[0]["detail"]
+    # Every generated human-facing surface must show the failed coverage gate.
+    assert "evidence_coverage" in (tmp_path / "SYSTEM_STATUS.html").read_text(encoding="utf-8")
 
 
 def test_duplicate_required_evidence_cannot_hide_conflicting_observation(tmp_path):
