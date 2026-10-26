@@ -198,4 +198,33 @@ class TestDependencyAudit(unittest.TestCase):
         self.assertEqual(row["base_sha"], "a" * 40)
 
 
+    def test_unquoted_link_relation_cannot_silently_truncate(self):
+        def opener(req, timeout):
+            return Response([pr(1, "a")],
+                f'<https://api.github.com/repos/{REPO}/pulls?state=open&per_page=100&page=2>; rel=next')
+        with self.assertRaisesRegex(AuditError, "Malformed pagination Link"):
+            fetch_open_prs(REPO, "fake", opener=opener)
+
+    def test_malformed_link_missing_angle_brackets_fails_closed(self):
+        def opener(req, timeout):
+            return Response([pr(1, "a")],
+                f'https://api.github.com/repos/{REPO}/pulls?state=open&per_page=100&page=2; rel="next"')
+        with self.assertRaisesRegex(AuditError, "Malformed pagination Link"):
+            fetch_open_prs(REPO, "fake", opener=opener)
+
+    def test_last_page_with_only_prev_link_is_valid(self):
+        def opener(req, timeout):
+            return Response([pr(1, "a")],
+                f'<https://api.github.com/repos/{REPO}/pulls?state=open&per_page=100&page=1>; rel="prev"')
+        self.assertEqual(len(fetch_open_prs(REPO, "fake", opener=opener)), 1)
+
+    def test_duplicate_next_link_fails_closed(self):
+        def opener(req, timeout):
+            url = f'https://api.github.com/repos/{REPO}/pulls?state=open&per_page=100&page=2'
+            return Response([pr(1, "a")],
+                f'<{url}>; rel="next", <{url}>; rel="next"')
+        with self.assertRaisesRegex(AuditError, "Ambiguous pagination"):
+            fetch_open_prs(REPO, "fake", opener=opener)
+
+
 if __name__ == "__main__": unittest.main()
