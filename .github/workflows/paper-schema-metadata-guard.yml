@@ -1,0 +1,56 @@
+name: PAPER Schema Metadata Guard
+
+on:
+  push:
+    branches:
+      - main
+      - fix/paper-schema-unknown-type-guard-20261026
+
+permissions:
+  contents: read
+
+jobs:
+  schema-metadata:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PAPER_MODE: "1"
+      LIVE_ORDER_AUTHORITY: "0"
+      REAL_BROKER_ORDERS: "0"
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify exact checked-out SHA
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install offline test dependency
+        run: python -m pip install pytest
+      - name: Run focused offline schema regressions
+        run: |
+          python -m pytest -q -rs --junitxml=schema-metadata-junit.xml tests/test_schema_validator_failclosed_metadata.py tests/test_schema_validator.py
+      - name: Fail closed on incomplete or skipped JUnit
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          root = ET.parse("schema-metadata-junit.xml").getroot()
+          cases = root.findall(".//testcase")
+          if not cases or root.findall(".//skipped") or root.findall(".//failure") or root.findall(".//error"):
+              raise SystemExit("SCHEMA_METADATA_JUNIT_BLOCKED: empty/skipped/failed evidence")
+          expected = {
+              "test_unsupported_bigquery_type_is_not_silently_accepted": 3,
+              "test_empty_schema_is_rejected_before_validating_rows": 1,
+              "test_duplicate_schema_column_is_rejected_before_validating_rows": 1,
+              "test_invalid_field_metadata_rejected_even_when_value_is_null": 4,
+          }
+          for prefix, count in expected.items():
+              found = sum(c.attrib.get("name", "").startswith(prefix) for c in cases)
+              if found != count:
+                  raise SystemExit(f"SCHEMA_METADATA_JUNIT_BLOCKED: {prefix} expected={count} observed={found}")
+          print(f"SCHEMA_METADATA_JUNIT_PASS: {len(cases)} cases, 9 required regressions, zero skips")
+          PY
