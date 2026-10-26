@@ -68,6 +68,8 @@ jobs:
               "test_invalid_or_ambiguous_remote_response_blocks",
               "test_dirty_checkout_still_blocks_even_with_fresh_matching_sha",
               "test_local_git_command_error_is_reported_not_uncaught",
+              "test_trusted_origin_url_is_verified_before_remote_sha",
+              "test_untrusted_origin_url_cannot_certify_matching_sha",
           }
           # Pytest parametrized testcases have names like test_name[case0].
           # Compare required identities using their base names, but preserve
