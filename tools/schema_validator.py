@@ -70,7 +70,16 @@ def get_schema_field_map(table_name: str) -> dict[str, dict[str, Any]]:
     """
     if table_name not in _SCHEMA_CACHE:
         fields = load_schema(table_name)
-        field_map = {f["name"]: f for f in fields}
+        if not fields:
+            raise ValueError(f"Schema definition for '{table_name}' is empty")
+        field_map = {}
+        for field in fields:
+            if not isinstance(field, dict) or not isinstance(field.get("name"), str) or not field["name"].strip():
+                raise ValueError(f"Schema definition for '{table_name}' contains an invalid column name")
+            name = field["name"]
+            if name in field_map:
+                raise ValueError(f"Schema definition for '{table_name}' has duplicate column '{name}'")
+            field_map[name] = field
         _SCHEMA_CACHE[table_name] = field_map
     return _SCHEMA_CACHE[table_name]
 
@@ -140,8 +149,9 @@ def _check_type(val: Any, expected_type: str, col_name: str) -> str | None:
             return f"Field '{col_name}' expects DATE (date or 'YYYY-MM-DD' string), got {repr(val)}"
         return f"Field '{col_name}' expects DATE (date or 'YYYY-MM-DD' string), got {type(val).__name__}"
 
-    # Unknown BigQuery type
-    return None
+    # Unsupported types must fail closed: silently accepting future BigQuery
+    # types would certify data that this validator does not understand.
+    return f"Field '{col_name}' has unsupported BigQuery type '{expected_type}'"
 
 
 def validate_row(table_name: str, row: dict[str, Any], row_index: int = 0) -> None:
