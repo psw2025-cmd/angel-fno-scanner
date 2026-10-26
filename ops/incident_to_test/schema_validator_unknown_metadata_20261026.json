@@ -1,0 +1,43 @@
+{
+  "incident_id": "PAPER_SCHEMA_VALIDATOR_UNKNOWN_OR_AMBIGUOUS_METADATA_20261026",
+  "first_observed_ist": "2026-10-26",
+  "classification": "source-confirmed fail-open validator logic; no observed production malformed schema",
+  "source": {
+    "path": "tools/schema_validator.py",
+    "base_commit": "96309488ceccef11552b4fe734c685ef14667c78",
+    "base_blob_sha": "f115320b92e0cc3297ddf97c748e065e83a7112d"
+  },
+  "signal": "_check_type returned None for unsupported types; dict comprehension overwrote duplicate schema names and accepted empty schema",
+  "root_cause": "No explicit rejection for unknown type names or ambiguous/empty schema metadata before row validation",
+  "impact": "Potential false-green schema validation if a future schema introduces unsupported type, duplicate names or zero fields",
+  "hypothesis": "Unsupported type and empty/duplicate schema metadata raise before any row is accepted",
+  "test_first_sha": "10d44b41e14b01fb1c5a91f0c74dea7793deee5b",
+  "patch_sha": "c7710bed6729132fd2ca56ef57a77bd0437e2f30",
+  "tests": [
+    "tests/test_schema_validator_failclosed_metadata.py::test_unsupported_bigquery_type_is_not_silently_accepted[BIGNUMERIC-1.25]",
+    "tests/test_schema_validator_failclosed_metadata.py::test_unsupported_bigquery_type_is_not_silently_accepted[STRUCT-value1]",
+    "tests/test_schema_validator_failclosed_metadata.py::test_unsupported_bigquery_type_is_not_silently_accepted[NOT_A_TYPE-arbitrary]",
+    "tests/test_schema_validator_failclosed_metadata.py::test_empty_schema_is_rejected_before_validating_rows",
+    "tests/test_schema_validator_failclosed_metadata.py::test_duplicate_schema_column_is_rejected_before_validating_rows"
+  ],
+  "status": "IMPLEMENTED_NOT_CI_VERIFIED",
+  "known_limits": [
+    "no exact-head GitHub Actions receipt",
+    "no live BigQuery schema inspection",
+    "no deployment or PAPER runtime evidence",
+    "no independent next-session recurrence proof"
+  ],
+  "safety": {
+    "PAPER_MODE": "1",
+    "LIVE_ORDER_AUTHORITY": "0",
+    "REAL_BROKER_ORDERS": "0"
+  },
+  "rollback": "Governed revert of this isolated PR only if replacement preserves strict unsupported-type/duplicate/empty fail-closed behavior",
+  "reopen_if": [
+    "unsupported schema type passes validation",
+    "empty schema passes validation",
+    "duplicate schema column silently overrides prior definition",
+    "new supported BigQuery type added without corresponding validator and regression tests"
+  ],
+  "next_checkpoint": "Verify focused and full exact-head non-skipped CI; preserve failures and independent review; no production certification"
+}
