@@ -1,0 +1,15 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: 13_HARD_STOP_ACCEPTANCE.csv>
+index,gate,acceptance_test,fail_condition,evidence,status_at_handoff
+0,DESIGN01,all required package files and manifests verify,missing file or mismatch,package validator,DESIGN_ONLY
+1,REPO01,exact SHA CI on merge candidate and protected branch,only old commit tests,GH Actions run and SHA,UNKNOWN
+2,REPO02,no destructive cleanup and preserved evidence backups,missing file digest or retention proof,inventory and archive receipt,UNKNOWN
+3,CLOUD01,Cloud Run authenticated PAPER cycle and independent image readback,configuration-only or exit0-only,execution ID and verified digest,UNKNOWN
+4,DATA01,fresh options predictions from current completed eligible session,only historic 219 parity,upstream and per-sink receipts,UNKNOWN
+5,PBI01,semantic model points intended sink and refresh current,only BQ-Sheets match,Power BI source audit,UNKNOWN
+6,EQUITY01,historical universe includes delisted suspended and inactive,live-only listed symbols,PIT dataset quality manifest,NOT_IMPLEMENTED
+7,EQUITY02,zero timestamp leakage and valid corporate actions,split-only winners and future fundamentals,walk-forward negative tests,NOT_IMPLEMENTED
+8,EQUITY03,pre-outcome immutable predictions with later mature labels,backfit or changed old receipts,immutable predictor and outcome receipts,NOT_IMPLEMENTED
+9,SEC01,PAPER flags and no broker order capability,any live order authority or endpoint,cloud IAM and runtime probe,UNKNOWN
+10,OWNER01,owner receives understandable evidence and escalation,terminal steps required for routine operation,smoke dashboard and alerts,UNKNOWN
+11,OPS01,24h unattended without laptop and tested recovery,local watchdog required,cloud scheduler and incident drill,UNKNOWN
