@@ -1,0 +1,37 @@
+{
+  "schema": "incident_to_test.v1",
+  "incident_id": "PAPER_PR_AUDIT_UNTRUSTED_PR_TOKEN_SCOPE_20261026",
+  "classification": "confirmed source-level credential exposure path; no observed token exfiltration",
+  "signal": "PR-triggered workflow checked out PR-head code and ran Python with job-level GITHUB_TOKEN; checkout credentials persisted by default",
+  "root_cause": "untrusted pull_request code and authenticated inventory executed in the same job token scope",
+  "patch": [
+    "remove pull_request trigger from token-bearing audit workflow; rely on direct-head owned push, schedule and dispatch",
+    "scope GITHUB_TOKEN only to authenticated inventory step",
+    "disable checkout credential persistence; pin repository and checkout SHA"
+  ],
+  "tests": [
+    "tests/test_pr_audit_token_scope.py::AuditTokenScopeTests.test_no_untrusted_pull_request_trigger",
+    "tests/test_pr_audit_token_scope.py::AuditTokenScopeTests.test_checkout_does_not_persist_credentials",
+    "tests/test_pr_audit_token_scope.py::AuditTokenScopeTests.test_token_only_in_inventory_step",
+    "tests/test_pr_audit_token_scope.py::AuditTokenScopeTests.test_exact_sha_and_paper_flags_preserved"
+  ],
+  "base_sha": "3b9d421a530d3e0f9b0718f1a2b2947e25628ae7",
+  "status": "IMPLEMENTED_CI_UNVERIFIED",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  },
+  "limitations": [
+    "isolated draft branch; not merged or deployed",
+    "GitHub Actions run and exact SHA proof pending",
+    "no proof of historical credential exfiltration"
+  ],
+  "rollback": "governed revert of isolated change if CI or reviewer rejects; never force push",
+  "reopen_if": [
+    "pull_request trigger reintroduced to token-bearing workflow",
+    "job-level token scope reintroduced",
+    "checkout persists credentials",
+    "exact-head test or authenticated inventory fails"
+  ]
+}

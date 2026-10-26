@@ -1,0 +1,65 @@
+{
+  "schema": "incident_to_test.v1",
+  "incident_id": "PAPER_PR_AUDIT_MISSING_ARTIFACT_WARN_FALSE_GREEN_RISK_20261026",
+  "classification": "source-confirmed potential evidence-provenance false-green; no observed missing-artifact successful run",
+  "signal": "Authenticated PR audit upload-artifact step used if-no-files-found: warn, so a missing inventory JSON would not itself fail the upload step",
+  "root_cause": "evidence artifact absence treated as warning rather than hard failure",
+  "upstream_downstream": "Missing or incorrectly routed inventory output -> artifact upload warning -> potential green workflow without retained audit receipt -> unverifiable dependency inventory",
+  "baseline_ref": "5aba352f73c26623d2b05e3a20fd506fed058592",
+  "test_first_commit": "8d77cb88ca1cd3887e6e9246e0f0cd7bfb4ac612",
+  "patch_commit": "4e4ae11d27dba9bbf28878650b3d3e2fc3c8318c",
+  "changes": [
+    "tests/test_pr_audit_token_scope.py: require fail-closed artifact upload contract and expected JSON path",
+    "tests/test_pr_audit_token_scope.py: negative mutations for warn policy and wrong path",
+    ".github/workflows/pr-dependency-audit.yml: if-no-files-found warn -> error"
+  ],
+  "test_first_ci": {
+    "run_id": 40287532757,
+    "job_id": 121454628099,
+    "sha": "8d77cb88ca1cd3887e6e9246e0f0cd7bfb4ac612",
+    "conclusion": "failure",
+    "raw_result": "35 dependency tests PASS; 10 token/artifact tests ran with 4 FAIL because artifact contract required error while workflow still used warn; audit step skipped; artifact step warned missing inventory",
+    "timestamp_utc": "2026-10-26T07:43:30Z"
+  },
+  "focused_exact_head_ci": "PENDING_FRESH_RUN_AFTER_THIS_EVIDENCE_RECORD_COMMIT",
+  "complete_repository_ci": "UNVERIFIED",
+  "deployment": "NOT_DEPLOYED",
+  "genuine_paper_runtime": "NOT_PROVEN",
+  "independent_proof": "PENDING",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  },
+  "rollback": "Governed revert if genuine inventory JSON cannot be retained; never restore warning-only missing-evidence behavior without replacement mandatory evidence gate.",
+  "recurrence": "Reopen on missing/renamed inventory JSON, artifact upload warning, skipped focused tests, exact-head SHA mismatch, or workflow success without artifact receipt.",
+  "related_operations": [
+    1420,
+    1500,
+    1520,
+    1524,
+    1532,
+    1535,
+    1540,
+    1860,
+    1900
+  ],
+  "status": "TESTED_FOCUSED_PRIOR_HEAD__RECORD_COMMIT_CI_PENDING",
+  "patch_ci": {
+    "run_id": 40287549535,
+    "sha": "4e4ae11d27dba9bbf28878650b3d3e2fc3c8318c",
+    "conclusion": "success"
+  },
+  "after_record_initial_ci": {
+    "run_id": 40287567978,
+    "job_id": 121454747412,
+    "sha": "baf89d2e3328b2b0ebd1cad3b11a1ea307e43c2d",
+    "conclusion": "success",
+    "test_results": "35 dependency PASS + 10 token/artifact PASS, 0 skipped",
+    "inventory": "PR_DEPENDENCY_INVENTORY_PASS count=53 unresolved=2",
+    "artifact_id": 12634936583,
+    "artifact_sha256": "392c37bbecc0c7a00940e870919bcce61ccb5153f50c14613297d73840e83c81",
+    "artifact_bytes": 4064,
+    "created_utc": "2026-10-26T07:43:53Z"
+  }
+}
