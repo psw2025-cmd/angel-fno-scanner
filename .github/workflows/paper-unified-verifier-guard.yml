@@ -37,7 +37,7 @@ jobs:
         run: python -m pip install 'pytest>=8,<10'
       - name: Run negative and boundary regression suite
         run: |
-          python -m pytest -q -rs tests/test_verify_all_pytest_failclosed.py tests/test_verify_all_git_status_failclosed.py --junitxml=unified-verifier-junit.xml
+          python -m pytest -q -rs tests/test_verify_all_pytest_failclosed.py tests/test_verify_all_git_status_failclosed.py tests/test_verify_all_remote_freshness.py --junitxml=unified-verifier-junit.xml
       - name: Reject skipped, failed, missing or incomplete JUnit evidence
         if: always()
         shell: bash
@@ -61,6 +61,13 @@ jobs:
               "test_dirty_checkout_cannot_certify_full_verification",
               "test_diverged_checkout_cannot_certify_full_verification",
               "test_unrecognized_git_status_fails_closed",
+              "test_fresh_remote_sha_required_and_tracking_ref_not_trusted",
+              "test_stale_tracking_ref_cannot_hide_fresh_remote_divergence",
+              "test_remote_auth_or_network_failure_blocks_verification",
+              "test_remote_timeout_blocks_verification",
+              "test_invalid_or_ambiguous_remote_response_blocks",
+              "test_dirty_checkout_still_blocks_even_with_fresh_matching_sha",
+              "test_local_git_command_error_is_reported_not_uncaught",
           }
           observed = {c.get("name") for c in cases}
           if not cases or not required.issubset(observed):
