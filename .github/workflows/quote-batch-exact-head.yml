@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - fix/paper-quote-batch-completeness-20261027
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
@@ -18,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - name: Verify exact checked-out commit and PAPER controls
         shell: bash
@@ -26,8 +28,9 @@ jobs:
           set -euo pipefail
           actual="$(git rev-parse HEAD)"
           echo "CHECKED_OUT_SHA=$actual"
-          echo "EXPECTED_HEAD_SHA=$GITHUB_SHA"
-          test "$actual" = "$GITHUB_SHA"
+          expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          echo "EXPECTED_HEAD_SHA=$expected"
+          test "$actual" = "$expected"
           test "$PAPER_MODE" = 1
           test "$LIVE_ORDER_AUTHORITY" = 0
           test "$REAL_BROKER_ORDERS" = 0
