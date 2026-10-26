@@ -22,7 +22,7 @@
     "test_dirty_checkout_still_blocks_even_with_fresh_matching_sha",
     "test_local_git_command_error_is_reported_not_uncaught"
   ],
-  "evidence_status": "PENDING_EXACT_HEAD_NON_SKIPPED_CI",
+  "evidence_status": "CI_RERUN_PENDING_AFTER_JUNIT_GUARD_FIX",
   "proof_boundary": "Offline AST-extracted monkeypatched tests only; live remote lookup at runtime, remote URL identity, broker, Sheets, BigQuery, deployment and PAPER execution remain unverified",
   "rollback": "Governed revert of isolated fresh-remote lookup only after stronger equivalent reviewed fail-closed proof; retain tests",
   "reopen_when": [
@@ -37,5 +37,14 @@
     "LIVE_ORDER_AUTHORITY": "0",
     "REAL_BROKER_ORDERS": "0"
   },
-  "note": "Registered 1-1919 scope is not complete; this incident advances individual tasks only."
+  "note": "Registered 1-1919 scope is not complete; this incident advances individual tasks only.",
+  "ci_initial_failure": {
+    "run_id": 40340570205,
+    "job_id": 121633826703,
+    "result": "FAIL",
+    "observed": "21 tests passed but JUnit evidence gate rejected parametrized test identity as missing",
+    "root_cause": "Required test names were compared against JUnit parametrized names including [case] suffix; duplicate guard also conflated repeated base names",
+    "fix_commit": "5cb20412f7bcc33768d8539c7310811fb6d8a027",
+    "remedy": "Normalize base name only for required identity set, use full classname/name tuple for duplicate detection"
+  }
 }
