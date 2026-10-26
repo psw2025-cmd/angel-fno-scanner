@@ -1,0 +1,32 @@
+{
+  "schema_version":"1.0.0",
+  "system":"ANGEL_FNO_EQUITY",
+  "note":"TEMPLATE ONLY - NONE OF THESE ARE VERIFIED RUNTIME RECEIPTS",
+  "generated_at_utc":null,
+  "verified_main_sha":null,
+  "verified_feature_shas":[],
+  "deployment_image_digest":null,
+  "run_id":null,
+  "writer_id":null,
+  "cloud_execution_id":null,
+  "source_cutoff_utc":null,
+  "domains":{
+    "options_code":"UNKNOWN",
+    "options_cloud_paper":"UNKNOWN",
+    "options_publication":"UNKNOWN",
+    "bq_sheets_parity":"UNKNOWN",
+    "power_bi_freshness":"UNKNOWN",
+    "gmail_alerts":"UNKNOWN",
+    "equity_pit_history":"UNKNOWN",
+    "equity_paper_forecast":"UNKNOWN",
+    "equity_matured_outcomes":"UNKNOWN",
+    "equity_benchmark_alpha":"UNKNOWN",
+    "security_and_cost":"UNKNOWN"
+  },
+  "paper_mode_required":true,
+  "live_orders_authorized":false,
+  "evidence":[],
+  "unresolved_issues":[],
+  "owner_action_required":null,
+  "independent_auditor":null
+}
