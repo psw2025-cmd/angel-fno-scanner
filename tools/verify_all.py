@@ -68,20 +68,30 @@ def check_git():
 
 def check_pytest():
     print("\n[2/6] Running pytest test suite...")
-    proc = subprocess.run([sys.executable, "-m", "pytest", "-q"], cwd=REPO_ROOT, text=True, capture_output=True)
+    proc = subprocess.run([sys.executable, "-m", "pytest", "-q", "-rs"], cwd=REPO_ROOT, text=True, capture_output=True)
     out = proc.stdout + proc.stderr
-    passed = proc.returncode == 0
-
-    match = re.search(r"(\d+)\s+passed", out)
-    count = int(match.group(1)) if match else 0
-    print(f"      Result    : {'PASS' if passed else 'FAIL'} ({count} passed, exit code {proc.returncode})")
+    # Pytest exit 0 can still hide skipped integrations. Missing or ambiguous
+    # summary evidence must not certify the complete verification suite.
+    summary_lines = [
+        line.strip() for line in out.splitlines()
+        if re.search(r"\b\d+\s+(?:passed|skipped|failed|errors?)\b", line)
+    ]
+    summary = summary_lines[-1] if summary_lines else ""
+    passed_match = re.search(r"\b(\d+)\s+passed\b", summary)
+    skipped_match = re.search(r"\b(\d+)\s+skipped\b", summary)
+    count = int(passed_match.group(1)) if passed_match else 0
+    skipped_count = int(skipped_match.group(1)) if skipped_match else 0
+    passed = proc.returncode == 0 and count > 0 and skipped_count == 0
+    print(f"      Result    : {'PASS' if passed else 'FAIL'} "
+          f"({count} passed, {skipped_count} skipped, exit code {proc.returncode})")
     return {
         "status": "PASS" if passed else "FAIL",
         "passed_count": count,
+        "skipped_count": skipped_count,
         "exit_code": proc.returncode,
+        "summary": summary,
         "output": out.strip()
     }
-
 
 def check_bigquery_types():
     print("\n[3/6] Checking BigQuery run_id types across all four tables...")
