@@ -76,7 +76,6 @@ jobs:
           test "$PAPER_MODE" = 1
           test "$LIVE_ORDER_AUTHORITY" = 0
           test "$REAL_BROKER_ORDERS" = 0
-          test "$REAL_BROKER_ORDERS" = 0
           python tools/scheduled_cycle_gate.py --schedule "$SCHEDULE_CRON"
       - name: Install Libraries
         run: |
