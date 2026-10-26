@@ -1,0 +1,11 @@
+gate,category,required_test,required_evidence,current_status
+V0,schemas,"Validate JSON schemas, missing required fields fail",code+schema,NOT_VERIFIED_FOR_V3
+V1,unit,All eligible tests; separately enumerate skips/fails,JUnit+SHA,NOT_VERIFIED_FOR_V3
+V2,CI,Exact intended SHA; Windows and Linux,GitHub API,NOT_VERIFIED_FOR_V3
+V3,integration,Faults and concurrency no false publish,receipt,NOT_VERIFIED_FOR_V3
+V4,cloud,"Actual job execution,image digest,read-only broker feed",GCP API,NOT_VERIFIED_FOR_V3
+V5,sinks,"219 row identities, BQ Sheets Power BI actual fresh readbacks",external API,NOT_VERIFIED_FOR_V3
+V6,equity,Survivorship-free 10-year replay and forward receipts,source manifests,NOT_VERIFIED_FOR_V3
+V7,recovery,"Laptop-off, retry, rollback, revoked credentials",drill receipts,NOT_VERIFIED_FOR_V3
+V8,security,No live orders; IAM least privilege; Gmail never commands,IAM and attack tests,NOT_VERIFIED_FOR_V3
+V9,owner,One-page truthful status; no manual command requirement,owner UX acceptance,NOT_VERIFIED_FOR_V3

@@ -1,0 +1,77 @@
+name: Architecture V4 Integrity
+on:
+  push:
+    branches:
+      - docs/architecture-v4-handoff-20261026
+  pull_request:
+    paths:
+      - 'docs/architecture/v4/**'
+      - '.github/workflows/architecture-v4-integrity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-integrity:
+    name: Source byte parity and fail-closed tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify every available file against original source manifest
+        run: |
+          python - <<'PY'
+          import hashlib,json,subprocess
+          from pathlib import Path
+          root=Path('docs/architecture/v4')
+          manifest=json.loads((root/'14_FILE_MANIFEST.json').read_text())
+          checked=0
+          missing=[]
+          for item in manifest['files']:
+              path=root/item['path']
+              if not path.exists():
+                  missing.append(item['path'])
+                  continue
+              raw=path.read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==item['sha256'], f"SHA256 mismatch: {path}"
+              assert len(raw)==item['size'], f"size mismatch: {path}"
+              checked+=1
+          original_validator=root/'validate_package.py'
+          assert original_validator.exists()
+          print(f'PASS source byte parity for {checked} available files, missing={missing}')
+          # This phase explicitly does NOT accept the full archive as complete.
+          assert checked==13, f"Unexpected count {checked}, update architecture gate explicitly"
+          assert missing==['12_SOURCE_AND_PERMISSION_REGISTER.csv']
+          PY
+      - name: Prove original validator rejects incomplete package
+        run: |
+          set +e
+          python docs/architecture/v4/validate_package.py > /tmp/v4-validator-output.txt 2>&1
+          code=$?
+          set -e
+          cat /tmp/v4-validator-output.txt
+          test "$code" -ne 0
+          grep -q "MISSING 12_SOURCE_AND_PERMISSION_REGISTER.csv" /tmp/v4-validator-output.txt
+          echo 'PASS: original validator fails closed on withheld file'
+      - name: Prove corruption is detected on positive fixture
+        run: |
+          python - <<'PY'
+          import hashlib,json,tempfile
+          from pathlib import Path
+          root=Path('docs/architecture/v4')
+          m=json.loads((root/'14_FILE_MANIFEST.json').read_text())
+          x=m['files'][0]
+          original=(root/x['path']).read_bytes()
+          assert hashlib.sha256(original).hexdigest()==x['sha256']
+          corrupted=original+b'corruption-injection'
+          assert hashlib.sha256(corrupted).hexdigest()!=x['sha256']
+          print('PASS: corrupted byte stream reliably fails manifest digest check')
+          PY
+  full-package-gate:
+    name: Full V4 archive certification (requires withheld file)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: python docs/architecture/v4/validate_package.py
