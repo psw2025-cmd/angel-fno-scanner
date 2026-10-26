@@ -1,0 +1,24 @@
+{
+  "incident_id": "MARKET_BOT_SCHEDULE_DELAY_20261026",
+  "observed_run_id": 40364391252,
+  "observed_created_at_utc": "2026-10-26T16:59:32Z",
+  "expected_eod_cron_utc": "45 10 * * 1-5",
+  "observed_local_time_ist": "2026-10-26T22:29:32+05:30",
+  "signal": "EOD scheduled workflow started outside intended 16:15 IST window, then failed due to missing reviewed ICICIPRULI from broker instrument discovery",
+  "confirmed_root_causes": [
+    "Scheduled workflow lacked a pre-broker actual execution-time gate",
+    "Broker-discovered F&O universe omitted ICICIPRULI; why the upstream instrument master omitted it remains unverified"
+  ],
+  "remedy": "Add fail-closed IST scheduled window + NSE holiday preflight before dependencies and broker login; preserve 219-symbol identity gate",
+  "regression_test": "tests/test_scheduled_cycle_gate.py",
+  "mandatory_ci": "PAPER Scheduled Clock Exact-Head Guard; exact SHA, 15 tests, no skipped",
+  "deployment_status": "UNMERGED_UNDEPLOYED",
+  "runtime_status": "NOT_PROVEN",
+  "independent_recurrence_check": "Check next real OPEN/EOD scheduled run timestamps and gate receipt, plus separate independent Angel/NSE listing for ICICIPRULI; do not publish partial 218 universe",
+  "rollback": "Revert isolated workflow preflight and guard only after verified replacement; never weaken 219 identity gate",
+  "limitations": [
+    "GitHub scheduled event does not attest originally intended fire date; guard checks current IST execution window only",
+    "Manual non-dry dispatch market-clock risk remains separately open",
+    "No live broker invocation, cloud serving revision, or cross-system reconciliation proved"
+  ]
+}

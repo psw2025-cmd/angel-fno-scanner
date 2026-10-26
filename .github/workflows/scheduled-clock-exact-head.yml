@@ -1,0 +1,66 @@
+name: PAPER Scheduled Clock Exact-Head Guard
+on:
+  push:
+    branches:
+      - fix/paper-scheduled-cycle-clock-20261026
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scheduled-clock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify exact checked-out commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          echo "CHECKED_OUT_SHA=$actual"
+          echo "EXPECTED_HEAD_SHA=$GITHUB_SHA"
+          test "$actual" = "$GITHUB_SHA"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install focused test dependency
+        run: python -m pip install 'pytest>=8,<10'
+      - name: Run scheduled clock regressions
+        run: python -m pytest -q -rs tests/test_scheduled_cycle_gate.py --junitxml=scheduled-clock-junit.xml
+      - name: Require non-skipped, complete JUnit proof
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          p=Path('scheduled-clock-junit.xml')
+          if not p.is_file(): raise SystemExit('SCHEDULED_CLOCK_CI_BLOCKED: missing JUnit')
+          root=ET.parse(p).getroot()
+          cases=root.findall('.//testcase')
+          names=[(x.get('classname'),x.get('name')) for x in cases]
+          if len(cases)!=15 or len(set(names))!=15: raise SystemExit('SCHEDULED_CLOCK_CI_BLOCKED: incomplete/duplicate cases')
+          if any(x.find(t) is not None for x in cases for t in ('skipped','failure','error')):
+              raise SystemExit('SCHEDULED_CLOCK_CI_BLOCKED: skipped/failed/error testcase')
+          suites=[root] if root.tag=='testsuite' else root.findall('.//testsuite')
+          if not suites: raise SystemExit('SCHEDULED_CLOCK_CI_BLOCKED: missing suites')
+          for s in suites:
+              if int(s.get('skipped','0')) or int(s.get('failures','0')) or int(s.get('errors','0')):
+                  raise SystemExit('SCHEDULED_CLOCK_CI_BLOCKED: nonzero suite errors')
+          print('SCHEDULED_CLOCK_CI_PASS: 15 exact-head tests, 0 skipped')
+          PY
+      - name: Upload immutable focused evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scheduled-clock-exact-head
+          path: scheduled-clock-junit.xml
+          if-no-files-found: error
