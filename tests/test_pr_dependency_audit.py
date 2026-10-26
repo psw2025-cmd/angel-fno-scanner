@@ -227,4 +227,31 @@ class TestDependencyAudit(unittest.TestCase):
             fetch_open_prs(REPO, "fake", opener=opener)
 
 
+    def test_full_page_without_link_probes_for_omitted_next_page(self):
+        calls = []
+        def opener(req, timeout):
+            calls.append(req.full_url)
+            if len(calls) == 1:
+                return Response([pr(i, f"head-{i}") for i in range(1, 101)])
+            return Response([pr(101, "head-101")])
+        rows = fetch_open_prs(REPO, "fake", opener=opener)
+        self.assertEqual(len(rows), 101)
+        self.assertEqual(len(calls), 2)
+        self.assertIn("page=2", calls[1])
+
+    def test_exactly_full_final_page_requires_empty_probe(self):
+        calls = []
+        def opener(req, timeout):
+            calls.append(req.full_url)
+            return Response([pr(i, f"head-{i}") for i in range(1, 101)] if len(calls) == 1 else [])
+        self.assertEqual(len(fetch_open_prs(REPO, "fake", opener=opener)), 100)
+        self.assertEqual(len(calls), 2)
+
+    def test_full_page_without_link_at_bound_fails_closed(self):
+        def opener(req, timeout):
+            return Response([pr(i, f"head-{i}") for i in range(1, 101)])
+        with self.assertRaisesRegex(AuditError, "pagination bound"):
+            fetch_open_prs(REPO, "fake", max_pages=1, opener=opener)
+
+
 if __name__ == "__main__": unittest.main()
