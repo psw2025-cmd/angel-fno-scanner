@@ -40,30 +40,82 @@ IST = ZoneInfo("Asia/Kolkata")
 
 
 def check_git():
-    print("[1/6] Checking Git repository status...")
-    porcelain = subprocess.check_output(["git", "status", "--porcelain"], cwd=REPO_ROOT, text=True).strip()
-    is_clean = len(porcelain) == 0
+    """Require a clean checkout equal to the freshly queried remote main SHA.
 
-    local_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, text=True).strip()
-    try:
-        remote_sha = subprocess.check_output(["git", "rev-parse", "origin/main"], cwd=REPO_ROOT, text=True).strip()
-    except Exception:
-        remote_sha = "UNKNOWN"
-
-    is_synced = (local_sha == remote_sha)
-    status_str = "PASS" if is_clean and is_synced else ("WARN_DIRTY" if not is_clean else "WARN_DIVERGED")
-    print(f"      Local SHA : {local_sha[:10]}")
-    print(f"      Remote SHA: {remote_sha[:10]}")
-    print(f"      Clean     : {is_clean} ({'clean' if is_clean else len(porcelain.splitlines())} modified/untracked)")
-    print(f"      Synced    : {is_synced}")
-    return {
-        "status": status_str,
-        "is_clean": is_clean,
-        "is_synced": is_synced,
-        "local_sha": local_sha,
-        "remote_sha": remote_sha,
-        "uncommitted_files": porcelain.splitlines() if porcelain else []
+    A cached local origin/main tracking ref is NOT remote synchronization proof.
+    A failed/ambiguous remote query blocks certification rather than falling
+    back to stale refs. No remote stderr or credential-bearing URL is reported.
+    """
+    print("[1/6] Checking Git repository status and fresh remote SHA...")
+    base = {
+        "status": "BLOCKED_LOCAL",
+        "is_clean": False,
+        "is_synced": False,
+        "local_sha": "UNKNOWN",
+        "remote_sha": "UNKNOWN",
+        "remote_verified": False,
+        "remote_source": "git ls-remote --exit-code origin refs/heads/main",
+        "uncommitted_files": [],
     }
+    try:
+        porcelain = subprocess.check_output(
+            ["git", "status", "--porcelain"], cwd=REPO_ROOT,
+            text=True, timeout=15).strip()
+        local_sha = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=REPO_ROOT,
+            text=True, timeout=15).strip().lower()
+        if not re.fullmatch(r"(?:[0-9a-f]{40}|[0-9a-f]{64})", local_sha):
+            raise ValueError("INVALID_LOCAL_SHA")
+    except (subprocess.SubprocessError, OSError, ValueError) as exc:
+        base["reason"] = "LOCAL_GIT_UNVERIFIED_" + type(exc).__name__
+        print("      Git status: BLOCKED_LOCAL (local git command unavailable/invalid)")
+        return base
+
+    is_clean = not porcelain
+    base.update({
+        "is_clean": is_clean,
+        "local_sha": local_sha,
+        "uncommitted_files": porcelain.splitlines() if porcelain else [],
+    })
+
+    try:
+        # Bounded read-only remote query: never substitute the local cached
+        # origin/main ref, and never leak remote stderr to the report.
+        proc = subprocess.run(
+            ["git", "ls-remote", "--exit-code", "origin", "refs/heads/main"],
+            cwd=REPO_ROOT, text=True, capture_output=True, timeout=15,
+            check=False)
+        if proc.returncode != 0:
+            raise ValueError("REMOTE_QUERY_NONZERO")
+        lines = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+        if len(lines) != 1:
+            raise ValueError("REMOTE_RESPONSE_AMBIGUOUS")
+        fields = lines[0].split()
+        if len(fields) != 2 or fields[1] != "refs/heads/main":
+            raise ValueError("REMOTE_REF_INVALID")
+        remote_sha = fields[0].lower()
+        if not re.fullmatch(r"(?:[0-9a-f]{40}|[0-9a-f]{64})", remote_sha):
+            raise ValueError("REMOTE_SHA_INVALID")
+    except (subprocess.SubprocessError, OSError, ValueError) as exc:
+        base["status"] = "BLOCKED_REMOTE"
+        base["reason"] = "REMOTE_GIT_UNVERIFIED_" + type(exc).__name__
+        print("      Git status: BLOCKED_REMOTE (fresh origin/main not proven)")
+        return base
+
+    is_synced = local_sha == remote_sha
+    status = "PASS" if is_clean and is_synced else (
+        "WARN_DIRTY" if not is_clean else "WARN_DIVERGED")
+    print(f"      Local SHA : {local_sha[:10]}")
+    print(f"      Remote SHA: {remote_sha[:10]} (fresh read-only lookup)")
+    print(f"      Clean     : {is_clean}")
+    print(f"      Synced    : {is_synced}")
+    base.update({
+        "status": status,
+        "is_synced": is_synced,
+        "remote_sha": remote_sha,
+        "remote_verified": True,
+    })
+    return base
 
 
 def check_pytest():
