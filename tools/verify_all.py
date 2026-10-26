@@ -243,6 +243,14 @@ def main():
     # Determine overall status
     # Note: git clean/sync is required for final deployment, pytest must pass, BQ must be STRING, probe FAILs must be 0
     critical_failures = []
+    # A clean, synchronized checkout is an explicit deployment prerequisite.
+    # WARN_* and unknown git states must never yield an overall PASS, even if
+    # an independent readiness report is incomplete or incorrectly green.
+    if git_res.get("status") != "PASS":
+        critical_failures.append(
+            "Git checkout is not clean and synchronized with origin/main: "
+            + str(git_res.get("status", "MISSING"))
+        )
     if pytest_res["status"] != "PASS":
         critical_failures.append("Pytest regression suite failed")
     if bq_res["status"] != "PASS":
