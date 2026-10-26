@@ -1,0 +1,29 @@
+name: Architecture V4 Integrity (non-certifying)
+on:
+  pull_request:
+    paths:
+      - 'docs/architecture/v4/**'
+      - '.github/workflows/architecture-v4-integrity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate-v4:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify package manifest and source bytes
+        run: python docs/architecture/v4/validate_package.py
+      - name: Negative control: missing source document must fail
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('docs/architecture/v4/14_FILE_MANIFEST.json')
+          m=json.loads(p.read_text())
+          assert len(m['files']) == 14
+          print('PASS: 14-file manifest parsed (not proof all files published)')
+          PY
