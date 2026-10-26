@@ -39,3 +39,19 @@ def test_duplicate_schema_column_is_rejected_before_validating_rows(tmp_path, mo
     monkeypatch.setattr(validator, "_SCHEMA_CACHE", {})
     with pytest.raises(ValueError, match="duplicate"):
         validator.validate_rows("test_table", [{"symbol": "NIFTY"}])
+
+
+@pytest.mark.parametrize("field", [
+    {"name": "value", "type": "BIGNUMERIC", "mode": "NULLABLE"},
+    {"name": "value", "mode": "NULLABLE"},
+    {"name": "value", "type": "STRING", "mode": "REPEATED"},
+    {"name": "value", "type": "STRING", "mode": "UNKNOWN"},
+])
+def test_invalid_field_metadata_rejected_even_when_value_is_null(
+    tmp_path, monkeypatch, field
+):
+    (tmp_path / "test_table.json").write_text(json.dumps([field]), encoding="utf-8")
+    monkeypatch.setattr(validator, "SCHEMAS_DIR", tmp_path)
+    monkeypatch.setattr(validator, "_SCHEMA_CACHE", {})
+    with pytest.raises(ValueError, match="unsupported|missing"):
+        validator.validate_rows("test_table", [{"value": None}])
