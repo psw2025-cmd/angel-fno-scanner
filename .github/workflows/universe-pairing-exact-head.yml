@@ -1,0 +1,61 @@
+name: PAPER Universe Pairing Exact-Head Guard
+on:
+  push:
+    branches:
+      - fix/paper-universe-pairing-diagnostics-20261027
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  universe-pairing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify exact commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          echo "CHECKED_OUT_SHA=$(git rev-parse HEAD)"
+          echo "EXPECTED_HEAD_SHA=$GITHUB_SHA"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install 'pytest>=8,<10'
+      - name: Run no-network regressions
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
+          PAPER_MODE: '1'
+          LIVE_ORDER_AUTHORITY: '0'
+          REAL_BROKER_ORDERS: '0'
+        run: python -m pytest -q -rs tests/test_universe_pairing.py --junitxml=universe-pairing-junit.xml
+      - name: Enforce exact non-skipped JUnit evidence
+        if: always()
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          p = Path('universe-pairing-junit.xml')
+          if not p.is_file(): raise SystemExit('PAIRING_CI_BLOCKED: no JUnit')
+          root = ET.parse(p).getroot()
+          cases = root.findall('.//testcase')
+          identities = [(x.get('classname'), x.get('name')) for x in cases]
+          if len(cases) != 16 or len(set(identities)) != 16:
+              raise SystemExit('PAIRING_CI_BLOCKED: missing/duplicate tests')
+          if any(x.find(t) is not None for x in cases for t in ('failure', 'error', 'skipped')):
+              raise SystemExit('PAIRING_CI_BLOCKED: failing/skipped case')
+          suites = [root] if root.tag == 'testsuite' else root.findall('.//testsuite')
+          if not suites or any(int(s.get(k, '0')) for s in suites for k in ('failures','errors','skipped')):
+              raise SystemExit('PAIRING_CI_BLOCKED: invalid suite summary')
+          print('PAIRING_CI_PASS: 16 tests, 0 skipped')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: universe-pairing-exact-head
+          path: universe-pairing-junit.xml
+          if-no-files-found: error

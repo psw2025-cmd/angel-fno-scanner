@@ -1,0 +1,23 @@
+{
+  "incident_id": "FNO_UNIVERSE_PAIRING_LATENT_20261027",
+  "observed_failure_run": 40364391252,
+  "observed_failure": "ICICIPRULI absent from reviewed 219-symbol discovery; upstream broker-master cause NOT VERIFIED",
+  "source_confirmed_risk": "scanner.py selected min(option expiries) before checking same-strike CE/PE completeness, skipping a symbol even when a later expiry had a complete pair",
+  "hypothesis": "Selecting earliest complete expiry prevents this avoidable subset of false missing-symbol failures; safe reason codes separate remaining causes",
+  "patch": "tools/universe_pairing.py; scanner.py",
+  "regression_tests": "tests/test_universe_pairing.py",
+  "test_count": 16,
+  "safety": {
+    "PAPER_MODE": "1",
+    "LIVE_ORDER_AUTHORITY": "0",
+    "REAL_BROKER_ORDERS": "0"
+  },
+  "limitations": [
+    "No live broker master inspected; cannot attribute observed ICICIPRULI failure to this branch condition",
+    "219 manifest and fail-closed publication gate unchanged",
+    "No real orders, cloud changes, or deployments"
+  ],
+  "acceptance": "Exact-head non-skipped CI plus independent next-market-session read-only broker discovery and verified 219/219; full mandatory CI separate",
+  "rollback": "Governed revert of this isolated PR if regression; never weaken reviewed 219-identity guard",
+  "reopen": "Any missing reviewed symbol despite available complete later expiry, or unexpected diagnostic / partial publication"
+}
