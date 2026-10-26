@@ -54,7 +54,8 @@ def check_git():
         "local_sha": "UNKNOWN",
         "remote_sha": "UNKNOWN",
         "remote_verified": False,
-        "remote_source": "git ls-remote --exit-code origin refs/heads/main",
+        "remote_source": "verified canonical origin URL + git ls-remote origin refs/heads/main",
+        "remote_identity_verified": False,
         "uncommitted_files": [],
     }
     try:
@@ -79,6 +80,19 @@ def check_git():
     })
 
     try:
+        # A matching SHA from an attacker-controlled `origin` is not proof of
+        # the canonical repository. Check the remote destination first, without
+        # recording the URL (it might contain embedded credentials).
+        origin_url = subprocess.check_output(
+            ["git", "remote", "get-url", "origin"], cwd=REPO_ROOT,
+            text=True, timeout=15).strip()
+        if not re.fullmatch(
+            r"(?:https://github\\.com/|git@github\\.com:|ssh://git@github\\.com/)"
+            r"psw2025-cmd/angel-fno-scanner(?:\\.git)?/?",
+            origin_url, flags=re.IGNORECASE):
+            raise ValueError("UNTRUSTED_ORIGIN_URL")
+        base["remote_identity_verified"] = True
+
         # Bounded read-only remote query: never substitute the local cached
         # origin/main ref, and never leak remote stderr to the report.
         proc = subprocess.run(
