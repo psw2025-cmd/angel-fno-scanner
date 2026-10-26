@@ -243,16 +243,73 @@ def write_csv(path, rows, columns):
                           for k, v in row.items()} for row in rows)
 
 
+def evidence_coverage_check(checks, mode):
+    """Reject missing, duplicated or suppressed mandatory readiness checks.
+
+    A section that crashes before adding its individual checks must not make
+    the remaining successful sections sufficient for infrastructure PASS.
+    This is metadata coverage only, not broker or runtime certification.
+    """
+    valid_modes = {'VERIFY_ONLY', 'PREPARE_METADATA_ONLY', 'OFFLINE'}
+    expected = {
+        'git_head', 'working_tree', 'current_main', '219_symbol_config',
+        'single_writer_static', 'runtime_provenance', 'exact_sha_ci',
+        'sheet_provenance',
+    }
+    if mode == 'OFFLINE':
+        expected.add('bigquery')
+    else:
+        expected.update('bq_' + name for name in TABLES)
+
+    counts = {}
+    statuses = {}
+    malformed = 0
+    for item in checks:
+        name = item.get('check') if isinstance(item, dict) else None
+        if not isinstance(name, str) or not name.strip():
+            malformed += 1
+            continue
+        counts[name] = counts.get(name, 0) + 1
+        statuses[name] = item.get('status')
+
+    missing = sorted(expected - counts.keys())
+    duplicates = sorted(name for name, count in counts.items() if count > 1)
+    suppressed = sorted(name for name in expected - {'runtime_provenance'}
+                        if statuses.get(name) == 'NOT_PROVEN')
+    issues = []
+    if mode not in valid_modes:
+        issues.append('invalid mode')
+    if missing:
+        issues.append('missing=' + ','.join(missing))
+    if duplicates:
+        issues.append('duplicate=' + ','.join(duplicates))
+    if suppressed:
+        issues.append('unverified required=' + ','.join(suppressed))
+    if malformed:
+        issues.append('malformed check identities=' + str(malformed))
+    if statuses.get('runtime_provenance') not in ('NOT_PROVEN', None):
+        issues.append('metadata-only runtime provenance must remain NOT_PROVEN')
+    return {
+        'check': 'evidence_coverage',
+        'status': 'FAIL' if issues else 'PASS',
+        'detail': '; '.join(issues) if issues else
+                  'Mandatory metadata check identities present exactly once; runtime NOT_PROVEN',
+    }
+
+
 def report(audit, mode):
-    required = [c for c in audit.checks if c['status'] != 'NOT_PROVEN']
+    # Include an explicit coverage gate: missing sections must never be
+    # silently excluded from the PASS denominator.
+    reported_checks = [*audit.checks, evidence_coverage_check(audit.checks, mode)]
+    required = [c for c in reported_checks if c['status'] != 'NOT_PROVEN']
     ready = bool(required) and all(c['status'] == 'PASS' for c in required)
     result = dict(generated_at=dt.datetime.now(dt.timezone.utc).isoformat(),
                   mode=mode, infrastructure='PASS' if ready else 'NOT_READY',
                   runtime='NOT_PROVEN', safety='NO_MARKET_RUN_NO_BROKER_CALLS_NO_RUNTIME_ROWS',
-                  checks=audit.checks, schema=audit.schema, ci=audit.ci)
-    audit.raw('operation_log.json', audit.checks)
+                  checks=reported_checks, schema=audit.schema, ci=audit.ci)
+    audit.raw('operation_log.json', reported_checks)
     (audit.folder / 'SYSTEM_STATUS.json').write_text(json.dumps(result, indent=2), encoding='utf-8')
-    write_csv(audit.folder / 'checks.csv', audit.checks, ['check', 'status', 'detail'])
+    write_csv(audit.folder / 'checks.csv', reported_checks, ['check', 'status', 'detail'])
     write_csv(audit.folder / 'bigquery_schema.csv', audit.schema, ['table', 'field', 'type', 'mode'])
     write_csv(audit.folder / 'symbols.csv', audit.symbols, ['symbol'])
     write_csv(audit.folder / 'ci.csv', audit.ci, ['id', 'head_sha', 'name', 'path', 'status', 'conclusion', 'html_url', 'created_at'])
@@ -260,11 +317,11 @@ def report(audit, mode):
           'Runtime: NOT_PROVEN', 'Mode: ' + mode, '',
           'No scanner run, workflow dispatch, broker call, or runtime row was performed.', '',
           '| Check | Status | Evidence |', '|---|---|---|']
-    for c in audit.checks:
+    for c in reported_checks:
         md.append('| ' + ' | '.join(str(c[k]).replace('|', '\\|').replace('\n', ' ') for k in ('check', 'status', 'detail')) + ' |')
     (audit.folder / 'SYSTEM_STATUS.md').write_text('\n'.join(md), encoding='utf-8')
     rows = ''.join('<tr><td>' + html.escape(c['check']) + '</td><td class="' + c['status'] + '">' +
-                   html.escape(c['status']) + '</td><td>' + html.escape(c['detail']) + '</td></tr>' for c in audit.checks)
+                   html.escape(c['status']) + '</td><td>' + html.escape(c['detail']) + '</td></tr>' for c in reported_checks)
     page = '''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <title>Infrastructure readiness evidence</title><style>body{font:16px system-ui;background:#101827;color:#e5ecf4;margin:30px;max-width:1400px}h1{font-size:30px}.card{padding:20px;background:#1d293c;border-radius:12px;margin:16px 0}table{border-collapse:collapse;width:100%}td,th{padding:12px;text-align:left;border-bottom:1px solid #40516a;overflow-wrap:anywhere}.PASS{color:#6de7af}.FAIL{color:#ff9494}.UNKNOWN,.NOT_PROVEN{color:#ffd580}a{color:#9dccff}</style>
 <h1>Infrastructure readiness</h1><div class="card">Infrastructure: <strong>''' + result['infrastructure'] + '''</strong><br>Market runtime: <strong>NOT_PROVEN</strong><br>''' + html.escape(mode) + '''<br>''' + result['generated_at'] + '''</div>
