@@ -1,0 +1,50 @@
+{
+  "incident_id": "PAPER_UNIFIED_VERIFY_STALE_ORIGIN_MAIN_20261026",
+  "observed_at_ist": "2026-10-26",
+  "class": "SOURCE_CONFIRMED_POTENTIAL_FALSE_GREEN_NOT_OBSERVED_PRODUCTION_PASS",
+  "scope": "tools/verify_all.py::check_git",
+  "source_before_blob": "4e4fef2640c0b3ca7c092c1dc7307f59ce0a51f8",
+  "source_after_blob": "4be1f7b6cabde7341315b9d6379db07191b4e382",
+  "signal": "check_git compared HEAD with locally cached origin/main using rev-parse; no fresh remote lookup",
+  "root_cause": "local remote-tracking reference was conflated with authenticated current remote branch state",
+  "hypothesis": "A fresh bounded read-only git ls-remote lookup must be required; mismatch, timeout, missing/invalid output and command errors must block PASS without stale-ref fallback",
+  "impact": "Git synchronization component could be PASS against stale local origin/main; not an observed actual production PASS",
+  "baseline": "Source read-back at PR #217 prior head 0ad8fca75ebf2feba1dea3899a4857e24ae0079b",
+  "test_first_commit": "f47053ecec4873773326d3baa1e8778b4f6715b2",
+  "patch_commit": "0d4442c3d19bf47c3f50ef9ef387d6fb7889ad1d",
+  "ci_workflow_commit": "21684379e6862ec7fe35c8a8e429d3bc1ded717e",
+  "tests": [
+    "test_fresh_remote_sha_required_and_tracking_ref_not_trusted",
+    "test_stale_tracking_ref_cannot_hide_fresh_remote_divergence",
+    "test_remote_auth_or_network_failure_blocks_verification",
+    "test_remote_timeout_blocks_verification",
+    "test_invalid_or_ambiguous_remote_response_blocks",
+    "test_dirty_checkout_still_blocks_even_with_fresh_matching_sha",
+    "test_local_git_command_error_is_reported_not_uncaught"
+  ],
+  "evidence_status": "CI_RERUN_PENDING_AFTER_JUNIT_GUARD_FIX",
+  "proof_boundary": "Offline AST-extracted monkeypatched tests only; live remote lookup at runtime, remote URL identity, broker, Sheets, BigQuery, deployment and PAPER execution remain unverified",
+  "rollback": "Governed revert of isolated fresh-remote lookup only after stronger equivalent reviewed fail-closed proof; retain tests",
+  "reopen_when": [
+    "cached tracking ref used as remote proof",
+    "remote lookup error or timeout yields PASS",
+    "nonzero git exit or ambiguous remote response yields PASS",
+    "test skipped or direct branch SHA mismatch",
+    "serving revision and independent runtime cannot be proved"
+  ],
+  "controls": {
+    "PAPER_MODE": "1",
+    "LIVE_ORDER_AUTHORITY": "0",
+    "REAL_BROKER_ORDERS": "0"
+  },
+  "note": "Registered 1-1919 scope is not complete; this incident advances individual tasks only.",
+  "ci_initial_failure": {
+    "run_id": 40340570205,
+    "job_id": 121633826703,
+    "result": "FAIL",
+    "observed": "21 tests passed but JUnit evidence gate rejected parametrized test identity as missing",
+    "root_cause": "Required test names were compared against JUnit parametrized names including [case] suffix; duplicate guard also conflated repeated base names",
+    "fix_commit": "5cb20412f7bcc33768d8539c7310811fb6d8a027",
+    "remedy": "Normalize base name only for required identity set, use full classname/name tuple for duplicate detection"
+  }
+}

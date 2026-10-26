@@ -1,0 +1,95 @@
+name: PAPER Unified Verifier Skip Guard
+on:
+  push:
+    branches:
+      - fix/paper-verify-all-skip-failclosed-20261026
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-pytest-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify checked-out source SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          echo "CHECKED_OUT_SHA=$actual"
+          echo "EXPECTED_HEAD_SHA=$GITHUB_SHA"
+          test "$actual" = "$GITHUB_SHA"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install isolated test dependency
+        run: python -m pip install 'pytest>=8,<10'
+      - name: Run negative and boundary regression suite
+        run: |
+          python -m pytest -q -rs tests/test_verify_all_pytest_failclosed.py tests/test_verify_all_git_status_failclosed.py tests/test_verify_all_remote_freshness.py --junitxml=unified-verifier-junit.xml
+      - name: Reject skipped, failed, missing or incomplete JUnit evidence
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          p = Path("unified-verifier-junit.xml")
+          if not p.is_file():
+              raise SystemExit("UNIFIED_VERIFIER_JUNIT_BLOCKED: missing evidence")
+          root = ET.parse(p).getroot()
+          cases = root.findall(".//testcase")
+          required = {
+              "test_clean_non_skipped_pytest_can_pass",
+              "test_skipped_integration_is_not_certified_by_exit_zero",
+              "test_skips_without_passes_are_not_certified",
+              "test_empty_or_unparseable_summary_fails_closed",
+              "test_nonzero_exit_fails_even_if_summary_says_pass",
+              "test_explicit_zero_skips_remains_valid",
+              "test_clean_synchronized_git_can_pass_otherwise_clean_verification",
+              "test_dirty_checkout_cannot_certify_full_verification",
+              "test_diverged_checkout_cannot_certify_full_verification",
+              "test_unrecognized_git_status_fails_closed",
+              "test_fresh_remote_sha_required_and_tracking_ref_not_trusted",
+              "test_stale_tracking_ref_cannot_hide_fresh_remote_divergence",
+              "test_remote_auth_or_network_failure_blocks_verification",
+              "test_remote_timeout_blocks_verification",
+              "test_invalid_or_ambiguous_remote_response_blocks",
+              "test_dirty_checkout_still_blocks_even_with_fresh_matching_sha",
+              "test_local_git_command_error_is_reported_not_uncaught",
+              "test_trusted_origin_url_is_verified_before_remote_sha",
+              "test_untrusted_origin_url_cannot_certify_matching_sha",
+          }
+          # Pytest parametrized testcases have names like test_name[case0].
+          # Compare required identities using their base names, but preserve
+          # the full (classname, name) tuple for duplicate detection.
+          identities = [(c.get("classname"), c.get("name")) for c in cases]
+          observed_base = {
+              name.split("[", 1)[0] for _, name in identities if name
+          }
+          if not cases or not required.issubset(observed_base):
+              raise SystemExit("UNIFIED_VERIFIER_JUNIT_BLOCKED: missing required tests")
+          if root.findall(".//skipped") or root.findall(".//failure") or root.findall(".//error"):
+              raise SystemExit("UNIFIED_VERIFIER_JUNIT_BLOCKED: skipped or failed tests")
+          if len(identities) != len(set(identities)):
+              raise SystemExit("UNIFIED_VERIFIER_JUNIT_BLOCKED: duplicate testcase identities")
+          print(f"UNIFIED_VERIFIER_JUNIT_PASS: tests={len(cases)} skipped=0 failed=0 errors=0")
+          PY
+      - name: Preserve focused JUnit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unified-verifier-${{ github.sha }}
+          path: unified-verifier-junit.xml
+          if-no-files-found: error

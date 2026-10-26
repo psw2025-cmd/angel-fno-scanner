@@ -1,0 +1,35 @@
+{
+  "incident_id": "PAPER_UNIFIED_VERIFY_GIT_STATUS_FALSE_GREEN_20261026",
+  "observed_at_ist": "2026-10-26",
+  "class": "SOURCE_CONFIRMED_POTENTIAL_FALSE_GREEN_NOT_OBSERVED_PRODUCTION_PASS",
+  "scope": "tools/verify_all.py::main",
+  "source_before": "main @ 96309488ceccef11552b4fe734c685ef14667c78",
+  "source_after_branch": "fix/paper-verify-all-skip-failclosed-20261026",
+  "signal": "main() declared git clean and origin/main sync required but did not add check_git WARN_DIRTY/WARN_DIVERGED to critical_failures",
+  "root_cause": "git status reported but not included in final overall_pass predicate; infrastructure readiness results were treated as the only other guard",
+  "hypothesis": "Every non-PASS git checkout state independently forces overall FAIL even if other checks report PASS",
+  "patch_commit": "0c358df4bf9064392b1a3d083fcc249781c13cf1",
+  "test_first_commit": "ea7f2b53a90c0a0fc7a1e6cef6f4c404b8a20394",
+  "ci_workflow_commit": "b6911df72f3248a1767f6e2430398177fc2b85f1",
+  "tests": [
+    "test_clean_synchronized_git_can_pass_otherwise_clean_verification",
+    "test_dirty_checkout_cannot_certify_full_verification",
+    "test_diverged_checkout_cannot_certify_full_verification",
+    "test_unrecognized_git_status_fails_closed"
+  ],
+  "evidence_status": "PENDING_EXACT_HEAD_NON_SKIPPED_CI",
+  "proof_boundary": "Offline AST-extracted tests only; no authenticated cloud, broker, Sheets, BigQuery, serving SHA or PAPER cycle verification",
+  "rollback": "Revert isolated git-verdict addition only after reviewed equivalent gate, retain negative tests",
+  "reopen_when": [
+    "overall_status PASS with git status not PASS",
+    "missing expected test in exact-head CI",
+    "test skipped",
+    "serving runtime cannot be matched to deployed SHA"
+  ],
+  "controls": {
+    "PAPER_MODE": "1",
+    "LIVE_ORDER_AUTHORITY": "0",
+    "REAL_BROKER_ORDERS": "0"
+  },
+  "note": "Cumulative operation scope 1-1919 is registered, not complete. This incident advances specific prevention/evidence tasks only."
+}
