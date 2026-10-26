@@ -1,0 +1,41 @@
+{
+  "schema": "incident_to_test.v1",
+  "incident_id": "PAPER_PR_AUDIT_MISSING_ARTIFACT_WARN_FALSE_GREEN_RISK_20261026",
+  "classification": "source-confirmed potential evidence-provenance false-green; no observed missing-artifact successful run",
+  "signal": "Authenticated PR audit upload-artifact step used if-no-files-found: warn, so a missing inventory JSON would not itself fail the upload step",
+  "root_cause": "evidence artifact absence treated as warning rather than hard failure",
+  "upstream_downstream": "Missing or incorrectly routed inventory output -> artifact upload warning -> potential green workflow without retained audit receipt -> unverifiable dependency inventory",
+  "baseline_ref": "5aba352f73c26623d2b05e3a20fd506fed058592",
+  "test_first_commit": "8d77cb88ca1cd3887e6e9246e0f0cd7bfb4ac612",
+  "patch_commit": "4e4ae11d27dba9bbf28878650b3d3e2fc3c8318c",
+  "changes": [
+    "tests/test_pr_audit_token_scope.py: require fail-closed artifact upload contract and expected JSON path",
+    "tests/test_pr_audit_token_scope.py: negative mutations for warn policy and wrong path",
+    ".github/workflows/pr-dependency-audit.yml: if-no-files-found warn -> error"
+  ],
+  "test_first_ci": "NOT_INDEPENDENTLY_RETRIEVED",
+  "focused_exact_head_ci": "PENDING_FINAL_COMMIT_RECEIPT",
+  "complete_repository_ci": "UNVERIFIED",
+  "deployment": "NOT_DEPLOYED",
+  "genuine_paper_runtime": "NOT_PROVEN",
+  "independent_proof": "PENDING",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  },
+  "rollback": "Governed revert if genuine inventory JSON cannot be retained; never restore warning-only missing-evidence behavior without replacement mandatory evidence gate.",
+  "recurrence": "Reopen on missing/renamed inventory JSON, artifact upload warning, skipped focused tests, exact-head SHA mismatch, or workflow success without artifact receipt.",
+  "related_operations": [
+    1420,
+    1500,
+    1520,
+    1524,
+    1532,
+    1535,
+    1540,
+    1860,
+    1900
+  ],
+  "status": "IMPLEMENTED_CI_UNVERIFIED"
+}
