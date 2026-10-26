@@ -87,8 +87,8 @@ def check_git():
             ["git", "remote", "get-url", "origin"], cwd=REPO_ROOT,
             text=True, timeout=15).strip()
         if not re.fullmatch(
-            r"(?:https://github\\.com/|git@github\\.com:|ssh://git@github\\.com/)"
-            r"psw2025-cmd/angel-fno-scanner(?:\\.git)?/?",
+            r"(?:https://github\.com/|git@github\.com:|ssh://git@github\.com/)"
+            r"psw2025-cmd/angel-fno-scanner(?:\.git)?/?",
             origin_url, flags=re.IGNORECASE):
             raise ValueError("UNTRUSTED_ORIGIN_URL")
         base["remote_identity_verified"] = True
