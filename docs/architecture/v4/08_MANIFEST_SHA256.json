@@ -1,0 +1,39 @@
+{
+  "version": "V3",
+  "generated_at": "2026-10-26",
+  "status": "DESIGN_ONLY",
+  "files": {
+    "01_BASELINE_ARCHITECTURE_V1.md": {
+      "sha256": "8c8daa70106ccaf8a5c22c9cf8971ad64f4c93c3479b5ef274e44559322bb75c",
+      "bytes": 47798
+    },
+    "02_EXECUTION_AND_COORDINATION_V2.md": {
+      "sha256": "abbe95582e23cb634ba15a70d8bd90df6f9552613a196f1715afaa93d8f1aa78",
+      "bytes": 30739
+    },
+    "03_LOCAL_AGENT_EXECUTION_ORDER.md": {
+      "sha256": "feed9c89018d5a36da8c8c03467018cabfdf7f46ee1503f738b830f2f748d843",
+      "bytes": 3844
+    },
+    "04_MACHINE_READABLE_STATUS_TEMPLATE.json": {
+      "sha256": "cc19de69137910364f540895b641af98d86cfe5c4352dc1d677a0d7f105d3fe0",
+      "bytes": 929
+    },
+    "05_FAILURE_FORENSICS_AND_PREVENTION_V3.md": {
+      "sha256": "31efbbe339e3d7b475112ecc6b15573abaf6a829ee76228e221028f4ad778b93",
+      "bytes": 24629
+    },
+    "06_RELEASE_ACCEPTANCE_MATRIX.csv": {
+      "sha256": "ba1bc8ccffb1ca66eaefce6d978a10d30a53f7365b249edf6db929ac1267343f",
+      "bytes": 1034
+    },
+    "07_HISTORICAL_INCIDENT_REGISTER.csv": {
+      "sha256": "564e54850c1333347e34f36025af2587bc474a7d85788ba31759ee9beed5b03a",
+      "bytes": 7521
+    },
+    "README_START_HERE.md": {
+      "sha256": "8f242b19c44d2a185b74b45632d8ec9da66044533d1f62e6b9f693b5802793c5",
+      "bytes": 906
+    }
+  }
+}
