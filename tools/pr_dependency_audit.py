@@ -83,10 +83,17 @@ def fetch_open_prs(repo, token, max_pages=20, opener=None):
             raise AuditError(f"GitHub PR inventory fetch failed: {type(exc).__name__}") from exc
         if not isinstance(data, list) or any(not isinstance(item, dict) for item in data):
             raise AuditError("Invalid GitHub PR payload")
+        if len(data) > 100:
+            raise AuditError("Invalid GitHub PR page size")
         all_prs.extend(data)
         next_url = _next_link_url(link)
         if not next_url:
-            return all_prs
+            if len(data) == 100:
+                # Missing Link metadata on a full page is ambiguous: probe
+                # the next canonical page rather than silently truncate.
+                next_url = f"https://api.github.com/repos/{repo}/pulls?state=open&per_page=100&page={page + 1}"
+            else:
+                return all_prs
     raise AuditError("Inventory incomplete: pagination bound exceeded")
 
 def _repo_ref(item, side):
