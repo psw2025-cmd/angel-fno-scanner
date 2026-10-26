@@ -11,13 +11,13 @@ import os
 import sys
 from pathlib import Path
 
-import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from staging_review.schema_projection import filter_row_to_table_schema, filter_rows_to_table_schema
+from staging_review.live_bigquery_gate import require_live_bigquery_project
 from angel_prediction_engine import get_bigquery_client
 
 PROJECT_ID = "fno-angel-prod-1790444589"
@@ -50,14 +50,13 @@ def test_synthetic_projection():
     print("  [PASS] Synthetic schema projection successfully pruned extra keys while keeping required columns.")
 
 
-@pytest.mark.skipif(
-    not (os.getenv("BQ_PROJECT_ID") or os.getenv("GOOGLE_APPLICATION_CREDENTIALS")),
-    reason="Requires live BigQuery credentials; skipped when not configured",
-)
 def test_live_bigquery_projection():
     print("\n[TEST 2] Testing projection against live BigQuery market_news_sentiment schema...")
+    # Missing or mismatched project identity is a hard verification failure,
+    # never a skipped or apparently certified live integration check.
+    project_id = require_live_bigquery_project(os.environ, PROJECT_ID)
     bq = get_bigquery_client()
-    table = bq.get_table(f"{PROJECT_ID}.{DATASET_ID}.market_news_sentiment")
+    table = bq.get_table(f"{project_id}.{DATASET_ID}.market_news_sentiment")
     
     test_news_row = {
         "run_id": "37242575613",
