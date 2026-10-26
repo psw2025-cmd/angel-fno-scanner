@@ -11,7 +11,7 @@ REPO = "psw2025-cmd/angel-fno-scanner"
 
 def pr(n, head, base="main", *, head_repo=REPO, base_repo=REPO, draft=True):
     return {"number": n, "head": {"repo": {"full_name": head_repo}, "ref": head, "sha": "a" * 40},
-            "base": {"repo": {"full_name": base_repo}, "ref": base},
+            "base": {"repo": {"full_name": base_repo}, "ref": base, "sha": "a" * 40},
             "draft": draft, "state": "open", "html_url": f"https://github.com/{REPO}/pull/{n}"}
 
 class Response:
@@ -173,6 +173,29 @@ class TestDependencyAudit(unittest.TestCase):
             with self.assertRaisesRegex(AuditError, "fetch failed"):
                 fetch_open_prs(REPO, "fake-test-token")
             self.assertEqual(opener.call_count, 1)
+
+
+    def test_missing_base_sha_fails_closed(self):
+        x = pr(1, "parent")
+        x["base"].pop("sha")
+        with self.assertRaisesRegex(AuditError, "base SHA"):
+            build_report([x], REPO)
+
+    def test_stacked_base_sha_drift_requires_review(self):
+        parent = pr(1, "parent")
+        child = pr(2, "child", "parent")
+        child["base"]["sha"] = "b" * 40
+        report = build_report([parent, child], REPO)
+        row = {item["number"]: item for item in report["prs"]}[2]
+        self.assertEqual(row["parent_pr"], 1)
+        self.assertEqual(row["classification"], "STACKED_BASE_SHA_DRIFT_REQUIRES_REVIEW")
+        self.assertEqual(report["classification_counts"]["STACKED_BASE_SHA_DRIFT_REQUIRES_REVIEW"], 1)
+
+    def test_stacked_matching_base_sha_retains_stack(self):
+        report = build_report([pr(1, "parent"), pr(2, "child", "parent")], REPO)
+        row = {item["number"]: item for item in report["prs"]}[2]
+        self.assertEqual(row["classification"], "STACKED")
+        self.assertEqual(row["base_sha"], "a" * 40)
 
 
 if __name__ == "__main__": unittest.main()
