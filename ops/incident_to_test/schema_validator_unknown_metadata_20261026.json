@@ -14,9 +14,7 @@
   "test_first_sha": "10d44b41e14b01fb1c5a91f0c74dea7793deee5b",
   "patch_sha": "c7710bed6729132fd2ca56ef57a77bd0437e2f30",
   "tests": [
-    "tests/test_schema_validator_failclosed_metadata.py::test_unsupported_bigquery_type_is_not_silently_accepted[BIGNUMERIC-1.25]",
-    "tests/test_schema_validator_failclosed_metadata.py::test_unsupported_bigquery_type_is_not_silently_accepted[STRUCT-value1]",
-    "tests/test_schema_validator_failclosed_metadata.py::test_unsupported_bigquery_type_is_not_silently_accepted[NOT_A_TYPE-arbitrary]",
+    "tests/test_schema_validator_failclosed_metadata.py::test_unsupported_bigquery_type_is_not_silently_accepted (3 parametrized cases; exact node IDs require pytest collection receipt)",
     "tests/test_schema_validator_failclosed_metadata.py::test_empty_schema_is_rejected_before_validating_rows",
     "tests/test_schema_validator_failclosed_metadata.py::test_duplicate_schema_column_is_rejected_before_validating_rows"
   ],
