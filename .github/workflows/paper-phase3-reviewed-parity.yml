@@ -1,0 +1,74 @@
+name: PAPER Phase 3 Reviewed Runtime Parity Guard
+on:
+  push:
+    branches:
+      - fix/paper-phase3-reviewed-parity-20261026
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-head-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify exact checked-out commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          echo "CHECKED_OUT_SHA=$actual"
+          echo "EXPECTED_HEAD_SHA=$GITHUB_SHA"
+          test "$actual" = "$GITHUB_SHA"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install isolated pytest
+        run: python -m pip install 'pytest>=8,<10'
+      - name: Run Phase 3 parity negative and boundary tests
+        run: python -m pytest -q -rs tests/test_phase3_reviewed_runtime_parity.py --junitxml=phase3-parity-junit.xml
+      - name: Reject incomplete, skipped, duplicate or failed test evidence
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          path=Path('phase3-parity-junit.xml')
+          if not path.is_file():
+              raise SystemExit('PHASE3_PARITY_BLOCKED: missing JUnit evidence')
+          root=ET.parse(path).getroot()
+          cases=root.findall('.//testcase')
+          names=[(c.get('classname'),c.get('name')) for c in cases]
+          bases={name.split('[',1)[0] for _,name in names if name}
+          required={
+              'test_parity_runs_before_dependencies_broker_and_dashboard',
+              'test_matching_reviewed_runtime_with_independent_ledger_passes',
+              'test_unreviewed_runtime_file_rejected',
+              'test_missing_required_runtime_file_rejected',
+              'test_unsafe_environment_rejected',
+              'test_unavailable_remote_main_fails_closed',
+          }
+          if len(cases)!=15 or len(names)!=len(set(names)) or not required.issubset(bases):
+              raise SystemExit('PHASE3_PARITY_BLOCKED: missing/duplicate tests')
+          if root.findall('.//skipped') or root.findall('.//failure') or root.findall('.//error'):
+              raise SystemExit('PHASE3_PARITY_BLOCKED: skipped/failure/error')
+          print(f'PHASE3_PARITY_PASS tests={len(cases)} skipped=0 failed=0 errors=0')
+          PY
+      - name: Preserve exact-head JUnit receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase3-parity-${{ github.sha }}
+          path: phase3-parity-junit.xml
+          if-no-files-found: error
