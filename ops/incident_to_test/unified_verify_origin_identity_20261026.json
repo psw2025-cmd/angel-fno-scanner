@@ -1,0 +1,46 @@
+{
+  "incident_id": "PAPER_UNIFIED_VERIFY_ORIGIN_IDENTITY_20261026",
+  "observed_at_ist": "2026-10-26T20:45:17+05:30",
+  "classification": "SOURCE_CONFIRMED_POTENTIAL_FALSE_GREEN_NOT_OBSERVED_IN_PRODUCTION",
+  "signal": "verify_all.check_git queried origin/main SHA without checking whether origin resolves to canonical psw2025-cmd/angel-fno-scanner",
+  "root_cause": "Remote SHA equality was accepted without remote repository identity verification",
+  "scope": "PAPER-only verification; no broker, order, deployment or cloud credentials",
+  "prevention_hypothesis": "Requiring canonical origin URL before ls-remote rejects spoofed or credential-bearing remotes that could supply a matching SHA",
+  "test_file": "tests/test_verify_all_remote_freshness.py",
+  "test_cases": [
+    "test_trusted_origin_url_is_verified_before_remote_sha",
+    "test_untrusted_origin_url_cannot_certify_matching_sha"
+  ],
+  "negative_cases": [
+    "wrong owner",
+    "wrong repo",
+    "lookalike host",
+    "credential-bearing HTTPS",
+    "HTTP downgrade",
+    "wrong SSH host",
+    "relative path",
+    "empty origin"
+  ],
+  "rollback": "Revert the isolated PR commits; do not merge if authentic deployment requires a different approved GitHub origin transport",
+  "safety": {
+    "PAPER_MODE": "1",
+    "LIVE_ORDER_AUTHORITY": "0",
+    "REAL_BROKER_ORDERS": "0"
+  },
+  "status": {
+    "source_cause": "ACTIONED",
+    "code_patch": "ACTIONED",
+    "tests": "PENDING_CI",
+    "exact_head_ci": "PENDING",
+    "deployed": "NOT_DEPLOYED",
+    "runtime_proof": "UNVERIFIED",
+    "independent_recurrence": "WAITING"
+  },
+  "next_checkpoint": "Inspect exact-head GitHub Actions focused test receipt, confirm no skips, retain complete mandatory CI and production BLOCKED",
+  "reopen_on": [
+    "Git origin identity spoof accepted",
+    "missing/skip regression in JUnit",
+    "exact-head CI failure",
+    "remote source changed without reviewed trust decision"
+  ]
+}
