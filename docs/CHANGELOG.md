@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-26 - SmartConnect Logging Permissions and Cloud Run Live Verification
+
+**Status:** IMPLEMENTED_AND_DEPLOYED
+**Evidence:**
+- Cloud Run Job `angel-market-scan-job` successfully built via Cloud Build `9a449ace-fca5-4cbf-ac40-31d5ad55b569` and deployed as image `scanner:ae67dc4`.
+- Live execution completed: replaced 219 records in BigQuery `option_predictions_live` for open session 2026-10-26, wrote 200 real gainer rows to Google Sheets `CE_PE_RANK` and `TOP_GAINERS`, updated `NEWS_LIVE` with 221 validated rows, and logged 14 live paper alerts.
+- BigQuery confirmation: `SELECT DATE(snapshot_timestamp) as cycle_date, COUNT(*) FROM option_predictions_live GROUP BY cycle_date` confirmed 219 rows for `2026-10-26`.
+
+### What changed
+- `scanner.py`: Added safe directory creation and fallback cwd redirect to `/tmp` for `SmartConnect.__init__` when logs directory is non-writable by container user.
+- `Dockerfile`: Added `mkdir -p /app/logs /tmp/logs && chown -R scanner:scanner /app /tmp/logs && chmod -R 777 /app/logs /tmp/logs`.
+- `tools/verify_sheets_bq_reconciliation.py`: Dynamic extraction of `sheet_run_id`, `sheet_git_sha`, `sheet_writer_id`, `sheet_published_at_ist` from `PUBLICATION_STATUS` tab; dynamic boolean match flags calculation.
+- `tests/test_verify_sheets_bq_reconciliation.py`: Added 4 unit tests (including negative controls).
+
+
 ## 2026-10-26 - Elimination of hardcoded provenance booleans in cross-sink reconciliation
 
 **Status:** IMPLEMENTED_NOT_DEPLOYED

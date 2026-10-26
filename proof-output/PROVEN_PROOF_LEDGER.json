@@ -9,7 +9,7 @@
       "name": "No emoji in print",
       "cmd": "python tools/encoding_source_gate.py; scan stdout for emoji",
       "status": "PASS",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Static tracked-Python print emoji scan",
@@ -27,7 +27,7 @@
       "name": "Orphans <10",
       "cmd": "git status --porcelain --untracked-files=normal",
       "status": "PASS",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Runner checkout only, not local workstation",
@@ -45,12 +45,12 @@
       "name": "Harness <20 active",
       "cmd": "glob audit/verify_harness_*.json",
       "status": "FAIL",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Runner checkout only; ignored local files absent",
         "details": {
-          "harness": 654
+          "harness": 705
         }
       },
       "fixed_by": "7806d18",
@@ -62,7 +62,7 @@
       "name": "desktop.ini zero tracked",
       "cmd": "git ls-files '**/desktop.ini'; inspect filesystem",
       "status": "PASS",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Tracked files only; ignored workstation desktop.ini may still exist",
@@ -79,7 +79,7 @@
       "name": "Sheets 219 == BQ 219",
       "cmd": "pytest tests/test_data_chain.py -k test_data_snapshots_219_universe",
       "status": "BLOCKED",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Requires authenticated source readback and canonical full SHA-256 artifact",
@@ -94,7 +94,7 @@
       "name": "Checksum 3f6153d1e221ae43 verified full SHA",
       "cmd": "python tools/verify_sheets_bq_reconciliation.py",
       "status": "BLOCKED",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Requires authenticated source readback and canonical full SHA-256 artifact",
@@ -109,7 +109,7 @@
       "name": "pytest permanent test suite",
       "cmd": "pytest tests/test_encoding_gate.py tests/test_cli_contract.py tests/test_data_chain.py",
       "status": "FAIL",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Exact observed pytest count; historical 221 is not guaranteed",
@@ -128,7 +128,7 @@
       "name": "memory_guard EOD threshold 86400",
       "cmd": "python tools/memory_guard.py",
       "status": "FAIL",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Requires 6-file proof in output",
@@ -146,7 +146,7 @@
       "name": "healthz 200 n8n local webhook",
       "cmd": "curl -s http://127.0.0.1:5680/healthz",
       "status": "BLOCKED",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "No externally accessible N8N_HEALTH_URL; localhost runner is not laptop",
@@ -161,7 +161,7 @@
       "name": "N8N_USER_FOLDER canonical",
       "cmd": "inspect /home/pritam/n8n-data/.n8n/database.sqlite",
       "status": "BLOCKED",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Canonical N8N_USER_FOLDER must be read from actual n8n service environment",
@@ -176,7 +176,7 @@
       "name": "No plaintext secrets",
       "cmd": "secret scan tracked content and credentials.py",
       "status": "BLOCKED",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Requires secret scanning tracked content, artifacts and Git history; filename grep insufficient",
@@ -191,7 +191,7 @@
       "name": "Deployment attestation",
       "cmd": "gh api repos/psw2025-cmd/angel-fno-scanner/commits/main",
       "status": "BLOCKED",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Signed authenticated cloud /version endpoint unavailable",
@@ -206,7 +206,7 @@
       "name": "Single-writer lease",
       "cmd": "inspect market_bot writer guard and docs/AGENT_LOCK.md",
       "status": "BLOCKED",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Lease fencing and BQ commit marker unavailable",
@@ -221,7 +221,7 @@
       "name": "Restore drill exists",
       "cmd": "inspect tools/self_resolve.ps1 and backup procedures",
       "status": "BLOCKED",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Actual cold restore and encryption key recovery not executed",
@@ -236,7 +236,7 @@
       "name": "Activation attestation desired==observed",
       "cmd": "compare desired and observed state",
       "status": "BLOCKED",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Live n8n API desired-vs-observed active flags unavailable",
@@ -251,7 +251,7 @@
       "name": "Negative IAM tests",
       "cmd": "verify fail-closed authorization without credentials",
       "status": "BLOCKED",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Cloud principal IAM-deny integration test unavailable",
@@ -266,7 +266,7 @@
       "name": "Cost cap < $10/day",
       "cmd": "inspect BigQuery sandbox zero-cost query policy",
       "status": "BLOCKED",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Billing budget/quota access and alert drill unavailable",
@@ -281,7 +281,7 @@
       "name": "Verify 3x deterministic",
       "cmd": "python agent_cli.py --verify --json-only (3 passes)",
       "status": "BLOCKED",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Set NASA_ENABLE_CLOUD_VERIFY=1 with scoped cloud credentials to run three verifications",
@@ -296,7 +296,7 @@
       "name": "Git worktree safety",
       "cmd": "git worktree list --porcelain",
       "status": "PASS",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Runner-only count; multiple legitimate local worktrees need not be defects",
@@ -313,7 +313,7 @@
       "name": "Branch count hygiene",
       "cmd": "git branch -r",
       "status": "PASS",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "Remote branch count; threshold is policy, not intrinsic correctness",
@@ -330,7 +330,7 @@
       "name": "PowerBI Refresh & Process Safety",
       "cmd": "Get-Process -Name '*msmdsrv*', '*PBIDesktop*'; inspect .gitignore for .pbi and pbix",
       "status": "BLOCKED",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "No independent verification implemented for this ledger check",
@@ -347,7 +347,7 @@
       "name": "Excel cp1252 Binary Safety",
       "cmd": "pytest tests/test_data_chain.py -k test_excel_and_pbi_safety",
       "status": "BLOCKED",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "No independent verification implemented for this ledger check",
@@ -364,7 +364,7 @@
       "name": "Colab Notebook Emoji & UTF-8 Gate",
       "cmd": "pytest tests/test_encoding_gate.py",
       "status": "BLOCKED",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "No independent verification implemented for this ledger check",
@@ -381,7 +381,7 @@
       "name": "GCS Cloud Evidence WORM Readback",
       "cmd": "gsutil ls gs://fno-angel-evidence/",
       "status": "BLOCKED",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "No independent verification implemented for this ledger check",
@@ -398,7 +398,7 @@
       "name": "BigQuery Cost Cap & Quota Guard",
       "cmd": "python -c \"import credentials; print(credentials.resolve_service_account_info() is not None)\"",
       "status": "BLOCKED",
-      "timestamp": "2026-10-26T01:32:03.809335+00:00",
+      "timestamp": "2026-10-26T08:11:38.725841+00:00",
       "source_sha": "",
       "evidence": {
         "reason": "No independent verification implemented for this ledger check",
@@ -426,7 +426,7 @@
     ],
     "policy": "No PASS without source SHA and executed evidence"
   },
-  "generated_at_utc": "2026-10-26T01:32:03.809335+00:00",
+  "generated_at_utc": "2026-10-26T08:11:38.725841+00:00",
   "summary": {
     "PASS": 5,
     "FAIL": 3,

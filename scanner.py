@@ -256,7 +256,27 @@ def angel_login():
         )
     creds = get_angel_credentials()
     totp = pyotp.TOTP(creds["ANGEL_TOTP_SEED"]).now()
-    api = SmartConnect(api_key=creds["ANGEL_API_KEY"])
+    try:
+        os.makedirs("logs", exist_ok=True)
+    except (PermissionError, OSError):
+        pass
+    import SmartApi.smartConnect as _sc_module
+    _orig_init = _sc_module.SmartConnect.__init__
+    def _safe_smartconnect_init(self, *args, **kwargs):
+        try:
+            _orig_init(self, *args, **kwargs)
+        except PermissionError:
+            prev_cwd = os.getcwd()
+            os.chdir("/tmp")
+            try:
+                _orig_init(self, *args, **kwargs)
+            finally:
+                os.chdir(prev_cwd)
+    _sc_module.SmartConnect.__init__ = _safe_smartconnect_init
+    try:
+        api = SmartConnect(api_key=creds["ANGEL_API_KEY"])
+    finally:
+        _sc_module.SmartConnect.__init__ = _orig_init
     session = api.generateSession(creds["ANGEL_CLIENT_CODE"], creds["ANGEL_PIN"], totp)
     if not session or not session.get("status"):
         raise RuntimeError(f"Angel login failed: {session}")
