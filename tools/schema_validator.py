@@ -22,6 +22,13 @@ SCHEMAS_DIR = REPO_ROOT / "schemas"
 
 _SCHEMA_CACHE: dict[str, dict[str, dict[str, Any]]] = {}
 
+# Reject schema types/modes until the validator explicitly supports their semantics.
+_SUPPORTED_BQ_TYPES = frozenset({
+    "STRING", "INT64", "INTEGER", "FLOAT64", "FLOAT",
+    "BOOL", "BOOLEAN", "TIMESTAMP", "DATE",
+})
+_SUPPORTED_BQ_MODES = frozenset({"REQUIRED", "NULLABLE"})
+
 
 class SchemaValidationError(Exception):
     """Raised when one or more rows violate the declarative BigQuery schema contract."""
@@ -79,6 +86,14 @@ def get_schema_field_map(table_name: str) -> dict[str, dict[str, Any]]:
             name = field["name"]
             if name in field_map:
                 raise ValueError(f"Schema definition for '{table_name}' has duplicate column '{name}'")
+            raw_type = field.get("type")
+            if not isinstance(raw_type, str) or not raw_type.strip():
+                raise ValueError(f"Schema definition for '{table_name}' has missing type for '{name}'")
+            if raw_type.upper() not in _SUPPORTED_BQ_TYPES:
+                raise ValueError(f"Schema definition for '{table_name}' has unsupported type '{raw_type}' for '{name}'")
+            raw_mode = field.get("mode")
+            if not isinstance(raw_mode, str) or raw_mode.upper() not in _SUPPORTED_BQ_MODES:
+                raise ValueError(f"Schema definition for '{table_name}' has unsupported mode '{raw_mode}' for '{name}'")
             field_map[name] = field
         _SCHEMA_CACHE[table_name] = field_map
     return _SCHEMA_CACHE[table_name]
