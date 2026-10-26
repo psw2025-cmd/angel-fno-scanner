@@ -1,0 +1,31 @@
+{
+  "incident_id": "PR_AUDIT_FULL_PAGE_MISSING_LINK_20261026",
+  "date_ist": "2026-10-26",
+  "classification": "SOURCE_CONFIRMED_POTENTIAL_FALSE_GREEN_NOT_OBSERVED_LIVE",
+  "severity": "P1_EVIDENCE_COMPLETENESS",
+  "signal": "A 100-item GitHub PR API page with absent Link metadata was treated as final page without checking page N+1.",
+  "root_cause": "fetch_open_prs returned when _next_link_url was None regardless of a full per_page=100 response.",
+  "upstream": "GitHub API Link metadata absent or stripped on an exactly-full page",
+  "downstream": "Authenticated PR inventory can silently omit additional open PRs, undermining dependency ordering.",
+  "before_sha": "60826f44554a97a8a672d2415a60a11cc322a921",
+  "test_first_sha": "c9a008cdde0633693aa45f674469f85cb196b972",
+  "patch_sha": "5dbeb6377cb89026ba1a2e2e54b5c7f9cac17a35",
+  "regression_tests": [
+    "test_full_page_without_link_probes_for_omitted_next_page",
+    "test_exactly_full_final_page_requires_empty_probe",
+    "test_full_page_without_link_at_bound_fails_closed"
+  ],
+  "repair": "Probe the next canonical API page whenever a full 100-item page lacks a next Link; fail closed on page bound and >100 records.",
+  "rollback": "Governed revert of this isolated change only; preserve previous redirect and pagination protections.",
+  "exact_head_ci": "PENDING_AUTHENTICATED_RECEIPT",
+  "deployed_revision": "NOT_DEPLOYED",
+  "genuine_paper_runtime": "NOT_APPLICABLE_READ_ONLY_AUDITOR",
+  "independent_proof": "PENDING",
+  "recurrence_check": "Reopen if any full page without Link yields silent truncation, if bound overflow is accepted, or if direct-head regression fails.",
+  "safety": {
+    "PAPER_MODE": 1,
+    "LIVE_ORDER_AUTHORITY": 0,
+    "REAL_BROKER_ORDERS": 0
+  },
+  "not_certification": true
+}
