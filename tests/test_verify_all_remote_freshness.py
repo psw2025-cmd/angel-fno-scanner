@@ -18,7 +18,7 @@ SHA_B = "b" * 40
 
 def _check(monkeypatch, *, porcelain="", local=SHA_A, remote=SHA_A,
            remote_exit=0, remote_text=None, remote_error=None,
-           local_error=None):
+           local_error=None, remote_url="https://github.com/psw2025-cmd/angel-fno-scanner.git"):
     tree = ast.parse(SOURCE.read_text(encoding="utf-8"))
     fn = next(node for node in tree.body
               if isinstance(node, ast.FunctionDef) and node.name == "check_git")
@@ -32,6 +32,8 @@ def _check(monkeypatch, *, porcelain="", local=SHA_A, remote=SHA_A,
             return porcelain
         if argv == ["git", "rev-parse", "HEAD"]:
             return local + "\n"
+        if argv == ["git", "remote", "get-url", "origin"]:
+            return remote_url + "\n"
         raise AssertionError("Unexpected or stale local git ref: " + repr(argv))
 
     def run(argv, **kwargs):
@@ -110,3 +112,36 @@ def test_local_git_command_error_is_reported_not_uncaught(monkeypatch):
             128, ["git", "status"]))
     assert result["status"] == "BLOCKED_LOCAL"
     assert result["remote_verified"] is False
+
+
+@pytest.mark.parametrize("trusted_url", [
+    "https://github.com/psw2025-cmd/angel-fno-scanner.git",
+    "https://github.com/psw2025-cmd/angel-fno-scanner",
+    "git@github.com:psw2025-cmd/angel-fno-scanner.git",
+    "ssh://git@github.com/psw2025-cmd/angel-fno-scanner.git",
+])
+def test_trusted_origin_url_is_verified_before_remote_sha(monkeypatch, trusted_url):
+    result, calls = _check(monkeypatch, remote_url=trusted_url)
+    assert result["status"] == "PASS"
+    assert ("git", "remote", "get-url", "origin") in calls
+    assert calls.index(("git", "remote", "get-url", "origin")) < calls.index(
+        ("git", "ls-remote", "--exit-code", "origin", "refs/heads/main"))
+
+
+@pytest.mark.parametrize("untrusted_url", [
+    "https://github.com/attacker/angel-fno-scanner.git",
+    "https://github.com/psw2025-cmd/other-repo.git",
+    "https://github.com.evil.example/psw2025-cmd/angel-fno-scanner.git",
+    "https://user:secret@github.com/psw2025-cmd/angel-fno-scanner.git",
+    "http://github.com/psw2025-cmd/angel-fno-scanner.git",
+    "git@evil.example:psw2025-cmd/angel-fno-scanner.git",
+    "../angel-fno-scanner",
+    "",
+])
+def test_untrusted_origin_url_cannot_certify_matching_sha(monkeypatch, untrusted_url):
+    result, calls = _check(monkeypatch, remote_url=untrusted_url)
+    assert result["status"] == "BLOCKED_REMOTE"
+    assert result["remote_verified"] is False
+    assert result["is_synced"] is False
+    assert ("git", "ls-remote", "--exit-code", "origin", "refs/heads/main") not in calls
+    assert "secret" not in str(result)
