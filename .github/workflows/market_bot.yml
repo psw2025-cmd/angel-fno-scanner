@@ -43,6 +43,7 @@ jobs:
       WRITER_ID: market_bot
       PAPER_MODE: '1'
       LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
       RUN_ID: ${{ github.run_id }}
       GIT_SHA: ${{ github.sha }}
       ANGEL_CYCLE_METADATA_FILE: /tmp/cycle_metadata.json
@@ -66,6 +67,16 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
+      - name: Fail closed on delayed scheduled PAPER scan
+        if: github.event_name == 'schedule'
+        env:
+          SCHEDULE_CRON: ${{ github.event.schedule }}
+        run: |
+          set -euo pipefail
+          test "$PAPER_MODE" = 1
+          test "$LIVE_ORDER_AUTHORITY" = 0
+          test "$REAL_BROKER_ORDERS" = 0
+          python tools/scheduled_cycle_gate.py --schedule "$SCHEDULE_CRON"
       - name: Install Libraries
         run: |
           set -eo pipefail
@@ -102,12 +113,14 @@ jobs:
           set -eo pipefail
           test "$PAPER_MODE" = 1
           test "$LIVE_ORDER_AUTHORITY" = 0
+          test "$REAL_BROKER_ORDERS" = 0
       - name: Run Single Authoritative Scanner and Prediction Cycle
         if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
         run: |
           set -eo pipefail
           test "$PAPER_MODE" = 1
           test "$LIVE_ORDER_AUTHORITY" = 0
+          test "$REAL_BROKER_ORDERS" = 0
           python scanner.py
           python tools/check_freshness.py --metadata /tmp/cycle_metadata.json --market-session "$ANGEL_MARKET_SESSION"
           python tools/100_year_guard.py --phase pre --metadata /tmp/cycle_metadata.json
