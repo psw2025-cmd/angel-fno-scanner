@@ -31,7 +31,7 @@ def _next_link_url(link):
         raise AuditError("Malformed pagination Link")
     next_links = []
     for part in link.split(","):
-        match = re.fullmatch(r'\\s*<([^<>\\s]+)>\\s*;\\s*rel="(next|prev|first|last)"\\s*', part)
+        match = re.fullmatch(r'\s*<([^<>\s]+)>\s*;\s*rel="(next|prev|first|last)"\s*', part)
         if not match:
             raise AuditError("Malformed pagination Link")
         if match.group(2) == "next":
