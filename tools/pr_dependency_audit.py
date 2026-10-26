@@ -23,6 +23,23 @@ class _NoRedirectHandler(HTTPRedirectHandler):
 def _safe_open(req, timeout):
     return build_opener(_NoRedirectHandler()).open(req, timeout=timeout)
 
+def _next_link_url(link):
+    """Parse every Link relation; malformed metadata must not imply last page."""
+    if not link:
+        return None
+    if not isinstance(link, str):
+        raise AuditError("Malformed pagination Link")
+    next_links = []
+    for part in link.split(","):
+        match = re.fullmatch(r'\\s*<([^<>\\s]+)>\\s*;\\s*rel="(next|prev|first|last)"\\s*', part)
+        if not match:
+            raise AuditError("Malformed pagination Link")
+        if match.group(2) == "next":
+            next_links.append(match.group(1))
+    if len(next_links) > 1:
+        raise AuditError("Ambiguous pagination")
+    return next_links[0] if next_links else None
+
 def fetch_open_prs(repo, token, max_pages=20, opener=None):
     if opener is None:
         opener = _safe_open
@@ -67,11 +84,7 @@ def fetch_open_prs(repo, token, max_pages=20, opener=None):
         if not isinstance(data, list) or any(not isinstance(item, dict) for item in data):
             raise AuditError("Invalid GitHub PR payload")
         all_prs.extend(data)
-        next_links = [part.split(";", 1)[0].strip().strip("<>")
-                      for part in link.split(",") if 'rel="next"' in part]
-        if len(next_links) > 1:
-            raise AuditError("Ambiguous pagination")
-        next_url = next_links[0] if next_links else None
+        next_url = _next_link_url(link)
         if not next_url:
             return all_prs
     raise AuditError("Inventory incomplete: pagination bound exceeded")
