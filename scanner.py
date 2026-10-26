@@ -97,7 +97,8 @@ load_env()
 SHEET_ID = os.getenv("SHEET_ID", "").strip()
 MAX_RUNTIME_SECONDS = max(1, int(os.getenv("MAX_RUNTIME_SECONDS", "22500")))
 IST = ZoneInfo("Asia/Kolkata")
-from universe_contract import EXPECTED_FNO_UNIVERSE_COUNT, select_verified_universe, require_verified_symbols
+from universe_contract import EXPECTED_FNO_UNIVERSE_COUNT, select_verified_universe, require_verified_symbols, verified_symbols
+from tools.universe_pairing import nearest_complete_expiry, discovery_gap_reasons
 # Static literal duplicated for infra_readiness.py AST probe (does not import scanner at import time).
 # MUST equal universe_contract.EXPECTED_FNO_UNIVERSE_COUNT.
 EXPECTED_FNO_UNIVERSE_COUNT = 219
@@ -263,9 +264,8 @@ def discover_universe(api):
     for symbol, expiry_map in options.items():
         if symbol not in futures:
             continue
-        nearest = min(expiry_map)
-        both = {strike: sides for strike, sides in expiry_map[nearest].items() if "CE" in sides and "PE" in sides}
-        if not both:
+        nearest, both = nearest_complete_expiry(expiry_map)
+        if nearest is None:
             continue
         future = sorted(futures[symbol], key=lambda item: item["expiry"])[0]
         universe[symbol] = {
@@ -273,6 +273,9 @@ def discover_universe(api):
             "expiry": nearest,
             "strikes": both,
         }
+    gaps = discovery_gap_reasons(verified_symbols(), options, futures, universe)
+    if gaps:
+        print("[BLOCKED] Reviewed F&O discovery reasons: " + json.dumps(gaps, sort_keys=True))
     universe = select_verified_universe(universe)
     print(f"[OK] Tracking {len(universe)} symbols")
     return universe
