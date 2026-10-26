@@ -69,13 +69,19 @@ jobs:
               "test_dirty_checkout_still_blocks_even_with_fresh_matching_sha",
               "test_local_git_command_error_is_reported_not_uncaught",
           }
-          observed = {c.get("name") for c in cases}
-          if not cases or not required.issubset(observed):
+          # Pytest parametrized testcases have names like test_name[case0].
+          # Compare required identities using their base names, but preserve
+          # the full (classname, name) tuple for duplicate detection.
+          identities = [(c.get("classname"), c.get("name")) for c in cases]
+          observed_base = {
+              name.split("[", 1)[0] for _, name in identities if name
+          }
+          if not cases or not required.issubset(observed_base):
               raise SystemExit("UNIFIED_VERIFIER_JUNIT_BLOCKED: missing required tests")
           if root.findall(".//skipped") or root.findall(".//failure") or root.findall(".//error"):
               raise SystemExit("UNIFIED_VERIFIER_JUNIT_BLOCKED: skipped or failed tests")
-          if len(cases) != len(observed):
-              raise SystemExit("UNIFIED_VERIFIER_JUNIT_BLOCKED: duplicate testcase names")
+          if len(identities) != len(set(identities)):
+              raise SystemExit("UNIFIED_VERIFIER_JUNIT_BLOCKED: duplicate testcase identities")
           print(f"UNIFIED_VERIFIER_JUNIT_PASS: tests={len(cases)} skipped=0 failed=0 errors=0")
           PY
       - name: Preserve focused JUnit evidence
