@@ -41,6 +41,7 @@ jobs:
     env:
       PAPER_MODE: '1'
       LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
       ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
       ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
       ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
@@ -60,9 +61,35 @@ jobs:
           set -euo pipefail
           test "$PAPER_MODE" = 1
           test "$LIVE_ORDER_AUTHORITY" = 0
+          test "$REAL_BROKER_ORDERS" = 0
           for name in ANGEL_API_KEY ANGEL_CLIENT_CODE ANGEL_PIN ANGEL_TOTP_SEED; do
             if [ -z "${!name:-}" ]; then echo "::error::Required GitHub Secret $name unavailable"; exit 1; fi
           done
+      - name: Verify reviewed Phase 3 runtime parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REPOSITORY:-}" = "psw2025-cmd/angel-fno-scanner"
+          test "${PAPER_MODE:-}" = 1
+          test "${LIVE_ORDER_AUTHORITY:-}" = 0
+          test "${REAL_BROKER_ORDERS:-}" = 0
+          git fetch --no-tags --depth=1 origin refs/heads/main
+          for path in \
+            run_phase3_pnl.py \
+            update_phase4_dashboard.py \
+            phase2/angel_readonly.py \
+            phase2/option_stream.py \
+            phase2/option_dna.py \
+            nse_calendar.py \
+            nse_holidays.json \
+            requirements-phase2.txt; do
+            test -f "$path" || { echo "::error::Required Phase 3 runtime file missing: $path"; exit 1; }
+            git cat-file -e "FETCH_HEAD:$path" || { echo "::error::Reviewed main missing Phase 3 file: $path"; exit 1; }
+            actual="$(git hash-object -- "$path")"
+            expected="$(git rev-parse "FETCH_HEAD:$path")"
+            test "$actual" = "$expected" || { echo "::error::Unreviewed Phase 3 runtime drift: $path"; exit 1; }
+          done
+          echo PHASE3_REVIEWED_RUNTIME_PARITY_PASS
       - run: python -m pip install -r requirements-phase2.txt
       - name: Configure Git author
         run: |
