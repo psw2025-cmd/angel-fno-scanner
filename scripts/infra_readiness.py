@@ -321,7 +321,7 @@ def report(audit, mode):
         md.append('| ' + ' | '.join(str(c[k]).replace('|', '\\|').replace('\n', ' ') for k in ('check', 'status', 'detail')) + ' |')
     (audit.folder / 'SYSTEM_STATUS.md').write_text('\n'.join(md), encoding='utf-8')
     rows = ''.join('<tr><td>' + html.escape(c['check']) + '</td><td class="' + c['status'] + '">' +
-                   html.escape(c['status']) + '</td><td>' + html.escape(c['detail']) + '</td></tr>' for c in audit.checks)
+                   html.escape(c['status']) + '</td><td>' + html.escape(c['detail']) + '</td></tr>' for c in reported_checks)
     page = '''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <title>Infrastructure readiness evidence</title><style>body{font:16px system-ui;background:#101827;color:#e5ecf4;margin:30px;max-width:1400px}h1{font-size:30px}.card{padding:20px;background:#1d293c;border-radius:12px;margin:16px 0}table{border-collapse:collapse;width:100%}td,th{padding:12px;text-align:left;border-bottom:1px solid #40516a;overflow-wrap:anywhere}.PASS{color:#6de7af}.FAIL{color:#ff9494}.UNKNOWN,.NOT_PROVEN{color:#ffd580}a{color:#9dccff}</style>
 <h1>Infrastructure readiness</h1><div class="card">Infrastructure: <strong>''' + result['infrastructure'] + '''</strong><br>Market runtime: <strong>NOT_PROVEN</strong><br>''' + html.escape(mode) + '''<br>''' + result['generated_at'] + '''</div>
