@@ -1,0 +1,46 @@
+{
+  "incident_id": "PAPER_STAGING_BQ_LIVE_SKIP_AND_PROJECT_BINDING_20261026",
+  "observed_date_ist": "2026-10-26",
+  "classification": "source-confirmed missing-evidence skip and unbound configured-project selector; no observed cross-project query",
+  "signal": {
+    "workflow_run_id": 40150584109,
+    "job_id": 121041130649,
+    "summary": "607 passed, 3 skipped; staging_review/test_staging_dry_run.py:53 requires live BigQuery credentials",
+    "source_file": "staging_review/test_staging_dry_run.py",
+    "source_blob_before": "38ebf5a37ec5e4c5d3649dc9c7f0993a457af0d9"
+  },
+  "root_cause": "The live BigQuery integration check used pytest.mark.skipif on environment-variable presence and hardcoded its project target even when BQ_PROJECT_ID was configured differently.",
+  "hypothesis": "Missing/mismatched project configuration must fail before client construction; no live schema check may be counted as verified without actual authenticated read-only get_table.",
+  "test_first_sha": "fa972869cc5c34b2e0b492fbc9ed9bc0080dbda5",
+  "patch_shas": [
+    "ae7da8af1b1c1c39414045e2bca39a81c3c97802",
+    "4cea6fb668b03024ce910006afc77e801a28c2bf"
+  ],
+  "regressions": [
+    "tests/test_staging_bigquery_live_gate.py::test_missing_project_fails_closed",
+    "tests/test_staging_bigquery_live_gate.py::test_mismatched_project_fails_before_network",
+    "tests/test_staging_bigquery_live_gate.py::test_exact_project_accepted_without_network",
+    "tests/test_staging_bigquery_live_gate.py::test_staging_live_check_must_not_skip_missing_evidence"
+  ],
+  "current_gate": "CODE_COMMITTED_CI_PENDING",
+  "not_verified": [
+    "full mandatory CI without skips",
+    "live BigQuery schema inspection",
+    "cloud PAPER runtime",
+    "zero real orders",
+    "actual serving SHA",
+    "independent outcomes"
+  ],
+  "safety": {
+    "PAPER_MODE": "1",
+    "LIVE_ORDER_AUTHORITY": "0",
+    "REAL_BROKER_ORDERS": "0"
+  },
+  "rollback": "Governed revert of this isolated PR only after replacing with independently verified equivalent fail-closed live BigQuery test; do not weaken mandatory CI.",
+  "reopen_if": [
+    "missing BQ_PROJECT_ID is skipped or reported PASS",
+    "wrong project is queried",
+    "CI falsely certifies missing live BQ evidence",
+    "project config is accepted as proof of actual BigQuery response"
+  ]
+}
