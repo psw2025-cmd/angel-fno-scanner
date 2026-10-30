@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 
-EXPECTED_FNO_UNIVERSE_COUNT = 219
+EXPECTED_FNO_UNIVERSE_COUNT = 223
 
 
 def verified_symbols(manifest_path=None):
@@ -13,7 +13,7 @@ def verified_symbols(manifest_path=None):
             or len(symbols) != EXPECTED_FNO_UNIVERSE_COUNT
             or len(set(symbols)) != EXPECTED_FNO_UNIVERSE_COUNT
             or any(not isinstance(s, str) or not s or s != s.strip().upper() for s in symbols)):
-        raise RuntimeError("Verified F&O manifest must contain exactly 219 unique normalized symbols")
+        raise RuntimeError("Verified F&O manifest must contain exactly 223 unique normalized symbols")
     return tuple(symbols)
 
 
@@ -30,7 +30,7 @@ def require_verified_symbols(symbols):
     symbols = list(symbols)
     expected = set(verified_symbols())
     actual = set(symbols)
-    if len(symbols) != 219 or len(actual) != 219 or actual != expected:
+    if len(symbols) != 223 or len(actual) != 223 or actual != expected:
         raise RuntimeError("F&O publication incomplete or invalid: missing="
                            + ",".join(sorted(expected - actual))
                            + "; unexpected=" + ",".join(sorted(actual - expected)))
