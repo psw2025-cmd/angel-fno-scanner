@@ -9,7 +9,7 @@ def test_new_listing_cannot_silently_change_reviewed_universe():
     discovered = dict.fromkeys(verified_symbols(), object())
     discovered["UNREVIEWED"] = object()
     selected = select_verified_universe(discovered)
-    assert len(selected) == 219
+    assert len(selected) == 223
     assert "UNREVIEWED" not in selected
 
 
@@ -31,8 +31,8 @@ def test_duplicate_manifest_is_rejected(tmp_path):
     symbols = list(verified_symbols())
     symbols[-1] = symbols[0]
     path = tmp_path / "manifest.json"
-    path.write_text(json.dumps({"universe": {"total_symbols": 219, "symbols": symbols}}))
-    with pytest.raises(RuntimeError, match="219 unique"):
+    path.write_text(json.dumps({"universe": {"total_symbols": 223, "symbols": symbols}}))
+    with pytest.raises(RuntimeError, match="223 unique"):
         verified_symbols(path)
 
 
