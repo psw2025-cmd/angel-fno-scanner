@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 
-EXPECTED_FNO_UNIVERSE_COUNT = 219
+EXPECTED_FNO_UNIVERSE_COUNT = 217
 
 
 def verified_symbols(manifest_path=None):
