@@ -86,9 +86,16 @@ def verify_outputs(sh, bq_client, table_ref, identity, expected_rows=None):
                      != matrix_hash([[expected_row[j] if j < len(expected_row) else ""]])),
                     None,
                 )
+            actual_cell = (actual_row[mismatch_column - 1] if first_mismatch and mismatch_column and mismatch_column <= len(actual_row) else None)
+            expected_cell = (expected_row[mismatch_column - 1] if first_mismatch and mismatch_column and mismatch_column <= len(expected_row) else None)
+            cell_diagnostic = (
+                f"actual_type={type(actual_cell).__name__}, expected_type={type(expected_cell).__name__}, "
+                f"actual_length={len(str(actual_cell))}, expected_length={len(str(expected_cell))}, "
+                f"actual_cell_sha256={matrix_hash([[actual_cell]])}, expected_cell_sha256={matrix_hash([[expected_cell]])}"
+            )
             raise RuntimeError(
                 f"{title} readback differs from this cycle's intended output "
-                f"(first_mismatch_column={mismatch_column}, "
+                f"(first_mismatch_column={mismatch_column}, {cell_diagnostic}, "
                 f"actual_row_sha256={matrix_hash([rows[first_mismatch - 1]]) if first_mismatch else 'none'}, "
                 f"expected_row_sha256={matrix_hash([expected[first_mismatch - 1]]) if first_mismatch else 'none'}) "
                 f"(actual_rows={len(rows)}, expected_rows={len(expected)}, "
