@@ -281,3 +281,10 @@ def test_denied_lease_prevents_first_sink_write(authorized, monkeypatch):
                         lambda: invoked.append('sheet'), lambda: invoked.append('bq'))
     assert invoked == []
     assert 'PUBLICATION_STATUS' not in book.tabs
+
+
+def test_negative_zero_sheet_readback_equivalence():
+    assert matrix_hash([[0]]) == matrix_hash([[-0.0]])
+    assert matrix_hash([[0]]) == matrix_hash([['-0.0']])
+    assert matrix_hash([[0]]) == matrix_hash([[0.0]])
+
