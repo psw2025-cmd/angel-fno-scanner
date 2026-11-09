@@ -1,0 +1,37 @@
+name: Branch Protection Gate
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  branch-protection-gate:
+    name: branch-protection-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
+      ALLOW_PRODUCTION_WRITES: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify safety
+        run: |
+          set -euo pipefail
+          test "$PAPER_MODE" = 1
+          test "$LIVE_ORDER_AUTHORITY" = 0
+          test "$REAL_BROKER_ORDERS" = 0
+          test "$ALLOW_PRODUCTION_WRITES" = 0
+      - name: Install test requirements
+        run: pip install -r requirements.txt -r relay/requirements.txt pytest
+      - name: Full tests and static checks
+        run: |
+          python -m compileall -q scanner.py gainers.py publication.py tools universe_contract.py
+          python tools/memory_guard.py
+          python tools/chaos_inject.py
+          python -m pytest -q
