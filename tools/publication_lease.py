@@ -19,6 +19,9 @@ LIVE_ORDER_FLAGS = (
     "ALLOW_LIVE_BROKER_ORDERS",
     "PLACE_REAL_ORDERS",
     "ANGEL_LIVE_ORDERS",
+    "REAL_BROKER_ORDERS",
+    "LIVE_ORDER_AUTHORITY",
+    "SYSTEM3_LIVE_TRADING_ALLOWED",
 )
 _IDENT = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,127}$")
 _LOCK_KEY = re.compile(r"^paper-cycle:\d{4}-\d{2}-\d{2}:(OPEN|CLOSED|EOD)$")
@@ -31,7 +34,7 @@ class PublicationLeaseError(RuntimeError):
 
 def assert_paper_publisher() -> None:
     for flag in LIVE_ORDER_FLAGS:
-        if (os.getenv(flag) or "0").strip() == "1":
+        if (os.getenv(flag) or "0").strip().lower() in {"1", "true", "yes", "on"}:
             raise PublicationLeaseError(
                 f"paper publisher refused live-order flag {flag}"
             )
