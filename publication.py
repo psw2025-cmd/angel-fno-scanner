@@ -57,7 +57,19 @@ def verify_outputs(sh, bq_client, table_ref, identity, expected_rows=None):
         require_verified_symbols(sheet_symbols(title, rows))
         digest = matrix_hash(rows)
         if expected_rows is not None and digest != matrix_hash(expected_rows[title]):
-            raise RuntimeError(f"{title} readback differs from this cycle's intended output")
+            # Metadata only: never log market values, sheet contents, or credentials.
+            expected = expected_rows[title]
+            first_mismatch = next(
+                (i + 1 for i in range(min(len(rows), len(expected)))
+                 if matrix_hash([rows[i]]) != matrix_hash([expected[i]])),
+                None,
+            )
+            raise RuntimeError(
+                f"{title} readback differs from this cycle's intended output "
+                f"(actual_rows={len(rows)}, expected_rows={len(expected)}, "
+                f"first_mismatch_row={first_mismatch or 'row_count_or_trailing_cells'}, "
+                f"actual_sha256={digest}, expected_sha256={matrix_hash(expected)})"
+            )
         digests.append(digest)
     # Table-data read has no SQL query or scan job. Bound the read to catch extras.
     rows = list(bq_client.list_rows(table_ref, max_results=220, page_size=220))
