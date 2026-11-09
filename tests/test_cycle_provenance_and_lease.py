@@ -174,3 +174,21 @@ def test_gainer_page_score_keeps_penny_spikes_out_of_profit():
     assert scored["page_matches"] == 2
     assert scored["tradable_matches"] == 1
     assert scored["penny_page_rows"] == 2
+
+
+@pytest.mark.parametrize("flag", [
+    "ALLOW_LIVE_BROKER_ORDERS",
+    "PLACE_REAL_ORDERS",
+    "ANGEL_LIVE_ORDERS",
+    "REAL_BROKER_ORDERS",
+    "LIVE_ORDER_AUTHORITY",
+    "SYSTEM3_LIVE_TRADING_ALLOWED",
+])
+@pytest.mark.parametrize("enabled", ["1", "true", "YES", "on"])
+def test_paper_publisher_rejects_all_live_order_flags(monkeypatch, flag, enabled):
+    from tools.publication_lease import LIVE_ORDER_FLAGS
+    for name in LIVE_ORDER_FLAGS:
+        monkeypatch.setenv(name, "0")
+    monkeypatch.setenv(flag, enabled)
+    with pytest.raises(PublicationLeaseError, match="live-order"):
+        assert_paper_publisher()
