@@ -14,7 +14,7 @@
     "google_sheet_url": "https://docs.google.com/spreadsheets/d/1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs/edit?usp=sharing"
   },
   "universe": {
-    "total_symbols": 219,
+    "total_symbols": 217,
     "symbols": [
       "360ONE",
       "ABB",
@@ -40,7 +40,6 @@
       "AXISBANK",
       "BAJAJ-AUTO",
       "BAJAJFINSV",
-      "BAJAJHLDNG",
       "BAJFINANCE",
       "BANDHANBNK",
       "BANKBARODA",
@@ -106,7 +105,6 @@
       "HYUNDAI",
       "ICICIBANK",
       "ICICIGI",
-      "ICICIPRULI",
       "IDEA",
       "IDFCFIRSTB",
       "IEX",
