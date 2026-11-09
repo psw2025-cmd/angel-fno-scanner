@@ -22,3 +22,27 @@ jobs:
       - run: python tools/memory_guard.py
       - run: python tools/chaos_inject.py
       - run: python -m pytest -q
+
+  branch-protection-gate:
+    name: branch-protection-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: pytest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify PAPER safety
+        shell: bash
+        env:
+          PAPER_MODE: '1'
+          LIVE_ORDER_AUTHORITY: '0'
+          REAL_BROKER_ORDERS: '0'
+          ALLOW_PRODUCTION_WRITES: '0'
+        run: |
+          set -euo pipefail
+          test "$PAPER_MODE" = 1
+          test "$LIVE_ORDER_AUTHORITY" = 0
+          test "$REAL_BROKER_ORDERS" = 0
+          test "$ALLOW_PRODUCTION_WRITES" = 0
+          python -m compileall -q scanner.py gainers.py publication.py tools
