@@ -1,7 +1,60 @@
-name: Cloud PAPER Runner
-on: workflow_dispatch
+name: Cloud PAPER Runner - Readiness Audit
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '20 3 * * 1-5'
+permissions:
+  contents: read
+concurrency:
+  group: angel-paper-readiness-audit
+  cancel-in-progress: false
 jobs:
-  register:
+  audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
+      ALLOW_PRODUCTION_WRITES: '0'
     steps:
-      - run: echo "Registered"
+      - uses: actions/checkout@v4
+      - name: Inspect safety and scanner packaging (read only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p audit-evidence
+          {
+            echo '# Angel PAPER cloud readiness'
+            echo "Commit: ${GITHUB_SHA}"
+            echo "Run: ${GITHUB_RUN_ID}"
+            echo "UTC: $(date -u +%FT%TZ)"
+            echo
+            echo '## Required files'
+            for f in scanner.py Dockerfile.cloudrun cloudbuild.validation.yaml tools/publication_lease.py tools/cycle_provenance.py; do
+              if test -s "$f"; then echo "PASS file $f"; else echo "FAIL file $f"; fi
+            done
+            echo
+            echo '## Safety environment'
+            test "$PAPER_MODE" = 1 && echo 'PASS PAPER_MODE=1'
+            test "$LIVE_ORDER_AUTHORITY" = 0 && echo 'PASS LIVE_ORDER_AUTHORITY=0'
+            test "$REAL_BROKER_ORDERS" = 0 && echo 'PASS REAL_BROKER_ORDERS=0'
+            test "$ALLOW_PRODUCTION_WRITES" = 0 && echo 'PASS production writes disabled'
+            echo
+            echo '## Python syntax'
+            python -m compileall -q scanner.py gainers.py publication.py tools
+            echo 'PASS compileall'
+            echo
+            echo '## Cloud runtime'
+            echo 'NOT VERIFIED: no authenticated Cloud Run or Scheduler query performed'
+            echo '## Broker / CE-PE / paper PnL'
+            echo 'NOT VERIFIED: no broker request, orders, publication, or trade performed'
+          } | tee audit-evidence/readiness.txt
+      - name: Publish audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-readiness-${{ github.run_id }}
+          path: audit-evidence/
+          if-no-files-found: warn
+          retention-days: 14
