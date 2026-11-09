@@ -31,9 +31,11 @@ def _canonical_cell(cell):
     if isinstance(cell, bool):
         return str(cell)
     if isinstance(cell, (int, float, Decimal)):
-        return format(Decimal(str(cell)).normalize(), "f")
+        number = Decimal(str(cell))
+        return "0" if number.is_zero() else format(number.normalize(), "f")
     if isinstance(cell, str) and _NUMERIC_CELL.fullmatch(cell):
-        return format(Decimal(cell).normalize(), "f")
+        number = Decimal(cell)
+        return "0" if number.is_zero() else format(number.normalize(), "f")
     return str(cell)
 
 
