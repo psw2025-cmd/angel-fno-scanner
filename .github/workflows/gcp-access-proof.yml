@@ -1,0 +1,68 @@
+name: Google Cloud Access Proof (Read Only)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
+      PROJECT_ID: fno-angel-prod-1790444589
+      REGION: asia-south1
+    steps:
+      - name: Verify required GitHub configuration without exposing values
+        env:
+          WIF_PROVIDER: ${{ secrets.GCP_WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          test "$PAPER_MODE" = 1
+          test "$LIVE_ORDER_AUTHORITY" = 0
+          test "$REAL_BROKER_ORDERS" = 0
+          if [ -z "$WIF_PROVIDER" ] || [ -z "$WIF_SERVICE_ACCOUNT" ]; then
+            echo "::error::Missing GCP_WIF_PROVIDER or GCP_WIF_SERVICE_ACCOUNT. No cloud access proven."
+            exit 1
+          fi
+          echo "GitHub cloud authentication configuration present; not yet authenticated"
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}
+          project_id: fno-angel-prod-1790444589
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Read-only cloud inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          {
+            echo "# Cloud access proof"
+            echo "Run: ${GITHUB_RUN_ID}"
+            echo "Commit: ${GITHUB_SHA}"
+            echo "UTC: $(date -u +%FT%TZ)"
+            echo "Project: ${PROJECT_ID}"
+            echo "Region: ${REGION}"
+            echo
+            echo "## Cloud Run jobs"
+            gcloud run jobs list --project="$PROJECT_ID" --region="$REGION" --format="table(metadata.name,status.conditions[0].status)" || echo "NOT VERIFIED: unable to list jobs"
+            echo
+            echo "## Cloud Run services"
+            gcloud run services list --project="$PROJECT_ID" --region="$REGION" --format="table(metadata.name,status.url)" || echo "NOT VERIFIED: unable to list services"
+            echo
+            echo "## Cloud Scheduler jobs"
+            gcloud scheduler jobs list --project="$PROJECT_ID" --location="$REGION" --format="table(name,state,schedule)" || echo "NOT VERIFIED: unable to list schedules"
+            echo
+            echo "## Trading"
+            echo "No broker orders or production writes attempted"
+          } | tee evidence/cloud-access.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cloud-access-proof-${{ github.run_id }}
+          path: evidence/
+          if-no-files-found: warn
