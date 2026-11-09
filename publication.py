@@ -7,6 +7,7 @@ import hashlib
 import json
 import uuid
 import os
+import re
 from datetime import datetime, timezone
 from decimal import Decimal
 
@@ -23,13 +24,24 @@ STATUS_HEADERS = ["State", "Cycle ID", "Run ID", "Git SHA", "Writer ID",
 REQUIRED_TABS = ("FORENSIC_LIVE", "OPTION_PREDICTIONS", "NEWS_LIVE")
 
 
+_NUMERIC_CELL = re.compile(r"^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?$")
+
+
+def _canonical_cell(cell):
+    if isinstance(cell, bool):
+        return str(cell)
+    if isinstance(cell, (int, float, Decimal)):
+        return format(Decimal(str(cell)).normalize(), "f")
+    if isinstance(cell, str) and _NUMERIC_CELL.fullmatch(cell):
+        return format(Decimal(cell).normalize(), "f")
+    return str(cell)
+
+
 def matrix_hash(rows):
     # Sheets omits trailing blanks and returns numbers as strings.
     normalized = []
     for row in rows:
-        cells = [format(Decimal(str(cell)).normalize(), "f")
-                 if isinstance(cell, (int, float)) and not isinstance(cell, bool)
-                 else str(cell) for cell in row]
+        cells = [_canonical_cell(cell) for cell in row]
         while cells and cells[-1] == "":
             cells.pop()
         normalized.append(cells)
