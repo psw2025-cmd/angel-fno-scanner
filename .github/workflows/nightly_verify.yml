@@ -42,7 +42,7 @@ jobs:
           }
           python -m pytest -q
           if ($LASTEXITCODE -ne 0) { throw 'NIGHTLY_MOCK_TESTS_FAILED' }
-          python tools/mock_replay.py --mock-replay
+          python -m tools.mock_replay --mock-replay
           if ($LASTEXITCODE -ne 0) { throw 'NIGHTLY_MOCK_REPLAY_FAILED' }
           Write-Output 'NIGHTLY_REPLAY_PASS: NOT LIVE OR EXTERNAL SINK CERTIFICATION'
           if ($env:STRICT_EXTERNAL -eq '1') {

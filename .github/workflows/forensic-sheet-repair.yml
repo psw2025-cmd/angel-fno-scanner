@@ -29,6 +29,6 @@ jobs:
       - name: Install pinned project dependencies for gspread
         run: pip install -r requirements.txt
       - name: Audit all 30 tabs, repair nine cells, and verify remote readback
-        run: python tools/forensic_sheet_repair.py --apply
+        run: python -m tools.forensic_sheet_repair --apply
       - name: Attest no credentials were placed in checkout
         run: git diff --exit-code

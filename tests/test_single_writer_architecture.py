@@ -38,7 +38,14 @@ def test_writer_guard_emits_consistent_provenance(monkeypatch):
 
 def test_market_bot_is_single_authorized_writer():
     workflow = (ROOT / ".github/workflows/market_bot.yml").read_text(encoding="utf-8-sig")
-    assert workflow.count("python scanner.py") == 1
+    # Exactly one guarded wrapper owns the sole real scanner invocation.
+    assert workflow.count("python -m tools.run_market_cycle --mock-replay-on-stale") == 1
+    assert workflow.count("python scanner.py") == 0
+    runner = (ROOT / "tools/run_market_cycle.py").read_text(encoding="utf-8")
+    assert runner.count('[sys.executable,"scanner.py"]') == 1
+    assert '"-m","tools.check_freshness"' in runner
+    assert "_mode(\"mock\")" in runner and "_mode(\"live\")" in runner
+    assert "steps.scanner_cycle.outputs.mode == 'live'" in workflow
     assert "angel_prediction_engine.py --run-once" not in workflow
     assert "ALLOW_PRODUCTION_WRITES: ${{ github.event_name == 'schedule' && '1' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run && '1' || '0') }}" in workflow
     assert "if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}" in workflow
