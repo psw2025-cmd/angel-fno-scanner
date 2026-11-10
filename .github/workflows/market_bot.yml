@@ -103,7 +103,7 @@ jobs:
           PY
 
       - name: Upload separately labeled mock replay proof
-        if: ${{ always() && (github.event_name == 'push' || steps.trading_session.outputs.can_scan != 'true') }}
+        if: ${{ always() && (github.event_name == 'push' || steps.trading_session.outputs.can_scan != 'true' || steps.scanner_cycle.outputs.mode == 'mock') }}
         uses: actions/upload-artifact@v4
         with:
           name: market-bot-MOCK-REPLAY-not-live
@@ -139,14 +139,10 @@ jobs:
           set -eo pipefail
           test "$PAPER_MODE" = 1
           test "$LIVE_ORDER_AUTHORITY" = 0
-          python scanner.py
-          python tools/check_freshness.py --metadata /tmp/cycle_metadata.json --market-session "$ANGEL_MARKET_SESSION"
-          python tools/100_year_guard.py --phase pre --metadata /tmp/cycle_metadata.json
-          python3 agent_cli.py --export-snapshots
-          python scripts/sync_cycle_provenance_to_bq.py
+          python -m tools.run_market_cycle --mock-replay-on-stale
 
       - name: Commit & Push Updated Snapshots
-        if: ${{ steps.scanner_cycle.outcome == 'success' && steps.trading_session.outputs.can_scan == 'true' }}
+        if: ${{ steps.scanner_cycle.outcome == 'success' && steps.scanner_cycle.outputs.mode == 'live' && steps.trading_session.outputs.can_scan == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
