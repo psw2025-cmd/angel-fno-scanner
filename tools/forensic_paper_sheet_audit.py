@@ -61,9 +61,7 @@ SHEETS = [
     'PRE_BREAKOUT_SCANNER',
     'Cloud_Automation_Setup',
     'NSE_EVENTS',
-    'E2E_AUDIT_20260928',
     'PREDICTION_VALIDATION',
-    'MARKET_LEARNINGS_20260928',
     'PREMARKET_VS_ACTUAL',
     'TOMORROW_EXPLOSIVE_WATCH',
 ]
@@ -142,7 +140,7 @@ def run_full_audit(raw_dir=RAW_DIR, report_path=REPORT_PATH):
     pal_rows = pal_json['table']['rows'] if pal_json and 'table' in pal_json else []
     pa_json = read_json_data('PRODUCTION_APPROVED')
     pa_j_rows = pa_json['table']['rows'] if pa_json and 'table' in pa_json else []
-    e2e_rows = read_csv_rows('E2E_AUDIT_20260928')
+    e2e_rows = []  # Retired sheet: canonical outcome ledger is PAPER_ALERT_LOG
     nl_rows = read_csv_rows('NEWS_LIVE')
     pbs_rows = read_csv_rows('PRE_BREAKOUT_SCANNER')
     ps_rows = read_csv_rows('PUBLICATION_STATUS')
@@ -194,7 +192,7 @@ def run_full_audit(raw_dir=RAW_DIR, report_path=REPORT_PATH):
         if len(r) > 1 and 'PAPER filled outcomes' in r[0]:
             e2e_filled = r[1].strip()
             break
-    c03_status = "PASS" if (str(pal_filled) == str(pa_filled) == str(e2e_filled)) else "FAIL"
+    c03_status = "PASS" if str(pal_filled) == str(pa_filled) else "FAIL"
     checks['C03'] = {
         'name': 'Paper filled-outcome count',
         'status': c03_status,
