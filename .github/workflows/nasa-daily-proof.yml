@@ -62,7 +62,7 @@ jobs:
       - name: Offline negative controls and replay lifecycle
         run: |
           python -m pytest -q tests/test_mock_replay_and_sheet_repairs.py tests/test_market_session_preflight.py
-          python tools/mock_replay.py --mock-replay
+          python -m tools.mock_replay --mock-replay
           python - <<'PY'
           import json
           d=json.load(open("proof-output/mock_replay.json"))
