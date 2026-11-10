@@ -34,3 +34,10 @@ def test_invalid_fixture_cannot_write():
     sample["live_verified"]=True
     with pytest.raises(RuntimeError,match="Invalid simulation"):
         evidence_rows(sample)
+
+
+def test_forensic_audit_excludes_optional_mock_tab_but_checks_original_30():
+    from pathlib import Path
+    source=(Path(__file__).resolve().parents[1]/"tools/forensic_sheet_repair.py").read_text()
+    assert 'ws.title != "MOCK_REPLAY_EVIDENCE"' in source
+    assert "if len(sheets) != 30:" in source
