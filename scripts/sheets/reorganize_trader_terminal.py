@@ -24,7 +24,35 @@ HIDE = (
     "CLOUD_STATUS","PUBLIC_SYNC_LOG","HEARTBEAT","FORENSIC_LIVE",
     "Formula Checks","SYSTEM_RESOLUTION_TRACKER","Cloud_Automation_Setup",
 )
+def install_gspread_throttling():
+    """One account may have 60 read requests/min. Retry 429 safely without duplicate writes.
+
+    gspread's HTTPClient.request is the single transport for worksheet reads,
+    metadata, value writes, duplicate/hide/delete sheet operations.
+    """
+    import time
+    import gspread
+    from gspread.http_client import HTTPClient
+    original=HTTPClient.request
+    if getattr(original,"_trader_rate_limit_retry",False):
+        return
+    def guarded(self,*args,**kwargs):
+        for attempt in range(9):
+            try:
+                return original(self,*args,**kwargs)
+            except gspread.exceptions.APIError as exc:
+                code=getattr(getattr(exc,"response",None),"status_code",None)
+                if code not in (429,500,502,503,504) or attempt==8:
+                    raise
+                delay=min(75,15*(2**attempt))
+                print(f"GOOGLE_SHEETS_RETRY status={code} attempt={attempt+1}/8 backoff_seconds={delay}",flush=True)
+                time.sleep(delay)
+    guarded._trader_rate_limit_retry=True
+    HTTPClient.request=guarded
+
+
 def connect():
+    install_gspread_throttling()
     if os.getenv("LIVE_ORDER_AUTHORITY","0")!="0" or os.getenv("REAL_BROKER_ORDERS","0")!="0":
         raise RuntimeError("real-order authority not disabled")
     sheet_id=require_authoritative_sheet_id(os.getenv("SHEET_ID",""))
@@ -494,6 +522,7 @@ def apply(book):
     if source_digest(book.worksheet("PAPER_TRADING_OMS").get_all_values())!=oms_sha:
         raise RuntimeError("Original PAPER OMS history changed")
     print("DELETED_TAB_COUNT="+str(len(removed)))
+    print("TOTAL_LEGACY_TABS_PURGED="+str(sum(name not in visible+invisible for name in DELETE)))
     print("DELETED_TABS="+json.dumps(removed))
     print("HIDDEN_TELEMETRY_TABS="+json.dumps(hidden))
     print("PRESERVED_HIDDEN_ARCHIVES="+json.dumps(archives))
