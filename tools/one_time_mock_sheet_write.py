@@ -11,7 +11,6 @@ import sys
 from pathlib import Path
 
 from credentials import load_service_account, require_authoritative_sheet_id
-from tools.mock_replay import build_replay
 
 TARGET_TAB = "MOCK_REPLAY_EVIDENCE"
 CANONICAL_SHEET_ID = "1Zu_9uJDQdDujsmtavdKnzupL-u2FtQ6C-LlkAswyzcs"
@@ -55,6 +54,20 @@ def evidence_rows(payload):
         ["PRODUCTION_DATA_SINK_WRITES", "0"],
         ["MOCK_REPLAY_PAYLOAD_SHA256", payload["sha256"]],
     ]
+
+
+def load_verified_fixture(path):
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    digest_in_fixture = payload.get("sha256", "")
+    without_digest = {k: v for k, v in payload.items() if k != "sha256"}
+    recomputed = hashlib.sha256(
+        json.dumps(without_digest, sort_keys=True).encode()
+    ).hexdigest()
+    if not digest_in_fixture or digest_in_fixture != recomputed:
+        raise RuntimeError("Invalid MOCK_REPLAY fixture digest; refusing Sheet write")
+    if payload.get("git_sha") != os.environ.get("GITHUB_SHA"):
+        raise RuntimeError("MOCK_REPLAY source SHA differs from the executing commit")
+    return payload
 
 
 def verify_locks():
@@ -113,7 +126,8 @@ def main():
         raise RuntimeError("Refusing to write an unapproved workbook")
     import gspread
     book = gspread.service_account_from_dict(load_service_account()).open_by_key(actual)
-    payload = build_replay()
+    # Only a verified --mock-replay CLI artifact may be sent to the mock tab.
+    payload = load_verified_fixture("proof-output/mock_replay.json")
     execute(book, payload)
     # Files used only in runner evidence; no secrets or raw market records.
     out = Path("proof-output/mock_sheet_write_receipt.json")
