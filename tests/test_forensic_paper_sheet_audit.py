@@ -11,7 +11,7 @@ from tools.forensic_paper_sheet_audit import run_full_audit, SHEETS
 
 
 def test_audit_sheets_manifest():
-    assert len(SHEETS) == 20
+    assert len(SHEETS) == 18
     assert "HEARTBEAT" in SHEETS
     assert "PRODUCTION_APPROVED" in SHEETS
     assert "PAPER_ALERT_LOG" in SHEETS
