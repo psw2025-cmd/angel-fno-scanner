@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'tools/one_time_mock_sheet_write.py'
+      - '.github/workflows/one-time-mock-sheet-evidence.yml'
   # Intentionally no schedule and no workflow_dispatch: one-time on merge only.
 permissions:
   contents: read
@@ -27,7 +28,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install Google Sheets service account dependencies
-        run: python -m pip install -r requirements.txt
+        run: python -m pip install -r requirements.txt pytest
       - name: Unit-test synthetic isolation
         run: python -m pytest -q tests/test_one_time_mock_sheet_write.py
       - name: Generate explicit synthetic fixture (no broker calls)
