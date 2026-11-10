@@ -84,8 +84,10 @@ def execute(book, payload):
     intended = evidence_rows(payload)
     tabs = book.worksheets()
     canonical = [w for w in tabs if w.title != TARGET_TAB]
-    if len(canonical) != 30:
-        raise RuntimeError(f"Canonical workbook tab drift: expected 30, found {len(canonical)}")
+    canonical = [w for w in canonical if not w.title.startswith("_ARCHIVE_")
+                 and w.title != "TRADE_HISTORY_LEDGER"]
+    if len(canonical) not in (30,24):
+        raise RuntimeError(f"Canonical workbook tab drift: expected 30 pre- or 24 post-overhaul, found {len(canonical)}")
     protected_before = {name: digest(book.worksheet(name).get_all_values()) for name in PROTECTED_TABS}
     prod_state_before = book.worksheet("PUBLICATION_STATUS").acell("A2").value
     prod_option_before = book.worksheet("OPTION_PREDICTIONS").acell("G2").value
