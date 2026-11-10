@@ -37,6 +37,9 @@ def test_duplicate_manifest_is_rejected(tmp_path):
 
 
 def test_scanner_prediction_failure_is_not_false_green(monkeypatch):
+    # Legacy mock path: explicitly disable live exchange gating only within this test.
+    # Real scheduled scanner always retains ANGEL_REQUIRE_EXCHANGE_TIME=1.
+    monkeypatch.setenv("ANGEL_REQUIRE_EXCHANGE_TIME", "0")
     import scanner
     import angel_prediction_engine as engine
     from types import SimpleNamespace
@@ -101,6 +104,9 @@ def test_malformed_forensic_row_cannot_be_dropped_into_partial_publication(monke
 
 
 def test_fresh_heartbeat_still_runs_one_prediction(monkeypatch):
+    # Legacy mock path: explicitly disable live exchange gating only within this test.
+    # Real scheduled scanner always retains ANGEL_REQUIRE_EXCHANGE_TIME=1.
+    monkeypatch.setenv("ANGEL_REQUIRE_EXCHANGE_TIME", "0")
     import scanner
     import angel_prediction_engine as engine
     from types import SimpleNamespace
