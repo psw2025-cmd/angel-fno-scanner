@@ -1,0 +1,32 @@
+name: Trader Terminal Overhaul (forensic guarded)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sheets/reorganize_trader_terminal.py'
+      - '.github/workflows/trader-terminal-overhaul.yml'
+permissions:
+  contents: read
+concurrency:
+  group: option-sheet-trader-terminal-overhaul
+  cancel-in-progress: false
+jobs:
+  inspect-or-apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
+      SHEET_ID: ${{ secrets.SHEET_ID }}
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
+      ALLOW_PRODUCTION_WRITES: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Python packages
+        run: python -m pip install gspread google-auth requests pytest
+      - name: Read workbook schema and reference impact
+        run: python -m scripts.sheets.reorganize_trader_terminal --inspect
