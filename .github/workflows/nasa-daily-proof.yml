@@ -1,8 +1,15 @@
 name: NASA Daily Proof (read-only)
 on:
+  push:
+    branches: [main]
   schedule:
     - cron: '45 3 * * *' # 09:15 IST, best effort, runs from default branch only
   workflow_dispatch:
+    inputs:
+      strict_external:
+        description: "Run strict NASA external certification even if market closed (fail closed)"
+        type: boolean
+        default: false
 permissions:
   contents: read
   issues: write
@@ -11,7 +18,66 @@ concurrency:
   group: nasa-daily-proof
   cancel-in-progress: false
 jobs:
+  select-evidence-mode:
+    runs-on: ubuntu-latest
+    outputs:
+      mode: ${{ steps.decide.outputs.mode }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select strict live proof or honestly labeled offline replay
+        id: decide
+        env:
+          EVENT_KIND: ${{ github.event_name }}
+          STRICT_EXTERNAL: ${{ github.event_name == 'workflow_dispatch' && inputs.strict_external && '1' || '0' }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import datetime as dt, os
+          from market_calendar import IST, is_trading_day
+          now=dt.datetime.now(IST)
+          minute=now.hour*60+now.minute
+          live=is_trading_day(now) and 555<=minute<930 and os.environ["EVENT_KIND"]!="push"
+          strict=os.environ.get("STRICT_EXTERNAL")=="1"
+          mode="live" if (live or strict) else "mock"
+          with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as out:
+              out.write(f"mode={mode}\n")
+          print(f"NASA_EVIDENCE_MODE={mode}; mock is NOT full ledger certification")
+          PY
+  replay-proof:
+    needs: select-evidence-mode
+    if: ${{ needs.select-evidence-mode.outputs.mode == 'mock' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install offline replay test prerequisites
+        run: python -m pip install pytest
+      - name: Offline negative controls and replay lifecycle
+        run: |
+          python -m pytest -q tests/test_mock_replay_and_sheet_repairs.py tests/test_market_session_preflight.py
+          python tools/mock_replay.py --mock-replay
+          python - <<'PY'
+          import json
+          d=json.load(open("proof-output/mock_replay.json"))
+          assert d["mode"]=="MOCK_REPLAY" and not d["live_verified"]
+          assert d["broker_calls"]==d["sink_writes"]==d["real_orders"]==0
+          print("NASA_MOCK_REPLAY_EXIT_0; NASA_STRICT_25_CHECK_LEDGER_NOT_PROVEN")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nasa-MOCK-REPLAY-not-strict-ledger
+          path: proof-output/mock_replay.json
+          if-no-files-found: error
   proof:
+    needs: select-evidence-mode
+    if: ${{ needs.select-evidence-mode.outputs.mode == 'live' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

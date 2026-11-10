@@ -1,9 +1,16 @@
 name: Nightly Verify
 
 on:
+  push:
+    branches: [main]
   schedule:
     - cron: '30 16 * * *'  # 22:00 IST (16:30 UTC)
   workflow_dispatch:
+    inputs:
+      strict_external:
+        description: "Additionally run real BQ/Sheets verification (never substitute mock results)"
+        type: boolean
+        default: false
 
 jobs:
   verify:
@@ -12,6 +19,10 @@ jobs:
       BQ_PROJECT_ID: ${{ secrets.BQ_PROJECT_ID }}
       SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
       SHEET_ID: ${{ secrets.SHEET_ID }}
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
+      STRICT_EXTERNAL: ${{ github.event_name == 'workflow_dispatch' && inputs.strict_external && '1' || '0' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -29,11 +40,22 @@ jobs:
             $changes | Write-Output
             throw 'Checkout changed before verification; preserving files for investigation.'
           }
-          python tools/verify_all.py
+          python -m pytest -q
+          if ($LASTEXITCODE -ne 0) { throw 'NIGHTLY_MOCK_TESTS_FAILED' }
+          python tools/mock_replay.py --mock-replay
+          if ($LASTEXITCODE -ne 0) { throw 'NIGHTLY_MOCK_REPLAY_FAILED' }
+          Write-Output 'NIGHTLY_REPLAY_PASS: NOT LIVE OR EXTERNAL SINK CERTIFICATION'
+          if ($env:STRICT_EXTERNAL -eq '1') {
+            python tools/verify_all.py
+            if ($LASTEXITCODE -ne 0) { throw 'STRICT_EXTERNAL_VERIFY_FAILED' }
+          }
       - name: Upload verification report artifact
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: verify-report
-          path: audit/verify_report.json
+          path: |
+            proof-output/mock_replay.json
+            audit/verify_report.json
+          if-no-files-found: error
 
