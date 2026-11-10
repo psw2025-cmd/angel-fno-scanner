@@ -41,3 +41,17 @@ def test_forensic_audit_excludes_optional_mock_tab_but_checks_original_30():
     source=(Path(__file__).resolve().parents[1]/"tools/forensic_sheet_repair.py").read_text()
     assert 'ws.title != "MOCK_REPLAY_EVIDENCE"' in source
     assert "if len(sheets) != 30:" in source
+
+
+def test_fixture_digest_and_exact_git_sha_required(monkeypatch, tmp_path):
+    import json
+    from tools.one_time_mock_sheet_write import load_verified_fixture
+    fixture=build_replay()
+    monkeypatch.setenv("GITHUB_SHA", fixture["git_sha"])
+    path=tmp_path/"fixture.json"
+    path.write_text(json.dumps(fixture))
+    assert load_verified_fixture(path)["sha256"]==fixture["sha256"]
+    fixture["underlyings"]=218
+    path.write_text(json.dumps(fixture))
+    with pytest.raises(RuntimeError,match="fixture digest"):
+        load_verified_fixture(path)
