@@ -426,6 +426,9 @@ def run_angel_loop(book, api):
     last_prediction_epoch = 0.0  # watchdog only, not data timestamp
     while time.time() - started < MAX_RUNTIME_SECONDS:  # watchdog only, not data timestamp
         now = now_ist()
+        if os.getenv("ANGEL_REQUIRE_EXCHANGE_TIME") == "1":
+            from tools.market_session_preflight import require_allowed
+            require_allowed(os.getenv("ANGEL_MARKET_SESSION", "EOD"), at=now)
         stamped = now.strftime("%Y-%m-%d %H:%M:%S")
         future_quotes, future_failures = fetch_chunked(api, [meta["token"] for meta in universe.values()])
         tokens = []
@@ -453,6 +456,13 @@ def run_angel_loop(book, api):
             git_sha = provenance["git_sha"]
             session = os.getenv("ANGEL_MARKET_SESSION", "EOD")
             meta = generate_cycle_metadata(quote_list, run_id, git_sha, session)
+            # Validate the OLDEST genuine exchange tick before ANY Sheets/BQ/paper write.
+            # A writer timestamp is not an exchange timestamp.
+            from tools.check_freshness import validate
+            if meta.get("data_freshness_status") != "EXCHANGE_VERIFIED":
+                raise RuntimeError("Source exchange timestamp was not verified")
+            validate(meta["source_timestamp"], meta["run_id"], meta["git_sha"],
+                     meta["cycle_id"], session, expected=meta)
             meta_path = Path(os.getenv("ANGEL_CYCLE_METADATA_FILE", "/tmp/cycle_metadata.json"))
             meta_path.parent.mkdir(parents=True, exist_ok=True)
             temp_path = meta_path.with_suffix(".tmp")
@@ -643,6 +653,10 @@ def main():
     if os.getenv("ANGEL_VALIDATION_ONLY") == "1":
         from tools.validation_cycle import run_validation
         raise SystemExit(run_validation())
+    if os.getenv("ANGEL_REQUIRE_EXCHANGE_TIME") == "1":
+        # Holiday and delayed-run gate precedes lease, Sheets, login, paper and BQ.
+        from tools.market_session_preflight import require_allowed
+        require_allowed(os.getenv("ANGEL_MARKET_SESSION", "EOD"), at=now_ist())
     require_authorized_writer()
     apply_process_provenance()
     acquire_cycle_lease()
@@ -653,7 +667,7 @@ def main():
     now = now_ist()
     age = heartbeat_age_seconds(book, now)
     prediction_ran = False
-    if age is not None and age <= DAEMON_FRESH_SECONDS:
+    if age is not None and age <= DAEMON_FRESH_SECONDS and os.getenv("ANGEL_REQUIRE_EXCHANGE_TIME") != "1":
         print(f"[INFO] HEARTBEAT is {int(age)}s old. Skipping a second Angel login.")
         refresh_from_forensic(book, now)
     else:
