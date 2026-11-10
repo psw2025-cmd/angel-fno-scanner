@@ -139,6 +139,8 @@ jobs:
           set -eo pipefail
           test "$PAPER_MODE" = 1
           test "$LIVE_ORDER_AUTHORITY" = 0
+          # check_freshness.py executes inside tools.run_market_cycle BEFORE export:
+          # live stale tick -> labeled MOCK_REPLAY only; real safety failures still fail.
           python -m tools.run_market_cycle --mock-replay-on-stale
 
       - name: Commit & Push Updated Snapshots
