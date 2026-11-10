@@ -48,9 +48,7 @@ BQ_DATASET = BQ_DATASET_ID
 
 EXPECTED_TABS = [
     "PRE_BREAKOUT_SCANNER",
-    "Sheet1",
     "F&O Options Top Gainers Tracker Dashboard",
-    "LEGACY_F&O_DASHBOARD_OBJECT",
     "Formula Checks",
     "PRODUCTION_APPROVED",
     "Cloud_Automation_Setup",
@@ -63,7 +61,8 @@ EXPECTED_TABS = [
     "NEWS_IMPACT",
     "NEWS_TYPE_TALLY",
     "TOP_GAINERS",
-    "OPTION_PREDICTIONS"
+    "OPTION_PREDICTIONS",
+    "TRADE_HISTORY_LEDGER"
 ]
 
 ERROR_PATTERNS = [
@@ -147,7 +146,7 @@ def audit_sheets():
                         break
 
                 # Check date-serial corruption in numeric columns (ignore purely timestamp/date headers)
-                if tab_name in ["Sheet1", "TOP_GAINERS", "FORENSIC_LIVE", "OPTION_PREDICTIONS", "PRE_BREAKOUT_SCANNER"]:
+                if tab_name in ["TOP_GAINERS", "FORENSIC_LIVE", "OPTION_PREDICTIONS", "PRE_BREAKOUT_SCANNER"]:
                     # Ignore column A if it is a real timestamp header or timestamp value
                     if c_idx > 1 or "Timestamp" not in all_values[0][0]:
                         if DATE_SERIAL_PATTERN.search(cell_str):

@@ -36,11 +36,12 @@ def test_invalid_fixture_cannot_write():
         evidence_rows(sample)
 
 
-def test_forensic_audit_excludes_optional_mock_tab_but_checks_original_30():
+def test_forensic_audit_excludes_mock_and_archive_tabs_during_migration():
     from pathlib import Path
     source=(Path(__file__).resolve().parents[1]/"tools/forensic_sheet_repair.py").read_text()
-    assert 'ws.title != "MOCK_REPLAY_EVIDENCE"' in source
-    assert "if len(sheets) != 30:" in source
+    assert '"MOCK_REPLAY_EVIDENCE", "TRADE_HISTORY_LEDGER"' in source
+    assert 'not ws.title.startswith("_ARCHIVE_")' in source
+    assert "24 <= len(sheets) <= 30" in source
 
 
 def test_fixture_digest_and_exact_git_sha_required(monkeypatch, tmp_path):

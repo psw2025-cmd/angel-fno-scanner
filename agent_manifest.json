@@ -400,9 +400,7 @@
   ],
   "google_sheet_tabs": [
     "PRE_BREAKOUT_SCANNER",
-    "Sheet1",
     "F&O Options Top Gainers Tracker Dashboard",
-    "LEGACY_F&O_DASHBOARD_OBJECT",
     "Formula Checks",
     "PRODUCTION_APPROVED",
     "Cloud_Automation_Setup",
@@ -416,6 +414,7 @@
     "NEWS_TYPE_TALLY",
     "TOP_GAINERS",
     "OPTION_PREDICTIONS",
+    "TRADE_HISTORY_LEDGER",
     "WRITE_PROVENANCE"
   ]
 }
