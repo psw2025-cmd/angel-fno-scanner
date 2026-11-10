@@ -74,7 +74,7 @@ jobs:
           LIVE_TRADING_ENABLED: 'false'
           NASA_ENABLE_CLOUD_VERIFY: '0'
         run: python tools/nasa_daily_proof.py
-      - name: Enforce complete NASA proof ledger
+      - name: Enforce complete 25-check NASA proof ledger
         shell: bash
         run: |
           python - <<'PY'
@@ -85,7 +85,7 @@ jobs:
           try:
               data = json.loads(path.read_text(encoding="utf-8"))
               checks = data["checks"]
-              expected = {f"P-{n:02d}" for n in range(1, 21)}
+              expected = {f"P-{n:02d}" for n in range(1, 26)}
               actual = [item["id"] for item in checks]
               if len(actual) != len(expected) or set(actual) != expected:
                   sys.exit("NASA_LEDGER_INCOMPLETE_OR_DUPLICATE")
@@ -97,7 +97,7 @@ jobs:
                   sys.exit("NASA_LEDGER_SUMMARY_MISMATCH")
           except (KeyError, TypeError, ValueError) as exc:
               sys.exit(f"NASA_LEDGER_INVALID:{type(exc).__name__}")
-          print("NASA_LEDGER_ALL_20_PASS_EXACT_SHA")
+          print("NASA_LEDGER_ALL_25_PASS_EXACT_SHA")
           PY
       - name: Upload timestamped proof ledger
         if: always()
