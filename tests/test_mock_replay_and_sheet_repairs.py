@@ -46,3 +46,12 @@ def test_unknown_spreadsheet_timezone_cannot_claim_freshness():
     patch=build_fixes("Etc/UTC",True)["Formula Checks"]["E3"]
     assert ',"BLOCKED")' in patch
     assert "PASS" not in patch
+
+def test_google_sheet_legacy_ist_alias_enables_strict_live_age_gate():
+    """Google Sheets reports Asia/Calcutta, the IANA alias of Asia/Kolkata."""
+    formulas=build_fixes("Asia/Calcutta", True)
+    gate=formulas["Formula Checks"]["E3"]
+    assert "HEARTBEAT!A2" in gate
+    assert "CE_PE_RANK!W5:W204" in gate
+    assert "qage<=120" in gate and "wage<=60" in gate
+    assert '"PASS"' in gate

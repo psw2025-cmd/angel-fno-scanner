@@ -60,7 +60,7 @@ FIXES = {
 
 def build_fixes(timezone, failed_run_current):
     fixes = {k: dict(v) for k, v in FIXES.items()}
-    fixes["Formula Checks"]["E3"] = (LIVE_AGE if timezone == "Asia/Kolkata"
+    fixes["Formula Checks"]["E3"] = (LIVE_AGE if timezone in ("Asia/Kolkata", "Asia/Calcutta")
                                      else '=IF(C3="MARKET CLOSED","MARKET CLOSED","BLOCKED")')
     if failed_run_current:
         fixes["PUBLICATION_STATUS"] = {"A2": "FAILED_PARTIAL"}
