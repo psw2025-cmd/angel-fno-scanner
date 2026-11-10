@@ -1,6 +1,8 @@
 name: Angel One Daily Option Prediction & Forensic Bot
 
 on:
+  push:
+    branches: [main]
   schedule:
     - cron: '45 3 * * 1-5'      # 09:15 IST — main run
     - cron: '45 10 * * 1-5'     # 16:15 IST — EOD catch-up (writes gap predictions if main run missed)
@@ -86,6 +88,27 @@ jobs:
 
       - name: Test quote & prediction engine math
         run: python -m pytest -v
+
+      - name: Offline proof on holiday, delayed cron, dry-run or main push
+        if: ${{ github.event_name == 'push' || steps.trading_session.outputs.can_scan != 'true' }}
+        run: |
+          python tools/mock_replay.py --mock-replay
+          python - <<'PY'
+          import json
+          d=json.load(open("proof-output/mock_replay.json",encoding="utf-8"))
+          assert d["mode"]=="MOCK_REPLAY" and d["synthetic"] is True
+          assert d["broker_calls"]==d["sink_writes"]==d["real_orders"]==0
+          assert d["live_verified"] is False
+          print("REPLAY_ARTIFACT_READBACK_PASS; NOT LIVE CERTIFICATION")
+          PY
+
+      - name: Upload separately labeled mock replay proof
+        if: ${{ always() && (github.event_name == 'push' || steps.trading_session.outputs.can_scan != 'true') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: market-bot-MOCK-REPLAY-not-live
+          path: proof-output/mock_replay.json
+          if-no-files-found: error
 
       - name: Enforce permanent regression contract
         run: python tools/memory_guard.py
