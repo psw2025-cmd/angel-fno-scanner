@@ -1,0 +1,43 @@
+name: One-time Synthetic Sheet Evidence Write
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/one_time_mock_sheet_write.py'
+  # Intentionally no schedule and no workflow_dispatch: one-time on merge only.
+permissions:
+  contents: read
+concurrency:
+  group: one-time-synthetic-evidence-write
+  cancel-in-progress: false
+jobs:
+  isolated-mock-only-sheet-receipt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
+      SHEET_ID: ${{ secrets.SHEET_ID }}
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
+      ALLOW_PRODUCTION_WRITES: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Google Sheets service account dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Unit-test synthetic isolation
+        run: python -m pytest -q tests/test_one_time_mock_sheet_write.py
+      - name: Generate explicit synthetic fixture (no broker calls)
+        run: python -m tools.mock_replay --mock-replay
+      - name: Execute one isolated synthetic write and readback
+        run: python -m tools.one_time_mock_sheet_write
+      - name: Upload non-sensitive simulated write receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: one-time-MOCK-only-sheet-evidence
+          path: proof-output/mock_sheet_write_receipt.json
+          if-no-files-found: error
