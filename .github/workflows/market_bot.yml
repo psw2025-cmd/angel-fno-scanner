@@ -92,7 +92,7 @@ jobs:
       - name: Offline proof on holiday, delayed cron, dry-run or main push
         if: ${{ github.event_name == 'push' || steps.trading_session.outputs.can_scan != 'true' }}
         run: |
-          python tools/mock_replay.py --mock-replay
+          python -m tools.mock_replay --mock-replay
           python - <<'PY'
           import json
           d=json.load(open("proof-output/mock_replay.json",encoding="utf-8"))
