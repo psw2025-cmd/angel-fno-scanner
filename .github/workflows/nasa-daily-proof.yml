@@ -116,6 +116,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
       - name: Classify required WIF configuration
+        if: always()
         shell: bash
         env:
           WIF_PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
@@ -127,17 +128,17 @@ jobs:
           echo "NASA_WIF_CONFIGURATION_PRESENT"
       - name: Authenticate to Google Cloud using WIF
         id: gcp
-        if: ${{ vars.GCP_WIF_PROVIDER != '' && vars.GCP_EVIDENCE_SERVICE_ACCOUNT != '' }}
+        if: ${{ always() && vars.GCP_WIF_PROVIDER != '' && vars.GCP_EVIDENCE_SERVICE_ACCOUNT != '' }}
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
           service_account: ${{ vars.GCP_EVIDENCE_SERVICE_ACCOUNT }}
       - name: Setup gcloud
-        if: ${{ steps.gcp.outcome == 'success' }}
+        if: ${{ always() && steps.gcp.outcome == 'success' }}
         uses: google-github-actions/setup-gcloud@v2
       - name: Upload evidence to GCS and verify readback
         id: cloud
-        if: ${{ steps.gcp.outcome == 'success' }}
+        if: ${{ always() && steps.gcp.outcome == 'success' }}
         shell: bash
         run: |
           test -s proof-output/PROVEN_PROOF_LEDGER.json || { echo "::error::NASA_PROOF_LEDGER_MISSING"; exit 1; }
