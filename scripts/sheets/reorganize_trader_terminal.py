@@ -37,9 +37,9 @@ def connect():
 def mask(v):
     s=str(v).strip()
     if not s:return ""
-    if re.search(r"\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}|\\d{2}:\\d{2}",s):
+    if re.search(r"\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{2}:\d{2}",s):
         return "<DATE_OR_TIME>"
-    if re.fullmatch(r"[-+]?\\d+(?:[.,]\\d+)*%?",s):
+    if re.fullmatch(r"[-+]?\d+(?:[.,]\d+)*%?",s):
         return "<NUMBER>"
     return s[:68]
 
@@ -49,7 +49,7 @@ def inspect(book):
     names={w.title for w in sheets}
     print("READ_ONLY_TERMINAL_DISCOVERY=1 TOTAL_TABS="+str(len(sheets)))
     for w in sheets:
-        print(f"TAB title={json.dumps(w.title)} rows={w.row_count} cols={w.col_count} hidden={w.isSheetHidden}")
+        print(f"TAB title={json.dumps(w.title)} rows={w.row_count} cols={w.col_count} hidden={bool(w._properties.get("hidden",False))}")
     print("DELETE_CANDIDATES_PRESENT="+json.dumps([s for s in DELETE if s in names]))
     print("HIDE_CANDIDATES_PRESENT="+json.dumps([s for s in HIDE if s in names]))
     for tab in ["PAPER_TRADING_OMS","PAPER_ALERT_LOG"]:
@@ -60,7 +60,7 @@ def inspect(book):
             print(f"SCHEMA_SAMPLE {tab}:{i} WIDTH={len(row)} CELLS={json.dumps([mask(x) for x in row[:24]],ensure_ascii=False)}")
         print(f"MARKER_COUNTS_{tab}="+json.dumps(Counter(
             token for row in grid[1:] for cell in row
-            for token in re.findall(r"\\b(?:CLOSED|FILLED|EXIT|TARGET_HIT|SL_HIT|TRAILING_SL|TIME_EXIT|SIMULATED|REALIZED)\\b",str(cell).upper())
+            for token in re.findall(r"\b(?:CLOSED|FILLED|EXIT|TARGET_HIT|SL_HIT|TRAILING_SL|TIME_EXIT|SIMULATED|REALIZED)\b",str(cell).upper())
         ).most_common(15)))
         if tab=="PAPER_ALERT_LOG":
             print("ALERT_LATER_FILLED="+str(sum(len(row)>10 and bool(str(row[10]).strip()) for row in grid[1:])))
