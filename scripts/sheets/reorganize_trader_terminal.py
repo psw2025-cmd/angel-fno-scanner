@@ -49,7 +49,7 @@ def inspect(book):
     names={w.title for w in sheets}
     print("READ_ONLY_TERMINAL_DISCOVERY=1 TOTAL_TABS="+str(len(sheets)))
     for w in sheets:
-        print(f"TAB title={json.dumps(w.title)} rows={w.row_count} cols={w.col_count} hidden={bool(w._properties.get("hidden",False))}")
+        print(f"TAB title={json.dumps(w.title)} rows={w.row_count} cols={w.col_count} hidden={bool(w._properties.get('hidden',False))}")
     print("DELETE_CANDIDATES_PRESENT="+json.dumps([s for s in DELETE if s in names]))
     print("HIDE_CANDIDATES_PRESENT="+json.dumps([s for s in HIDE if s in names]))
     for tab in ["PAPER_TRADING_OMS","PAPER_ALERT_LOG"]:
