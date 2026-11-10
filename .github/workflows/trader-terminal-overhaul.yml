@@ -29,4 +29,6 @@ jobs:
       - name: Install Python packages
         run: python -m pip install gspread google-auth requests pytest
       - name: Read workbook schema and reference impact
-        run: python -m scripts.sheets.reorganize_trader_terminal --inspect
+        run: |
+          python -m pytest -q tests/test_trader_terminal_overhaul.py
+          python -m scripts.sheets.reorganize_trader_terminal --apply
