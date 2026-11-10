@@ -126,7 +126,7 @@ def main(argv=None):
     import gspread
     client=gspread.service_account_from_dict(load_service_account())
     book=client.open_by_key(sheet_id)
-    metadata=book.fetch_sheet_metadata(fields="properties(locale,timeZone)")
+    metadata=book.fetch_sheet_metadata()
     props=metadata.get("properties",{})
     timezone=props.get("timeZone","UNKNOWN")
     print("SHEET_TIMEZONE="+timezone+" LOCALE="+str(props.get("locale","UNKNOWN")))
