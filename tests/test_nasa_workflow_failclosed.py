@@ -19,7 +19,7 @@ def gate_script():
 
 
 def sample():
-    return {"checks": [{"id": f"P-{n:02d}", "status": "PASS", "source_sha": "test-sha"} for n in range(1, 21)], "summary": {"PASS": 20, "FAIL": 0, "BLOCKED": 0, "NOT_RUN": 0}}
+    return {"checks": [{"id": f"P-{n:02d}", "status": "PASS", "source_sha": "test-sha"} for n in range(1, 26)], "summary": {"PASS": 25, "FAIL": 0, "BLOCKED": 0, "NOT_RUN": 0}}
 
 
 def invoke(tmp_path, payload):
@@ -59,5 +59,5 @@ def test_stale_sha_fails(tmp_path):
 
 
 def test_false_summary_fails(tmp_path):
-    d = sample(); d["summary"]["PASS"] = 19
+    d = sample(); d["summary"]["PASS"] = 24
     assert invoke(tmp_path, d).returncode != 0

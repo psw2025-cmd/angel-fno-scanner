@@ -85,7 +85,7 @@ jobs:
           try:
               data = json.loads(path.read_text(encoding="utf-8"))
               checks = data["checks"]
-              expected = {f"P-{n:02d}" for n in range(1, 21)}
+              expected = {f"P-{n:02d}" for n in range(1, 26)}
               actual = [item["id"] for item in checks]
               if len(actual) != len(expected) or set(actual) != expected:
                   sys.exit("NASA_LEDGER_INCOMPLETE_OR_DUPLICATE")
@@ -97,7 +97,7 @@ jobs:
                   sys.exit("NASA_LEDGER_SUMMARY_MISMATCH")
           except (KeyError, TypeError, ValueError) as exc:
               sys.exit(f"NASA_LEDGER_INVALID:{type(exc).__name__}")
-          print("NASA_LEDGER_ALL_20_PASS_EXACT_SHA")
+          print("NASA_LEDGER_ALL_25_PASS_EXACT_SHA")
           PY
       - name: Upload timestamped proof ledger
         if: always()
@@ -116,6 +116,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
       - name: Classify required WIF configuration
+        if: always()
         shell: bash
         env:
           WIF_PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
@@ -127,17 +128,17 @@ jobs:
           echo "NASA_WIF_CONFIGURATION_PRESENT"
       - name: Authenticate to Google Cloud using WIF
         id: gcp
-        if: ${{ vars.GCP_WIF_PROVIDER != '' && vars.GCP_EVIDENCE_SERVICE_ACCOUNT != '' }}
+        if: ${{ always() && vars.GCP_WIF_PROVIDER != '' && vars.GCP_EVIDENCE_SERVICE_ACCOUNT != '' }}
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
           service_account: ${{ vars.GCP_EVIDENCE_SERVICE_ACCOUNT }}
       - name: Setup gcloud
-        if: ${{ steps.gcp.outcome == 'success' }}
+        if: ${{ always() && steps.gcp.outcome == 'success' }}
         uses: google-github-actions/setup-gcloud@v2
       - name: Upload evidence to GCS and verify readback
         id: cloud
-        if: ${{ steps.gcp.outcome == 'success' }}
+        if: ${{ always() && steps.gcp.outcome == 'success' }}
         shell: bash
         run: |
           test -s proof-output/PROVEN_PROOF_LEDGER.json || { echo "::error::NASA_PROOF_LEDGER_MISSING"; exit 1; }
