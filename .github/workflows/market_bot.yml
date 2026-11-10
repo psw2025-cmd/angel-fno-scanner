@@ -43,6 +43,7 @@ jobs:
       WRITER_ID: market_bot
       PAPER_MODE: '1'
       LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
       RUN_ID: ${{ github.run_id }}
       GIT_SHA: ${{ github.sha }}
       ANGEL_CYCLE_METADATA_FILE: /tmp/cycle_metadata.json
@@ -59,6 +60,11 @@ jobs:
 
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      - name: Market-session preflight before any broker or sink access
+        id: trading_session
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
+        run: python -m tools.market_session_preflight --requested "$ANGEL_MARKET_SESSION" --github-output "$GITHUB_OUTPUT"
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -102,8 +108,10 @@ jobs:
           set -eo pipefail
           test "$PAPER_MODE" = 1
           test "$LIVE_ORDER_AUTHORITY" = 0
+          test "$REAL_BROKER_ORDERS" = 0
       - name: Run Single Authoritative Scanner and Prediction Cycle
-        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
+        id: scanner_cycle
+        if: ${{ steps.trading_session.outputs.can_scan == 'true' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run)) }}
         run: |
           set -eo pipefail
           test "$PAPER_MODE" = 1
@@ -115,7 +123,7 @@ jobs:
           python scripts/sync_cycle_provenance_to_bq.py
 
       - name: Commit & Push Updated Snapshots
-        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
+        if: ${{ steps.scanner_cycle.outcome == 'success' && steps.trading_session.outputs.can_scan == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
