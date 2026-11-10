@@ -1,0 +1,34 @@
+name: Direct Google Sheet Forensic Repair (gspread)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/forensic_sheet_repair.py'
+      - '.github/workflows/forensic-sheet-repair.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: direct-sheet-repair
+  cancel-in-progress: false
+jobs:
+  forensic-readback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SHEETS_KEY_JSON: ${{ secrets.SHEETS_KEY_JSON }}
+      SHEET_ID: ${{ secrets.SHEET_ID }}
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned project dependencies for gspread
+        run: pip install -r requirements.txt
+      - name: Audit all 30 tabs, repair nine cells, and verify remote readback
+        run: python tools/forensic_sheet_repair.py --apply
+      - name: Attest no credentials were placed in checkout
+        run: git diff --exit-code
