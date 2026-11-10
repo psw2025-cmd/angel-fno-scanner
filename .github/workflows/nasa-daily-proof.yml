@@ -74,7 +74,7 @@ jobs:
           LIVE_TRADING_ENABLED: 'false'
           NASA_ENABLE_CLOUD_VERIFY: '0'
         run: python tools/nasa_daily_proof.py
-      - name: Enforce complete 25-check NASA proof ledger
+      - name: Enforce complete NASA proof ledger
         shell: bash
         run: |
           python - <<'PY'
