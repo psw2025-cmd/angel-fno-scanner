@@ -1,8 +1,8 @@
 {
-  "status": "FAIL",
-  "timestamp": "2026-10-22T10:15:28.463760+00:00",
+  "status": "PASS",
+  "timestamp": "2026-11-11T18:10:29.190767+00:00",
   "sheets_audit": {
-    "passed": false,
+    "passed": true,
     "summary": {
       "PRE_BREAKOUT_SCANNER": {
         "formula_errors": [],
@@ -11,26 +11,12 @@
         "row_count": 34,
         "col_count": 13
       },
-      "Sheet1": {
-        "formula_errors": [],
-        "date_serials": [],
-        "dummy_strings": [],
-        "row_count": 204,
-        "col_count": 23
-      },
       "F&O Options Top Gainers Tracker Dashboard": {
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
         "row_count": 57,
         "col_count": 18
-      },
-      "LEGACY_F&O_DASHBOARD_OBJECT": {
-        "formula_errors": [],
-        "date_serials": [],
-        "dummy_strings": [],
-        "row_count": 14,
-        "col_count": 11
       },
       "Formula Checks": {
         "formula_errors": [],
@@ -43,7 +29,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 1596,
+        "row_count": 2223,
         "col_count": 8
       },
       "Cloud_Automation_Setup": {
@@ -78,25 +64,14 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 130,
+        "row_count": 251,
         "col_count": 5
       },
       "PAPER_ALERT_LOG": {
-        "formula_errors": [
-          [
-            1806,
-            10,
-            "#ERROR!"
-          ],
-          [
-            1808,
-            10,
-            "#ERROR!"
-          ]
-        ],
+        "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 2059,
+        "row_count": 2557,
         "col_count": 11
       },
       "NEWS_LIVE": {
@@ -110,7 +85,7 @@
         "formula_errors": [],
         "date_serials": [],
         "dummy_strings": [],
-        "row_count": 1257,
+        "row_count": 1494,
         "col_count": 16
       },
       "NEWS_TYPE_TALLY": {
@@ -133,6 +108,13 @@
         "dummy_strings": [],
         "row_count": 259,
         "col_count": 41
+      },
+      "TRADE_HISTORY_LEDGER": {
+        "formula_errors": [],
+        "date_serials": [],
+        "dummy_strings": [],
+        "row_count": 13,
+        "col_count": 16
       }
     }
   },
@@ -142,28 +124,30 @@
       "option_predictions_live": {
         "exists": true,
         "rows": 219,
-        "size_mb": 0.14,
+        "size_mb": 0.13,
         "columns": 54
       },
       "market_news_sentiment": {
         "exists": true,
-        "rows": 32403,
-        "size_mb": 31.13,
+        "rows": 38961,
+        "size_mb": 37.14,
         "columns": 26
       },
       "prediction_calibration_log": {
         "exists": true,
-        "rows": 428,
-        "size_mb": 0.29,
+        "rows": 509,
+        "size_mb": 0.36,
         "columns": 16
       }
     }
   },
   "publication": {
-    "passed": false,
+    "passed": true,
     "summary": {
-      "status": "UNVERIFIED",
-      "error_type": "RuntimeError"
+      "cycle_id": "43073920910:a84789d870fe4c7fa09580d05d9b8119",
+      "run_id": "43073920910",
+      "git_sha": "6da486ff1ee1acbdaaff5b32a6fc76a5dd8d39e6",
+      "writer_id": "market_bot"
     }
   },
   "engine_state": {
