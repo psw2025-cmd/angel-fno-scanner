@@ -90,6 +90,7 @@ from gainers import (
 from paper_log import alerts_to_append, fill_later_changes, render_production_sheet
 from writer_guard import append_sheet_provenance, require_authorized_writer
 from tools.cycle_provenance import apply_process_provenance
+from tools.quote_batch_guard import QuoteBatchIntegrityError, require_complete_quote_chunk
 from tools.publication_lease import PublicationLeaseError, assert_current_fence
 from sheet_grid import write_grid
 
@@ -279,32 +280,41 @@ def discover_universe(api):
 
 
 def fetch_chunked(api, tokens, size=45):
+    """Return only complete, identity-checked FULL batches; never partial quotes."""
+    if not isinstance(size, int) or size <= 0:
+        raise ValueError("quote batch size must be positive")
+    requested = [str(token).strip() for token in tokens]
+    if any(token in ("", "None") for token in requested):
+        raise QuoteBatchIntegrityError("INVALID_REQUEST")
+    if len(requested) != len(set(requested)):
+        raise QuoteBatchIntegrityError("DUPLICATE_REQUEST")
     quotes = {}
     failures = 0
-    for start in range(0, len(tokens), size):
-        chunk = tokens[start:start + size]
+    for start in range(0, len(requested), size):
+        chunk = requested[start:start + size]
         for attempt in range(4):
             try:
                 response = api.getMarketData("FULL", {"NFO": chunk})
-                if not response or not response.get("status"):
-                    raise RuntimeError(f"market data status failed for {len(chunk)} tokens")
-                for item in response.get("data", {}).get("fetched", []) or []:
-                    if os.getenv("ANGEL_REQUIRE_EXCHANGE_TIME") == "1":
-                        from tools.exchange_timestamp import get_exchange_timestamp
+                complete = require_complete_quote_chunk(chunk, response)
+                if os.getenv("ANGEL_REQUIRE_EXCHANGE_TIME") == "1":
+                    from tools.exchange_timestamp import get_exchange_timestamp
+                    for item in complete.values():
                         get_exchange_timestamp(item)
-                    quotes[str(item.get("symbolToken"))] = item
+                quotes.update(complete)
                 break
             except Exception as exc:
                 if attempt == 3:
                     failures += 1
-                    print(f"[ERROR] Quote chunk failed permanently after retries: {exc}")
+                    print(f"[ERROR] Quote chunk integrity or fetch failed after retries: {type(exc).__name__}")
                 else:
                     backoff = (2 ** attempt) + 0.5
-                    print(f"[WARN] Quote chunk error: {exc}. Retrying in {backoff}s...")
+                    print(f"[WARN] Quote chunk failed ({type(exc).__name__}); retrying in {backoff}s")
                     time.sleep(backoff)
+        if failures:
+            print(f"[BLOCKED] Quote coverage incomplete: {failures} failed chunks; discarding partial batch")
+            return {}, failures
         time.sleep(0.35)
-    return quotes, failures
-
+    return quotes, 0
 
 def _number(value, default=0.0):
     try:

@@ -1,0 +1,77 @@
+name: PAPER Quote Batch Exact-Head Guard
+on:
+  push:
+    branches:
+      - fix/paper-quote-batch-completeness-20261027
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  quote-batch-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
+      PAPER_MODE: '1'
+      LIVE_ORDER_AUTHORITY: '0'
+      REAL_BROKER_ORDERS: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact checked-out commit and PAPER controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          echo "CHECKED_OUT_SHA=$actual"
+          expected="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          echo "EXPECTED_HEAD_SHA=$expected"
+          test "$actual" = "$expected"
+          test "$PAPER_MODE" = 1
+          test "$LIVE_ORDER_AUTHORITY" = 0
+          test "$REAL_BROKER_ORDERS" = 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install focused test dependency
+        run: python -m pip install 'pytest>=8,<10'
+      - name: Run negative, boundary, retry and recovery regressions
+        run: python -m pytest -q -rs tests/test_quote_batch_integrity.py --junitxml=quote-batch-junit.xml
+      - name: Reject skipped, duplicate or missing test evidence
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          path = Path("quote-batch-junit.xml")
+          if not path.is_file():
+              raise SystemExit("QUOTE_BATCH_CI_BLOCKED: JUnit missing")
+          root = ET.parse(path).getroot()
+          cases = root.findall(".//testcase")
+          identities = [(x.get("classname"), x.get("name")) for x in cases]
+          if len(cases) != 17 or len(set(identities)) != 17:
+              raise SystemExit("QUOTE_BATCH_CI_BLOCKED: incomplete or duplicate cases")
+          if any(not cls or not name for cls, name in identities):
+              raise SystemExit("QUOTE_BATCH_CI_BLOCKED: missing testcase identity")
+          if any(case.find(tag) is not None for case in cases for tag in ("skipped", "failure", "error")):
+              raise SystemExit("QUOTE_BATCH_CI_BLOCKED: skipped or failed case")
+          suites = [root] if root.tag == "testsuite" else root.findall(".//testsuite")
+          if not suites:
+              raise SystemExit("QUOTE_BATCH_CI_BLOCKED: missing suites")
+          for suite in suites:
+              if any(int(suite.get(key, "0")) for key in ("skipped", "failures", "errors")):
+                  raise SystemExit("QUOTE_BATCH_CI_BLOCKED: nonzero suite errors")
+          print("QUOTE_BATCH_CI_PASS: 17 exact-head cases, 0 skipped")
+          PY
+      - name: Upload focused JUnit receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quote-batch-exact-head
+          path: quote-batch-junit.xml
+          if-no-files-found: error
