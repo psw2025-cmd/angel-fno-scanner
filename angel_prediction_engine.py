@@ -2348,8 +2348,28 @@ def run_prediction_pipeline(bypass_market_check=False, force_pre_close=False, re
         bq_write=lambda: sync_to_bigquery(predictions, news_rows_for_bq, reconciliation, ist_now),
     )
     save_state(pending_state)
+    _emit_free_langsmith_trace(predictions, reconciliation, next_day_picks, ist_str)
 
     return predictions, reconciliation, next_day_picks
+
+
+def _emit_free_langsmith_trace(predictions, reconciliation, next_day_picks, ist_str):
+    """Best-effort base-tier trace after a successful publication. Never raises."""
+    try:
+        from observability.langsmith_free import trace_prediction_cycle
+        result = trace_prediction_cycle(predictions, reconciliation, next_day_picks, ist_str)
+    except Exception as exc:
+        print("[WARN] LangSmith free-tier trace skipped error=%s" % type(exc).__name__)
+        return
+    status = str(result.get("status", "unknown"))
+    if status == "sent":
+        print("[OK] LangSmith free-tier base trace sent run_id=%s" % result.get("run_id"))
+    elif status == "budget_exhausted":
+        print("[WARN] LangSmith free-tier monthly cap reached; trace skipped")
+    elif status in ("disabled", "skipped_no_key", "sampled_out"):
+        return
+    else:
+        print("[WARN] LangSmith free-tier trace status=%s" % status)
 
 # =====================================================================
 # GOOGLE SHEET SYNC MODULE
